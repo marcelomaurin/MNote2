@@ -1,0 +1,233 @@
+object frmMNote: TfrmMNote
+  Left = 248
+  Height = 394
+  Top = 164
+  Width = 538
+  Caption = 'MNote2 - Notepad do Maurin'
+  ClientHeight = 374
+  ClientWidth = 538
+  Menu = MainMenu1
+  OnClose = FormClose
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  LCLVersion = '1.8.4.0'
+  object Panel1: TPanel
+    Left = 0
+    Height = 50
+    Top = 0
+    Width = 538
+    Align = alTop
+    TabOrder = 0
+    OnClick = Panel1Click
+  end
+  object pgMain: TPageControl
+    Left = 114
+    Height = 240
+    Top = 50
+    Width = 424
+    Align = alClient
+    Images = ImageList1
+    TabOrder = 1
+    OnChange = pgMainChange
+  end
+  object pnBotton: TPanel
+    Left = 0
+    Height = 84
+    Top = 290
+    Width = 538
+    Align = alBottom
+    ClientHeight = 84
+    ClientWidth = 538
+    ParentBidiMode = False
+    TabOrder = 2
+    Visible = False
+    OnClick = pnBottonClick
+    object lstFind: TListBox
+      Left = 1
+      Height = 82
+      Top = 1
+      Width = 536
+      Align = alClient
+      ItemHeight = 0
+      OnChangeBounds = lstFindChangeBounds
+      OnClick = lstFindClick
+      PopupMenu = popFind
+      ScrollWidth = 534
+      TabOrder = 0
+    end
+  end
+  object pntv: TPanel
+    Left = 0
+    Height = 240
+    Top = 50
+    Width = 114
+    Align = alLeft
+    TabOrder = 3
+    Visible = False
+    OnClick = pntvClick
+  end
+  object MainMenu1: TMainMenu
+    left = 40
+    top = 8
+    object MenuItem1: TMenuItem
+      Caption = 'Arquivos'
+      OnClick = MenuItem1Click
+      object btNovo: TMenuItem
+        Caption = 'Novo'
+        OnClick = btNovoClick
+      end
+      object mnCarregar: TMenuItem
+        Caption = 'Carregar'
+        OnClick = mnCarregarClick
+      end
+      object mnSalvar: TMenuItem
+        Caption = 'Salvar'
+        OnClick = mnSalvarClick
+      end
+      object mnSalvarComo: TMenuItem
+        Caption = 'Salvar como'
+        OnClick = mnSalvarComoClick
+      end
+      object MenuItem6: TMenuItem
+        Caption = 'Sair'
+        OnClick = MenuItem6Click
+      end
+    end
+    object MenuItem3: TMenuItem
+      Caption = 'Pesquisar'
+      OnClick = MenuItem3Click
+      object mnPesqItem: TMenuItem
+        Caption = 'Item'
+        ShortCut = 16454
+        ShortCutKey2 = 114
+        OnClick = mnPesqItemClick
+      end
+      object MenuItem9: TMenuItem
+        Caption = 'Substituir'
+        OnClick = MenuItem9Click
+      end
+    end
+    object mnScript: TMenuItem
+      Caption = 'Scripts'
+      OnClick = mnScriptClick
+    end
+    object mnSetup: TMenuItem
+      Caption = 'Setup'
+      object mnfont: TMenuItem
+        Caption = 'Fonts'
+        OnClick = mnfontClick
+      end
+    end
+    object MenuItem10: TMenuItem
+      Caption = 'Sobre'
+      OnClick = MenuItem10Click
+    end
+  end
+  object OpenDialog1: TOpenDialog
+    left = 160
+    top = 8
+  end
+  object SaveDialog1: TSaveDialog
+    left = 255
+    top = 11
+  end
+  object popFind: TPopupMenu
+    left = 157
+    top = 302
+    object MenuItem2: TMenuItem
+      Caption = 'Esconder'
+      OnClick = MenuItem2Click
+    end
+  end
+  object FindDialog1: TFindDialog
+    Width = 480
+    Height = 285
+    OnFind = FindDialog1Find
+    left = 313
+    top = 25
+  end
+  object popFechar: TPopupMenu
+    left = 157
+    top = 133
+    object mnFechar: TMenuItem
+      Caption = 'Fechar'
+      OnClick = mnFecharClick
+    end
+  end
+  object ImageList1: TImageList
+    left = 216
+    top = 176
+    Bitmap = {
+      4C69010000001000000010000000000000000000000000000000000000003838
+      C6323535C9993535C9DB3636C7FA3636C7FA3434C9DA3535C9983535C9300000
+      000000000000000000000000000000000000000000003333CC0A3535C99D3636
+      C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3535
+      C9993838C6090000000000000000000000003333CC0A3535C9C33636C9FF3636
+      C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636
+      C9FF3636C7C13838C60900000000000000003535C99D3636C9FF3636C9FF7C7C
+      DCFF3C3CCAFF3636C9FF3636C9FF3636C9FF3636C9FF3D3DCBFF7F7FDCFF3636
+      C9FF3636C9FF3535C998000000003838C6323636C9FF3636C9FF7C7CDCFFFFFF
+      FFFFC5C5EFFF3C3CCAFF3636C9FF3636C9FF3C3CCBFFC9C9F0FFFFFFFFFF7A7A
+      DBFF3636C9FF3636C9FF3535C9303535C9993636C9FF3636C9FF3C3CCAFFC5C5
+      F0FFFFFFFFFFC5C5F0FF3C3CCAFF3C3CCBFFC8C8F0FFFFFFFFFFC0C0EEFF3A3A
+      CAFF3636C9FF3636C9FF3636C8963535C9DB3636C9FF3636C9FF3636C9FF3C3C
+      CAFFC5C5F0FFFFFFFFFFC6C6F0FFC7C7F0FFFFFFFFFFC2C2EEFF3A3ACAFF3636
+      C9FF3636C9FF3636C9FF3636C7D83636C7FA3636C9FF3636C9FF3636C9FF3636
+      C9FF3C3CCAFFC6C6F0FFFFFFFFFFFFFFFFFFC3C3EFFF3B3BCAFF3636C9FF3636
+      C9FF3636C9FF3636C9FF3636C7F93636C7FA3636C9FF3636C9FF3636C9FF3636
+      C9FF3C3CCBFFC7C7F0FFFFFFFFFFFFFFFFFFC4C4EFFF3C3CCAFF3636C9FF3636
+      C9FF3636C9FF3636C9FF3636C7F93434C9DA3636C9FF3636C9FF3636C9FF3C3C
+      CBFFC8C8F0FFFFFFFFFFC4C4EFFFC4C4EFFFFFFFFFFFC4C4EFFF3C3CCAFF3636
+      C9FF3636C9FF3636C9FF3636C8D73535C9983636C9FF3636C9FF3D3DCBFFC9C9
+      F0FFFFFFFFFFC2C2EEFF3B3BCAFF3C3CCAFFC4C4EFFFFFFFFFFFC4C4EFFF3C3C
+      CAFF3636C9FF3636C9FF3535C9943535C9303636C9FF3636C9FF7F7FDCFFFFFF
+      FFFFC0C0EEFF3A3ACAFF3636C9FF3636C9FF3C3CCAFFC4C4EFFFFFFFFFFF7C7C
+      DCFF3636C9FF3636C9FF3737C72E000000003535C9993636C9FF3636C9FF7A7A
+      DBFF3A3ACAFF3636C9FF3636C9FF3636C9FF3636C9FF3C3CCAFF7C7CDCFF3636
+      C9FF3636C9FF3636C89500000000000000003838C6093636C7C13636C9FF3636
+      C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636
+      C9FF3535C9BF3F3FBF080000000000000000000000003838C6093535C9993636
+      C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636
+      C8953F3FBF080000000000000000000000000000000000000000000000003535
+      C9303636C8963636C7D83636C7F93636C7F93636C8D73535C9943737C72E0000
+      0000000000000000000000000000
+    }
+  end
+  object ReplaceDialog1: TReplaceDialog
+    Width = 480
+    Height = 222
+    Options = [frDown, frReplace, frReplaceAll, frHidePromptOnReplace]
+    OnFind = FindDialog1Find
+    left = 379
+    top = 25
+  end
+  object FontDialog1: TFontDialog
+    MinFontSize = 0
+    MaxFontSize = 0
+    left = 255
+    top = 121
+  end
+  object popSysEdit: TPopupMenu
+    left = 352
+    top = 216
+    object mnAssociar: TMenuItem
+      Caption = 'Associar'
+      OnClick = mnAssociarClick
+      object mnLazarus: TMenuItem
+        Caption = 'Lazarus/Pascal'
+        OnClick = mnLazarusClick
+      end
+      object mnPython: TMenuItem
+        Caption = 'Python'
+      end
+      object mnC: TMenuItem
+        Caption = 'C/C++'
+        OnClick = mnCClick
+      end
+    end
+    object mnFechar2: TMenuItem
+      Caption = 'Fechar'
+      OnClick = mnFechar2Click
+    end
+  end
+end

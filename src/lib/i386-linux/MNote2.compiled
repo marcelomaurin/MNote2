@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Compiler Value="/usr/bin/fpc" Date="1413311941"/>
+  <Params Value=" -MObjFPC -Scghi -O1 -g -gl -vewnhi -Fi/storage/projetos/MNote2/lib/i386-linux -Fl/opt/gnome/lib -Fu/storage/projetos/MNote2/classes -Fu/usr/lib/lazarus/1.2.4/components/synedit/units/i386-linux/gtk2 -Fu/usr/lib/lazarus/1.2.4/lcl/units/i386-linux/gtk2 -Fu/usr/lib/lazarus/1.2.4/lcl/units/i386-linux -Fu/usr/lib/lazarus/1.2.4/components/lazutils/lib/i386-linux -Fu/usr/lib/lazarus/1.2.4/packager/units/i386-linux -Fu/storage/projetos/MNote2/ -FU/storage/projetos/MNote2/lib/i386-linux/ -l -dLCL -dLCLgtk2 MNote2.lpr"/>
+</CONFIG>

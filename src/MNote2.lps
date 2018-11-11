@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="10"/>
+    <BuildModes Active="Default"/>
+    <Units Count="16">
+      <Unit0>
+        <Filename Value="MNote2.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="43"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="main.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmMNote"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <CursorPos X="59" Y="10"/>
+        <UsageCount Value="43"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="classes/item.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Item"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="7"/>
+        <UsageCount Value="43"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="sobre.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmSobre"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <TopLine Value="33"/>
+        <CursorPos X="48" Y="41"/>
+        <UsageCount Value="43"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="pesquisar.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmPesquisar"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <TopLine Value="43"/>
+        <CursorPos X="3" Y="65"/>
+        <UsageCount Value="41"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="classes/finds.pas"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <CursorPos X="49" Y="20"/>
+        <UsageCount Value="35"/>
+        <Loaded Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="/usr/lib/lazarus/1.2.4/components/synedit/synedit.pp"/>
+        <UnitName Value="SynEdit"/>
+        <TopLine Value="1937"/>
+        <CursorPos X="59" Y="1955"/>
+        <UsageCount Value="9"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="/usr/share/fpcsrc/2.6.4/rtl/objpas/classes/classesh.inc"/>
+        <TopLine Value="681"/>
+        <CursorPos X="3" Y="604"/>
+        <UsageCount Value="11"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="/usr/lib/lazarus/1.2.4/lcl/forms.pp"/>
+        <UnitName Value="Forms"/>
+        <TopLine Value="53"/>
+        <CursorPos X="25" Y="64"/>
+        <UsageCount Value="9"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="/usr/lib/lazarus/1.2.4/lcl/include/customform.inc"/>
+        <TopLine Value="932"/>
+        <CursorPos X="81" Y="945"/>
+        <UsageCount Value="8"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="/usr/lib/lazarus/1.2.4/lcl/comctrls.pp"/>
+        <UnitName Value="ComCtrls"/>
+        <TopLine Value="480"/>
+        <CursorPos X="3" Y="491"/>
+        <UsageCount Value="8"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="/usr/lib/lazarus/1.2.4/lcl/include/finddialog.inc"/>
+        <TopLine Value="51"/>
+        <CursorPos Y="62"/>
+        <UsageCount Value="12"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="/usr/lib/lazarus/1.2.4/lcl/include/control.inc"/>
+        <TopLine Value="2703"/>
+        <CursorPos Y="2713"/>
+        <UsageCount Value="12"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="/usr/lib/lazarus/1.2.4/lcl/stdctrls.pp"/>
+        <UnitName Value="StdCtrls"/>
+        <TopLine Value="567"/>
+        <CursorPos X="14" Y="576"/>
+        <UsageCount Value="11"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="main.lfm"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="11" Y="3"/>
+        <UsageCount Value="9"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="../../lazarus/lcl/include/tabsheet.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="14"/>
+        <CursorPos X="29" Y="29"/>
+        <UsageCount Value="9"/>
+      </Unit15>
+    </Units>
+    <JumpHistory Count="1">
+      <Position1>
+        <Filename Value="classes/finds.pas"/>
+        <Caret Line="7" Column="17" TopLine="4"/>
+      </Position1>
+    </JumpHistory>
+  </ProjectSession>
+</CONFIG>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Compiler Value="/usr/local/bin/ppc386" Date="1511735943"/>
+  <Params Value=" -MObjFPC -Scghi -O1 -gw -gl  -k-framework -kCarbon -k-framework -kOpenGL -k-dylib_file -k/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib -l -vewnhibq -Fi/Users/macbook/Desktop/MNote2/lib/i386-darwin -Fu/Users/macbook/Desktop/MNote2/classes -Fu/Developer/lazarus/components/synedit/units/i386-darwin/carbon -Fu/Developer/lazarus/lcl/units/i386-darwin/carbon -Fu/Developer/lazarus/lcl/units/i386-darwin -Fu/Developer/lazarus/components/lazutils/lib/i386-darwin -Fu/Developer/lazarus/packager/units/i386-darwin -Fu/Users/macbook/Desktop/MNote2/ -FU/Users/macbook/Desktop/MNote2/lib/i386-darwin/ -dLCL -dLCLcarbon MNote2.lpr"/>
+</CONFIG>

@@ -1,0 +1,191 @@
+object frmMNote: TfrmMNote
+  Left = 248
+  Height = 394
+  Top = 164
+  Width = 538
+  Caption = 'MNote2 - Notepad do Maurin'
+  ClientHeight = 367
+  ClientWidth = 538
+  Menu = MainMenu1
+  OnClose = FormClose
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  LCLVersion = '1.2.4.0'
+  object Panel1: TPanel
+    Left = 0
+    Height = 50
+    Top = 0
+    Width = 538
+    Align = alTop
+    TabOrder = 0
+    OnClick = Panel1Click
+  end
+  object pgMain: TPageControl
+    Left = 114
+    Height = 233
+    Top = 50
+    Width = 424
+    Align = alClient
+    TabOrder = 1
+    OnChange = pgMainChange
+  end
+  object pnBotton: TPanel
+    Left = 0
+    Height = 84
+    Top = 283
+    Width = 538
+    Align = alBottom
+    ClientHeight = 84
+    ClientWidth = 538
+    ParentBidiMode = False
+    TabOrder = 2
+    Visible = False
+    OnClick = pnBottonClick
+    object lstFind: TListBox
+      Left = 1
+      Height = 82
+      Top = 1
+      Width = 536
+      Align = alClient
+      ItemHeight = 0
+      OnChangeBounds = lstFindChangeBounds
+      OnClick = lstFindClick
+      PopupMenu = popFind
+      ScrollWidth = 534
+      TabOrder = 0
+      TopIndex = -1
+    end
+  end
+  object pntv: TPanel
+    Left = 0
+    Height = 233
+    Top = 50
+    Width = 114
+    Align = alLeft
+    TabOrder = 3
+    Visible = False
+    OnClick = pntvClick
+  end
+  object MainMenu1: TMainMenu
+    left = 40
+    top = 8
+    object MenuItem1: TMenuItem
+      Caption = 'Arquivos'
+      OnClick = MenuItem1Click
+      object btNovo: TMenuItem
+        Caption = 'Novo'
+        OnClick = btNovoClick
+      end
+      object mnCarregar: TMenuItem
+        Caption = 'Carregar'
+        OnClick = mnCarregarClick
+      end
+      object mnSalvar: TMenuItem
+        Caption = 'Salvar'
+        OnClick = mnSalvarClick
+      end
+      object mnSalvarComo: TMenuItem
+        Caption = 'Salvar como'
+        OnClick = mnSalvarComoClick
+      end
+      object MenuItem6: TMenuItem
+        Caption = 'Sair'
+        OnClick = MenuItem6Click
+      end
+    end
+    object MenuItem3: TMenuItem
+      Caption = 'Pesquisar'
+      OnClick = MenuItem3Click
+      object mnPesqItem: TMenuItem
+        Caption = 'Item'
+        ShortCut = 16454
+        ShortCutKey2 = 114
+        OnClick = mnPesqItemClick
+      end
+      object MenuItem8: TMenuItem
+        Caption = 'Arquivos'
+      end
+      object MenuItem9: TMenuItem
+        Caption = 'Substituir'
+      end
+    end
+    object MenuItem10: TMenuItem
+      Caption = 'Sobre'
+      OnClick = MenuItem10Click
+    end
+  end
+  object OpenDialog1: TOpenDialog
+    left = 160
+    top = 8
+  end
+  object SaveDialog1: TSaveDialog
+    left = 255
+    top = 11
+  end
+  object SynAnySyn1: TSynAnySyn
+    Enabled = False
+    CommentAttri.FrameEdges = sfeAround
+    Comments = []
+    DetectPreprocessor = False
+    IdentifierAttri.FrameEdges = sfeAround
+    IdentifierChars = '!"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~ÄÅÇÉÑÖÜáàâäãåçéèêëíìîïñóòôöõúùûü†°¢£§•¶ß®©™´¨≠ÆØ∞±≤≥¥µ∂∑∏π∫ªºΩæø¬√'
+    KeyAttri.FrameEdges = sfeAround
+    ConstantAttri.FrameEdges = sfeAround
+    ObjectAttri.FrameEdges = sfeAround
+    EntityAttri.FrameEdges = sfeAround
+    VariableAttri.FrameEdges = sfeAround
+    DotAttri.FrameEdges = sfeAround
+    NumberAttri.FrameEdges = sfeAround
+    PreprocessorAttri.FrameEdges = sfeAround
+    SpaceAttri.FrameEdges = sfeAround
+    StringAttri.FrameEdges = sfeAround
+    SymbolAttri.FrameEdges = sfeAround
+    Markup = False
+    Entity = False
+    DollarVariables = False
+    ActiveDot = False
+    left = 379
+    top = 55
+  end
+  object SynPoSyn1: TSynPoSyn
+    DefaultFilter = 'Po Files (*.po)|*.po'
+    Enabled = False
+    CommentAttri.FrameEdges = sfeAround
+    TextAttri.FrameEdges = sfeAround
+    KeyAttri.FrameEdges = sfeAround
+    SpaceAttri.FrameEdges = sfeAround
+    left = 386
+    top = 118
+  end
+  object SynPasSyn1: TSynPasSyn
+    Enabled = False
+    AsmAttri.FrameEdges = sfeAround
+    CommentAttri.FrameEdges = sfeAround
+    IDEDirectiveAttri.FrameEdges = sfeAround
+    IdentifierAttri.FrameEdges = sfeAround
+    KeyAttri.FrameEdges = sfeAround
+    NumberAttri.FrameEdges = sfeAround
+    SpaceAttri.FrameEdges = sfeAround
+    StringAttri.FrameEdges = sfeAround
+    SymbolAttri.FrameEdges = sfeAround
+    CaseLabelAttri.FrameEdges = sfeAround
+    DirectiveAttri.FrameEdges = sfeAround
+    CompilerMode = pcmDelphi
+    NestedComments = False
+    left = 343
+    top = 179
+  end
+  object popFind: TPopupMenu
+    left = 157
+    top = 302
+    object MenuItem2: TMenuItem
+      Caption = 'Esconder'
+      OnClick = MenuItem2Click
+    end
+  end
+  object FindDialog1: TFindDialog
+    OnFind = FindDialog1Find
+    left = 313
+    top = 25
+  end
+end
