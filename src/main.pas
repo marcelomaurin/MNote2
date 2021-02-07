@@ -7,10 +7,10 @@ interface
 uses
   Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, SynHighlighterPo,
   SynHighlighterPas, SynHighlighterCpp, Forms, Controls, Graphics, Dialogs,
-  Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, item, types, finds;
+  Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, item, types, finds, setmain;
 
 
-const versao = '0.7';
+const versao = '0.8';
 
 type
 
@@ -27,6 +27,8 @@ type
     MenuItem10: TMenuItem;
     btNovo: TMenuItem;
     MenuItem2: TMenuItem;
+    mnFixar: TMenuItem;
+    mnStay: TMenuItem;
     mnLazarus: TMenuItem;
     mnFechar2: TMenuItem;
     mnPython: TMenuItem;
@@ -51,8 +53,10 @@ type
     popFind: TPopupMenu;
     popFechar: TPopupMenu;
     popSysEdit: TPopupMenu;
+    PopupMenu1: TPopupMenu;
     ReplaceDialog1: TReplaceDialog;
     SaveDialog1: TSaveDialog;
+    TrayIcon1: TTrayIcon;
     procedure FindDialog1Find(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -69,6 +73,7 @@ type
     procedure MenuItem2Click(Sender: TObject);
     procedure mnCClick(Sender: TObject);
     procedure mnFechar2Click(Sender: TObject);
+    procedure mnFixarClick(Sender: TObject);
     procedure mnLazarusClick(Sender: TObject);
     procedure mnAssociarClick(Sender: TObject);
     procedure mnfontClick(Sender: TObject);
@@ -82,6 +87,8 @@ type
     procedure mnSalvarComoClick(Sender: TObject);
     procedure mnCarregarClick(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
+    procedure mnStayClick(Sender: TObject);
+    procedure mnFixarClockClick(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
     procedure Panel1Click(Sender: TObject);
     procedure pnBottonClick(Sender: TObject);
@@ -107,6 +114,8 @@ type
     function PerguntaSalvar(): boolean;
     procedure SalvarTudo();
     procedure Pesquisar(Sender: TObject);
+    procedure CarregaContexto();
+
   public
     { public declarations }
   end;
@@ -149,13 +158,13 @@ begin
   syn.PopupMenu := popSysEdit;
   syn.Lines.LoadFromFile(arquivo);
   syn.OnChange := @synChange ;
-  tb.tag := integer(syn);
+  tb.tag := integer(pointer(syn));
   tb.ImageIndex:=0;
   tb.PopupMenu := popFechar;
   item := TItem.create();
   item.Loadfile(arquivo);
   item.salvo := true;
-  syn.Tag:= integer(item);
+  syn.Tag:= integer(pointer(item));
   tb.Caption:= item.Name;
   pgMain.Refresh();
 
@@ -188,12 +197,12 @@ begin
   syn.PopupMenu := popSysEdit;
   syn.OnChange:= @synChange;
   tb.PopupMenu := popFechar;
-  tb.Tag:= Integer(syn); //Guarda o Sys
+  tb.Tag:= Integer(pointer(syn)); //Guarda o Sys
   tb.ImageIndex:=0;
 
   item := TItem.create();
   item.AtribuiNovoNome();
-  syn.Tag:= integer(item);
+  syn.Tag:= integer(pointer(item));
   tb.Caption:= item.Name;
   pgMain.Refresh();
 
@@ -204,13 +213,61 @@ var
    parametros : integer;
    a : integer;
 begin
+  if (FSetMain = nil) then
+  begin
+        FsetMain := TsetMain.create();
+  end;
+  CarregaContexto();
   parametros := Application.ParamCount;
   for a := 1 to parametros-1 do
   begin
       Carregar(Application.Params[a]);
   end;
-
 end;
+
+procedure TfrmMNote.CarregaContexto();
+begin
+  FSetMain.CarregaContexto();
+  Left:= FsetMain.posx;
+  top:= FSetMain.posy;
+  if FSetMain.stay then
+  begin
+    FormStyle:= fsStayOnTop;
+  end
+  else
+  begin
+    FormStyle:= fsNormal;
+  end;
+  if FSetMain.fixar then
+  begin
+    BorderStyle:=bsSingle;
+    //mnFixarClock.Caption:='Fixar Clock';
+  end
+  else
+  begin
+    BorderStyle:=bsNone;
+    //mnFixarClock.Caption:='Mover Clock';
+  end;
+end;
+
+
+procedure TfrmMNote.MnStayClick(Sender: TObject);
+begin
+  if FormStyle = fsNormal then
+  begin
+    FormStyle:= fsStayOnTop;
+    Fsetmain.stay := true;
+
+  end
+  else
+  begin
+    FormStyle:=fsNormal;
+    Fsetmain.stay := false;
+  end;
+  refresh;
+  Fsetmain.SalvaContexto(false);
+end;
+
 
 //Verifica se ha algum fonte sem salvar
 function TfrmMNote.Mudou(): boolean;
@@ -248,6 +305,30 @@ begin
 
    result := resultado;
 end;
+
+procedure TfrmMNote.mnFixarClockClick(Sender: TObject);
+begin
+   if (BorderStyle = bsNone) then
+   begin
+     BorderStyle:=bsSingle;
+     Fsetmain.fixar := true;
+     mnFixar.Caption:='Fixar';
+     self.refresh;
+   end
+   else
+   begin
+     BorderStyle:=bsNone;
+     Fsetmain.fixar := false;
+     mnFixar.Caption:='Mover';
+     //self.hide;
+     //self.show;
+     self.refresh;
+   end;
+   Fsetmain.SalvaContexto(false);
+
+end;
+
+
 
 procedure TfrmMNote.SalvarTudo();
 var
@@ -302,7 +383,15 @@ end;
 
 procedure TfrmMNote.FormDestroy(Sender: TObject);
 begin
+  Fsetmain.posx := Left;
+  Fsetmain.posy := top;
 
+  Fsetmain.SalvaContexto(false);
+  if Fsetmain <> nil then
+  begin
+    Fsetmain.Free();
+    Fsetmain := nil;
+  end;
 end;
 
 procedure TfrmMNote.lstFindChangeBounds(Sender: TObject);
@@ -393,6 +482,27 @@ end;
 procedure TfrmMNote.mnFechar2Click(Sender: TObject);
 begin
   mnFecharClick(sender);
+end;
+
+procedure TfrmMNote.mnFixarClick(Sender: TObject);
+begin
+    if (BorderStyle = bsNone) then
+    begin
+      BorderStyle:=bsSingle;
+      Fsetmain.fixar := true;
+      mnFixar.Caption:='Fixar';
+      self.refresh;
+    end
+    else
+    begin
+      BorderStyle:=bsNone;
+      Fsetmain.fixar := false;
+      mnFixar.Caption:='Mover';
+      //self.hide;
+      //self.show;
+      self.refresh;
+    end;
+    Fsetmain.SalvaContexto(false);
 end;
 
 procedure TfrmMNote.mnLazarusClick(Sender: TObject);
