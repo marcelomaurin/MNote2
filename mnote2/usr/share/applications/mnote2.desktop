@@ -1,10 +1,9 @@
 [Desktop Entry]
 Name=MNote2
 Comment=Easy Editor MNote2
-Icon=mnote2
-Exec=mnote2
+Icon=/home/mmm/MNote2/mnote2/usr/share/icons/hicolor/mnotes.png
+Exec=/usr/bin/mnote2/MNote2
 Terminal=false
 Type=Application
 Categories=Editors
 GenericName=mnote2
-Keywords=

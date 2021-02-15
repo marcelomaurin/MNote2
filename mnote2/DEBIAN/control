@@ -1,5 +1,6 @@
 Package: mnote2
 Version: 2.8
+Depends:  libcanberra-gtk-module , libcanberra-gtk3-module
 Section: custom
 Priority: optional
 Architecture: all
