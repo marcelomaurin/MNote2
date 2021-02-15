@@ -1,0 +1,9 @@
+Package: mnote2
+Version: 2.8
+Section: custom
+Priority: optional
+Architecture: all
+Essential: no
+Installed-Size: 1024
+Maintainer: maurinsoft.com.br
+Description: Easy Graphic multiplataform editor.

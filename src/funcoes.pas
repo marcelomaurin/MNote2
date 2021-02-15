@@ -6,8 +6,17 @@ unit funcoes;
 interface
 
 uses
-windows, Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
-StdCtrls, ExtCtrls, jwaWinBase, UTF8Process, Process;
+Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
+StdCtrls, ExtCtrls, UTF8Process, Process
+{$IFDEF MSWINDOWS}
+windows,
+jwaWinBase
+{$else}
+//LCLType,
+//LCLIntf
+{$ENDIF}
+
+;
 
 
 
@@ -166,9 +175,11 @@ begin
      result := resultado;
 end;
 
+{$IFDEF MSWINDOWS}
 function GetCPU(): double;
 {$PUSH}
 {$CODEALIGN LOCALMIN=8}
+
 var
   IdleTimeRec: TFileTime;
   KernelTimeRec: TFileTime;
@@ -195,11 +206,16 @@ begin
 
      end;
 end;
+{$ENDIF}
 
 //https://forum.lazarus.freepascal.org/index.php?topic=38839.0
 function GetTotalCpuUsagePct(): double;
 begin
+  {$IFDEF MSWINDOWS}
   Result :=  GetCPU();
+  {$else}
+  Result := 0;
+  {$ENDIF}
 end;
 
 function GetProcessorTime : int64;
@@ -270,11 +286,15 @@ begin
     while true do begin
       ReallocMem(perfDataBlock, c1);
       c2 := c1;
+      {$IFDEF MSWINDOWS}
       case RegQueryValueEx(HKEY_PERFORMANCE_DATA, '238', nil, @c3, pointer(perfDataBlock), @c2) of
         ERROR_MORE_DATA : c1 := c1 * 2;
         ERROR_SUCCESS   : break;
         else              exit;
       end;
+      {$else}
+
+      {$endif}
     end;
     perfObjectType := pointer(cardinal(perfDataBlock) + perfDataBlock^.headerLength);
     for i1 := 0 to perfDataBlock^.numObjectTypes - 1 do begin
