@@ -412,7 +412,7 @@ begin
      tb := pgMain.Pages[a];
      syn := TSynEdit(tb.Tag);
      item := TItem(syn.tag);
-     info := info + item.FileExt+'/'+item.FileName+ ' ';
+     info := info + item.FileName+ ' ';
   end;
 
   FSetMain.lastfiles:=info; (*Salva contexto final*)

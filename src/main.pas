@@ -10,7 +10,7 @@ uses
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, item, types, finds, setmain;
 
 
-const versao = '0.8';
+const versao = '2.1';
 
 type
 
