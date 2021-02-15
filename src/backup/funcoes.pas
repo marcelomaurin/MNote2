@@ -6,8 +6,17 @@ unit funcoes;
 interface
 
 uses
-windows, Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
-StdCtrls, ExtCtrls, jwaWinBase, UTF8Process, Process;
+Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
+StdCtrls, ExtCtrls, UTF8Process, Process
+{$IFDEF MSWINDOWS}
+windows,
+jwaWinBase
+{$else}
+//LCLType,
+//LCLIntf
+{$ENDIF}
+
+;
 
 
 
@@ -18,7 +27,6 @@ function GetTotalCpuUsagePct(): double;
 function GetProcessorUsage : integer;
 function GetCPUCount : integer;
 
-function PeganomeMaquina : string;
 function GetGPUTemperature(device : integer): string;
 function GetGPUCount : integer;
 function GetGPUName(device : integer): string;
@@ -127,21 +135,6 @@ begin
      end;
 end;
 
-function PeganomeMaquina : string;
-var
-  SMBios : TSMBios;
-   LSystem: TSystemInformation;
-   UUID   : Array[0..31] of AnsiChar;
-begin
-  SMBios:=TSMBios.Create;
-   try
-     LSystem:=SMBios.SysInfo;
-     result := LSystem.ProductNameStr;
-   finally
-    SMBios.Free;
-   end;
-
-end;
 
 //Retira o bloco de informação
 Function RetiraInfo(Value : string): string;
@@ -182,9 +175,11 @@ begin
      result := resultado;
 end;
 
+{$IFDEF MSWINDOWS}
 function GetCPU(): double;
 {$PUSH}
 {$CODEALIGN LOCALMIN=8}
+
 var
   IdleTimeRec: TFileTime;
   KernelTimeRec: TFileTime;
@@ -211,11 +206,16 @@ begin
 
      end;
 end;
+{$ENDIF}
 
 //https://forum.lazarus.freepascal.org/index.php?topic=38839.0
 function GetTotalCpuUsagePct(): double;
 begin
+  {$IFDEF MSWINDOWS}
   Result :=  GetCPU();
+  {$else}
+  Result := 0;
+  {$ENDIF}
 end;
 
 function GetProcessorTime : int64;
