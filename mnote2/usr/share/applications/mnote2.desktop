@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=MNote2
+Comment=Easy Editor MNote2
+Icon=mnote2
+Exec=mnote2
+Terminal=false
+Type=Application
+Categories=Editors
+GenericName=mnote2
+Keywords=

@@ -1,0 +1,10 @@
+Section: editors
+Priority: optional
+Maintainer: marcelo maurin <marcelomaurinmartins@maurinsoft.com.br>
+Homepage: http://www.maurinsoft.com.br/index.php/projeto-mnote2/
+Package: mnote2
+Architecture: amd64
+Version: 2.8
+Depends:
+Description: Easy Graphic Editor.
+ 
