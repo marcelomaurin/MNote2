@@ -17,6 +17,8 @@ const filename = 'Setmain.cfg';
 type
   { TfrmMenu }
 
+  { TSetMain }
+
   TSetMain = class(TObject)
     constructor create();
     destructor destroy();
@@ -27,12 +29,14 @@ type
         FPosY : integer;
         FFixar : boolean;
         FStay : boolean;
+        FLastFiles : String;
         //filename : String;
         procedure SetDevice(const Value : Boolean);
         procedure SetPOSX(value : integer);
         procedure SetPOSY(value : integer);
         procedure SetFixar(value : boolean);
         procedure SetStay(value : boolean);
+        procedure SetLastFiles(value : string);
         procedure Default();
   public
         procedure SalvaContexto(flag : boolean);
@@ -43,6 +47,7 @@ type
         property posy : integer read FPosY write SetPOSY;
         property fixar : boolean read FFixar write SetFixar;
         property stay : boolean read FStay write SetStay;
+        property lastfiles: string read FLastFiles write SetLastFiles;
   end;
 
   var
@@ -51,41 +56,46 @@ type
 
 implementation
 
-procedure TSetmain.SetDevice(const Value : Boolean);
+procedure TSetMain.SetDevice(const Value: Boolean);
 begin
   ckdevice := Value;
 end;
 
 
 //Valores default do codigo
-procedure TSetmain.Default();
+procedure TSetMain.Default();
 begin
     ckdevice := false;
     fixar:=false;
     stay:=false;
 end;
 
-procedure TSetmain.SetPOSX(value : integer);
+procedure TSetMain.SetPOSX(value: integer);
 begin
     Fposx := value;
 end;
 
-procedure TSetmain.SetPOSY(value : integer);
+procedure TSetMain.SetPOSY(value: integer);
 begin
     FposY := value;
 end;
 
-procedure TSetmain.SetFixar(value : boolean);
+procedure TSetMain.SetFixar(value: boolean);
 begin
     FFixar := value;
 end;
 
-procedure TSetmain.SetStay(value : boolean);
+procedure TSetMain.SetStay(value: boolean);
 begin
     FStay := value;
 end;
 
-Procedure TSetmain.CarregaContexto();
+procedure TSetMain.SetLastFiles(value: string);
+begin
+  FLastFiles:= value;
+end;
+
+procedure TSetMain.CarregaContexto();
 var
   posicao: integer;
 begin
@@ -109,11 +119,15 @@ begin
     begin
       FStay := strtoBool(RetiraInfo(arquivo.Strings[posicao]));
     end;
+    if  BuscaChave(arquivo,'LASTFILES:',posicao) then
+    begin
+      FLastFiles := RetiraInfo(arquivo.Strings[posicao]);
+    end;
 
 end;
 
 
-procedure TSetmain.IdentificaArquivo(flag : boolean);
+procedure TSetMain.IdentificaArquivo(flag: boolean);
 begin
   //filename := 'Work'+ FormatDateTime('ddmmyy',now())+'.cfg';
 
@@ -131,7 +145,7 @@ begin
 end;
 
 //Metodo construtor
-Constructor TSetmain.create();
+constructor TSetMain.create();
 begin
     arquivo := TStringList.create();
     IdentificaArquivo(true);
@@ -139,7 +153,7 @@ begin
 end;
 
 
-procedure TSetmain.SalvaContexto(flag : boolean);
+procedure TSetMain.SalvaContexto(flag: boolean);
 begin
   if (flag) then
   begin
@@ -152,11 +166,12 @@ begin
   arquivo.Append('POSY:'+inttostr(FPOSY));
   arquivo.Append('FIXAR:'+booltostr(FFixar));
   arquivo.Append('STAY:'+booltostr(FStay));
+  arquivo.Append('LASTFILES:'+FLastFiles);
 
   arquivo.SaveToFile(filename);
 end;
 
-destructor TSetmain.destroy();
+destructor TSetMain.destroy();
 begin
   SalvaContexto(true);
   arquivo.free;

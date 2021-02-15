@@ -27,6 +27,7 @@ type
     MenuItem10: TMenuItem;
     btNovo: TMenuItem;
     MenuItem2: TMenuItem;
+    MenuItem4: TMenuItem;
     mnFixar: TMenuItem;
     mnStay: TMenuItem;
     mnLazarus: TMenuItem;
@@ -71,6 +72,7 @@ type
     procedure MenuItem10Click(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
+    procedure MenuItem4Click(Sender: TObject);
     procedure mnCClick(Sender: TObject);
     procedure mnFechar2Click(Sender: TObject);
     procedure mnFixarClick(Sender: TObject);
@@ -88,7 +90,6 @@ type
     procedure mnCarregarClick(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure mnStayClick(Sender: TObject);
-    procedure mnFixarClockClick(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
     procedure Panel1Click(Sender: TObject);
     procedure pnBottonClick(Sender: TObject);
@@ -115,6 +116,7 @@ type
     procedure SalvarTudo();
     procedure Pesquisar(Sender: TObject);
     procedure CarregaContexto();
+    procedure AssociarExtensao(Aba: TSynEdit);
 
   public
     { public declarations }
@@ -167,6 +169,7 @@ begin
   syn.Tag:= integer(pointer(item));
   tb.Caption:= item.Name;
   pgMain.Refresh();
+  AssociarExtensao(syn);
 
 end;
 
@@ -174,11 +177,7 @@ procedure TfrmMNote.CarregarArquivo();
 begin
   if OpenDialog1.execute then
   begin
-
     Carregar(OpenDialog1.FileName);
-
-
-
   end;
 end;
 
@@ -211,8 +210,12 @@ end;
 procedure TfrmMNote.FormCreate(Sender: TObject);
 var
    parametros : integer;
+   strparametros : string;
    a : integer;
+   lista : TStringlist;
+   info : string;
 begin
+  lista := TStringList.create;
   if (FSetMain = nil) then
   begin
         FsetMain := TsetMain.create();
@@ -223,6 +226,16 @@ begin
   begin
       Carregar(Application.Params[a]);
   end;
+  strparametros := FsetMain.lastfiles;
+  lista.delimiter := ' ';
+  lista.DelimitedText :=  strparametros;
+  for a  := 0 to lista.Count-1 do
+  begin
+     info :=lista[a];
+     if FileExists(info) then
+         Carregar(info);
+  end;
+
 end;
 
 procedure TfrmMNote.CarregaContexto();
@@ -233,36 +246,44 @@ begin
   if FSetMain.stay then
   begin
     FormStyle:= fsStayOnTop;
+    mnStay.Caption:='Normal';
   end
   else
   begin
     FormStyle:= fsNormal;
+    mnStay.Caption:='On Top';
   end;
   if FSetMain.fixar then
   begin
     BorderStyle:=bsSingle;
-    //mnFixarClock.Caption:='Fixar Clock';
+    mnFixar.Caption:='Fixar';
   end
   else
   begin
     BorderStyle:=bsNone;
-    //mnFixarClock.Caption:='Mover Clock';
+    mnFixar.Caption:='Mover';
   end;
 end;
 
+procedure TfrmMNote.AssociarExtensao(Aba: TSynEdit);
+begin
 
-procedure TfrmMNote.MnStayClick(Sender: TObject);
+end;
+
+
+procedure TfrmMNote.mnStayClick(Sender: TObject);
 begin
   if FormStyle = fsNormal then
   begin
     FormStyle:= fsStayOnTop;
     Fsetmain.stay := true;
-
+    mnStay.Caption:='Normal';
   end
   else
   begin
     FormStyle:=fsNormal;
     Fsetmain.stay := false;
+    mnStay.Caption:='On Top';
   end;
   refresh;
   Fsetmain.SalvaContexto(false);
@@ -306,27 +327,7 @@ begin
    result := resultado;
 end;
 
-procedure TfrmMNote.mnFixarClockClick(Sender: TObject);
-begin
-   if (BorderStyle = bsNone) then
-   begin
-     BorderStyle:=bsSingle;
-     Fsetmain.fixar := true;
-     mnFixar.Caption:='Fixar';
-     self.refresh;
-   end
-   else
-   begin
-     BorderStyle:=bsNone;
-     Fsetmain.fixar := false;
-     mnFixar.Caption:='Mover';
-     //self.hide;
-     //self.show;
-     self.refresh;
-   end;
-   Fsetmain.SalvaContexto(false);
 
-end;
 
 
 
@@ -382,9 +383,39 @@ begin
 end;
 
 procedure TfrmMNote.FormDestroy(Sender: TObject);
+var
+   info : string;
+   syn : TSynEdit;
+   tb : TTabSheet;
+   item : TItem;
+   a: integer;
 begin
   Fsetmain.posx := Left;
   Fsetmain.posy := top;
+
+  (*
+  syn := TSynEdit.Create(tb);
+  syn.Parent := tb;
+  syn.Align:= alClient;
+  syn.Lines.Clear;
+  syn.PopupMenu := popSysEdit;
+  syn.OnChange:= @synChange;
+  tb.PopupMenu := popFechar;
+  tb.Tag:= Integer(pointer(syn)); //Guarda o Sys
+  tb.ImageIndex:=0;
+  *)
+
+  //Salva arquivos abertos
+  info := '';
+  for a:= 0 to pgMain.PageCount-1 do
+  begin
+     tb := pgMain.Pages[a];
+     syn := TSynEdit(tb.Tag);
+     item := TItem(syn.tag);
+     info := info + item.FileExt+'/'+item.FileName+ ' ';
+  end;
+
+  FSetMain.lastfiles:=info; (*Salva contexto final*)
 
   Fsetmain.SalvaContexto(false);
   if Fsetmain <> nil then
@@ -462,6 +493,12 @@ end;
 procedure TfrmMNote.MenuItem2Click(Sender: TObject);
 begin
    pnBotton.Visible:=false;
+end;
+
+procedure TfrmMNote.MenuItem4Click(Sender: TObject);
+begin
+  frmMNote.Top := (Screen.DesktopHeight - frmMNote.Height) DIV 2;
+  frmMNote.Left := (Screen.DesktopWidth - frmMNote.Width) DIV 2;
 end;
 
 procedure TfrmMNote.mnCClick(Sender: TObject);

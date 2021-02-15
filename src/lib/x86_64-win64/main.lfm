@@ -1,8 +1,9 @@
 object frmMNote: TfrmMNote
-  Left = 248
+  Left = 492
   Height = 394
-  Top = 164
+  Top = 168
   Width = 538
+  BorderStyle = bsDialog
   Caption = 'MNote2 - Notepad do Maurin'
   ClientHeight = 374
   ClientWidth = 538
@@ -833,8 +834,12 @@ object frmMNote: TfrmMNote
       OnClick = mnFixarClick
     end
     object mnStay: TMenuItem
-      Caption = 'Mover'
+      Caption = 'On Top'
       OnClick = mnStayClick
+    end
+    object MenuItem4: TMenuItem
+      Caption = 'Desktop Center'
+      OnClick = MenuItem4Click
     end
   end
 end
