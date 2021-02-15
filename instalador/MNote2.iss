@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "MNote2"
-#define MyAppVersion "2.1"
+#define MyAppVersion "2.8"
 #define MyAppPublisher "Maurinsoft"
 #define MyAppURL "http://maurinsoft.com.br"
 #define MyAppExeName "MNote2.exe"
@@ -11,6 +11,8 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
+PrivilegesRequired=admin
+
 AppId={{5D8E2FD0-2823-4697-B0CE-7623F3C4ECF6}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
@@ -35,7 +37,7 @@ Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortugue
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "d:\projetos\maurinsoft\MNote2\MNote2.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "d:\projetos\maurinsoft\MNote2\src\MNote2.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
