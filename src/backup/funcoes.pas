@@ -8,7 +8,7 @@ interface
 uses
 Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
 StdCtrls, ExtCtrls, UTF8Process, Process
-{$IFDEF MSWINDOWS}
+{$IFDEF WINDOWS}
 windows,
 jwaWinBase
 {$else}
@@ -286,11 +286,15 @@ begin
     while true do begin
       ReallocMem(perfDataBlock, c1);
       c2 := c1;
+      {$IFDEF MSWINDOWS}
       case RegQueryValueEx(HKEY_PERFORMANCE_DATA, '238', nil, @c3, pointer(perfDataBlock), @c2) of
         ERROR_MORE_DATA : c1 := c1 * 2;
         ERROR_SUCCESS   : break;
         else              exit;
       end;
+      {$else}
+
+      {$endif}
     end;
     perfObjectType := pointer(cardinal(perfDataBlock) + perfDataBlock^.headerLength);
     for i1 := 0 to perfDataBlock^.numObjectTypes - 1 do begin

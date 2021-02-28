@@ -9,8 +9,7 @@ uses
 Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
 StdCtrls, ExtCtrls, UTF8Process, Process
 {$IFDEF MSWINDOWS}
-windows,
-jwaWinBase
+,windows, jwaWinBase
 {$else}
 //LCLType,
 //LCLIntf

@@ -416,7 +416,7 @@ begin
         zmycon.HostName := FSetBanco.HostName; //edHostName.Text;
         zmycon.User:= FSetBanco.User; //edusuario.text;
         zmycon.Password:= FSetBanco.Password;//edPasswrd.Text;
-        zmycon.
+        //zmycon.
         {$IFDEF WINDOWS}
         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
         {$ENDIF}
