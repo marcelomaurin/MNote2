@@ -7,10 +7,11 @@ interface
 uses
   Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, SynHighlighterPo,
   SynHighlighterPas, SynHighlighterCpp, Forms, Controls, Graphics, Dialogs,
-  Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, item, types, finds, setmain;
+  Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, item, types, finds, setmain,
+  mquery;
 
 
-const versao = '2.1';
+const versao = '2.9';
 
 type
 
@@ -26,8 +27,18 @@ type
     MenuItem1: TMenuItem;
     MenuItem10: TMenuItem;
     btNovo: TMenuItem;
-    MenuItem2: TMenuItem;
+    MenuItem11: TMenuItem;
+    MenuItem12: TMenuItem;
+    MenuItem13: TMenuItem;
     MenuItem4: TMenuItem;
+    mnFixW: TMenuItem;
+    mnOnTopW: TMenuItem;
+    mnDesktopCenterW: TMenuItem;
+    MenuItem2: TMenuItem;
+    mnDesktopCenter: TMenuItem;
+    MenuItem5: TMenuItem;
+    MenuItem7: TMenuItem;
+    MenuItem8: TMenuItem;
     mnFixar: TMenuItem;
     mnStay: TMenuItem;
     mnLazarus: TMenuItem;
@@ -70,9 +81,14 @@ type
     procedure lstFindDblClick(Sender: TObject);
     procedure lstFindSelectionChange(Sender: TObject; User: boolean);
     procedure MenuItem10Click(Sender: TObject);
+    procedure MenuItem12Click(Sender: TObject);
+    procedure MenuItem4Click(Sender: TObject);
+    procedure mnFixWClick(Sender: TObject);
+    procedure mnOnTopWClick(Sender: TObject);
+    procedure mnDesktopCenterWClick(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
-    procedure MenuItem4Click(Sender: TObject);
+    procedure mnDesktopCenterClick(Sender: TObject);
     procedure mnCClick(Sender: TObject);
     procedure mnFechar2Click(Sender: TObject);
     procedure mnFixarClick(Sender: TObject);
@@ -247,21 +263,25 @@ begin
   begin
     FormStyle:= fsStayOnTop;
     mnStay.Caption:='Normal';
+    mnOnTopW.Caption:='Normal';
   end
   else
   begin
     FormStyle:= fsNormal;
     mnStay.Caption:='On Top';
+    mnOnTopW.Caption:='On Top';
   end;
   if FSetMain.fixar then
   begin
     BorderStyle:=bsSingle;
-    mnFixar.Caption:='Fixar';
+    mnFixar.Caption:='Fix';
+    mnFixW.Caption:='Fix';
   end
   else
   begin
     BorderStyle:=bsNone;
-    mnFixar.Caption:='Mover';
+    mnFixar.Caption:= 'Move';
+    mnFixW.caption := 'Move' ;
   end;
 end;
 
@@ -278,12 +298,14 @@ begin
     FormStyle:= fsStayOnTop;
     Fsetmain.stay := true;
     mnStay.Caption:='Normal';
+    mnOnTopW.Caption:='Normal';
   end
   else
   begin
     FormStyle:=fsNormal;
     Fsetmain.stay := false;
     mnStay.Caption:='On Top';
+    mnOnTopW.Caption:='On Top';
   end;
   refresh;
   Fsetmain.SalvaContexto(false);
@@ -393,17 +415,11 @@ begin
   Fsetmain.posx := Left;
   Fsetmain.posy := top;
 
-  (*
-  syn := TSynEdit.Create(tb);
-  syn.Parent := tb;
-  syn.Align:= alClient;
-  syn.Lines.Clear;
-  syn.PopupMenu := popSysEdit;
-  syn.OnChange:= @synChange;
-  tb.PopupMenu := popFechar;
-  tb.Tag:= Integer(pointer(syn)); //Guarda o Sys
-  tb.ImageIndex:=0;
-  *)
+  if (frmMQuery <> nil) then
+  begin
+    frmMQuery.Destroy;
+    frmmquery := nil;
+  end;
 
   //Salva arquivos abertos
   info := '';
@@ -485,6 +501,35 @@ begin
   frmSobre := nil;
 end;
 
+procedure TfrmMNote.MenuItem12Click(Sender: TObject);
+begin
+
+end;
+
+procedure TfrmMNote.MenuItem4Click(Sender: TObject);
+begin
+  if frmmquery = nil then
+  begin
+    frmmquery := TFrmMQuery.create(self);
+  end;
+  frmmquery.show();
+end;
+
+procedure TfrmMNote.mnFixWClick(Sender: TObject);
+begin
+  mnFixarClick(self);
+end;
+
+procedure TfrmMNote.mnOnTopWClick(Sender: TObject);
+begin
+  mnStayClick(self);
+end;
+
+procedure TfrmMNote.mnDesktopCenterWClick(Sender: TObject);
+begin
+  mnDesktopCenterClick(self);
+end;
+
 procedure TfrmMNote.MenuItem1Click(Sender: TObject);
 begin
 
@@ -495,7 +540,7 @@ begin
    pnBotton.Visible:=false;
 end;
 
-procedure TfrmMNote.MenuItem4Click(Sender: TObject);
+procedure TfrmMNote.mnDesktopCenterClick(Sender: TObject);
 begin
   frmMNote.Top := (Screen.DesktopHeight - frmMNote.Height) DIV 2;
   frmMNote.Left := (Screen.DesktopWidth - frmMNote.Width) DIV 2;
@@ -527,14 +572,16 @@ begin
     begin
       BorderStyle:=bsSingle;
       Fsetmain.fixar := true;
-      mnFixar.Caption:='Fixar';
+      mnFixar.Caption:='Fix';
+      mnFixW.caption := 'Fix';
       self.refresh;
     end
     else
     begin
       BorderStyle:=bsNone;
       Fsetmain.fixar := false;
-      mnFixar.Caption:='Mover';
+      mnFixar.Caption:='Move';
+      mnFixW.caption := 'Move';
       //self.hide;
       //self.show;
       self.refresh;

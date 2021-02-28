@@ -68,43 +68,43 @@ object frmMNote: TfrmMNote
     OnClick = pntvClick
   end
   object MainMenu1: TMainMenu
-    Left = 40
+    Left = 32
     Top = 8
     object MenuItem1: TMenuItem
-      Caption = 'Arquivos'
+      Caption = 'File'
       OnClick = MenuItem1Click
       object btNovo: TMenuItem
-        Caption = 'Novo'
+        Caption = 'New'
         OnClick = btNovoClick
       end
       object mnCarregar: TMenuItem
-        Caption = 'Carregar'
+        Caption = 'Load'
         OnClick = mnCarregarClick
       end
       object mnSalvar: TMenuItem
-        Caption = 'Salvar'
+        Caption = 'Save'
         OnClick = mnSalvarClick
       end
       object mnSalvarComo: TMenuItem
-        Caption = 'Salvar como'
+        Caption = 'Save as'
         OnClick = mnSalvarComoClick
       end
       object MenuItem6: TMenuItem
-        Caption = 'Sair'
+        Caption = 'Exit'
         OnClick = MenuItem6Click
       end
     end
     object MenuItem3: TMenuItem
-      Caption = 'Pesquisar'
+      Caption = 'Search'
       OnClick = MenuItem3Click
       object mnPesqItem: TMenuItem
-        Caption = 'Item'
+        Caption = 'Find'
         ShortCut = 16454
         ShortCutKey2 = 114
         OnClick = mnPesqItemClick
       end
       object MenuItem9: TMenuItem
-        Caption = 'Substituir'
+        Caption = 'Replace'
         OnClick = MenuItem9Click
       end
     end
@@ -112,15 +112,50 @@ object frmMNote: TfrmMNote
       Caption = 'Scripts'
       OnClick = mnScriptClick
     end
+    object MenuItem12: TMenuItem
+      Caption = 'Tools'
+      OnClick = MenuItem12Click
+      object MenuItem4: TMenuItem
+        Caption = 'MQuery'
+        OnClick = MenuItem4Click
+      end
+    end
     object mnSetup: TMenuItem
       Caption = 'Setup'
       object mnfont: TMenuItem
         Caption = 'Fonts'
         OnClick = mnfontClick
       end
+      object MenuItem5: TMenuItem
+        Caption = 'Language'
+        object MenuItem7: TMenuItem
+          Caption = 'Portuguese'
+        end
+        object MenuItem8: TMenuItem
+          Caption = 'English'
+        end
+        object MenuItem11: TMenuItem
+          Caption = 'Spanish'
+        end
+      end
+    end
+    object MenuItem13: TMenuItem
+      Caption = 'Windows'
+      object mnFixW: TMenuItem
+        Caption = 'Fix'
+        OnClick = mnFixWClick
+      end
+      object mnOnTopW: TMenuItem
+        Caption = 'On Top'
+        OnClick = mnOnTopWClick
+      end
+      object mnDesktopCenterW: TMenuItem
+        Caption = 'Desktop Center'
+        OnClick = mnDesktopCenterWClick
+      end
     end
     object MenuItem10: TMenuItem
-      Caption = 'Sobre'
+      Caption = 'About'
       OnClick = MenuItem10Click
     end
   end
@@ -830,16 +865,16 @@ object frmMNote: TfrmMNote
     Left = 424
     Top = 152
     object mnFixar: TMenuItem
-      Caption = 'Fixar'
+      Caption = 'Fix'
       OnClick = mnFixarClick
     end
     object mnStay: TMenuItem
       Caption = 'On Top'
       OnClick = mnStayClick
     end
-    object MenuItem4: TMenuItem
+    object mnDesktopCenter: TMenuItem
       Caption = 'Desktop Center'
-      OnClick = MenuItem4Click
+      OnClick = mnDesktopCenterClick
     end
   end
 end
