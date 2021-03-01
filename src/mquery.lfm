@@ -1,16 +1,16 @@
 object frmMQuery: TfrmMQuery
   Left = 337
   Height = 487
-  Top = 117
+  Top = 116
   Width = 747
   Align = alRight
   Caption = 'MQuery'
-  ClientHeight = 467
+  ClientHeight = 487
   ClientWidth = 747
   Menu = MainMenu1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '2.0.10.0'
+  LCLVersion = '2.0.0.4'
   object Panel1: TPanel
     Left = 0
     Height = 56
@@ -22,7 +22,7 @@ object frmMQuery: TfrmMQuery
   object Panel2: TPanel
     Left = 0
     Height = 50
-    Top = 417
+    Top = 437
     Width = 747
     Align = alBottom
     TabOrder = 1
@@ -31,33 +31,33 @@ object frmMQuery: TfrmMQuery
     Cursor = crVSplit
     Left = 0
     Height = 5
-    Top = 412
+    Top = 432
     Width = 747
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object Splitter2: TSplitter
     Left = 0
-    Height = 356
+    Height = 376
     Top = 56
     Width = 5
   end
   object Panel3: TPanel
     Left = 5
-    Height = 356
+    Height = 376
     Top = 56
     Width = 742
     Align = alClient
-    ClientHeight = 356
+    ClientHeight = 376
     ClientWidth = 742
     TabOrder = 4
     object Panel4: TPanel
       Left = 1
-      Height = 354
+      Height = 374
       Top = 1
       Width = 170
       Align = alLeft
-      ClientHeight = 354
+      ClientHeight = 374
       ClientWidth = 170
       TabOrder = 0
       object Panel5: TPanel
@@ -71,7 +71,7 @@ object frmMQuery: TfrmMQuery
         TabOrder = 0
         object edSearch: TEdit
           Left = 2
-          Height = 23
+          Height = 22
           Top = 4
           Width = 160
           TabOrder = 0
@@ -79,16 +79,16 @@ object frmMQuery: TfrmMQuery
       end
       object Panel6: TPanel
         Left = 1
-        Height = 321
+        Height = 341
         Top = 32
         Width = 168
         Align = alClient
-        ClientHeight = 321
+        ClientHeight = 341
         ClientWidth = 168
         TabOrder = 1
         object tvBanco: TTreeView
           Left = 1
-          Height = 319
+          Height = 339
           Top = 1
           Width = 166
           Align = alClient
@@ -98,13 +98,13 @@ object frmMQuery: TfrmMQuery
     end
     object Splitter3: TSplitter
       Left = 171
-      Height = 354
+      Height = 374
       Top = 1
       Width = 5
     end
     object PageControl1: TPageControl
       Left = 176
-      Height = 354
+      Height = 374
       Top = 1
       Width = 565
       ActivePage = TabSheet1
@@ -113,16 +113,16 @@ object frmMQuery: TfrmMQuery
       TabOrder = 2
       object TabSheet1: TTabSheet
         Caption = 'tbModelo'
-        ClientHeight = 326
-        ClientWidth = 557
+        ClientHeight = 335
+        ClientWidth = 559
         object Panel7: TPanel
           Left = 0
           Height = 104
-          Top = 222
-          Width = 557
+          Top = 231
+          Width = 559
           Align = alBottom
           ClientHeight = 104
-          ClientWidth = 557
+          ClientWidth = 559
           TabOrder = 0
           object DBNavigator1: TDBNavigator
             Left = 8
@@ -145,7 +145,7 @@ object frmMQuery: TfrmMQuery
             Left = 1
             Height = 71
             Top = 32
-            Width = 555
+            Width = 557
             Align = alBottom
             Color = clWindow
             Columns = <>
@@ -156,25 +156,25 @@ object frmMQuery: TfrmMQuery
           Cursor = crVSplit
           Left = 0
           Height = 5
-          Top = 217
-          Width = 557
+          Top = 226
+          Width = 559
           Align = alBottom
           ResizeAnchor = akBottom
         end
         object Panel8: TPanel
           Left = 0
-          Height = 217
+          Height = 226
           Top = 0
-          Width = 557
+          Width = 559
           Align = alClient
-          ClientHeight = 217
-          ClientWidth = 557
+          ClientHeight = 226
+          ClientWidth = 559
           TabOrder = 2
           inline SynEdit1: TSynEdit
             Left = 1
-            Height = 215
+            Height = 224
             Top = 1
-            Width = 555
+            Width = 557
             Align = alClient
             Font.Height = -13
             Font.Name = 'Courier New'
@@ -675,8 +675,8 @@ object frmMQuery: TfrmMQuery
     end
   end
   object MainMenu1: TMainMenu
-    Left = 15
-    Top = 23
+    left = 15
+    top = 23
     object MenuItem1: TMenuItem
       Caption = 'Database'
       object MenuItem2: TMenuItem
@@ -731,52 +731,50 @@ object frmMQuery: TfrmMQuery
     DefaultFilter = 'SQL Files (*.sql)|*.sql'
     Enabled = False
     SQLDialect = sqlMySQL
-    Left = 444
-    Top = 109
+    left = 444
+    top = 109
   end
   object zmycon: TZConnection
     ControlsCodePage = cCP_UTF8
-    AutoEncodeStrings = True
     Properties.Strings = (
       'AutoEncodeStrings=ON'
     )
     Port = 0
     Protocol = 'mysql'
-    Left = 232
-    Top = 32
+    left = 232
+    top = 32
   end
   object zpostcon: TZConnection
     ControlsCodePage = cCP_UTF8
-    AutoEncodeStrings = True
     Properties.Strings = (
       'AutoEncodeStrings=ON'
     )
     Port = 0
     Protocol = 'postgresql'
-    Left = 317
-    Top = 33
+    left = 317
+    top = 33
   end
   object zmyqry: TZQuery
     Connection = zmycon
     Params = <>
-    Left = 232
-    Top = 88
+    left = 232
+    top = 88
   end
   object zpostqry: TZQuery
     Connection = zpostcon
     Params = <>
-    Left = 320
-    Top = 90
+    left = 320
+    top = 90
   end
   object zmyqry1: TZReadOnlyQuery
     Params = <>
-    Left = 242
-    Top = 177
+    left = 242
+    top = 177
   end
   object zpostqry1: TZReadOnlyQuery
     Connection = zpostcon
     Params = <>
-    Left = 317
-    Top = 177
+    left = 317
+    top = 177
   end
 end

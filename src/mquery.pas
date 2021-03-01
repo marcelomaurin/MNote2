@@ -420,6 +420,9 @@ begin
         {$IFDEF WINDOWS}
         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
         {$ENDIF}
+        {$IFDEF DARWIN}
+         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
+        {$ENDIF}
         zmycon.Connect;
         if zmycon.Connected then
         begin
