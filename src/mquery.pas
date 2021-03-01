@@ -39,13 +39,9 @@ type
     Panel5: TPanel;
     Panel6: TPanel;
     Panel7: TPanel;
-    Panel8: TPanel;
     Splitter1: TSplitter;
     Splitter2: TSplitter;
     Splitter3: TSplitter;
-    Splitter4: TSplitter;
-    SynEdit1: TSynEdit;
-    SynSQLSyn1: TSynSQLSyn;
     TabSheet1: TTabSheet;
     tvBanco: TTreeView;
     zpostcon: TZConnection;
@@ -64,6 +60,7 @@ type
     procedure mnitemNewClick(Sender: TObject);
     procedure mnStayClick(Sender: TObject);
     procedure mnFixarClick(Sender: TObject);
+    procedure Panel8Click(Sender: TObject);
   private
     posicaofields : TTreeNode;
     tvitem : TTreeNode;
@@ -90,7 +87,8 @@ type
     procedure CarregaDB();
     procedure AtualizaConexoesDB();
   public
-
+    function getdatabasetype : TypeDatabase;
+    function GetTables() : TStringlist;
   end;
 
 var
@@ -99,6 +97,46 @@ var
 implementation
 
 {$R *.lfm}
+
+function Tfrmmquery.GetTables() : TStringlist;
+var
+  LLista : TStringlist;
+begin
+  LLista := TStringlist.create;
+  if FSetBanco <> nil then
+  begin
+       //pnlProgresso.Visible:= true;
+       zmyqry.sql.text :=   'select * from information_schema.tables '+
+       ' where table_schema = "'+ FSetBanco.Databasename +'"'+
+       'order by table_name';
+       zmyqry.open;
+       zmyqry.First;
+       while not zmyqry.EOF do
+       begin
+            if zmyqry.FieldByName('TABLE_SCHEMA').asstring = FSetBanco.Databasename then
+            begin
+                 LLista.Append(zmyqry.FieldByName('table_name').asstring);
+
+            end;
+            zmyqry.Next;
+       end;
+  end;
+  result:= LLista;
+end;
+
+function Tfrmmquery.getdatabasetype : TypeDatabase;
+begin
+  if FSetBanco <> nil then
+  begin
+   result := FSetBanco.TipoBanco;
+
+  end
+  else
+  begin
+   result := DBUndefinid;
+  end;
+end;
+
 function Tfrmmquery.TipoConv(Tabela : TTabela; Posicao: integer): String;
 var
   output : string;
@@ -232,9 +270,11 @@ var
   banco : string;
 begin
   zmyqry.close;
-  banco := '';
+  banco :=  FSetBanco.Databasename;
   //pnlProgresso.Visible:= true;
-  zmyqry.sql.text :=   'select * from information_schema.tables order by table_name';
+  zmyqry.sql.text :=   'select * from information_schema.tables '+
+       ' where table_schema = "'+ banco +'"'+
+       'order by table_name';
   zmyqry.open;
   zmyqry.First;
   //pgbar.Max:= zmyqry.RecordCount;
@@ -242,7 +282,7 @@ begin
   posicaofields.DeleteChildren;
   while not zmyqry.EOF do
   begin
-     if zmyqry.FieldByName('table_schema').asstring = Banco then
+     if zmyqry.FieldByName('TABLE_SCHEMA').asstring = Banco then
      begin
        TabelaNome := zmyqry.FieldByName('table_name').asstring;
        Tabela := TTabela.create(zmyqry1,TabelaNome, DBMysql);
@@ -275,9 +315,11 @@ begin
      end;
      zmyqry.next;
      //pgbar.Position:=pgbar.Position+1;
-     Application.ProcessMessages;
+
   end;
   //pnlProgresso.Visible:= false;
+  tvBanco.refresh;
+  Application.ProcessMessages;
   tvBanco.FullExpand;
 end;
 
@@ -370,6 +412,9 @@ end;
 
 procedure TfrmMQuery.mnitemNewClick(Sender: TObject);
 begin
+  tvBanco.items.clear;
+  zmycon.Connected:=false;
+  zpostcon.connected := false;
   if FSetBanco = nil then
   begin
      FSetBanco := TSetBanco.create(0);
@@ -409,18 +454,22 @@ var
   ltvitem : TTreeNode;
 begin
    try
-        tvBanco.items.clear;
-        ltvitem := TTreeNode.Create(tvBanco.items);
-        posicaofields := tvBanco.Items.AddChildObject(tvitem, 'Tabelas', pointer(ETDTabelas));
-        posicaoView := tvBanco.Items.AddChildObject(tvitem, 'Views', pointer(ETDViews));
-        posicaoProcedure := tvBanco.Items.AddChildObject(tvitem, 'Procedure', pointer(ETDProcedure));
-        posicaoFunction := tvBanco.Items.AddChildObject(tvitem, 'Functions', pointer(ETDFunctions));
+        //tvBanco.items.clear;
+
         zmycon.Disconnect;
         zmycon.HostName := FSetBanco.HostName; //edHostName.Text;
         zmycon.User:= FSetBanco.User; //edusuario.text;
-        zmycon.Password:= FSetBanco.Password;//edPasswrd.Text;
-        //zmycon.
-
+        zmycon.Catalog:= FSetBanco.Databasename;
+        if FSetBanco.Password = '' then
+        begin
+           zmycon.LoginPrompt:=true;
+        end
+        else
+        begin
+           zmycon.LoginPrompt:=false;
+           zmycon.Password:= FSetBanco.Password;//edPasswrd.Text;
+        end;
+        zmycon.port := 3306;
         {$IFDEF WINDOWS}
         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
         {$ENDIF}
@@ -433,9 +482,15 @@ begin
         zmycon.Connect;
         if zmycon.Connected then
         begin
-          ListarTabelasMy();
+           ltvitem := TTreeNode.Create(tvBanco.items);
+           posicaofields := tvBanco.Items.AddChildObject(tvitem, 'Tabelas', pointer(ETDTabelas));
+           posicaoView := tvBanco.Items.AddChildObject(tvitem, 'Views', pointer(ETDViews));
+           posicaoProcedure := tvBanco.Items.AddChildObject(tvitem, 'Procedure', pointer(ETDProcedure));
+           posicaoFunction := tvBanco.Items.AddChildObject(tvitem, 'Functions', pointer(ETDFunctions));
+           ListarTabelasMy();
         end;
-    finally
+    except
+      showmessage('Erro ao tentar conectar no banco de dados!');
     end;
 end;
 
@@ -445,15 +500,19 @@ var
 begin
    try
         tvBanco.items.clear;
-        ltvitem := TTreeNode.Create(tvBanco.items);
-        posicaofields := tvBanco.Items.AddChildObject(ltvitem, 'Tabelas', pointer(ETDTabelas));
-        posicaoView := tvBanco.Items.AddChildObject(ltvitem, 'Views', pointer(ETDViews));
-        posicaoProcedure := tvBanco.Items.AddChildObject(ltvitem, 'Procedure', pointer(ETDProcedure));
-        posicaoFunction := tvBanco.Items.AddChildObject(ltvitem, 'Functions', pointer(ETDFunctions));
+
         zpostcon.Disconnect;
         zpostcon.HostName := FSetBanco.HostName; //edHostName.Text;
         zpostcon.User:= FSetBanco.User; //edusuario.text;
-        zpostcon.Password:= FSetBanco.Password;//edPasswrd.Text;
+        if FSetBanco.Password = '' then
+        begin
+             zpostcon.LoginPrompt:=true;
+        end
+        else
+        begin
+             zpostcon.LoginPrompt:=false;
+             zpostcon.Password:= FSetBanco.Password;//edPasswrd.Text;
+        end;
         //zmycon.
 
         {$IFDEF WINDOWS}
@@ -466,9 +525,14 @@ begin
          zpostcon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
         {$ENDIF}
         zpostcon.Connect;
-        if zmycon.Connected then
+        if zpostcon.Connected then
         begin
-          ListarTabelasPost();
+             ltvitem := TTreeNode.Create(tvBanco.items);
+             posicaofields := tvBanco.Items.AddChildObject(ltvitem, 'Tabelas', pointer(ETDTabelas));
+             posicaoView := tvBanco.Items.AddChildObject(ltvitem, 'Views', pointer(ETDViews));
+             posicaoProcedure := tvBanco.Items.AddChildObject(ltvitem, 'Procedure', pointer(ETDProcedure));
+             posicaoFunction := tvBanco.Items.AddChildObject(ltvitem, 'Functions', pointer(ETDFunctions));
+             ListarTabelasPost();
         end;
     finally
     end;
@@ -513,6 +577,11 @@ begin
       self.refresh;
     end;
     Fsetmquery.SalvaContexto(false);
+
+end;
+
+procedure TfrmMQuery.Panel8Click(Sender: TObject);
+begin
 
 end;
 

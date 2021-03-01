@@ -256,6 +256,10 @@ object frmMNote: TfrmMNote
         Caption = 'C/C++'
         OnClick = mnCClick
       end
+      object MenuItem14: TMenuItem
+        Caption = 'SQL'
+        OnClick = MenuItem14Click
+      end
     end
     object mnFechar2: TMenuItem
       Caption = 'Fechar'
@@ -876,5 +880,12 @@ object frmMNote: TfrmMNote
       Caption = 'Desktop Center'
       OnClick = mnDesktopCenterClick
     end
+  end
+  object SynSQLSyn1: TSynSQLSyn
+    DefaultFilter = 'SQL Files (*.sql)|*.sql'
+    Enabled = False
+    SQLDialect = sqlPostgres
+    Left = 360
+    Top = 122
   end
 end

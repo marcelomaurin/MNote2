@@ -6,11 +6,12 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, SynHighlighterPo,
-  SynHighlighterPas, SynHighlighterCpp, Forms, Controls, Graphics, Dialogs,
-  Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, item, types, finds, setmain;
+  SynHighlighterPas, SynHighlighterCpp,SynHighlighterSQL, Forms, Controls, Graphics, Dialogs,
+  Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, item, types, finds, setmain,
+  mquery, TypeDB;
 
 
-const versao = '0.8';
+const versao = '2.9';
 
 type
 
@@ -26,8 +27,19 @@ type
     MenuItem1: TMenuItem;
     MenuItem10: TMenuItem;
     btNovo: TMenuItem;
-    MenuItem2: TMenuItem;
+    MenuItem11: TMenuItem;
+    MenuItem12: TMenuItem;
+    MenuItem13: TMenuItem;
+    MenuItem14: TMenuItem;
     MenuItem4: TMenuItem;
+    mnFixW: TMenuItem;
+    mnOnTopW: TMenuItem;
+    mnDesktopCenterW: TMenuItem;
+    MenuItem2: TMenuItem;
+    mnDesktopCenter: TMenuItem;
+    MenuItem5: TMenuItem;
+    MenuItem7: TMenuItem;
+    MenuItem8: TMenuItem;
     mnFixar: TMenuItem;
     mnStay: TMenuItem;
     mnLazarus: TMenuItem;
@@ -57,6 +69,7 @@ type
     PopupMenu1: TPopupMenu;
     ReplaceDialog1: TReplaceDialog;
     SaveDialog1: TSaveDialog;
+    SynSQLSyn1: TSynSQLSyn;
     TrayIcon1: TTrayIcon;
     procedure FindDialog1Find(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -70,9 +83,15 @@ type
     procedure lstFindDblClick(Sender: TObject);
     procedure lstFindSelectionChange(Sender: TObject; User: boolean);
     procedure MenuItem10Click(Sender: TObject);
+    procedure MenuItem12Click(Sender: TObject);
+    procedure MenuItem14Click(Sender: TObject);
+    procedure MenuItem4Click(Sender: TObject);
+    procedure mnFixWClick(Sender: TObject);
+    procedure mnOnTopWClick(Sender: TObject);
+    procedure mnDesktopCenterWClick(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
-    procedure MenuItem4Click(Sender: TObject);
+    procedure mnDesktopCenterClick(Sender: TObject);
     procedure mnCClick(Sender: TObject);
     procedure mnFechar2Click(Sender: TObject);
     procedure mnFixarClick(Sender: TObject);
@@ -247,21 +266,25 @@ begin
   begin
     FormStyle:= fsStayOnTop;
     mnStay.Caption:='Normal';
+    mnOnTopW.Caption:='Normal';
   end
   else
   begin
     FormStyle:= fsNormal;
     mnStay.Caption:='On Top';
+    mnOnTopW.Caption:='On Top';
   end;
   if FSetMain.fixar then
   begin
     BorderStyle:=bsSingle;
-    mnFixar.Caption:='Fixar';
+    mnFixar.Caption:='Fix';
+    mnFixW.Caption:='Fix';
   end
   else
   begin
     BorderStyle:=bsNone;
-    mnFixar.Caption:='Mover';
+    mnFixar.Caption:= 'Move';
+    mnFixW.caption := 'Move' ;
   end;
 end;
 
@@ -278,12 +301,14 @@ begin
     FormStyle:= fsStayOnTop;
     Fsetmain.stay := true;
     mnStay.Caption:='Normal';
+    mnOnTopW.Caption:='Normal';
   end
   else
   begin
     FormStyle:=fsNormal;
     Fsetmain.stay := false;
     mnStay.Caption:='On Top';
+    mnOnTopW.Caption:='On Top';
   end;
   refresh;
   Fsetmain.SalvaContexto(false);
@@ -393,17 +418,11 @@ begin
   Fsetmain.posx := Left;
   Fsetmain.posy := top;
 
-  (*
-  syn := TSynEdit.Create(tb);
-  syn.Parent := tb;
-  syn.Align:= alClient;
-  syn.Lines.Clear;
-  syn.PopupMenu := popSysEdit;
-  syn.OnChange:= @synChange;
-  tb.PopupMenu := popFechar;
-  tb.Tag:= Integer(pointer(syn)); //Guarda o Sys
-  tb.ImageIndex:=0;
-  *)
+  if (frmMQuery <> nil) then
+  begin
+    frmMQuery.Destroy;
+    frmmquery := nil;
+  end;
 
   //Salva arquivos abertos
   info := '';
@@ -485,6 +504,72 @@ begin
   frmSobre := nil;
 end;
 
+procedure TfrmMNote.MenuItem12Click(Sender: TObject);
+begin
+
+end;
+
+procedure TfrmMNote.MenuItem14Click(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+   sql : TSynSQLSyn;
+
+begin
+  syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  item := TItem(syn.tag);
+  sql := TSynSQLSyn.create(self);
+
+  sql.sqldialect := sqlMySQL;
+  sql.TableNames.clear;
+  if frmMQuery <> nil then
+  begin
+
+    sql.sqldialect := sqlMySQL;
+    if (frmMQuery.zmycon.Connected) then
+    begin
+      if (frmMQuery.getdatabasetype = DBMysql) then
+      begin
+        sql.SQLDialect:= sqlMySQL;
+      end;
+      if frmMQuery.getdatabasetype = DBPostgres) then
+      begin
+        sql.SQLDialect:= sqlPostgres;
+      end;
+
+      sql.tableNames := frmMQuery.GetTables();
+    end;
+  end;
+  syn.Highlighter := sql;
+
+
+end;
+
+procedure TfrmMNote.MenuItem4Click(Sender: TObject);
+begin
+  if frmmquery = nil then
+  begin
+    frmmquery := TFrmMQuery.create(self);
+  end;
+  frmmquery.show();
+end;
+
+procedure TfrmMNote.mnFixWClick(Sender: TObject);
+begin
+  mnFixarClick(self);
+end;
+
+procedure TfrmMNote.mnOnTopWClick(Sender: TObject);
+begin
+  mnStayClick(self);
+end;
+
+procedure TfrmMNote.mnDesktopCenterWClick(Sender: TObject);
+begin
+  mnDesktopCenterClick(self);
+end;
+
 procedure TfrmMNote.MenuItem1Click(Sender: TObject);
 begin
 
@@ -495,7 +580,7 @@ begin
    pnBotton.Visible:=false;
 end;
 
-procedure TfrmMNote.MenuItem4Click(Sender: TObject);
+procedure TfrmMNote.mnDesktopCenterClick(Sender: TObject);
 begin
   frmMNote.Top := (Screen.DesktopHeight - frmMNote.Height) DIV 2;
   frmMNote.Left := (Screen.DesktopWidth - frmMNote.Width) DIV 2;
@@ -527,14 +612,16 @@ begin
     begin
       BorderStyle:=bsSingle;
       Fsetmain.fixar := true;
-      mnFixar.Caption:='Fixar';
+      mnFixar.Caption:='Fix';
+      mnFixW.caption := 'Fix';
       self.refresh;
     end
     else
     begin
       BorderStyle:=bsNone;
       Fsetmain.fixar := false;
-      mnFixar.Caption:='Mover';
+      mnFixar.Caption:='Move';
+      mnFixW.caption := 'Move';
       //self.hide;
       //self.show;
       self.refresh;

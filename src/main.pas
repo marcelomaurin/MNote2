@@ -6,9 +6,9 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, SynHighlighterPo,
-  SynHighlighterPas, SynHighlighterCpp, Forms, Controls, Graphics, Dialogs,
+  SynHighlighterPas, SynHighlighterCpp,SynHighlighterSQL, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, item, types, finds, setmain,
-  mquery;
+  mquery, TypeDB;
 
 
 const versao = '2.9';
@@ -30,6 +30,7 @@ type
     MenuItem11: TMenuItem;
     MenuItem12: TMenuItem;
     MenuItem13: TMenuItem;
+    MenuItem14: TMenuItem;
     MenuItem4: TMenuItem;
     mnFixW: TMenuItem;
     mnOnTopW: TMenuItem;
@@ -68,6 +69,7 @@ type
     PopupMenu1: TPopupMenu;
     ReplaceDialog1: TReplaceDialog;
     SaveDialog1: TSaveDialog;
+    SynSQLSyn1: TSynSQLSyn;
     TrayIcon1: TTrayIcon;
     procedure FindDialog1Find(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -82,6 +84,7 @@ type
     procedure lstFindSelectionChange(Sender: TObject; User: boolean);
     procedure MenuItem10Click(Sender: TObject);
     procedure MenuItem12Click(Sender: TObject);
+    procedure MenuItem14Click(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure mnFixWClick(Sender: TObject);
     procedure mnOnTopWClick(Sender: TObject);
@@ -503,6 +506,43 @@ end;
 
 procedure TfrmMNote.MenuItem12Click(Sender: TObject);
 begin
+
+end;
+
+procedure TfrmMNote.MenuItem14Click(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+   sql : TSynSQLSyn;
+
+begin
+  syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  item := TItem(syn.tag);
+  sql := TSynSQLSyn.create(self);
+
+  sql.sqldialect := sqlMySQL;
+  sql.TableNames.clear;
+  if frmMQuery <> nil then
+  begin
+
+    sql.sqldialect := sqlMySQL;
+    if (frmMQuery.zmycon.Connected) then
+    begin
+      if (frmMQuery.getdatabasetype = DBMysql) then
+      begin
+        sql.SQLDialect:= sqlMySQL;
+      end;
+      if (frmMQuery.getdatabasetype = DBPostgres) then
+      begin
+        sql.SQLDialect:= sqlPostgres;
+      end;
+
+      sql.tableNames := frmMQuery.GetTables();
+    end;
+  end;
+  syn.Highlighter := sql;
+
 
 end;
 
