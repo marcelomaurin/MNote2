@@ -65,17 +65,13 @@ type
     procedure mnStayClick(Sender: TObject);
     procedure mnFixarClick(Sender: TObject);
   private
-    posicaofieldsmy : TTreeNode;
-    posicaofieldspost : TTreeNode;
-    tvitemPost : TTreeNode;
-    tvitemMy : TTreeNode;
-    posicaoViewmy : TTreeNode;
-    posicaoProceduremy : TTreeNode;
-    posicaoFunctionmy : TTreeNode;
+    posicaofields : TTreeNode;
+    tvitem : TTreeNode;
+    posicaoView : TTreeNode;
+    posicaoProcedure : TTreeNode;
+    posicaoFunction : TTreeNode;
     posicaoViewPost : TTreeNode;
-    posicaoProcedurePost : TTreeNode;
-    posicaoFunctionPost : TTreeNode;
-    posicaoSequencePost : TTreeNode;
+    posicaoSequence : TTreeNode;
     sequences : TStringList;
     FSetBanco : TSetBanco;
     FSetMQuery : TSetMQuery;
@@ -90,6 +86,7 @@ type
     function TipoConv(Tabela : TTabela; Posicao: integer): String;
     procedure CarregaContexto();
     procedure ConectarMy();
+    procedure ConectarPost();
     procedure CarregaDB();
     procedure AtualizaConexoesDB();
   public
@@ -226,7 +223,7 @@ end;
 procedure TfrmMQuery.ListarTabelasMy();
 var
   Tabela : TTabela;
-  tvitem : TTreeNode;
+  //tvitem : TTreeNode;
   tvcolunas : TTreeNode;
   tvindice : TTreeNode;
   tvFK : TTreeNode;
@@ -242,7 +239,7 @@ begin
   zmyqry.First;
   //pgbar.Max:= zmyqry.RecordCount;
   //pgbar.Position:=0;
-  posicaofieldsmy.DeleteChildren;
+  posicaofields.DeleteChildren;
   while not zmyqry.EOF do
   begin
      if zmyqry.FieldByName('table_schema').asstring = Banco then
@@ -251,7 +248,7 @@ begin
        Tabela := TTabela.create(zmyqry1,TabelaNome, DBMysql);
 
        tvitem := TTreenode.Create(tvBanco.items);
-       tvitem := tvBanco.Items.AddNode(tvitem,posicaofieldsmy,TabelaNome,pointer(Tabela),naAddChild);
+       tvitem := tvBanco.Items.AddNode(tvitem,posicaofields,TabelaNome,pointer(Tabela),naAddChild);
 
        (*Adiciona colunas da tabela*)
        tvcolunas := tvBanco.Items.AddChildObject(tvitem,'campos', pointer(ETDBCampos));
@@ -286,7 +283,7 @@ end;
 
 procedure TfrmMQuery.CarregaDB();
 var
-   tvitem : TTreeNode;
+   ltvitem : TTreeNode;
    //tvitemmy : TTreeNode;
    //tvitempost : TTreeNode;
 begin
@@ -297,21 +294,19 @@ begin
   CarregaContexto();
   if (FSetBanco.TipoBanco = DBMysql) then
   begin
-       tvitem := TTreeNode.Create(tvBanco.Items);
-       tvitemmy := tvBanco.Items.AddObject(tvitem,'Mysql', pointer(ETDBBanco));
+       ltvitem := TTreeNode.Create(tvBanco.Items);
+       tvitem := tvBanco.Items.AddObject(ltvitem,'Mysql', pointer(ETDBBanco));
   end;
 
   if (FSetBanco.TipoBanco = DBPostgres) then
   begin
-       tvitem := TTreeNode.Create(tvBanco.Items);
-       tvitempost := tvBanco.Items.AddObject(tvitem,'Postgres', pointer(ETDBBanco));
+       ltvitem := TTreeNode.Create(tvBanco.Items);
+       tvitem := tvBanco.Items.AddObject(ltvitem,'Postgres', pointer(ETDBBanco));
   end;
 
 end;
 
 procedure TfrmMQuery.FormCreate(Sender: TObject);
-var
-  tvitem : TTreeNode;
 begin
 
   FSetBanco := TSetBanco.create(0);
@@ -337,7 +332,15 @@ begin
         FsetBanco := TsetBanco.create(self.tag);
   end;
   CarregaDB();
-  ConectarMy();
+  if (FSetBanco.TipoBanco = DBMysql) then
+  begin
+    ConectarMy();
+  end;
+  if (FSetBanco.TipoBanco = DBPostgres) then
+  begin
+    ConectarPost();
+  end;
+
 
 
 end;
@@ -403,30 +406,69 @@ end;
 
 procedure TfrmMQuery.ConectarMy();
 var
-  tvitem : TTreeNode;
+  ltvitem : TTreeNode;
 begin
    try
         tvBanco.items.clear;
-        tvitem := TTreeNode.Create(tvBanco.items);
-        posicaofieldsmy := tvBanco.Items.AddChildObject(tvitemmy, 'Tabelas', pointer(ETDTabelas));
-        posicaoViewmy := tvBanco.Items.AddChildObject(tvitemmy, 'Views', pointer(ETDViews));
-        posicaoProceduremy := tvBanco.Items.AddChildObject(tvitemmy, 'Procedure', pointer(ETDProcedure));
-        posicaoFunctionmy := tvBanco.Items.AddChildObject(tvitemmy, 'Functions', pointer(ETDFunctions));
+        ltvitem := TTreeNode.Create(tvBanco.items);
+        posicaofields := tvBanco.Items.AddChildObject(tvitem, 'Tabelas', pointer(ETDTabelas));
+        posicaoView := tvBanco.Items.AddChildObject(tvitem, 'Views', pointer(ETDViews));
+        posicaoProcedure := tvBanco.Items.AddChildObject(tvitem, 'Procedure', pointer(ETDProcedure));
+        posicaoFunction := tvBanco.Items.AddChildObject(tvitem, 'Functions', pointer(ETDFunctions));
         zmycon.Disconnect;
         zmycon.HostName := FSetBanco.HostName; //edHostName.Text;
         zmycon.User:= FSetBanco.User; //edusuario.text;
         zmycon.Password:= FSetBanco.Password;//edPasswrd.Text;
         //zmycon.
+
         {$IFDEF WINDOWS}
         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
         {$ENDIF}
         {$IFDEF DARWIN}
          zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
         {$ENDIF}
+        {$IFDEF LINUX}
+         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
+        {$ENDIF}
         zmycon.Connect;
         if zmycon.Connected then
         begin
           ListarTabelasMy();
+        end;
+    finally
+    end;
+end;
+
+procedure TfrmMQuery.ConectarPost();
+var
+  ltvitem : TTreeNode;
+begin
+   try
+        tvBanco.items.clear;
+        ltvitem := TTreeNode.Create(tvBanco.items);
+        posicaofields := tvBanco.Items.AddChildObject(ltvitem, 'Tabelas', pointer(ETDTabelas));
+        posicaoView := tvBanco.Items.AddChildObject(ltvitem, 'Views', pointer(ETDViews));
+        posicaoProcedure := tvBanco.Items.AddChildObject(ltvitem, 'Procedure', pointer(ETDProcedure));
+        posicaoFunction := tvBanco.Items.AddChildObject(ltvitem, 'Functions', pointer(ETDFunctions));
+        zpostcon.Disconnect;
+        zpostcon.HostName := FSetBanco.HostName; //edHostName.Text;
+        zpostcon.User:= FSetBanco.User; //edusuario.text;
+        zpostcon.Password:= FSetBanco.Password;//edPasswrd.Text;
+        //zmycon.
+
+        {$IFDEF WINDOWS}
+        zpostcon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
+        {$ENDIF}
+        {$IFDEF DARWIN}
+         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
+        {$ENDIF}
+        {$IFDEF LINUX}
+         zpostcon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
+        {$ENDIF}
+        zpostcon.Connect;
+        if zmycon.Connected then
+        begin
+          ListarTabelasPost();
         end;
     finally
     end;
@@ -507,7 +549,7 @@ end;
 procedure Tfrmmquery.ListarTabelasPost();
 var
   Tabela : TTabela;
-  tvitem : TTreeNode;
+  ltvitem : TTreeNode;
   tvcolunas : TTreeNode;
   tvindice : TTreeNode;
   tvFK : TTreeNode;
@@ -529,33 +571,33 @@ begin
     zpostqry.First;
     //pgbar1.Max:= zpostqry.RecordCount;
     //pgbar1.Position:=0;
-    posicaofieldspost.DeleteChildren;
+    posicaofields.DeleteChildren;
     while not zpostqry.EOF do
     begin
       if zpostqry.FieldByName('table_schema').asstring = FScheme then
       begin
         TabelaNome := zpostqry.FieldByName('table_name').asstring;
         Tabela := TTabela.create(zpostqry1,TabelaNome, DBPostgres);
-        tvitem := TTreenode.Create(tvBanco.items);
-        tvitem := tvBanco.Items.AddNode(tvitem,posicaofieldspost,TabelaNome,pointer(Tabela),naAddChild);
+        ltvitem := TTreenode.Create(tvBanco.items);
+        ltvitem := tvBanco.Items.AddNode(ltvitem,posicaofields,TabelaNome,pointer(Tabela),naAddChild);
       end;
 
       (*Adiciona colunas da tabela*)
-      tvcolunas := tvBanco.Items.AddChildObject(tvitem,'campos', pointer(ETDBCampos));
+      tvcolunas := tvBanco.Items.AddChildObject(ltvitem,'campos', pointer(ETDBCampos));
       for a:= 0 to tabela.count-1 do
       begin
         tvBanco.items.AddChildObject(tvcolunas,tabela.fieldname[a],pointer(a));
       end;
 
       (*adiciona pk da tabela*)
-      tvindice := tvBanco.Items.AddChildObject(tvitem,'Chave Primaria',pointer(ETDBPK));
+      tvindice := tvBanco.Items.AddChildObject(ltvitem,'Chave Primaria',pointer(ETDBPK));
       for a := 0 to tabela.chaves.primarykeys.Count-1 do
       begin
         tvBanco.items.AddChildObject(tvindice,tabela.chaves.primarykeys[a],pointer(a));
       end;
 
       (*adiciona pk da tabela*)
-      tvFK := tvBanco.Items.AddChildObject(tvitem,'Chave Extrangeira',pointer(ETDBFK));
+      tvFK := tvBanco.Items.AddChildObject(ltvitem,'Chave Extrangeira',pointer(ETDBFK));
       for a := 0 to tabela.chaves.coinstraintname.Count-1 do
       begin
         tvBanco.items.AddChildObject(tvFK,tabela.chaves.coinstraintname[a],pointer(a));
@@ -591,17 +633,17 @@ end;
 
 procedure Tfrmmquery.RefreshPost();
 var
-  tvitem : TTreeNode;
+  ltvitem : TTreeNode;
 begin
-     tvitempost.DeleteChildren;
+     tvitem.DeleteChildren;
      //ShapeCon.brush.color := clWhite;
      try
-        tvitem := TTreeNode.Create(tvBanco.items);
-        posicaofieldspost := tvBanco.Items.AddChildObject(tvitemPost, 'Tabelas',pointer(ETDTabelas));
-        posicaoSequencePost := tvBanco.Items.AddChildObject(tvitemPost, 'Sequences',pointer(ETDTabelas));
-        posicaoViewPost := tvBanco.Items.AddChildObject(tvitemPost, 'Views', pointer(ETDViews));
-        posicaoProcedurePost := tvBanco.Items.AddChildObject(tvitemPost, 'Procedure', pointer(ETDProcedure));
-        posicaoFunctionPost := tvBanco.Items.AddChildObject(tvitemPost, 'Functions', pointer(ETDFunctions));
+        ltvitem := TTreeNode.Create(tvBanco.items);
+        posicaofields := tvBanco.Items.AddChildObject(tvitem, 'Tabelas',pointer(ETDTabelas));
+        posicaoSequence := tvBanco.Items.AddChildObject(tvitem, 'Sequences',pointer(ETDTabelas));
+        posicaoView := tvBanco.Items.AddChildObject(tvitem, 'Views', pointer(ETDViews));
+        posicaoProcedure := tvBanco.Items.AddChildObject(tvitem, 'Procedure', pointer(ETDProcedure));
+        posicaoFunction := tvBanco.Items.AddChildObject(tvitem, 'Functions', pointer(ETDFunctions));
         zpostcon.Disconnect;
         zpostcon.HostName := FSetBanco.HostName;
         zpostcon.User:= FSetBanco.User;

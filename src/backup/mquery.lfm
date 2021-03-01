@@ -1,7 +1,7 @@
 object frmMQuery: TfrmMQuery
   Left = 337
   Height = 487
-  Top = 117
+  Top = 116
   Width = 747
   Align = alRight
   Caption = 'MQuery'

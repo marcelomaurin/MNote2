@@ -103,6 +103,7 @@
       <Unit12>
         <Filename Value="classes/typedb.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="TypeDB"/>
       </Unit12>
       <Unit13>
         <Filename Value="mquery.pas"/>
