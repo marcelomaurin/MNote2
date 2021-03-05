@@ -468,7 +468,7 @@ begin
          zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
         {$ENDIF}
         {$IFDEF LINUX}
-         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
+         zmycon.LibraryLocation:='/usr/lib/x86_64-linux-gnu/libmysqlclient.so';
         {$ENDIF}
         zmycon.Connect;
         if zmycon.Connected then

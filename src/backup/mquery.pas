@@ -100,7 +100,6 @@ begin
   LLista := TStringlist.create;
   if FSetBanco <> nil then
   begin
-       //pnlProgresso.Visible:= true;
        zmyqry.sql.text :=   'select * from information_schema.tables '+
        ' where table_schema = "'+ FSetBanco.Databasename +'"'+
        'order by table_name';
@@ -266,14 +265,12 @@ var
 begin
   zmyqry.close;
   banco :=  FSetBanco.Databasename;
-  //pnlProgresso.Visible:= true;
   zmyqry.sql.text :=   'select * from information_schema.tables '+
        ' where table_schema = "'+ banco +'"'+
        'order by table_name';
   zmyqry.open;
   zmyqry.First;
-  //pgbar.Max:= zmyqry.RecordCount;
-  //pgbar.Position:=0;
+
   posicaofields.DeleteChildren;
   while not zmyqry.EOF do
   begin
@@ -311,10 +308,7 @@ begin
 
      end;
      zmyqry.next;
-     //pgbar.Position:=pgbar.Position+1;
-
   end;
-  //pnlProgresso.Visible:= false;
   tvBanco.refresh;
   Application.ProcessMessages;
   tvBanco.FullExpand;
@@ -323,8 +317,6 @@ end;
 procedure TfrmMQuery.CarregaDB();
 var
    ltvitem : TTreeNode;
-   //tvitemmy : TTreeNode;
-   //tvitempost : TTreeNode;
 begin
   if (FSetMQuery = nil) then
   begin
@@ -476,7 +468,7 @@ begin
          zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
         {$ENDIF}
         {$IFDEF LINUX}
-         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
+         zmycon.LibraryLocation:='/usr/lib64/libmysqlclient.so';
         {$ENDIF}
         zmycon.Connect;
         if zmycon.Connected then
