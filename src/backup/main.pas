@@ -533,7 +533,7 @@ begin
       begin
         sql.SQLDialect:= sqlMySQL;
       end;
-      if frmMQuery.getdatabasetype = DBPostgres) then
+      if (frmMQuery.getdatabasetype = DBPostgres) then
       begin
         sql.SQLDialect:= sqlPostgres;
       end;

@@ -14,9 +14,8 @@ type
   { TfrmMQuery }
 
   TfrmMQuery = class(TForm)
-    DBGrid1: TDBGrid;
-    DBNavigator1: TDBNavigator;
     edSearch: TEdit;
+    ImageList2: TImageList;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     Connect: TMenuItem;
@@ -31,18 +30,14 @@ type
     MenuItem7: TMenuItem;
     MenuItem8: TMenuItem;
     mnFixar: TMenuItem;
-    PageControl1: TPageControl;
     Panel1: TPanel;
     Panel2: TPanel;
     Panel3: TPanel;
     Panel4: TPanel;
     Panel5: TPanel;
     Panel6: TPanel;
-    Panel7: TPanel;
     Splitter1: TSplitter;
     Splitter2: TSplitter;
-    Splitter3: TSplitter;
-    TabSheet1: TTabSheet;
     tvBanco: TTreeView;
     zpostcon: TZConnection;
     zmycon: TZConnection;
@@ -113,7 +108,7 @@ begin
        zmyqry.First;
        while not zmyqry.EOF do
        begin
-            if zmyqry.FieldByName('TABLE_SCHEMA').asstring = Banco then
+            if zmyqry.FieldByName('TABLE_SCHEMA').asstring = FSetBanco.Databasename then
             begin
                  LLista.Append(zmyqry.FieldByName('table_name').asstring);
 
@@ -289,26 +284,28 @@ begin
 
        tvitem := TTreenode.Create(tvBanco.items);
        tvitem := tvBanco.Items.AddNode(tvitem,posicaofields,TabelaNome,pointer(Tabela),naAddChild);
+       tvitem.ImageIndex:=17;
 
        (*Adiciona colunas da tabela*)
        tvcolunas := tvBanco.Items.AddChildObject(tvitem,'campos', pointer(ETDBCampos));
        for a:= 0 to tabela.count-1 do
        begin
-         tvBanco.items.AddChildObject(tvcolunas,tabela.fieldname[a],pointer(a));
+         ttreenode(tvBanco.items.AddChildObject(tvcolunas,tabela.fieldname[a],pointer(a))).ImageIndex:=18;
        end;
 
        (*adiciona pk da tabela*)
        tvindice := tvBanco.Items.AddChildObject(tvitem,'Chave Primaria',pointer(ETDBPK));
        for a := 0 to tabela.chaves.primarykeys.Count-1 do
        begin
-         tvBanco.items.AddChildObject(tvindice,tabela.chaves.primarykeys[a],pointer(a));
+         ttreenode(tvBanco.items.AddChildObject(tvindice,tabela.chaves.primarykeys[a],pointer(a))).ImageIndex:=19;
        end;
 
        (*adiciona pk da tabela*)
        tvFK := tvBanco.Items.AddChildObject(tvitem,'Chave Extrangeira',pointer(ETDBFK));
+       tvFk.ImageIndex:=20;
        for a := 0 to tabela.chaves.coinstraintname.Count-1 do
        begin
-         tvBanco.items.AddChildObject(tvFK,tabela.chaves.coinstraintname[a],pointer(a));
+         ttreenode(tvBanco.items.AddChildObject(tvFK,tabela.chaves.coinstraintname[a],pointer(a))).ImageIndex:=21;
        end;
 
 
@@ -338,12 +335,14 @@ begin
   begin
        ltvitem := TTreeNode.Create(tvBanco.Items);
        tvitem := tvBanco.Items.AddObject(ltvitem,'Mysql', pointer(ETDBBanco));
+       tvitem.ImageIndex:= 1;
   end;
 
   if (FSetBanco.TipoBanco = DBPostgres) then
   begin
        ltvitem := TTreeNode.Create(tvBanco.Items);
        tvitem := tvBanco.Items.AddObject(ltvitem,'Postgres', pointer(ETDBBanco));
+       tvitem.ImageIndex:= 1;
   end;
 
 end;
@@ -484,9 +483,13 @@ begin
         begin
            ltvitem := TTreeNode.Create(tvBanco.items);
            posicaofields := tvBanco.Items.AddChildObject(tvitem, 'Tabelas', pointer(ETDTabelas));
+           posicaofields.ImageIndex:= 3;
            posicaoView := tvBanco.Items.AddChildObject(tvitem, 'Views', pointer(ETDViews));
+           posicaoView.ImageIndex:= 16;
            posicaoProcedure := tvBanco.Items.AddChildObject(tvitem, 'Procedure', pointer(ETDProcedure));
+           posicaoProcedure.ImageIndex:=14;
            posicaoFunction := tvBanco.Items.AddChildObject(tvitem, 'Functions', pointer(ETDFunctions));
+           posicaoFunction.ImageIndex:=15;
            ListarTabelasMy();
         end;
     except
@@ -529,9 +532,13 @@ begin
         begin
              ltvitem := TTreeNode.Create(tvBanco.items);
              posicaofields := tvBanco.Items.AddChildObject(ltvitem, 'Tabelas', pointer(ETDTabelas));
+             posicaofields.ImageIndex:= 3;
              posicaoView := tvBanco.Items.AddChildObject(ltvitem, 'Views', pointer(ETDViews));
+             posicaoView.ImageIndex:= 16;
              posicaoProcedure := tvBanco.Items.AddChildObject(ltvitem, 'Procedure', pointer(ETDProcedure));
+             posicaoProcedure.ImageIndex:=14;
              posicaoFunction := tvBanco.Items.AddChildObject(ltvitem, 'Functions', pointer(ETDFunctions));
+             posicaoFunction.ImageIndex:=15;
              ListarTabelasPost();
         end;
     finally

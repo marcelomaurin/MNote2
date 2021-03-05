@@ -98,6 +98,7 @@
       <Unit10>
         <Filename Value="classes/setmquery.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="setMQuery"/>
       </Unit10>
       <Unit11>
         <Filename Value="classes/tabela.pas"/>
