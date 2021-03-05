@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, SynHighlighterPo,
   SynHighlighterPas, SynHighlighterCpp,SynHighlighterSQL, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, item, types, finds, setmain,
-  mquery, TypeDB;
+  mquery, TypeDB, folders;
 
 
 const versao = '2.9';
@@ -31,6 +31,7 @@ type
     MenuItem12: TMenuItem;
     MenuItem13: TMenuItem;
     MenuItem14: TMenuItem;
+    MenuItem15: TMenuItem;
     MenuItem4: TMenuItem;
     mnFixW: TMenuItem;
     mnOnTopW: TMenuItem;
@@ -59,7 +60,6 @@ type
     mnPesqItem: TMenuItem;
     MenuItem9: TMenuItem;
     OpenDialog1: TOpenDialog;
-    pntv: TPanel;
     pnBotton: TPanel;
     pgMain: TPageControl;
     Panel1: TPanel;
@@ -85,6 +85,7 @@ type
     procedure MenuItem10Click(Sender: TObject);
     procedure MenuItem12Click(Sender: TObject);
     procedure MenuItem14Click(Sender: TObject);
+    procedure MenuItem15Click(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure mnFixWClick(Sender: TObject);
     procedure mnOnTopWClick(Sender: TObject);
@@ -125,7 +126,6 @@ type
     FPos : integer;
     strFind : String;
     procedure NovoItem();
-    procedure CarregarArquivo();
     procedure Carregar(arquivo : String);
     procedure SalvarTab(tb : TTabSheet);
     procedure synChange(Sender: TObject);
@@ -139,6 +139,7 @@ type
 
   public
     { public declarations }
+    procedure CarregarArquivo(arquivo : string);
   end;
 
 var
@@ -192,11 +193,19 @@ begin
 
 end;
 
-procedure TfrmMNote.CarregarArquivo();
+procedure TfrmMNote.CarregarArquivo(arquivo : string);
 begin
+  if (arquivo = '') then
+  begin
   if OpenDialog1.execute then
   begin
     Carregar(OpenDialog1.FileName);
+  end;
+
+  end
+  else
+  begin
+     Carregar(arquivo);
   end;
 end;
 
@@ -274,7 +283,7 @@ begin
     mnStay.Caption:='On Top';
     mnOnTopW.Caption:='On Top';
   end;
-  if FSetMain.fixar then
+  if not FSetMain.fixar then
   begin
     BorderStyle:=bsSingle;
     mnFixar.Caption:='Fix';
@@ -546,6 +555,11 @@ begin
 
 end;
 
+procedure TfrmMNote.MenuItem15Click(Sender: TObject);
+begin
+  frmFolders.show();
+end;
+
 procedure TfrmMNote.MenuItem4Click(Sender: TObject);
 begin
   if frmmquery = nil then
@@ -814,7 +828,7 @@ begin
    syn := TSynEdit(tb.Tag);
    item := TItem(syn.tag);
    arquivo := item.FileName;
-   if not (item.FileName = 'Novo') then
+   if not (item.FileName = '') then
    begin
         if (item.salvo=false) then
         begin
@@ -852,7 +866,7 @@ end;
 
 procedure TfrmMNote.mnCarregarClick(Sender: TObject);
 begin
-  CarregarArquivo();
+  CarregarArquivo('');
 end;
 
 procedure TfrmMNote.MenuItem3Click(Sender: TObject);

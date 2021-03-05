@@ -22,10 +22,10 @@ object frmMNote: TfrmMNote
     OnClick = Panel1Click
   end
   object pgMain: TPageControl
-    Left = 114
+    Left = 0
     Height = 240
     Top = 50
-    Width = 516
+    Width = 630
     Align = alClient
     Images = ImageList1
     TabOrder = 1
@@ -56,16 +56,6 @@ object frmMNote: TfrmMNote
       ScrollWidth = 534
       TabOrder = 0
     end
-  end
-  object pntv: TPanel
-    Left = 0
-    Height = 240
-    Top = 50
-    Width = 114
-    Align = alLeft
-    TabOrder = 3
-    Visible = False
-    OnClick = pntvClick
   end
   object MainMenu1: TMainMenu
     Images = ImageList1
@@ -131,6 +121,11 @@ object frmMNote: TfrmMNote
         Caption = 'MQuery'
         ImageIndex = 8
         OnClick = MenuItem4Click
+      end
+      object MenuItem15: TMenuItem
+        Caption = 'Folders'
+        ImageIndex = 5
+        OnClick = MenuItem15Click
       end
     end
     object mnSetup: TMenuItem

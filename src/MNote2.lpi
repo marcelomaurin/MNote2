@@ -44,7 +44,7 @@
         <PackageName Value="LCL"/>
       </Item4>
     </RequiredPackages>
-    <Units Count="15">
+    <Units Count="17">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -121,6 +121,18 @@
         <IsPartOfProject Value="True"/>
         <HasResources Value="True"/>
       </Unit14>
+      <Unit15>
+        <Filename Value="folders.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmFolders"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="classes/setfolders.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="setFolders"/>
+      </Unit16>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
