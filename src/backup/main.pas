@@ -787,11 +787,20 @@ begin
    syn := TSynEdit(tb.Tag);
    item := TItem(syn.tag);
    arquivo := item.FileName;
-
+   if arquivo <> '' then
+   begin
+        SaveDialog1.InitialDir:= ExtractFilePath(arquivo);
+   end
+   else
+   begin
+      SaveDialog1.InitialDir:= ExtractFilePath(ApplicationName);
+   end;
    if (SaveDialog1.Execute) then
    begin
         item.Savefile(SaveDialog1.FileName);
-        item.salvo := true;
+        tb.Caption:= ExtractFileName(SaveDialog1.FileName);
+        item.FileName:= SaveDialog1.FileName;
+        item.salvo := false;
         SalvarTab(tb);
    end;
 end;
