@@ -10,7 +10,7 @@
         <EditorIndex Value="4"/>
         <TopLine Value="3"/>
         <CursorPos X="75" Y="10"/>
-        <UsageCount Value="68"/>
+        <UsageCount Value="69"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
@@ -21,7 +21,7 @@
         <ResourceBaseClass Value="Form"/>
         <TopLine Value="623"/>
         <CursorPos X="29" Y="636"/>
-        <UsageCount Value="68"/>
+        <UsageCount Value="69"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -31,7 +31,7 @@
         <UnitName Value="Item"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="7"/>
-        <UsageCount Value="68"/>
+        <UsageCount Value="69"/>
       </Unit2>
       <Unit3>
         <Filename Value="sobre.pas"/>
@@ -41,7 +41,7 @@
         <ResourceBaseClass Value="Form"/>
         <TopLine Value="33"/>
         <CursorPos X="48" Y="41"/>
-        <UsageCount Value="68"/>
+        <UsageCount Value="69"/>
       </Unit3>
       <Unit4>
         <Filename Value="pesquisar.pas"/>
@@ -51,7 +51,7 @@
         <ResourceBaseClass Value="Form"/>
         <TopLine Value="43"/>
         <CursorPos X="3" Y="65"/>
-        <UsageCount Value="66"/>
+        <UsageCount Value="67"/>
       </Unit4>
       <Unit5>
         <Filename Value="classes/finds.pas"/>
@@ -59,7 +59,7 @@
         <EditorIndex Value="-1"/>
         <WindowIndex Value="-1"/>
         <CursorPos X="48" Y="12"/>
-        <UsageCount Value="60"/>
+        <UsageCount Value="61"/>
       </Unit5>
       <Unit6>
         <Filename Value="setmain.pas"/>
@@ -67,7 +67,7 @@
         <EditorIndex Value="2"/>
         <TopLine Value="31"/>
         <CursorPos X="27" Y="37"/>
-        <UsageCount Value="45"/>
+        <UsageCount Value="46"/>
         <Loaded Value="True"/>
       </Unit6>
       <Unit7>
@@ -76,7 +76,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="4"/>
         <CursorPos X="2" Y="12"/>
-        <UsageCount Value="45"/>
+        <UsageCount Value="46"/>
       </Unit7>
       <Unit8>
         <Filename Value="classes/chaves.pas"/>
@@ -85,7 +85,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="39"/>
+        <UsageCount Value="40"/>
       </Unit8>
       <Unit9>
         <Filename Value="classes/setbanco.pas"/>
@@ -93,7 +93,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="10"/>
         <CursorPos X="18" Y="51"/>
-        <UsageCount Value="39"/>
+        <UsageCount Value="40"/>
       </Unit9>
       <Unit10>
         <Filename Value="classes/setmquery.pas"/>
@@ -102,7 +102,7 @@
         <EditorIndex Value="5"/>
         <TopLine Value="84"/>
         <CursorPos X="47" Y="97"/>
-        <UsageCount Value="39"/>
+        <UsageCount Value="40"/>
         <Loaded Value="True"/>
       </Unit10>
       <Unit11>
@@ -112,7 +112,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="39"/>
+        <UsageCount Value="40"/>
       </Unit11>
       <Unit12>
         <Filename Value="classes/typedb.pas"/>
@@ -120,7 +120,7 @@
         <UnitName Value="TypeDB"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="49" Y="11"/>
-        <UsageCount Value="39"/>
+        <UsageCount Value="40"/>
       </Unit12>
       <Unit13>
         <Filename Value="mquery.pas"/>
@@ -131,8 +131,8 @@
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="6"/>
         <TopLine Value="458"/>
-        <CursorPos X="45" Y="471"/>
-        <UsageCount Value="39"/>
+        <CursorPos X="61" Y="471"/>
+        <UsageCount Value="40"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit13>
@@ -144,7 +144,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="39"/>
+        <UsageCount Value="40"/>
       </Unit14>
       <Unit15>
         <Filename Value="folders.pas"/>
@@ -155,7 +155,7 @@
         <EditorIndex Value="1"/>
         <TopLine Value="69"/>
         <CursorPos X="10" Y="73"/>
-        <UsageCount Value="24"/>
+        <UsageCount Value="25"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit15>
@@ -166,7 +166,7 @@
         <EditorIndex Value="3"/>
         <TopLine Value="58"/>
         <CursorPos X="10" Y="69"/>
-        <UsageCount Value="21"/>
+        <UsageCount Value="22"/>
         <Loaded Value="True"/>
       </Unit16>
       <Unit17>

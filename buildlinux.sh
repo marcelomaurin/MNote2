@@ -21,8 +21,8 @@ then
 	echo "Empacotando"
 	dpkg-deb --build mnote2
 	echo "Movendo para pasta repositorio"
-	mv mnote2.deb mnote2-2.8_amd64.deb
-	cp ./mnote2-2.8_amd64.deb ./bin/
+	mv mnote2.deb mnote2-2.9_amd64.deb
+	cp ./mnote2-2.9_amd64.deb ./bin/
 	exit 1;
 fi
 
@@ -37,7 +37,7 @@ if [ $ARQUITETURA =  'armv7l' ]; then
 	echo "Empacotando"
 	dpkg-deb --build mnote2
 	echo "Movendo para pasta repositorio"
-	mv mnote2.deb mnote2-2.8_arm.deb
-	cp ./mnote2-2.8_arm.deb ./bin/	
+	mv mnote2.deb mnote2-2.9_arm.deb
+	cp ./mnote2-2.9_arm.deb ./bin/	
 	exit 1;
 fi

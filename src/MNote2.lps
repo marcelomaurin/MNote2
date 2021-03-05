@@ -29,9 +29,12 @@
         <Filename Value="classes/item.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Item"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="7"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="7"/>
+        <TopLine Value="53"/>
+        <CursorPos Y="61"/>
         <UsageCount Value="69"/>
+        <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="sobre.pas"/>
@@ -128,10 +131,9 @@
         <ComponentName Value="frmMQuery"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="6"/>
         <TopLine Value="458"/>
-        <CursorPos X="61" Y="471"/>
+        <CursorPos X="102" Y="470"/>
         <UsageCount Value="40"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -406,7 +408,7 @@
       </Position29>
       <Position30>
         <Filename Value="mquery.pas"/>
-        <Caret Column="43" TopLine="289"/>
+        <Caret Line="470" Column="102" TopLine="458"/>
       </Position30>
     </JumpHistory>
     <RunParams>
