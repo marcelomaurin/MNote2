@@ -443,6 +443,7 @@ end;
 procedure TfrmMQuery.ConectarMy();
 var
   ltvitem : TTreeNode;
+  location : string;
 begin
    try
         //tvBanco.items.clear;
@@ -465,7 +466,17 @@ begin
         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
         {$ENDIF}
         {$IFDEF DARWIN}
-         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
+         location := '/usr/local/mysql-connector-c-6.1.11-macos10.12-x86_64/lib/libmysqlclient.dylib';
+         if FileExists(location) then
+         begin
+            zmycon.LibLocation:= location;
+            //zmycon.LibraryLocation:='/usr/local/mysql-connector-c-6.1.11-macos10.12-x86_64/lib/libmysqlclient.dylib';
+         end
+         else
+         begin
+            showmessage('Lib not found:'+location);
+            close;
+         end;
         {$ENDIF}
         {$IFDEF LINUX}
          zmycon.LibraryLocation:='/usr/lib/x86_64-linux-gnu/libmysqlclient.so';

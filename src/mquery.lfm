@@ -5,12 +5,12 @@ object frmMQuery: TfrmMQuery
   Width = 313
   Align = alRight
   Caption = 'MQuery'
-  ClientHeight = 462
+  ClientHeight = 487
   ClientWidth = 313
   Menu = MainMenu1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '2.0.8.0'
+  LCLVersion = '2.0.0.4'
   object Panel1: TPanel
     Left = 0
     Height = 56
@@ -22,7 +22,7 @@ object frmMQuery: TfrmMQuery
   object Panel2: TPanel
     Left = 0
     Height = 50
-    Top = 412
+    Top = 437
     Width = 313
     Align = alBottom
     TabOrder = 1
@@ -31,33 +31,33 @@ object frmMQuery: TfrmMQuery
     Cursor = crVSplit
     Left = 0
     Height = 5
-    Top = 407
+    Top = 432
     Width = 313
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object Splitter2: TSplitter
     Left = 0
-    Height = 351
+    Height = 376
     Top = 56
     Width = 5
   end
   object Panel3: TPanel
     Left = 5
-    Height = 351
+    Height = 376
     Top = 56
     Width = 308
     Align = alClient
-    ClientHeight = 351
+    ClientHeight = 376
     ClientWidth = 308
     TabOrder = 4
     object Panel4: TPanel
       Left = 1
-      Height = 349
+      Height = 374
       Top = 1
       Width = 306
       Align = alClient
-      ClientHeight = 349
+      ClientHeight = 374
       ClientWidth = 306
       TabOrder = 0
       object Panel5: TPanel
@@ -71,7 +71,7 @@ object frmMQuery: TfrmMQuery
         TabOrder = 0
         object edSearch: TEdit
           Left = 2
-          Height = 33
+          Height = 22
           Top = 4
           Width = 160
           TabOrder = 0
@@ -79,16 +79,16 @@ object frmMQuery: TfrmMQuery
       end
       object Panel6: TPanel
         Left = 1
-        Height = 316
+        Height = 341
         Top = 32
         Width = 304
         Align = alClient
-        ClientHeight = 316
+        ClientHeight = 341
         ClientWidth = 304
         TabOrder = 1
         object tvBanco: TTreeView
           Left = 1
-          Height = 314
+          Height = 339
           Top = 1
           Width = 302
           Align = alClient
@@ -164,21 +164,24 @@ object frmMQuery: TfrmMQuery
   end
   object zmycon: TZConnection
     ControlsCodePage = cCP_UTF8
-    AutoEncodeStrings = True
     Properties.Strings = (
       'AutoEncodeStrings=ON'
     )
     UseMetadata = False
     DesignConnection = True
     SQLHourGlass = True
+    HostName = '127.0.0.1'
     Port = 3306
+    Database = 'mysql'
+    User = 'root'
+    Password = 'Marcella@123'
     Protocol = 'mysql'
+    LibraryLocation = '/usr/local/mysql-connector-c-6.1.11-macos10.12-x86_64/lib/libmysqlclient.18.dylib'
     left = 232
     top = 32
   end
   object zpostcon: TZConnection
     ControlsCodePage = cCP_UTF8
-    AutoEncodeStrings = True
     Properties.Strings = (
       'AutoEncodeStrings=ON'
     )
