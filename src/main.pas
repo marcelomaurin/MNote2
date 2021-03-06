@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, SynHighlighterPo,
   SynHighlighterPas, SynHighlighterCpp,SynHighlighterSQL, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, item, types, finds, setmain,
-  mquery, TypeDB, folders;
+  mquery, TypeDB, folders, funcoes;
 
 
 const versao = '2.9';
@@ -242,6 +242,7 @@ var
    a : integer;
    lista : TStringlist;
    info : string;
+   i : integer;
 begin
   lista := TStringList.create;
   if (FSetMain = nil) then
@@ -263,6 +264,21 @@ begin
      if FileExists(info) then
          Carregar(info);
   end;
+  {$ifdef Darwin}
+     //Nao faz nada
+
+  {$else}
+     for i := 1 to paramCount() do
+     begin
+        info := paramStr(i);
+        if FileExists(info) then
+        begin
+            Carregar(info);
+        end;
+     end;
+
+  {$endif}
+
 
 end;
 
@@ -298,8 +314,34 @@ begin
 end;
 
 procedure TfrmMNote.AssociarExtensao(Aba: TSynEdit);
+var
+   item : TItem;
+   arquivo: string;
+   ext : string;
 begin
-
+   item := Titem(Aba.tag);
+   ext := ExtractFileExt(item.FileName);
+   arquivo := Application.ExeName;
+   if not (ext = '') then
+   begin
+        ext := copy(ext,2,Length(ext));
+        {$ifdef WINDOWS}
+        if not VerificaRegExt(ext) then
+        begin
+             if ShowConfirm('Associa extensão '+ext + ' a aplicação!') then
+             begin
+                  if RegisterFileType(ext,Arquivo) then
+                  begin
+                    showmessage('Extensão associada!');
+                  end
+                  else
+                  begin
+                     showmessage('Extensão não foi associada!');
+                  end;
+             end;
+        end;
+        {$endif}
+   end;
 end;
 
 

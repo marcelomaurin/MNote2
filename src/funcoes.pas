@@ -25,20 +25,104 @@ function iif(condicao : boolean; verdade : variant; falso: variant):variant;
 function GetTotalCpuUsagePct(): double;
 function GetProcessorUsage : integer;
 function GetCPUCount : integer;
+function ShowConfirm(Mensagem : string) : boolean;
 
 function GetGPUTemperature(device : integer): string;
 function GetGPUCount : integer;
 function GetGPUName(device : integer): string;
+{$IFDEF WINDOWS}
+function RegisterFileType(ExtName: string; AppName: string): boolean;
+function  VerificaRegExt(extensao : string) : boolean;
+{$ENDIF}
 
 implementation
 
-uses main;
+
+uses main
+{$IFDEF WINDOWS}
+   ,Registry, ShlObj
+{$ENDIF}
+;
+
 
 var LastTickCount     : cardinal = 0;
     LastProcessorTime : int64    = 0;
     FLastIdleTime: Int64;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
+
+
+function ShowConfirm(Mensagem : string) : boolean;
+var
+      Reply, BoxStyle: Integer;
+begin
+      BoxStyle := MB_ICONQUESTION + MB_YESNO;
+      Reply := Application.MessageBox(pchar(Mensagem),'Confirmation', BoxStyle);
+      if Reply = IDYES then
+         result := true
+        else
+          result := false;
+end;
+
+
+{$IFDEF WINDOWS}
+
+function  VerificaRegExt(extensao : string) : boolean;
+var
+   reg: TRegistry;
+begin
+
+  reg := TRegistry.Create;
+  try
+    reg.RootKey := HKEY_CLASSES_ROOT;
+    if not reg.KeyExists(extensao + 'file\shell\open\command') then
+      result := false
+    else
+      result := true;
+  finally
+    reg.Free;
+  end;
+   (*
+ if ParamCount > 0 then
+  begin
+    s := ParamStr(1);
+    if ExtractFileExt(s) = extensao then
+      LoadFile(s);
+  end;
+  *)
+end;
+
+function RegisterFileType(ExtName: string; AppName: string): boolean;
+    var
+      reg: TRegistry;
+begin
+      reg := TRegistry.Create;
+      try
+        reg.RootKey := HKEY_CLASSES_ROOT;
+        reg.Access:= KEY_ALL_ACCESS;
+        if reg.OpenKey('.' + ExtName, True) then
+        begin
+          reg.WriteString('', ExtName + 'file');
+          reg.CloseKey;
+          reg.CreateKey(ExtName + 'file');
+          reg.OpenKey(ExtName + 'file\DefaultIcon', True);
+          reg.WriteString('', AppName + ',0');
+          reg.CloseKey;
+          reg.OpenKey(ExtName + 'file\shell\open\command', True);
+          reg.WriteString('', AppName + ' "%1"');
+          reg.CloseKey;
+          result := true;
+        end
+        else
+        begin
+          result := false;
+        end;
+      finally
+        reg.Free;
+      end;
+      SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nil, nil);
+    end;
+{$ENDIF}
 
 //    nvidia-smi    --query-gpu=gpu_name, vbios_version --format=csv,noheader
 function GetGPUCount : integer;
