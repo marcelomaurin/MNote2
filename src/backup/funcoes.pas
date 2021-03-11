@@ -17,7 +17,13 @@ StdCtrls, ExtCtrls, UTF8Process, Process
 
 ;
 
-
+{$IFDEF WINDOWS}
+const
+  SECURITY_NT_AUTHORITY: TSidIdentifierAuthority = (Value: (0, 0, 0, 0, 0, 5));
+  SECURITY_BUILTIN_DOMAIN_RID  = $00000020;
+  DOMAIN_ALIAS_RID_ADMINS      = $00000220;
+  SE_GROUP_USE_FOR_DENY_ONLY  = $00000010;
+{$endif}
 
 Function RetiraInfo(Value : string): string;
 function BuscaChave( lista : TStringList; Ref: String; var posicao:integer): boolean;
@@ -33,7 +39,14 @@ function GetGPUName(device : integer): string;
 {$IFDEF WINDOWS}
 function RegisterFileType(ExtName: string; AppName: string): boolean;
 function  VerificaRegExt(extensao : string) : boolean;
+function RegisterFileType2(const DocFileName: string; AppName : string): boolean;
+function RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executavel: string) : boolean;
+function IsAdministrator: Boolean;
 {$ENDIF}
+
+{$IFDEF Darwin}
+function VerifyAdminLogin:boolean;
+{$endif}
 
 implementation
 
@@ -42,7 +55,13 @@ uses main
 {$IFDEF WINDOWS}
    ,Registry, ShlObj
 {$ENDIF}
+{$ifdef Darwin}
+,MacOSAll
+{$endif}
 ;
+
+
+{$IFDEF WINDOWS}
 
 
 var LastTickCount     : cardinal = 0;
@@ -63,6 +82,28 @@ begin
         else
           result := false;
 end;
+
+{$IFDEF Darwin}
+function VerifyAdminLogin:boolean;
+var
+  status:OSStatus;
+  authRef: AuthorizationRef;
+  authFlags: AuthorizationFlags;
+  authRights: AuthorizationRights;
+  authItem: AuthorizationItem;
+begin
+  authItem.flags := 0;
+  authItem.name  := kAuthorizationRightExecute;
+  authItem.value := nil;
+  authItem.valueLength:= 0;
+  authRights.count := 1;
+  authRights.items := @authItem;
+  authRef := nil;
+  authFlags := kAuthorizationFlagInteractionAllowed or kAuthorizationFlagExtendRights or kAuthorizationFlagPreAuthorize;
+  status := AuthorizationCreate(@authRights, kAuthorizationEmptyEnvironment, authFlags, authRef);
+  Result := status=errAuthorizationSuccess;
+end;
+{$endif}
 
 
 {$IFDEF WINDOWS}
@@ -92,6 +133,105 @@ begin
   *)
 end;
 
+function IsAdministrator: Boolean;
+var
+  psidAdmin: Pointer;
+  B: BOOL;
+
+begin
+  psidAdmin := nil;
+  try
+    // Создаём SID группы админов для проверки
+    Win32Check(AllocateAndInitializeSid(@SECURITY_NT_AUTHORITY, 2,
+      SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0,
+      psidAdmin));
+
+    // Проверяем, входим ли мы в группу админов (с учётов всех проверок на disabled SID)
+    if CheckTokenMembership(0, psidAdmin, B) then
+      Result := B
+    else
+      Result := False;
+  finally
+    if psidAdmin <> nil then
+      FreeSid(psidAdmin);
+  end;
+end;
+
+
+
+function RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executavel: string) : boolean;
+var
+  ChaveArquivo: string;
+  Registro: TRegistry;
+
+  procedure EditarChave(const Chave, Valor: string);
+  begin
+    Registro.OpenKey(Chave, True);
+    Registro.WriteString('', Valor);
+    Registro.CloseKey;
+  end;
+
+begin
+  Registro := TRegistry.Create;
+  result := false;
+  try
+    Registro.RootKey := HKEY_CLASSES_ROOT;
+    Registro.LazyWrite := False;
+    ChaveArquivo := 'Arquivo' + Extensao;
+
+    //Registra a extensão
+    EditarChave('.' + Extensao, ChaveArquivo);
+
+    //Define a descrição para o tipo de arquivo
+    EditarChave(Format('%s', [ChaveArquivo]), TipoArquivo);
+
+    //Adiciona uma entrada no menu de contexto
+    EditarChave(Format('%s\shell\open', [ChaveArquivo]), Format('&Abrir com %s', [NomeAplicacao]));
+
+    //Associa a extensão à aplicação
+    EditarChave(Format('%s\shell\open\command', [ChaveArquivo]), Format('”%s” “%s”', [Executavel, '%1']));
+
+    //Define o ícone associado ao tipo de arquivo
+    EditarChave(Format('%s\DefaultIcon', [ChaveArquivo]), Format('%s, 0', [Executavel]));
+  finally
+    Registro.Free;
+  end;
+  //Notifica o SO da alteração na associação do tipo de arquivo
+  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nil, nil);
+  result := true;
+end;
+
+
+
+function RegisterFileType2(const DocFileName: string; AppName : string): boolean;
+var
+  FileClass: string;
+  Reg: TRegistry;
+begin
+  Result := false;
+  Reg := TRegistry.Create(KEY_EXECUTE);
+  Reg.RootKey := HKEY_CLASSES_ROOT;
+  reg.LazyWrite:= false;
+  FileClass := '';
+  if Reg.OpenKeyReadOnly(ExtractFileExt(DocFileName)) then
+  begin
+    FileClass := Reg.ReadString('');
+    Reg.CloseKey;
+  end;
+  if FileClass <> '' then begin
+    if Reg.OpenKey(FileClass + '\Shell\Open\Command',True) then
+    begin
+      reg.WriteString('', AppName + ',0');
+      Reg.CloseKey;
+      Reg.OpenKey( ExtractFileExt(DocFileName) + 'fileshellopencommand', True);
+      Reg.WriteString('',AppName+' "%1"');
+      Reg.CloseKey;
+      Result := true;
+    end;
+  end;
+  Reg.Free;
+end;
+
 function RegisterFileType(ExtName: string; AppName: string): boolean;
     var
       reg: TRegistry;
@@ -99,23 +239,22 @@ begin
       reg := TRegistry.Create;
       try
         reg.RootKey := HKEY_CLASSES_ROOT;
-        if reg.OpenKey('.' + ExtName, True) then
+        reg.Access:= KEY_ALL_ACCESS;
+        if not reg.OpenKey('.' + ExtName, True) then
         begin
-          reg.WriteString('', ExtName + 'file');
-          reg.CloseKey;
-          reg.CreateKey(ExtName + 'file');
-          reg.OpenKey(ExtName + 'file\DefaultIcon', True);
-          reg.WriteString('', AppName + ',0');
-          reg.CloseKey;
-          reg.OpenKey(ExtName + 'file\shell\open\command', True);
-          reg.WriteString('', AppName + ' "%1"');
-          reg.CloseKey;
-          result := true;
-        end
-        else
-        begin
-          result := false;
+          reg.CreateKey('.' + ExtName);
         end;
+        reg.WriteString('', ExtName + 'file');
+        reg.CloseKey;
+        reg.CreateKey(ExtName + 'file');
+        reg.OpenKey(ExtName + 'file\DefaultIcon', True);
+        reg.WriteString('', AppName + ',0');
+        reg.CloseKey;
+        reg.OpenKey(ExtName + 'file\shell\open\command', True);
+        reg.WriteString('', AppName + ' "%1"');
+        reg.CloseKey;
+        result := true;
+
       finally
         reg.Free;
       end;

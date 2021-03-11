@@ -7,9 +7,12 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, main, Item, sobre, pesquisar, funcoes, zcomponent, finds, folders,
-  unit1
+  Forms, main, Item, sobre, pesquisar, funcoes, zcomponent, finds, folders
   { you can add units after this };
+
+{$ifdef Windows}
+{$R 'Manifest.res'}
+{$endif}
 
 {$R *.res}
 

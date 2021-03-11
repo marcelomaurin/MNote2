@@ -10,6 +10,7 @@ uses
   Forms, main, Item, sobre, pesquisar, funcoes, zcomponent, finds, folders
   { you can add units after this };
 
+
 {$R *.res}
 
 begin

@@ -5,17 +5,18 @@ unit Item;
 interface
 
 uses
-  Classes, SysUtils, contnrs;
+  Classes, SysUtils, contnrs, SynCompletion;
 
 type
-TTypeItem  = (e , h , CCP, Reg, bash, bat, cfg , txt, all);
-TProjetoTipo = (ProjetoRoot, ProjetoSetup, ProjetoSetupItem, ProjetoFiles,ProjetoDirFiles, ProjetoFilesItem);
+TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BASH, ti_BAT, ti_CFG , ti_TXT, ti_SQL, ti_ALL);
+TProjetoTipo = (pt_NODEFINE, pt_TEXT, pt_ProjetoRoot, pt_ProjetoSetup, pt_ProjetoSetupItem, pt_ProjetoFiles, pt_ProjetoDirFiles, pt_ProjetoFilesItem);
 TTipoInfo = (Name, Path);
 TItem = class
       private
          FListaItem: TObjectList;
          function PesquisaPar(param: string; lst: TStringlist): string;
          function AtribuiExt(Extensao: string): TTypeItem;
+         procedure default();
       public
          Name: String;
          FileName : String;
@@ -24,9 +25,10 @@ TItem = class
          {#IFDEF WINDOWS}
          VolName : String;
          {#ENDIF}
-         ItemType : TTypeItem;
-         ProjetoTipo : TProjetoTipo;
+         ItemType : TTypeItem; (*Nao esta sendo usado p nada*)
+         ProjetoTipo : TProjetoTipo;  (*Nao esta sendo usado p nada*)
          Salvo : Boolean;
+         synCompletion : TSynCompletion;
          constructor Create();
          procedure Mudou();
          procedure AtribuiNome(Arquivo:String);
@@ -41,6 +43,14 @@ implementation
 
 procedure TItem.AtribuiNovoNome();
 begin
+     default();
+
+end;
+
+procedure TItem.default();
+begin
+  ItemType :=  ti_NODEFINE;
+  ProjetoTipo := pt_NODEFINE;
   Name := 'Novo';
   DirName := '';
   FileName := '';
@@ -49,10 +59,12 @@ begin
   VolName:= '';
   {#endif}
 
+
 end;
 
 constructor TItem.create();
 begin
+  default();
   Salvo := false;
 end;
 

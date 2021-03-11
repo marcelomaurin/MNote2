@@ -1388,4 +1388,32 @@ object frmMNote: TfrmMNote
     Left = 360
     Top = 122
   end
+  object PopupNotifier1: TPopupNotifier
+    Color = clInfoBk
+    Icon.Data = {
+      07544269746D617000000000
+    }
+    Text = 'Text'
+    Title = 'Caption'
+    Visible = False
+    Left = 529
+    Top = 94
+  end
+  object SynCompletion1: TSynCompletion
+    OnExecute = SynCompletion1Execute
+    Position = 0
+    LinesInWindow = 6
+    OnSearchPosition = SynCompletion1SearchPosition
+    SelectedColor = clHighlight
+    CaseSensitive = False
+    Width = 262
+    AutoUseSingleIdent = True
+    ShortCut = 16416
+    EndOfTokenChr = '()[].'
+    OnCodeCompletion = SynCompletion1CodeCompletion
+    ExecCommandID = ecSynCompletionExecute
+    ToggleReplaceWhole = False
+    Left = 83
+    Top = 90
+  end
 end

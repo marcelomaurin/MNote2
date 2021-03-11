@@ -6,9 +6,10 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, SynHighlighterPo,
-  SynHighlighterPas, SynHighlighterCpp,SynHighlighterSQL, Forms, Controls, Graphics, Dialogs,
-  Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, item, types, finds, setmain,
-  mquery, TypeDB, folders, funcoes;
+  SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion, Forms,
+  Controls, Graphics, Dialogs, Menus, ExtCtrls, ComCtrls, StdCtrls, Grids,
+  PopupNotifier, item, types, finds, setmain, mquery, TypeDB, folders, funcoes,
+  LCLType;
 
 
 const versao = '2.9';
@@ -16,6 +17,8 @@ const versao = '2.9';
 type
 
   { TfrmMNote }
+
+
 
 
   TfrmMNote = class(TForm)
@@ -67,8 +70,10 @@ type
     popFechar: TPopupMenu;
     popSysEdit: TPopupMenu;
     PopupMenu1: TPopupMenu;
+    PopupNotifier1: TPopupNotifier;
     ReplaceDialog1: TReplaceDialog;
     SaveDialog1: TSaveDialog;
+    SynCompletion1: TSynCompletion;
     SynSQLSyn1: TSynSQLSyn;
     TrayIcon1: TTrayIcon;
     procedure FindDialog1Find(Sender: TObject);
@@ -117,6 +122,11 @@ type
     procedure setSelLength(var textComponent:TSynEdit; newValue:integer);
     procedure pntvClick(Sender: TObject);
     procedure pgMainChange(Sender: TObject);
+    procedure SynCompletion1CodeCompletion(var Value: string;
+      SourceValue: string; var SourceStart, SourceEnd: TPoint;
+      KeyChar: TUTF8Char; Shift: TShiftState);
+    procedure SynCompletion1Execute(Sender: TObject);
+    procedure SynCompletion1SearchPosition(var APosition: integer);
     procedure TabSheet1ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure TabSheet2ContextPopup(Sender: TObject; MousePos: TPoint;
@@ -136,6 +146,7 @@ type
     procedure Pesquisar(Sender: TObject);
     procedure CarregaContexto();
     procedure AssociarExtensao(Aba: TSynEdit);
+    function classificaTipo(arquivo : string): TTypeItem;
 
   public
     { public declarations }
@@ -150,7 +161,7 @@ implementation
 {$R *.lfm}
 
 { TfrmMNote }
-uses Sobre, LCLType, pesquisar;
+uses Sobre, pesquisar;
 
 
 procedure TfrmMNote.synChange(Sender: TObject);
@@ -164,44 +175,94 @@ begin
 
 end;
 
-
+(*Classificação a partir da extensão*)
+function TfrmMNote.classificaTipo(arquivo : string): TTypeItem;
+var
+  extensao : string;
+begin
+  extensao := ExtractFileExt(arquivo);
+  if extensao = '.sql' then
+  begin
+    result := ti_SQL;
+  end;
+  if extensao = '.bak' then
+  begin
+    result := ti_SQL;
+  end;
+  if extensao = '.pas' then
+  begin
+    result := ti_PAS;
+  end;
+end;
 
 procedure TfrmMNote.Carregar(arquivo : String);
 var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
+   SynCompletion : TSynCompletion;
 begin
-  tb := pgMain.AddTabSheet();
+  if FileExists(arquivo) then
+  begin
+    (*
+    tb := pgMain.AddTabSheet();
 
-  syn := TSynEdit.Create(tb);
-  syn.Parent := tb;
-  syn.Align:= alClient;
-  syn.PopupMenu := popSysEdit;
-  syn.Lines.LoadFromFile(arquivo);
-  syn.OnChange := @synChange ;
-  tb.tag := integer(pointer(syn));
-  tb.ImageIndex:=0;
-  tb.PopupMenu := popFechar;
-  item := TItem.create();
-  item.Loadfile(arquivo);
-  item.salvo := true;
-  syn.Tag:= integer(pointer(item));
-  tb.Caption:= item.Name;
-  pgMain.Refresh();
-  AssociarExtensao(syn);
+    syn := TSynEdit.Create(tb);
+    syn.Parent := tb;
+    syn.Align:= alClient;
+    syn.PopupMenu := popSysEdit;
+    SynCompletion := TSynCompletion.Create(self);
+    SynCompletion.Editor := syn;
+    SynCompletion.OnCodeCompletion:= @SynCompletion1CodeCompletion;
+    syn.Tag:= integer(pointer(item));
+    *)
+    NovoItem();
 
+    tb := pgMain.ActivePage;
+    syn := TSynEdit(tb.tag);
+    try
+      syn.Lines.LoadFromFile(arquivo);
+      item := TItem(syn.tag);
+      item.ItemType := classificaTipo(arquivo);
+      except
+          on E: Exception do
+          begin
+            tb.Destroy;
+            showmessage('File cannot be read:'+ E.Message);
+            exit;
+          end;
+
+      end;
+    end;
+    syn.OnChange := @synChange ;
+    tb.tag := integer(pointer(syn));
+    tb.ImageIndex:=0;
+    tb.PopupMenu := popFechar;
+    item := TItem.create();
+    item.Loadfile(arquivo);
+    item.salvo := true;
+    syn.Tag:= integer(pointer(item));
+    if FileGetAttr(arquivo) = faReadOnly then
+    begin
+        syn.ReadOnly:=true;
+        tb.Caption:= item.Name;
+    end
+    else
+    begin
+         tb.Caption:= item.Name;
+    end;
+    pgMain.Refresh();
+    AssociarExtensao(syn);
 end;
 
 procedure TfrmMNote.CarregarArquivo(arquivo : string);
 begin
   if (arquivo = '') then
   begin
-  if OpenDialog1.execute then
-  begin
-    Carregar(OpenDialog1.FileName);
-  end;
-
+    if OpenDialog1.execute then
+    begin
+      Carregar(OpenDialog1.FileName);
+    end;
   end
   else
   begin
@@ -214,6 +275,7 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
+   SynCompletion : TSynCompletion;
 begin
   tb := pgMain.AddTabSheet();
 
@@ -223,12 +285,18 @@ begin
   syn.Lines.Clear;
   syn.PopupMenu := popSysEdit;
   syn.OnChange:= @synChange;
+  SynCompletion := TSynCompletion.Create(self);
+  SynCompletion.Editor := syn;
+  SynCompletion.OnCodeCompletion:=@SynCompletion1CodeCompletion;
+  SynCompletion.OnExecute:=@SynCompletion1Execute;
+  SynCompletion.OnSearchPosition:=@SynCompletion1SearchPosition;
   tb.PopupMenu := popFechar;
   tb.Tag:= Integer(pointer(syn)); //Guarda o Sys
   tb.ImageIndex:=0;
 
   item := TItem.create();
   item.AtribuiNovoNome();
+  item.synCompletion:= SynCompletion;
   syn.Tag:= integer(pointer(item));
   tb.Caption:= item.Name;
   pgMain.Refresh();
@@ -326,11 +394,14 @@ begin
    begin
         ext := copy(ext,2,Length(ext));
         {$ifdef WINDOWS}
-        if not VerificaRegExt(ext) then
+        if IsAdministrator then
         begin
+          if not VerificaRegExt(ext) then
+          begin
              if ShowConfirm('Associa extensão '+ext + ' a aplicação!') then
              begin
-                  if RegisterFileType(ext,Arquivo) then
+                  //if RegisterFileType2(Arquivo, application.ExeName) then
+                  if  RegistrarExtensao(  ExtractFileExt(application.ExeName), 'Aplicativo de edição de texto', ExtractFileName(application.ExeName), Application.ExeName) then
                   begin
                     showmessage('Extensão associada!');
                   end
@@ -339,6 +410,13 @@ begin
                      showmessage('Extensão não foi associada!');
                   end;
              end;
+          end;
+        end
+        else
+        begin
+           PopupNotifier1.Title:='Atenção!';
+           PopupNotifier1.Text:='Associação de extensão somente possivel quando estiver rodando como administrador';
+           PopupNotifier1.Show;
         end;
         {$endif}
    end;
@@ -566,33 +644,18 @@ var
    syn : TSynEdit;
    item : TItem;
    sql : TSynSQLSyn;
-
+   SynCompletion:TSynCompletion;
 begin
   syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
   item := TItem(syn.tag);
   sql := TSynSQLSyn.create(self);
+  synCompletion :=  TSynCompletion(item.synCompletion) ;
 
   sql.sqldialect := sqlMySQL;
   sql.TableNames.clear;
-  if frmMQuery <> nil then
-  begin
 
-    sql.sqldialect := sqlMySQL;
-    if (frmMQuery.zmycon.Connected) then
-    begin
-      if (frmMQuery.getdatabasetype = DBMysql) then
-      begin
-        sql.SQLDialect:= sqlMySQL;
-      end;
-      if (frmMQuery.getdatabasetype = DBPostgres) then
-      begin
-        sql.SQLDialect:= sqlPostgres;
-      end;
-
-      sql.tableNames := frmMQuery.GetTables();
-    end;
-  end;
   syn.Highlighter := sql;
+  item.ItemType:= ti_SQL;
 
 
 end;
@@ -947,6 +1010,78 @@ begin
 
 end;
 
+procedure TfrmMNote.SynCompletion1CodeCompletion(var Value: string;
+  SourceValue: string; var SourceStart, SourceEnd: TPoint; KeyChar: TUTF8Char;
+  Shift: TShiftState);
+var
+   syn : TSynEdit;
+   tb : TTabSheet;
+   listagem : TListBox;
+
+begin
+   if (pgMain.ActivePage <> nil) then
+   begin
+      tb := pgMain.ActivePage;
+      syn := TSynEdit(tb.tag);
+      listagem := TListBox.Create(syn);
+      listagem.Items.Text:= SourceValue;
+      //listagem
+      //SourceValue :=  SourceValue;
+      (*
+      if SourceStart.x > 0 then
+      begin
+        if syn.Lines[SourceStart.y - 1][SourceStart.x-1] = '\' then
+        begin
+          SourceStart.x -= 1;
+          SourceValue := '\' + SourceValue;
+        end;
+      end;
+      *)
+   end;
+end;
+
+procedure TfrmMNote.SynCompletion1Execute(Sender: TObject);
+begin
+  showmessage('execute');
+end;
+
+procedure TfrmMNote.SynCompletion1SearchPosition(var APosition: integer);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+   sql : TSynSQLSyn;
+   SynCompletion:TSynCompletion;
+begin
+   syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
+   item := TItem(syn.tag);
+   if (item.ItemType = ti_sql) then
+   begin
+
+
+   end;
+   SynCompletion :=  item.synCompletion;
+
+   synCompletion :=  TSynCompletion(item.synCompletion) ;
+   if frmMQuery <> nil then
+    begin
+      sql.sqldialect := sqlMySQL;
+      if (frmMQuery.zmycon.Connected) then
+      begin
+        if (frmMQuery.getdatabasetype = DBMysql) then
+        begin
+          sql.SQLDialect:= sqlMySQL;
+        end;
+        if (frmMQuery.getdatabasetype = DBPostgres) then
+        begin
+          sql.SQLDialect:= sqlPostgres;
+        end;
+        SynCompletion.ItemList.Append(frmMQuery.GetTables().Text);
+        sql.tableNames := frmMQuery.GetTables();
+      end;
+    end;
+end;
+
 procedure TfrmMNote.TabSheet1ContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 begin
@@ -956,7 +1091,8 @@ end;
 procedure TfrmMNote.TabSheet2ContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 begin
-  end;
+
+end;
 
 
 
