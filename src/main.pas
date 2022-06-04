@@ -12,7 +12,7 @@ uses
   LCLType;
 
 
-const versao = '2.9';
+const versao = '2.10';
 
 type
 
@@ -35,6 +35,7 @@ type
     MenuItem13: TMenuItem;
     MenuItem14: TMenuItem;
     MenuItem15: TMenuItem;
+    MenuItem16: TMenuItem;
     MenuItem4: TMenuItem;
     mnFixW: TMenuItem;
     mnOnTopW: TMenuItem;
@@ -216,6 +217,10 @@ begin
     SynCompletion.OnCodeCompletion:= @SynCompletion1CodeCompletion;
     syn.Tag:= integer(pointer(item));
     *)
+    if(not FileExists(arquivo)) then
+    begin
+        exit ;
+    end;
     NovoItem();
 
     tb := pgMain.ActivePage;
@@ -261,12 +266,22 @@ begin
   begin
     if OpenDialog1.execute then
     begin
-      Carregar(OpenDialog1.FileName);
+      if FileExists(OpenDialog1.FileName) then
+      begin
+            Carregar(OpenDialog1.FileName);
+      end
+      else
+      begin
+           Showmessage('File not found!');
+      end;
     end;
   end
   else
   begin
-     Carregar(arquivo);
+     if FileExists(OpenDialog1.FileName) then
+     begin
+          Carregar(arquivo);
+     end;
   end;
 end;
 
@@ -319,9 +334,19 @@ begin
   end;
   CarregaContexto();
   parametros := Application.ParamCount;
-  for a := 1 to parametros-1 do
+  for a := 1 to parametros do
   begin
-      Carregar(Application.Params[a]);
+      if (pos('--',Application.Params[a])<>-1) then
+      begin
+        if FileExists(Application.Params[a]) then
+        begin
+          Carregar(Application.Params[a]);
+        end
+        else
+        begin
+          showmessage(Application.Params[a]+' file not found!')
+        end;
+      end;
   end;
   strparametros := FsetMain.lastfiles;
   lista.delimiter := ' ';
@@ -329,13 +354,16 @@ begin
   for a  := 0 to lista.Count-1 do
   begin
      info :=lista[a];
-     if FileExists(info) then
+     if(FileExists(info)) then
+     begin
          Carregar(info);
+     end;
   end;
   {$ifdef Darwin}
      //Nao faz nada
 
   {$else}
+  (*
      for i := 1 to paramCount() do
      begin
         info := paramStr(i);
@@ -344,7 +372,7 @@ begin
             Carregar(info);
         end;
      end;
-
+   *)
   {$endif}
 
 
@@ -701,8 +729,10 @@ end;
 
 procedure TfrmMNote.mnDesktopCenterClick(Sender: TObject);
 begin
-  frmMNote.Top := (Screen.DesktopHeight - frmMNote.Height) DIV 2;
-  frmMNote.Left := (Screen.DesktopWidth - frmMNote.Width) DIV 2;
+  frmMNote.top := (Screen.WorkAreaTop  - frmMNote.Height) DIV 2;
+  frmMNote.left := (Screen.WorkAreaLeft  - frmMNote.Width) DIV 2;
+  Fsetmain.posx:=frmMNote.Left;
+  Fsetmain.posy:=frmMNote.top;
 end;
 
 procedure TfrmMNote.mnCClick(Sender: TObject);

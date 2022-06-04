@@ -1,7 +1,7 @@
 object frmMNote: TfrmMNote
-  Left = 400
+  Left = -744
   Height = 394
-  Top = 168
+  Top = -61
   Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Notepad do Maurin'
@@ -11,7 +11,8 @@ object frmMNote: TfrmMNote
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '2.0.10.0'
+  Position = poMainFormCenter
+  LCLVersion = '2.0.12.0'
   object Panel1: TPanel
     Left = 0
     Height = 50
@@ -126,6 +127,10 @@ object frmMNote: TfrmMNote
         Caption = 'Folders'
         ImageIndex = 5
         OnClick = MenuItem15Click
+      end
+      object MenuItem16: TMenuItem
+        Caption = 'LogView'
+        ImageIndex = 6
       end
     end
     object mnSetup: TMenuItem
