@@ -132,6 +132,14 @@ end;
 procedure TSetMain.IdentificaArquivo(flag: boolean);
 begin
   //filename := 'Work'+ FormatDateTime('ddmmyy',now())+'.cfg';
+  {$ifdef Darwin}
+    //Nao testado ainda
+    Fpath :=GetAppConfigDir(false);
+    if not(FileExists(FPATH)) then
+    begin
+      createdir(fpath);
+    end;
+  {$ENDIF}
   {$IFDEF LINUX}
       //Fpath :='/home/';
       //Fpath := GetUserDir()

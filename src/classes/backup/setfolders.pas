@@ -131,9 +131,34 @@ procedure TSetFolders.IdentificaArquivo(flag: boolean);
 begin
   //filename := 'Work'+ FormatDateTime('ddmmyy',now())+'.cfg';
 
-  if (FileExists(filename)) then
+    {$ifdef Darwin}
+    //Nao testado ainda
+    Fpath :=GetAppConfigDir(false);
+    if not(FileExists(FPATH)) then
+    begin
+      createdir(fpath);
+    end;
+  {$ENDIF}
+  {$IFDEF LINUX}
+      //Fpath :='/home/';
+      //Fpath := GetUserDir()
+      Fpath :=GetAppConfigDir(false);
+      if not(FileExists(FPATH)) then
+      begin
+         createdir(fpath);
+      end;
+  {$ENDIF}
+  {$IFDEF WINDOWS}
+      Fpath :=GetAppConfigDir(false);
+      if not(FileExists(FPATH)) then
+      begin
+         createdir(fpath);
+      end;
+  {$ENDIF}
+
+  if (FileExists(fpath+filename)) then
   begin
-    arquivo.LoadFromFile(filename);
+    arquivo.LoadFromFile(fpath+filename);
     CarregaContexto();
   end
   else
@@ -147,6 +172,7 @@ end;
 //Metodo construtor
 constructor TSetFolders.create();
 begin
+    Default();
     arquivo := TStringList.create();
     IdentificaArquivo(true);
 
@@ -168,7 +194,7 @@ begin
   arquivo.Append('STAY:'+booltostr(FStay));
   arquivo.Append('LASTFILES:'+FLastFiles);
 
-  arquivo.SaveToFile(filename);
+  arquivo.SaveToFile(fpath+filename);
 end;
 
 destructor TSetFolders.destroy();

@@ -32,6 +32,7 @@ type
         FDatabasename : String;
         FNroCfg : integer;
         FScheme : String;
+        FPATH : string;
         procedure SetTipoBanco(value : TypeDatabase);
         procedure SetHostName(value : string);
         procedure SetUser(value : string);
@@ -138,11 +139,36 @@ end;
 
 procedure TSetBanco.IdentificaArquivo(flag: boolean);
 begin
+  {$ifdef Darwin}
+    //Nao testado ainda
+    Fpath :=GetAppConfigDir(false);
+    if not(FileExists(FPATH)) then
+    begin
+      createdir(fpath);
+    end;
+  {$ENDIF}
+  {$IFDEF LINUX}
+      //Fpath :='/home/';
+      //Fpath := GetUserDir()
+      Fpath :=GetAppConfigDir(false);
+      if not(FileExists(FPATH)) then
+      begin
+         createdir(fpath);
+      end;
+  {$ENDIF}
+  {$IFDEF WINDOWS}
+      Fpath :=GetAppConfigDir(false);
+      if not(FileExists(FPATH)) then
+      begin
+         createdir(fpath);
+      end;
+  {$ENDIF}
+
   filename := format(mfilename,[Fnrocfg]);
 
-  if (FileExists(filename)) then
+  if (FileExists(Fpath+filename)) then
   begin
-    arquivo.LoadFromFile(filename);
+    arquivo.LoadFromFile(Fpath+filename);
     CarregaContexto();
   end
   else
@@ -179,7 +205,7 @@ begin
   arquivo.Append('SCHEME:'+FScheme);
   arquivo.Append('USER:'+FUser);
   arquivo.Append('PASSWORD:'+FPassword);
-  arquivo.SaveToFile(filename);
+  arquivo.SaveToFile(Fpath+filename);
 end;
 
 destructor TSetBanco.destroy();

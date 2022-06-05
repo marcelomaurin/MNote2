@@ -5,17 +5,28 @@ unit Item;
 interface
 
 uses
-  Classes, SysUtils, contnrs, SynCompletion;
+  Classes, SysUtils, contnrs, SynCompletion, ExtCtrls, SynEdit;
 
 type
-TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BASH, ti_BAT, ti_CFG , ti_TXT, ti_SQL, ti_ALL);
+TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BASH, ti_BAT, ti_CFG , ti_TXT, ti_SQL,ti_PY, ti_ALL);
 TProjetoTipo = (pt_NODEFINE, pt_TEXT, pt_ProjetoRoot, pt_ProjetoSetup, pt_ProjetoSetupItem, pt_ProjetoFiles, pt_ProjetoDirFiles, pt_ProjetoFilesItem);
 TTipoInfo = (Name, Path);
+
+{ TItem }
+
 TItem = class
       private
          FListaItem: TObjectList;
+         FItemType : TTypeItem; (*Nao esta sendo usado p nada*)
+         Fsyn : TSynEdit;
+         Ftimer : TTimer;
+         FSender: TObject;
          function PesquisaPar(param: string; lst: TStringlist): string;
          function AtribuiExt(Extensao: string): TTypeItem;
+         procedure default();
+         procedure SetItemType(value : TTypeItem);
+         procedure SetSyn(value : TSynEdit);
+         procedure  TimerEvento(Sender: TObject);
       public
          Name: String;
          FileName : String;
@@ -24,30 +35,39 @@ TItem = class
          {#IFDEF WINDOWS}
          VolName : String;
          {#ENDIF}
-         ItemType : TTypeItem; (*Nao esta sendo usado p nada*)
+
          ProjetoTipo : TProjetoTipo;  (*Nao esta sendo usado p nada*)
          Salvo : Boolean;
          synCompletion : TSynCompletion;
-         constructor Create();
+         AutoComplete : TSynAutoComplete;
+
+         constructor Create(Sender: TComponent);
+         destructor destroy();
          procedure Mudou();
          procedure AtribuiNome(Arquivo:String);
          procedure AtribuiNovoNome();
          procedure Savefile(arquivo: string);
          procedure Loadfile(arquivo: string);
-
-
+         property ItemType : TTypeItem read FItemType write setItemType;
+         property syn :TSynEdit read Fsyn write setSyn;
 end;
 
 implementation
 
 procedure TItem.AtribuiNovoNome();
 begin
-     default;
+     default();
 
 end;
 
 procedure TItem.default();
 begin
+
+  Ftimer.Enabled := false;
+  Ftimer.Interval:= 1000;
+  Ftimer.OnTimer:= @TimerEvento;
+
+
   ItemType :=  ti_NODEFINE;
   ProjetoTipo := pt_NODEFINE;
   Name := 'Novo';
@@ -61,10 +81,64 @@ begin
 
 end;
 
-constructor TItem.create();
+procedure TItem.SetItemType(value: TTypeItem);
 begin
+  FItemType:= value;
+  case FItemType of
+    ti_PAS :
+    begin
+      AutoComplete.AutoCompleteList.LoadFromFile('Delphi32.dci');
+    end;
+    ti_PY :
+    begin
+      AutoComplete.AutoCompleteList.LoadFromFile('python.dci');
+    end;
+    ti_SQL :
+    begin
+      AutoComplete.AutoCompleteList.LoadFromFile('sql.dci');
+    end;
+    ti_CCP :
+    begin
+      AutoComplete.AutoCompleteList.LoadFromFile('cpp.dci');
+    end;
+    ti_H :
+    begin
+      AutoComplete.AutoCompleteList.LoadFromFile('cpp.dci');
+    end;
+    ti_TXT :
+    begin
+      AutoComplete.AutoCompleteList.clear;
+    end;
+    ti_CFG :
+    begin
+      AutoComplete.AutoCompleteList.clear;
+    end;
+  end;
+  //AutoComplete.AutoCompleteList.;
+end;
+
+procedure TItem.SetSyn(value: TSynEdit);
+begin
+  fsyn := value;
+end;
+
+procedure TItem.TimerEvento(Sender: TObject);
+begin
+  //Nada ainda
+end;
+
+constructor TItem.Create(Sender: TComponent);
+begin
+  FSender := Sender;
+
+
   default();
   Salvo := false;
+end;
+
+destructor TItem.destroy();
+begin
+  Ftimer.free;;
 end;
 
 procedure TItem.Mudou();
@@ -119,7 +193,7 @@ begin
 
 end;
 
-procedure TITem.Loadfile(arquivo: string);
+procedure TItem.Loadfile(arquivo: string);
 begin
   AtribuiNome(arquivo);
 

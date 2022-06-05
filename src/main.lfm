@@ -4,7 +4,7 @@ object frmMNote: TfrmMNote
   Top = -61
   Width = 630
   BorderStyle = bsDialog
-  Caption = 'MNote2 - Notepad do Maurin'
+  Caption = 'MNote2 - Maurin Notepad'
   ClientHeight = 374
   ClientWidth = 630
   Menu = MainMenu1
@@ -753,6 +753,7 @@ object frmMNote: TfrmMNote
       end
       object mnPython: TMenuItem
         Caption = 'Python'
+        OnClick = mnPythonClick
       end
       object mnC: TMenuItem
         Caption = 'C/C++'
@@ -1390,8 +1391,8 @@ object frmMNote: TfrmMNote
     DefaultFilter = 'SQL Files (*.sql)|*.sql'
     Enabled = False
     SQLDialect = sqlPostgres
-    Left = 360
-    Top = 122
+    Left = 344
+    Top = 94
   end
   object PopupNotifier1: TPopupNotifier
     Color = clInfoBk
@@ -1418,7 +1419,46 @@ object frmMNote: TfrmMNote
     OnCodeCompletion = SynCompletion1CodeCompletion
     ExecCommandID = ecSynCompletionExecute
     ToggleReplaceWhole = False
-    Left = 83
+    Left = 416
     Top = 90
+  end
+  object SynPasSyn1: TSynPasSyn
+    Enabled = False
+    CompilerMode = pcmDelphi
+    NestedComments = False
+    Left = 559
+    Top = 320
+  end
+  object SynCppSyn1: TSynCppSyn
+    DefaultFilter = 'Arquivos C++ (*.c,*.cpp,*.h,*.hpp,*.hh)|*.c;*.cpp;*.h;*.hpp;*.hh'
+    Enabled = False
+    Left = 504
+    Top = 320
+  end
+  object SynPythonSyn1: TSynPythonSyn
+    DefaultFilter = 'Arquivos Python (*.py)|*.py'
+    Enabled = False
+    Left = 448
+    Top = 320
+  end
+  object SynSQLSyn2: TSynSQLSyn
+    DefaultFilter = 'Arquivos SQL (*.sql)|*.sql'
+    Enabled = False
+    SQLDialect = sqlSybase
+    Left = 392
+    Top = 320
+  end
+  object SynPHPSyn1: TSynPHPSyn
+    DefaultFilter = 'Arquivos PHP (*.php,*.php3,*.phtml,*.inc)|*.php;*.php3;*.phtml;*.inc'
+    Enabled = False
+    Left = 336
+    Top = 320
+  end
+  object SynAutoComplete1: TSynAutoComplete
+    EndOfTokenChr = '()[].'
+    ShortCut = 8224
+    ExecCommandID = ecSynAutoCompletionExecute
+    Left = 544
+    Top = 226
   end
 end

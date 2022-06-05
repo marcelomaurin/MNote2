@@ -31,6 +31,7 @@ type
         FStay : boolean;
         FIdioma : string;
         FLastFiles : String;
+        FPATH : string;
         //filename : String;
         procedure SetDevice(const Value : Boolean);
         procedure SetPOSX(value : integer);
@@ -142,11 +143,34 @@ end;
 
 procedure TSetMQuery.IdentificaArquivo(flag: boolean);
 begin
-  //filename := 'Work'+ FormatDateTime('ddmmyy',now())+'.cfg';
+    {$ifdef Darwin}
+    //Nao testado ainda
+    Fpath :=GetAppConfigDir(false);
+    if not(FileExists(FPATH)) then
+    begin
+      createdir(fpath);
+    end;
+  {$ENDIF}
+  {$IFDEF LINUX}
+      //Fpath :='/home/';
+      //Fpath := GetUserDir()
+      Fpath :=GetAppConfigDir(false);
+      if not(FileExists(FPATH)) then
+      begin
+         createdir(fpath);
+      end;
+  {$ENDIF}
+  {$IFDEF WINDOWS}
+      Fpath :=GetAppConfigDir(false);
+      if not(FileExists(FPATH)) then
+      begin
+         createdir(fpath);
+      end;
+  {$ENDIF}
 
-  if (FileExists(filename)) then
+  if (FileExists(fpath+filename)) then
   begin
-    arquivo.LoadFromFile(filename);
+    arquivo.LoadFromFile(fpath+filename);
     CarregaContexto();
   end
   else

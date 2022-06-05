@@ -6,10 +6,10 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, SynHighlighterPo,
-  SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion, Forms,
-  Controls, Graphics, Dialogs, Menus, ExtCtrls, ComCtrls, StdCtrls, Grids,
-  PopupNotifier, item, types, finds, setmain, mquery, TypeDB, folders, funcoes,
-  LCLType;
+  SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion,
+  SynHighlighterPython, SynHighlighterPHP, Forms, Controls, Graphics, Dialogs,
+  Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
+  setmain, mquery, TypeDB, folders, funcoes, LCLType;
 
 
 const versao = '2.10';
@@ -74,8 +74,14 @@ type
     PopupNotifier1: TPopupNotifier;
     ReplaceDialog1: TReplaceDialog;
     SaveDialog1: TSaveDialog;
+    SynAutoComplete1: TSynAutoComplete;
     SynCompletion1: TSynCompletion;
+    SynCppSyn1: TSynCppSyn;
+    SynPasSyn1: TSynPasSyn;
+    SynPHPSyn1: TSynPHPSyn;
+    SynPythonSyn1: TSynPythonSyn;
     SynSQLSyn1: TSynSQLSyn;
+    SynSQLSyn2: TSynSQLSyn;
     TrayIcon1: TTrayIcon;
     procedure FindDialog1Find(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -105,6 +111,7 @@ type
     procedure mnLazarusClick(Sender: TObject);
     procedure mnAssociarClick(Sender: TObject);
     procedure mnfontClick(Sender: TObject);
+    procedure mnPythonClick(Sender: TObject);
     procedure mnScriptClick(Sender: TObject);
     procedure MenuItem6Click(Sender: TObject);
     procedure MenuItem8Click(Sender: TObject);
@@ -136,7 +143,9 @@ type
     { private declarations }
     FPos : integer;
     strFind : String;
-    procedure NovoItem();
+    procedure CarregarParametros();
+    procedure CarregarOld();
+    function NovoItem():TTabSheet;
     procedure Carregar(arquivo : String);
     procedure SalvarTab(tb : TTabSheet);
     procedure synChange(Sender: TObject);
@@ -148,6 +157,7 @@ type
     procedure CarregaContexto();
     procedure AssociarExtensao(Aba: TSynEdit);
     function classificaTipo(arquivo : string): TTypeItem;
+    procedure MessageHint(info : string);
 
   public
     { public declarations }
@@ -181,7 +191,36 @@ function TfrmMNote.classificaTipo(arquivo : string): TTypeItem;
 var
   extensao : string;
 begin
+  //TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BASH, ti_BAT, ti_CFG , ti_TXT, ti_SQL,ti_PY, ti_ALL);
   extensao := ExtractFileExt(arquivo);
+  if extensao = '.txt' then
+  begin
+    result := ti_TXT;
+  end;
+  if extensao = '.cfg' then
+  begin
+    result := ti_CFG;
+  end;
+  if extensao = '.h' then
+  begin
+    result := ti_H;
+  end;
+  if extensao = '.c' then
+  begin
+    result := ti_CCP;
+  end;
+  if extensao = '.cc' then
+  begin
+    result := ti_CCP;
+  end;
+  if extensao = '.ccp' then
+  begin
+    result := ti_CCP;
+  end;
+  if extensao = '.sh' then
+  begin
+    result := ti_BASH;
+  end;
   if extensao = '.sql' then
   begin
     result := ti_SQL;
@@ -194,6 +233,24 @@ begin
   begin
     result := ti_PAS;
   end;
+  if extensao = '.py' then
+  begin
+    result := ti_PY;
+  end;
+end;
+
+
+procedure TfrmMNote.MessageHint(info: string);
+var
+  x , y : integer;
+begin
+     PopupNotifier1.Title:='Atenção!';
+     PopupNotifier1.Text:=info;
+     y := Screen.Height;
+     x := screen.Width;
+     PopupNotifier1.ShowAtPos(x,y);
+     PopupNotifier1.Show;
+     sleep(2000);
 end;
 
 procedure TfrmMNote.Carregar(arquivo : String);
@@ -201,7 +258,8 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-   SynCompletion : TSynCompletion;
+   fSynCompletion : TSynCompletion;
+   fAutoComplete : TSynAutoComplete;
 begin
   if FileExists(arquivo) then
   begin
@@ -217,47 +275,54 @@ begin
     SynCompletion.OnCodeCompletion:= @SynCompletion1CodeCompletion;
     syn.Tag:= integer(pointer(item));
     *)
+
     if(not FileExists(arquivo)) then
     begin
-        exit ;
-    end;
-    NovoItem();
-
-    tb := pgMain.ActivePage;
-    syn := TSynEdit(tb.tag);
-    try
-      syn.Lines.LoadFromFile(arquivo);
-      item := TItem(syn.tag);
-      item.ItemType := classificaTipo(arquivo);
-      except
-          on E: Exception do
-          begin
-            tb.Destroy;
-            showmessage('File cannot be read:'+ E.Message);
-            exit;
-          end;
-
-      end;
-    end;
-    syn.OnChange := @synChange ;
-    tb.tag := integer(pointer(syn));
-    tb.ImageIndex:=0;
-    tb.PopupMenu := popFechar;
-    item := TItem.create();
-    item.Loadfile(arquivo);
-    item.salvo := true;
-    syn.Tag:= integer(pointer(item));
-    if FileGetAttr(arquivo) = faReadOnly then
-    begin
-        syn.ReadOnly:=true;
-        tb.Caption:= item.Name;
+        //ShowMessage(arquivo + ' not exits');
+        MessageHint(arquivo + ' not exits');
     end
     else
     begin
-         tb.Caption:= item.Name;
-    end;
-    pgMain.Refresh();
-    AssociarExtensao(syn);
+      tb := NovoItem();
+      syn := TSynEdit(tb.tag);
+      try
+        item := Titem(syn.tag);
+        fSynCompletion := item.synCompletion;
+        fAutoComplete := item.AutoComplete;
+        syn.Lines.LoadFromFile(arquivo);
+
+        item.ItemType := classificaTipo(arquivo);
+        except
+            on E: Exception do
+            begin
+              tb.Destroy;
+              //showmessage('File cannot be read:'+ E.Message);
+              MessageHint('File cannot be read:'+ E.Message);
+              exit;
+            end;
+
+        end;
+      end;
+      syn.OnChange := @synChange ;
+      tb.tag := integer(pointer(syn));
+      tb.ImageIndex:=0;
+      tb.PopupMenu := popFechar;
+
+      item.Loadfile(arquivo);
+      item.salvo := true;
+
+      if FileGetAttr(arquivo) = faReadOnly then
+      begin
+          syn.ReadOnly:=true;
+          tb.Caption:= item.Name;
+      end
+      else
+      begin
+           tb.Caption:= item.Name;
+      end;
+      pgMain.Refresh();
+      AssociarExtensao(syn);
+  end;
 end;
 
 procedure TfrmMNote.CarregarArquivo(arquivo : string);
@@ -269,10 +334,13 @@ begin
       if FileExists(OpenDialog1.FileName) then
       begin
             Carregar(OpenDialog1.FileName);
+            Application.ProcessMessages;
       end
       else
       begin
-           Showmessage('File not found!');
+           //Showmessage('File not found!');
+           MessageHint('File not found!');
+
       end;
     end;
   end
@@ -285,12 +353,13 @@ begin
   end;
 end;
 
-procedure TfrmMNote.NovoItem();
+function TfrmMNote.NovoItem():TTabSheet;
 var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
    SynCompletion : TSynCompletion;
+   synAutoComplet : TSynAutoComplete;
 begin
   tb := pgMain.AddTabSheet();
 
@@ -300,55 +369,78 @@ begin
   syn.Lines.Clear;
   syn.PopupMenu := popSysEdit;
   syn.OnChange:= @synChange;
+  (*Complete*)
   SynCompletion := TSynCompletion.Create(self);
   SynCompletion.Editor := syn;
   SynCompletion.OnCodeCompletion:=@SynCompletion1CodeCompletion;
   SynCompletion.OnExecute:=@SynCompletion1Execute;
   SynCompletion.OnSearchPosition:=@SynCompletion1SearchPosition;
+
+  (*Autocomplete*)
+  synAutoComplet := TSynAutoComplete.create(self);
+  synAutoComplet.Editor := syn;
+
   tb.PopupMenu := popFechar;
   tb.Tag:= Integer(pointer(syn)); //Guarda o Sys
   tb.ImageIndex:=0;
 
-  item := TItem.create();
+  item := TItem.create(self);
   item.AtribuiNovoNome();
-  item.synCompletion:= SynCompletion;
-  syn.Tag:= integer(pointer(item));
+  item.synCompletion:= SynCompletion;    //Ponteiro de SynCompletion
+  item.AutoComplete :=  synAutoComplet;  //Ponteiro de synAutocompletion
+  item.syn := syn; //Ponteiro de editor
+
+  syn.Tag:= longint(pointer(item));
   tb.Caption:= item.Name;
   pgMain.Refresh();
+  application.ProcessMessages;
+  result := tb;
+
+
 
 end;
 
-procedure TfrmMNote.FormCreate(Sender: TObject);
+procedure TfrmMNote.CarregarParametros();
 var
    parametros : integer;
-   strparametros : string;
-   a : integer;
-   lista : TStringlist;
    info : string;
-   i : integer;
+   a : integer;
+   pesquisa : integer;
 begin
-  lista := TStringList.create;
-  if (FSetMain = nil) then
-  begin
-        FsetMain := TsetMain.create();
-  end;
-  CarregaContexto();
   parametros := Application.ParamCount;
   for a := 1 to parametros do
   begin
-      if (pos('--',Application.Params[a])<>-1) then
+      pesquisa := pos('--',Application.Params[a]);
+      if (pesquisa<>-1) then
       begin
         if FileExists(Application.Params[a]) then
         begin
-          Carregar(Application.Params[a]);
+          //showmessage(Application.Params[a]);
+          info := Application.Params[a];
+          MessageHint(info);
+          Carregar(info);
+          application.ProcessMessages;
         end
         else
         begin
-          showmessage(Application.Params[a]+' file not found!')
+          //showmessage(Application.Params[a]+' file not found!')
+          MessageHint(info+' file not found!');
         end;
       end;
   end;
+  //application.ProcessMessages;
+
+end;
+
+procedure TfrmMNote.CarregarOld();
+var
+   a : integer;
+   lista : TStringlist;
+   strparametros : string;
+   info : string;
+begin
   strparametros := FsetMain.lastfiles;
+  lista := TStringList.create;
   lista.delimiter := ' ';
   lista.DelimitedText :=  strparametros;
   for a  := 0 to lista.Count-1 do
@@ -356,9 +448,32 @@ begin
      info :=lista[a];
      if(FileExists(info)) then
      begin
+         //ShowMessage(info);
+         MessageHint(info);
          Carregar(info);
+         Application.ProcessMessages;
      end;
   end;
+  application.ProcessMessages;
+end;
+
+procedure TfrmMNote.FormCreate(Sender: TObject);
+//var
+
+   //a : integer;
+   //lista : TStringlist;
+   //strparametros : string;
+   //info : string;
+   //i : integer;
+begin
+
+  if (FSetMain = nil) then
+  begin
+        FsetMain := TsetMain.create();
+  end;
+  CarregaContexto();
+
+
   {$ifdef Darwin}
      //Nao faz nada
 
@@ -374,8 +489,8 @@ begin
      end;
    *)
   {$endif}
-
-
+  CarregarOld();
+  CarregarParametros();
 end;
 
 procedure TfrmMNote.CarregaContexto();
@@ -431,11 +546,13 @@ begin
                   //if RegisterFileType2(Arquivo, application.ExeName) then
                   if  RegistrarExtensao(  ExtractFileExt(application.ExeName), 'Aplicativo de edição de texto', ExtractFileName(application.ExeName), Application.ExeName) then
                   begin
-                    showmessage('Extensão associada!');
+                    //showmessage('Extensão associada!');
+                    MessageHint('Extensão associada!');
                   end
                   else
                   begin
-                     showmessage('Extensão não foi associada!');
+                     //showmessage('Extensão não foi associada!');
+                    MessageHint('Extensão não foi associada!');
                   end;
              end;
           end;
@@ -529,9 +646,7 @@ begin
       begin
          SalvarTab(tb);
       end;
-
    end;
-
 end;
 
 procedure TfrmMNote.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -672,12 +787,16 @@ var
    syn : TSynEdit;
    item : TItem;
    sql : TSynSQLSyn;
-   SynCompletion:TSynCompletion;
+   fSynCompletion:TSynCompletion;
+   fAutoComplete : TSynAutoComplete;
 begin
   syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
   item := TItem(syn.tag);
   sql := TSynSQLSyn.create(self);
-  synCompletion :=  TSynCompletion(item.synCompletion) ;
+  fsynCompletion :=  item.synCompletion;
+  fAutoComplete := item.AutoComplete;
+  fAutoComplete.AutoCompleteList.LoadFromFile('sql.dci');
+
 
   sql.sqldialect := sqlMySQL;
   sql.TableNames.clear;
@@ -784,15 +903,19 @@ var
    syn : TSynEdit;
    item : TItem;
    pas : TSynPasSyn;
+   fAutoComplete : TSynAutoComplete;
 begin
   syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
   item := TItem(syn.tag);
+  fAutoComplete := item.AutoComplete;
+  fAutoComplete.AutoCompleteList.LoadFromFile('Delphi32.dci');
   pas := TSynPasSyn.create(self);
   syn.Highlighter := pas;
 end;
 
 procedure TfrmMNote.mnAssociarClick(Sender: TObject);
 begin
+  //showmessage('associado');
 
 end;
 
@@ -809,6 +932,23 @@ begin
   begin
       syn.Font := FontDialog1.Font;
   end;
+end;
+
+procedure TfrmMNote.mnPythonClick(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+   python : TSynPythonSyn;
+   fAutoComplete : TSynAutoComplete;
+begin
+  syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  item := TItem(syn.tag);
+  fAutoComplete := item.AutoComplete;
+  fAutoComplete.AutoCompleteList.LoadFromFile('python.dci');
+
+  python := TSynPythonSyn.create(self);
+  syn.Highlighter := python;
 end;
 
 procedure TfrmMNote.mnScriptClick(Sender: TObject);
@@ -1072,7 +1212,8 @@ end;
 
 procedure TfrmMNote.SynCompletion1Execute(Sender: TObject);
 begin
-  showmessage('execute');
+  //showmessage('execute');
+  MessageHint('execute');
 end;
 
 procedure TfrmMNote.SynCompletion1SearchPosition(var APosition: integer);
@@ -1081,7 +1222,8 @@ var
    syn : TSynEdit;
    item : TItem;
    sql : TSynSQLSyn;
-   SynCompletion:TSynCompletion;
+   fSynCompletion:TSynCompletion;
+   fAutoComplete : TSynAutoComplete;
 begin
    syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
    item := TItem(syn.tag);
@@ -1090,9 +1232,9 @@ begin
 
 
    end;
-   SynCompletion :=  item.synCompletion;
+   fSynCompletion :=  item.synCompletion;
+   fAutoComplete := item.AutoComplete;
 
-   synCompletion :=  TSynCompletion(item.synCompletion) ;
    if frmMQuery <> nil then
     begin
       sql.sqldialect := sqlMySQL;
@@ -1106,7 +1248,7 @@ begin
         begin
           sql.SQLDialect:= sqlPostgres;
         end;
-        SynCompletion.ItemList.Append(frmMQuery.GetTables().Text);
+        fSynCompletion.ItemList.Append(frmMQuery.GetTables().Text);
         sql.tableNames := frmMQuery.GetTables();
       end;
     end;
