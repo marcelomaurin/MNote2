@@ -24,7 +24,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\MEDIT2
 DisableProgramGroupPage=yes
 OutputDir=D:\projetos\maurinsoft\MNote2\bin
-OutputBaseFilename=win_NMote2_10
+OutputBaseFilename=win_MNote2_10
 SetupIconFile=d:\projetos\maurinsoft\MNote2\src\MNote2.ico
 Compression=lzma
 SolidCompression=yes
@@ -38,6 +38,14 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "d:\projetos\maurinsoft\MNote2\src\MNote2.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "d:\projetos\maurinsoft\MNote2\src\*.dci"; DestDir: "{app}"; Flags: ignoreversion
+Source: "d:\projetos\maurinsoft\MNote2\libs\sqlite\win32\*.*"; DestDir: "{app}\libs\sqlite\win32\"; Flags: ignoreversion
+Source: "d:\projetos\maurinsoft\MNote2\libs\sqlite\win64\*.*"; DestDir: "{app}\libs\sqlite\win64\"; Flags: ignoreversion
+Source: "d:\projetos\maurinsoft\MNote2\libs\postgres\win32\*.*"; DestDir: "{app}\libs\postgres\win32\"; Flags: ignoreversion
+Source: "d:\projetos\maurinsoft\MNote2\libs\postgres\win64\*.*"; DestDir: "{app}\libs\postgres\win64\"; Flags: ignoreversion
+Source: "d:\projetos\maurinsoft\MNote2\libs\mysql\win32\*.*"; DestDir: "{app}\libs\mysql\win32\"; Flags: ignoreversion
+Source: "d:\projetos\maurinsoft\MNote2\libs\mysql\win64\*.*"; DestDir: "{app}\libs\mysql\win64\"; Flags: ignoreversion
+
 Source: "D:\projetos\maurinsoft\MNote2\src\libs\win64\libmysql64.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
