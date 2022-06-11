@@ -155,7 +155,7 @@ type
     procedure SalvarTudo();
     procedure Pesquisar(Sender: TObject);
     procedure CarregaContexto();
-    procedure AssociarExtensao(Aba: TSynEdit);
+    procedure AssociarExtensao(item: Titem);
     function classificaTipo(arquivo : string): TTypeItem;
     procedure MessageHint(info : string);
 
@@ -180,10 +180,11 @@ var
   syn : TSynEdit;
   item : TItem;
 begin
-  syn := TSynEdit(Sender);
-  item := TItem(syn.Tag);
-  item.Mudou();
-
+  //syn := TSynEdit(Sender);
+  //item := TItem(syn.Tag);
+  //item.Mudou();
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  item.mudou();
 end;
 
 (*Classificação a partir da extensão*)
@@ -191,7 +192,6 @@ function TfrmMNote.classificaTipo(arquivo : string): TTypeItem;
 var
   extensao : string;
 begin
-  //TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BASH, ti_BAT, ti_CFG , ti_TXT, ti_SQL,ti_PY, ti_ALL);
   extensao := ExtractFileExt(arquivo);
   if extensao = '.txt' then
   begin
@@ -263,30 +263,17 @@ var
 begin
   if FileExists(arquivo) then
   begin
-    (*
-    tb := pgMain.AddTabSheet();
-
-    syn := TSynEdit.Create(tb);
-    syn.Parent := tb;
-    syn.Align:= alClient;
-    syn.PopupMenu := popSysEdit;
-    SynCompletion := TSynCompletion.Create(self);
-    SynCompletion.Editor := syn;
-    SynCompletion.OnCodeCompletion:= @SynCompletion1CodeCompletion;
-    syn.Tag:= integer(pointer(item));
-    *)
-
     if(not FileExists(arquivo)) then
     begin
-        //ShowMessage(arquivo + ' not exits');
         MessageHint(arquivo + ' not exits');
     end
     else
     begin
       tb := NovoItem();
-      syn := TSynEdit(tb.tag);
+      item := Titem(tb.tag);
+      syn := item.syn;
       try
-        item := Titem(syn.tag);
+
         fSynCompletion := item.synCompletion;
         fAutoComplete := item.AutoComplete;
         syn.Lines.LoadFromFile(arquivo);
@@ -296,7 +283,6 @@ begin
             on E: Exception do
             begin
               tb.Destroy;
-              //showmessage('File cannot be read:'+ E.Message);
               MessageHint('File cannot be read:'+ E.Message);
               exit;
             end;
@@ -304,7 +290,7 @@ begin
         end;
       end;
       syn.OnChange := @synChange ;
-      tb.tag := integer(pointer(syn));
+      tb.tag := PtrInt(item);
       tb.ImageIndex:=0;
       tb.PopupMenu := popFechar;
 
@@ -321,7 +307,7 @@ begin
            tb.Caption:= item.Name;
       end;
       pgMain.Refresh();
-      AssociarExtensao(syn);
+      AssociarExtensao(item);
   end;
 end;
 
@@ -338,9 +324,7 @@ begin
       end
       else
       begin
-           //Showmessage('File not found!');
            MessageHint('File not found!');
-
       end;
     end;
   end
@@ -380,24 +364,20 @@ begin
   synAutoComplet := TSynAutoComplete.create(self);
   synAutoComplet.Editor := syn;
 
-  tb.PopupMenu := popFechar;
-  tb.Tag:= Integer(pointer(syn)); //Guarda o Sys
-  tb.ImageIndex:=0;
-
   item := TItem.create(self);
   item.AtribuiNovoNome();
   item.synCompletion:= SynCompletion;    //Ponteiro de SynCompletion
   item.AutoComplete :=  synAutoComplet;  //Ponteiro de synAutocompletion
   item.syn := syn; //Ponteiro de editor
 
-  syn.Tag:= longint(pointer(item));
+  tb.PopupMenu := popFechar;
+  tb.Tag:= PtrInt(item); //Guarda o item
+  tb.ImageIndex:=0;
+
   tb.Caption:= item.Name;
   pgMain.Refresh();
   application.ProcessMessages;
   result := tb;
-
-
-
 end;
 
 procedure TfrmMNote.CarregarParametros();
@@ -415,7 +395,6 @@ begin
       begin
         if FileExists(Application.Params[a]) then
         begin
-          //showmessage(Application.Params[a]);
           info := Application.Params[a];
           MessageHint(info);
           Carregar(info);
@@ -423,13 +402,10 @@ begin
         end
         else
         begin
-          //showmessage(Application.Params[a]+' file not found!')
           MessageHint(info+' file not found!');
         end;
       end;
   end;
-  //application.ProcessMessages;
-
 end;
 
 procedure TfrmMNote.CarregarOld();
@@ -448,7 +424,6 @@ begin
      info :=lista[a];
      if(FileExists(info)) then
      begin
-         //ShowMessage(info);
          MessageHint(info);
          Carregar(info);
          Application.ProcessMessages;
@@ -458,13 +433,6 @@ begin
 end;
 
 procedure TfrmMNote.FormCreate(Sender: TObject);
-//var
-
-   //a : integer;
-   //lista : TStringlist;
-   //strparametros : string;
-   //info : string;
-   //i : integer;
 begin
 
   if (FSetMain = nil) then
@@ -524,13 +492,11 @@ begin
   end;
 end;
 
-procedure TfrmMNote.AssociarExtensao(Aba: TSynEdit);
+procedure TfrmMNote.AssociarExtensao(item: TItem);
 var
-   item : TItem;
    arquivo: string;
    ext : string;
 begin
-   item := Titem(Aba.tag);
    ext := ExtractFileExt(item.FileName);
    arquivo := Application.ExeName;
    if not (ext = '') then
@@ -602,8 +568,8 @@ begin
    for a := 0 to pgMain.PageCount-1 do
    begin
       tb := pgMain.Pages[a];
-      syn := TSynEdit(tb.Tag);
-      item := TItem(syn.tag);
+      item := TItem(tb.tag);
+      syn := item.syn;
       resultado :=  resultado and  item.Salvo;
    end;
    result := resultado;
@@ -626,10 +592,6 @@ begin
    result := resultado;
 end;
 
-
-
-
-
 procedure TfrmMNote.SalvarTudo();
 var
    tb : TTabSheet;
@@ -640,8 +602,8 @@ begin
    for a := 0 to pgMain.PageCount-1 do
    begin
       tb := pgMain.Pages[a];
-      syn := TSynEdit(tb.Tag);
-      item := TItem(syn.tag);
+      item := TItem(tb.tag);
+      syn := item.syn;
       if not(item.Salvo) then
       begin
          SalvarTab(tb);
@@ -701,8 +663,8 @@ begin
   for a:= 0 to pgMain.PageCount-1 do
   begin
      tb := pgMain.Pages[a];
-     syn := TSynEdit(tb.Tag);
-     item := TItem(syn.tag);
+     item := TItem(tb.tag);
+     syn := item.syn;
      info := info + item.FileName+ ' ';
   end;
 
@@ -790,8 +752,10 @@ var
    fSynCompletion:TSynCompletion;
    fAutoComplete : TSynAutoComplete;
 begin
-  syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  item := TItem(syn.tag);
+  //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  //item := TItem(syn.tag);
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
   sql := TSynSQLSyn.create(self);
   fsynCompletion :=  item.synCompletion;
   fAutoComplete := item.AutoComplete;
@@ -862,8 +826,10 @@ var
    cpp : TSynCppSyn;
 
 begin
-  syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  item := TItem(syn.tag);
+  //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  //item := TItem(syn.tag);
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
   cpp := TSynCppSyn.create(self);
   syn.Highlighter := cpp;
 
@@ -905,8 +871,10 @@ var
    pas : TSynPasSyn;
    fAutoComplete : TSynAutoComplete;
 begin
-  syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  item := TItem(syn.tag);
+  //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  //item := TItem(syn.tag);
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
   fAutoComplete := item.AutoComplete;
   fAutoComplete.AutoCompleteList.LoadFromFile('Delphi32.dci');
   pas := TSynPasSyn.create(self);
@@ -915,7 +883,6 @@ end;
 
 procedure TfrmMNote.mnAssociarClick(Sender: TObject);
 begin
-  //showmessage('associado');
 
 end;
 
@@ -925,8 +892,10 @@ var
    syn : TSynEdit;
    item : TItem;
 begin
-  syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  item := TItem(syn.tag);
+  //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  //item := TItem(syn.tag);
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
   FontDialog1.Font :=  syn.Font;
   if FontDialog1.Execute then
   begin
@@ -942,8 +911,10 @@ var
    python : TSynPythonSyn;
    fAutoComplete : TSynAutoComplete;
 begin
-  syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  item := TItem(syn.tag);
+  //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  //item := TItem(syn.tag);
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
   fAutoComplete := item.AutoComplete;
   fAutoComplete.AutoCompleteList.LoadFromFile('python.dci');
 
@@ -984,8 +955,11 @@ var
    item : TItem;
    tb :TTabSheet;
 begin
-  syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  item := TItem(syn.tag);
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
+  //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  //item := TItem(syn.tag);
+
   pgMain.ActivePage.Hide;
   pgMain.Pages[pgMain.ActivePageIndex].free;
   //syn.Free;
@@ -1021,9 +995,10 @@ Var
 begin
     IPOS := 0;
     FPOS := 0;
-    syn := TSynEdit(pgMain.ActivePage.Tag);
-    item := TItem(syn.tag);
-
+    //syn := TSynEdit(pgMain.ActivePage.Tag);
+    //item := TItem(syn.tag);
+    item := TItem(pgMain.ActivePage.Tag);
+    syn := item.syn;
     {FPos is global}
     Found:= False;
     FLen := Length(strFind);
@@ -1073,8 +1048,10 @@ var
    item : TItem;
    arquivo : string;
 begin
-   syn := TSynEdit(tb.Tag);
-   item := TItem(syn.tag);
+   //syn := TSynEdit(tb.Tag);
+   item := TItem(tb.Tag);
+   syn := item.syn;
+   //item := TItem(syn.tag);
    arquivo := item.FileName;
    if arquivo <> '' then
    begin
@@ -1100,8 +1077,10 @@ var
    item : TItem;
    arquivo : string;
 begin
-   syn := TSynEdit(tb.Tag);
-   item := TItem(syn.tag);
+   //syn := TSynEdit(tb.Tag);
+   //item := TItem(pointer(syn.tag));
+   item := TItem(tb.Tag);
+   syn := item.syn;
    arquivo := item.FileName;
    if not (item.FileName = '') then
    begin
@@ -1225,8 +1204,10 @@ var
    fSynCompletion:TSynCompletion;
    fAutoComplete : TSynAutoComplete;
 begin
-   syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-   item := TItem(syn.tag);
+   //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
+   //item := TItem(syn.tag);
+   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+   syn := item.syn;
    if (item.ItemType = ti_sql) then
    begin
 

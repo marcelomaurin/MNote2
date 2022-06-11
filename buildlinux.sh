@@ -21,8 +21,8 @@ then
 	echo "Empacotando"
 	dpkg-deb --build mnote2
 	echo "Movendo para pasta repositorio"
-	mv mnote2.deb mnote2-2.9_amd64.deb
-	cp ./mnote2-2.9_amd64.deb ./bin/
+	mv mnote2.deb mnote2-2.10_amd64.deb
+	cp ./mnote2-2.10_amd64.deb ./bin/
 	exit 1;
 fi
 

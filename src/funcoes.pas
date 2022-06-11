@@ -10,11 +10,14 @@ Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
 StdCtrls, ExtCtrls, UTF8Process, Process
 {$IFDEF MSWINDOWS}
 ,windows, jwaWinBase
-{$else}
+{$ENDIF}
+{$IFDEF LINUX}
 //LCLType,
 //LCLIntf
 {$ENDIF}
+{$IFDEF DARWIN}
 
+{$ENDIF}
 ;
 
 {$IFDEF WINDOWS}
@@ -75,12 +78,21 @@ function ShowConfirm(Mensagem : string) : boolean;
 var
       Reply, BoxStyle: Integer;
 begin
+ {$IFDEF MSWINDOWS}
       BoxStyle := MB_ICONQUESTION + MB_YESNO;
       Reply := Application.MessageBox(pchar(Mensagem),'Confirmation', BoxStyle);
       if Reply = IDYES then
          result := true
         else
           result := false;
+ {$ENDIF}
+ {$IFDEF LINUX}
+   result := true;
+ {$ENDIF}
+ {$IFDEF DARWIN}
+   result := true;
+ {$ENDIF}
+
 end;
 
 {$IFDEF Darwin}
