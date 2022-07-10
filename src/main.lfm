@@ -76,6 +76,11 @@ object frmMNote: TfrmMNote
         ShortCut = 114
         OnClick = mnPesqItemClick
       end
+      object miUndo: TMenuItem
+        Caption = 'Undo'
+        ShortCut = 16474
+        OnClick = miUndoClick
+      end
     end
     object mnScript: TMenuItem
       Caption = 'Scripts'

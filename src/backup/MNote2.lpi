@@ -147,6 +147,7 @@
         <Filename Value="chgtext.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmchgtext"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit18>
     </Units>

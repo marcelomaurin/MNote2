@@ -100,6 +100,7 @@ begin
      if (cbsearch.items.IndexOf(strFind)= 0) then
      begin
          cbSearch.Items.Append(strFind);
+         cbSearch.Refresh;
      end;
      lbfind.caption := strFind;
      Pesquisar(Sender);
@@ -110,20 +111,20 @@ var
    strReplace : String;
    pos: integer;
 begin
-  for pos := 0 to lstFind.Count-1 do
-  begin
-    lstFind.Selected[pos] := true;
-    strReplace := cbReplace.text;
-    if (strReplace <> '') then
-    begin
-        if (cbReplace.Items.IndexOf(strReplace)=0) then
-        begin
+ strReplace := cbReplace.text;
+ if (strReplace <> '') then
+ begin
+      if (cbReplace.Items.IndexOf(strReplace)=0) then
+      begin
              cbReplace.items.Append(strReplace);
-        end;
+      end;
+      for pos := 0 to lstFind.Count-1 do
+      begin
+        lstFind.Selected[pos] := true;
+
         lbchange.caption := strReplace;
         Trocar(self);
-    end;
-
+      end;
   end;
 end;
 
@@ -139,6 +140,7 @@ begin
       if (cbReplace.Items.IndexOf(strReplace)=0) then
       begin
            cbReplace.items.Append(strReplace);
+           cbReplace.Refresh;
       end;
       lbchange.caption := strReplace;
       Trocar(self);

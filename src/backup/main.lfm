@@ -74,8 +74,12 @@ object frmMNote: TfrmMNote
         Caption = 'Find'
         ImageIndex = 6
         ShortCut = 114
-        ShortCutKey2 = 16498
         OnClick = mnPesqItemClick
+      end
+      object miUndo: TMenuItem
+        Caption = 'Undo'
+        ShortCut = 16474
+        OnClick = miUndoClick
       end
     end
     object mnScript: TMenuItem

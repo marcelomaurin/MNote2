@@ -33,6 +33,7 @@ type
     MenuItem16: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem4: TMenuItem;
+    miUndo: TMenuItem;
     mnFixW: TMenuItem;
     mnOnTopW: TMenuItem;
     mnDesktopCenterW: TMenuItem;
@@ -92,6 +93,7 @@ type
     procedure MenuItem14Click(Sender: TObject);
     procedure MenuItem15Click(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
+    procedure miUndoClick(Sender: TObject);
     procedure mnFixWClick(Sender: TObject);
     procedure mnOnTopWClick(Sender: TObject);
     procedure mnDesktopCenterWClick(Sender: TObject);
@@ -753,6 +755,20 @@ begin
   frmmquery.show();
 end;
 
+procedure TfrmMNote.miUndoClick(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+   cpp : TSynCppSyn;
+begin
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
+  cpp := TSynCppSyn.create(self);
+  syn.Highlighter := cpp;
+  syn.Undo;
+end;
+
 procedure TfrmMNote.mnFixWClick(Sender: TObject);
 begin
   mnFixarClick(self);
@@ -935,7 +951,14 @@ end;
 
 procedure TfrmMNote.mnPesqItemClick(Sender: TObject);
 begin
-  frmchgtext.show;
+  if frmchgtext.Showing then
+  begin
+    frmchgtext.hide;
+  end
+  else
+  begin
+       frmchgtext.show;
+  end;
 
 end;
 
