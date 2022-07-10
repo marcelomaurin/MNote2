@@ -6,6 +6,7 @@ object frmchgtext: Tfrmchgtext
   Caption = 'Change Text'
   ClientHeight = 439
   ClientWidth = 467
+  Position = poScreenCenter
   LCLVersion = '2.2.2.0'
   object Panel1: TPanel
     Left = 0

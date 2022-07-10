@@ -766,7 +766,7 @@ begin
   syn := item.syn;
   cpp := TSynCppSyn.create(self);
   syn.Highlighter := cpp;
-  syn.
+  syn.Undo;
 end;
 
 procedure TfrmMNote.mnFixWClick(Sender: TObject);

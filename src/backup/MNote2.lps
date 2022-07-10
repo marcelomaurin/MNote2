@@ -19,7 +19,7 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="758"/>
+        <TopLine Value="773"/>
         <CursorPos X="15" Y="769"/>
         <UsageCount Value="127"/>
         <Loaded Value="True"/>
@@ -487,7 +487,7 @@
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="1"/>
         <TopLine Value="103"/>
-        <CursorPos X="6" Y="99"/>
+        <CursorPos X="33" Y="110"/>
         <UsageCount Value="27"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>

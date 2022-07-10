@@ -67,7 +67,7 @@ object frmMNote: TfrmMNote
       end
     end
     object MenuItem3: TMenuItem
-      Caption = 'Search'
+      Caption = 'Edit'
       ImageIndex = 6
       OnClick = MenuItem3Click
       object mnPesqItem: TMenuItem

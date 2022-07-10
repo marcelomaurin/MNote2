@@ -124,8 +124,7 @@ begin
 
         lbchange.caption := strReplace;
         Trocar(self);
-    end;
-
+      end;
   end;
 end;
 
