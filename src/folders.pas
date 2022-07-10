@@ -14,8 +14,10 @@ type
 
   TfrmFolders = class(TForm)
     MenuItem1: TMenuItem;
+    MenuItem2: TMenuItem;
     Panel1: TPanel;
     PopupMenu1: TPopupMenu;
+    PopupMenu2: TPopupMenu;
 
     ShellListView1: TShellListView;
     ShellTreeView1: TShellTreeView;
@@ -60,25 +62,25 @@ begin
   top:= FSetFolders.posy;
   if FSetFolders.stay then
   begin
-    FormStyle:= fsStayOnTop;
+    //FormStyle:= fsStayOnTop;
     //mnStay.Caption:='Normal';
     //mnOnTopW.Caption:='Normal';
   end
   else
   begin
-    FormStyle:= fsNormal;
+    //FormStyle:= fsNormal;
     //mnStay.Caption:='On Top';
     //mnOnTopW.Caption:='On Top';
   end;
   if not FSetFolders.fixar then
   begin
-    BorderStyle:=bsSingle;
+    //BorderStyle:=bsSingle;
     //mnFixar.Caption:='Fix';
     //mnFixW.Caption:='Fix';
   end
   else
   begin
-    BorderStyle:=bsNone;
+    //BorderStyle:=bsNone;
     //mnFixar.Caption:= 'Move';
     //mnFixW.caption := 'Move' ;
   end;

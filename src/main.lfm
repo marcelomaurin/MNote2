@@ -1,18 +1,18 @@
 object frmMNote: TfrmMNote
-  Left = 72
+  Left = -747
   Height = 394
-  Top = 27
+  Top = 268
   Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 369
+  ClientHeight = 374
   ClientWidth = 630
   Menu = MainMenu1
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poMainFormCenter
-  LCLVersion = '2.2.0.4'
+  LCLVersion = '2.2.2.0'
   object Panel1: TPanel
     Left = 0
     Height = 50
@@ -24,40 +24,13 @@ object frmMNote: TfrmMNote
   end
   object pgMain: TPageControl
     Left = 0
-    Height = 235
+    Height = 324
     Top = 50
     Width = 630
     Align = alClient
     Images = ImageList1
     TabOrder = 1
     OnChange = pgMainChange
-  end
-  object pnBotton: TPanel
-    Left = 0
-    Height = 84
-    Top = 285
-    Width = 630
-    Align = alBottom
-    ClientHeight = 84
-    ClientWidth = 630
-    ParentBidiMode = False
-    TabOrder = 2
-    Visible = False
-    OnClick = pnBottonClick
-    object lstFind: TListBox
-      Left = 1
-      Height = 82
-      Top = 1
-      Width = 628
-      Align = alClient
-      ItemHeight = 0
-      OnChangeBounds = lstFindChangeBounds
-      OnClick = lstFindClick
-      PopupMenu = popFind
-      ScrollWidth = 534
-      TabOrder = 0
-      TopIndex = -1
-    end
   end
   object MainMenu1: TMainMenu
     Images = ImageList1
@@ -100,14 +73,8 @@ object frmMNote: TfrmMNote
       object mnPesqItem: TMenuItem
         Caption = 'Find'
         ImageIndex = 6
-        ShortCut = 16454
-        ShortCutKey2 = 114
+        ShortCut = 114
         OnClick = mnPesqItemClick
-      end
-      object MenuItem9: TMenuItem
-        Caption = 'Replace'
-        ImageIndex = 13
-        OnClick = MenuItem9Click
       end
     end
     object mnScript: TMenuItem
@@ -185,19 +152,6 @@ object frmMNote: TfrmMNote
   object SaveDialog1: TSaveDialog
     Left = 255
     Top = 11
-  end
-  object popFind: TPopupMenu
-    Left = 157
-    Top = 302
-    object MenuItem2: TMenuItem
-      Caption = 'Esconder'
-      OnClick = MenuItem2Click
-    end
-  end
-  object FindDialog1: TFindDialog
-    OnFind = FindDialog1Find
-    Left = 313
-    Top = 25
   end
   object popFechar: TPopupMenu
     Images = ImageList1
@@ -301,6 +255,7 @@ object frmMNote: TfrmMNote
   object ReplaceDialog1: TReplaceDialog
     Options = [frDown, frReplace, frReplaceAll, frHidePromptOnReplace]
     OnFind = FindDialog1Find
+    OnReplace = ReplaceDialog1Replace
     Left = 379
     Top = 25
   end
@@ -1033,5 +988,13 @@ object frmMNote: TfrmMNote
     ExecCommandID = ecSynAutoCompletionExecute
     Left = 544
     Top = 226
+  end
+  object popFind: TPopupMenu
+    Left = 157
+    Top = 302
+    object MenuItem2: TMenuItem
+      Caption = 'Esconder'
+      OnClick = MenuItem2Click
+    end
   end
 end

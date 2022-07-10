@@ -78,77 +78,76 @@
         <ResourceBaseClass Value="Form"/>
       </Unit3>
       <Unit4>
-        <Filename Value="pesquisar.pas"/>
+        <Filename Value="classes/finds.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="frmPesquisar"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
       </Unit4>
       <Unit5>
-        <Filename Value="classes/finds.pas"/>
+        <Filename Value="setmain.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit5>
       <Unit6>
-        <Filename Value="setmain.pas"/>
+        <Filename Value="funcoes.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit6>
       <Unit7>
-        <Filename Value="funcoes.pas"/>
+        <Filename Value="classes/chaves.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
       <Unit8>
-        <Filename Value="classes/chaves.pas"/>
+        <Filename Value="classes/setbanco.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit8>
       <Unit9>
-        <Filename Value="classes/setbanco.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit9>
-      <Unit10>
         <Filename Value="classes/setmquery.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="setMQuery"/>
-      </Unit10>
-      <Unit11>
+      </Unit9>
+      <Unit10>
         <Filename Value="classes/tabela.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit11>
-      <Unit12>
+      </Unit10>
+      <Unit11>
         <Filename Value="classes/typedb.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="TypeDB"/>
-      </Unit12>
-      <Unit13>
+      </Unit11>
+      <Unit12>
         <Filename Value="mquery.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmMQuery"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit13>
-      <Unit14>
+      </Unit12>
+      <Unit13>
         <Filename Value="cfgdb.pas"/>
         <IsPartOfProject Value="True"/>
         <HasResources Value="True"/>
-      </Unit14>
-      <Unit15>
+      </Unit13>
+      <Unit14>
         <Filename Value="folders.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmFolders"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit15>
-      <Unit16>
+      </Unit14>
+      <Unit15>
         <Filename Value="classes/setfolders.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="setFolders"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="Manifest.manifest"/>
+        <IsPartOfProject Value="True"/>
       </Unit16>
       <Unit17>
-        <Filename Value="Manifest.manifest"/>
+        <Filename Value="Manifest.rc"/>
         <IsPartOfProject Value="True"/>
       </Unit17>
       <Unit18>
-        <Filename Value="Manifest.rc"/>
+        <Filename Value="chgtext.pas"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmchgtext"/>
+        <ResourceBaseClass Value="Form"/>
       </Unit18>
     </Units>
   </ProjectOptions>

@@ -9,23 +9,18 @@ uses
   SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion,
   SynHighlighterPython, SynHighlighterPHP, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
-  setmain, mquery, TypeDB, folders, funcoes, LCLType;
+  setmain, mquery, TypeDB, folders, funcoes, LCLType, chgtext;
 
 
-const versao = '2.10';
+const versao = '2.11';
 
 type
 
   { TfrmMNote }
 
-
-
-
   TfrmMNote = class(TForm)
-    FindDialog1: TFindDialog;
     FontDialog1: TFontDialog;
     ImageList1: TImageList;
-    lstFind: TListBox;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     MenuItem10: TMenuItem;
@@ -36,11 +31,11 @@ type
     MenuItem14: TMenuItem;
     MenuItem15: TMenuItem;
     MenuItem16: TMenuItem;
+    MenuItem2: TMenuItem;
     MenuItem4: TMenuItem;
     mnFixW: TMenuItem;
     mnOnTopW: TMenuItem;
     mnDesktopCenterW: TMenuItem;
-    MenuItem2: TMenuItem;
     mnDesktopCenter: TMenuItem;
     MenuItem5: TMenuItem;
     MenuItem7: TMenuItem;
@@ -62,13 +57,11 @@ type
     mnSalvarComo: TMenuItem;
     MenuItem6: TMenuItem;
     mnPesqItem: TMenuItem;
-    MenuItem9: TMenuItem;
     OpenDialog1: TOpenDialog;
-    pnBotton: TPanel;
     pgMain: TPageControl;
     Panel1: TPanel;
-    popFind: TPopupMenu;
     popFechar: TPopupMenu;
+    popFind: TPopupMenu;
     popSysEdit: TPopupMenu;
     PopupMenu1: TPopupMenu;
     PopupNotifier1: TPopupNotifier;
@@ -127,7 +120,7 @@ type
     procedure Panel1Click(Sender: TObject);
     procedure pnBottonClick(Sender: TObject);
     procedure ReplaceDialog1Find(Sender: TObject);
-    procedure setSelLength(var textComponent:TSynEdit; newValue:integer);
+    procedure ReplaceDialog1Replace(Sender: TObject);
     procedure pntvClick(Sender: TObject);
     procedure pgMainChange(Sender: TObject);
     procedure SynCompletion1CodeCompletion(var Value: string;
@@ -141,8 +134,8 @@ type
       var Handled: Boolean);
   private
     { private declarations }
-    FPos : integer;
-    strFind : String;
+
+
     procedure CarregarParametros();
     procedure CarregarOld();
     function NovoItem():TTabSheet;
@@ -153,7 +146,6 @@ type
     function Mudou(): boolean;
     function PerguntaSalvar(): boolean;
     procedure SalvarTudo();
-    procedure Pesquisar(Sender: TObject);
     procedure CarregaContexto();
     procedure AssociarExtensao(item: Titem);
     function classificaTipo(arquivo : string): TTypeItem;
@@ -161,6 +153,7 @@ type
 
   public
     { public declarations }
+
     procedure CarregarArquivo(arquivo : string);
   end;
 
@@ -172,7 +165,7 @@ implementation
 {$R *.lfm}
 
 { TfrmMNote }
-uses Sobre, pesquisar;
+uses Sobre;
 
 
 procedure TfrmMNote.synChange(Sender: TObject);
@@ -480,13 +473,13 @@ begin
   end;
   if not FSetMain.fixar then
   begin
-    BorderStyle:=bsSingle;
+    BorderStyle:=bsSizeable;
     mnFixar.Caption:='Fix';
     mnFixW.Caption:='Fix';
   end
   else
   begin
-    BorderStyle:=bsNone;
+    BorderStyle:=bsSingle;
     mnFixar.Caption:= 'Move';
     mnFixW.caption := 'Move' ;
   end;
@@ -631,8 +624,7 @@ end;
 
 procedure TfrmMNote.FindDialog1Find(Sender: TObject);
 begin
-     strFind:= findDialog1.FindText;
-     Pesquisar(Sender);
+
 end;
 
 procedure TfrmMNote.btNovoClick(Sender: TObject);
@@ -685,31 +677,7 @@ begin
 end;
 
 procedure TfrmMNote.lstFindClick(Sender: TObject);
-var
-   find : TFind;
-   res : boolean;
-
 begin
-
-    If lstFind.SelCount > 0 then
-    begin
-
-
-        find := TFIND(lstFind.items.objects[lstFind.ItemIndex]);
-        pgMain.ActivePage := find.tb;
-        FPOS := find.IPOS;
-
-
-        FPos := find.IPos + length(find.strFind);
-        //   Hoved.BringToFront;       {Edit control must have focus in }
-        find.syn.SetFocus;
-        Self.ActiveControl := find.syn;
-        find.syn.SelStart:= find.IPos;  // -1;   mike   {Select the string found by POS}
-        setSelLength(find.syn, find.FLen);     //Memo1.SelLength := FLen;
-        //Found := True;
-        FPos:=FPos+find.FLen-1;   //mike - move just past end of found item
-
-    end;
 
 end;
 
@@ -807,7 +775,7 @@ end;
 
 procedure TfrmMNote.MenuItem2Click(Sender: TObject);
 begin
-   pnBotton.Visible:=false;
+
 end;
 
 procedure TfrmMNote.mnDesktopCenterClick(Sender: TObject);
@@ -939,12 +907,9 @@ begin
 end;
 
 procedure TfrmMNote.MenuItem9Click(Sender: TObject);
-begin
-    FPos:= 0;
-  if ReplaceDialog1.Execute then
-  begin
 
-  end;
+begin
+
 end;
 
 procedure TfrmMNote.mnFecharClick(Sender: TObject);
@@ -966,81 +931,14 @@ begin
   item.Free;
 end;
 
-procedure TfrmMNote.setSelLength(var textComponent:TSynEdit; newValue:integer);
-begin
-textComponent.SelEnd:=textComponent.SelStart+newValue ;
-end;
+
 
 procedure TfrmMNote.mnPesqItemClick(Sender: TObject);
 begin
-  FPos:= 0;
-  if FindDialog1.Execute then
-  begin
-
-  end;
+  frmchgtext.show;
 
 end;
 
-procedure TfrmMNote.Pesquisar(Sender: TObject);
-Var
-     find : TFind;
-     syn : TSynEdit;
-     item : TItem;
-     tb : TTabsheet;
-     arquivo : string;
-     //FindS: String;
-     Found : boolean;
-     IPos, FLen, SLen: Integer; {Internpos, Lengde søkestreng, lengde memotekst}
-     Res : integer;
-begin
-    IPOS := 0;
-    FPOS := 0;
-    //syn := TSynEdit(pgMain.ActivePage.Tag);
-    //item := TItem(syn.tag);
-    item := TItem(pgMain.ActivePage.Tag);
-    syn := item.syn;
-    {FPos is global}
-    Found:= False;
-    FLen := Length(strFind);
-    SLen := Length(syn.Text);
-    //FindS := findDialog1.FindText;
-    lstFind.Items.clear;
-
-    repeat
-
-       //following 'if' added by mike
-       if frMatchcase in findDialog1.Options then
-          IPos := Pos(strFind, Copy(syn.Text,FPos+1,SLen-FPos))
-       else
-          IPos := Pos(AnsiUpperCase(strFind),AnsiUpperCase( Copy(syn.Text,FPos+1,SLen-FPos)));
-
-       if (IPOS>0) then
-       begin
-         FPos := FPos + IPos;
-         find := TFind.create(syn ,pgMain.ActivePage , item, FPOS, strFind);
-
-         lstFind.Items.AddObject('Pos:'+inttostr(FPOS),tobject(find));
-
-       end
-       else
-       begin
-         FPOS := 0;
-         break;
-       end;
-    until (IPOS <=0);
-
-    If lstFind.Count > 0 then begin
-      pnBotton.Visible:= true;
-    end
-    Else
-    begin
-      pnBotton.Visible:= false;
-      Res := Application.MessageBox('Text was not found!',
-             'Find',  mb_OK + mb_ICONWARNING);
-      FPos := 0;     //mike  nb user might cancel dialog, so setting here is not enough
-    end;             //   - also do it before exec of dialog.
-
-end;
 
 procedure TfrmMNote.SalvarComo(tb :TTabSheet);
 var
@@ -1146,6 +1044,20 @@ end;
 procedure TfrmMNote.ReplaceDialog1Find(Sender: TObject);
 begin
 
+end;
+
+procedure TfrmMNote.ReplaceDialog1Replace(Sender: TObject);
+var
+   syn : TSynEdit;
+   tb : TTabSheet;
+   listagem : TListBox;
+begin
+   if (pgMain.ActivePage <> nil) then
+   begin
+      tb := pgMain.ActivePage;
+      syn := TSynEdit(tb.tag);
+
+   end;
 end;
 
 procedure TfrmMNote.pntvClick(Sender: TObject);

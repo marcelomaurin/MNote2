@@ -7,7 +7,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, main, Item, sobre, pesquisar, funcoes, zcomponent, finds, folders
+  Forms, main, Item, sobre, funcoes, zcomponent, finds, folders,
+  chgtext
   { you can add units after this };
 
 
@@ -18,6 +19,7 @@ begin
   Application.Initialize;
   Application.CreateForm(TfrmMNote, frmMNote);
   Application.CreateForm(TfrmFolders, frmFolders);
+  Application.CreateForm(Tfrmchgtext, frmchgtext);
   Application.Run;
 end.
 
