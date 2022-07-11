@@ -83,6 +83,13 @@ end;
 procedure Tfrmcfgdb.FormShow(Sender: TObject);
 begin
     Save := false;
+    cbdbtype.ItemIndex := integer(FSetBanco.TipoBanco);
+    edHostname.Text:= FSetBanco.HostName ;
+    edPort.Text:= FSetBanco.Port;
+    edUsername.text := FSetBanco.User;
+    edPassword.text := FSetBanco.Password;
+    edDatabase.Text:= FSetBanco.Databasename;
+
 end;
 
 end.

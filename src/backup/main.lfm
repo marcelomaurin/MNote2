@@ -929,18 +929,6 @@ object frmMNote: TfrmMNote
     Left = 344
     Top = 94
   end
-  object PopupNotifier1: TPopupNotifier
-    Color = clInfoBk
-    Icon.Data = {
-      07544269746D617000000000
-    }
-    Text = 'Text'
-    Title = 'Caption'
-    TitleFont.Style = [fsBold]
-    Visible = False
-    Left = 529
-    Top = 94
-  end
   object SynCompletion1: TSynCompletion
     OnExecute = SynCompletion1Execute
     Position = 0

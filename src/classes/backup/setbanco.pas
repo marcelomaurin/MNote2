@@ -33,12 +33,14 @@ type
         FNroCfg : integer;
         FScheme : String;
         FPATH : string;
+        FPORT : String;
         procedure SetTipoBanco(value : TypeDatabase);
         procedure SetHostName(value : string);
         procedure SetUser(value : string);
         procedure SetPassword(value : string);
         procedure SetDatabasename(value : string);
         procedure SetScheme(value : string);
+        procedure SetPort(value: string);
 
         procedure Default();
   public
@@ -53,6 +55,7 @@ type
         property Databasename: String read FDatabasename write SetDatabaseName;
         property nrocfg : integer read FNrocfg;
         property Scheme : String read FScheme write SetScheme;
+        property Port : string read FPort write SetPort;
   end;
 
   var
@@ -64,6 +67,11 @@ implementation
 procedure TSetBanco.SetScheme(value : string);
 begin
   FScheme := value;
+end;
+
+procedure TSetBanco.SetPort(value: string);
+begin
+  Fport := value;
 end;
 
 procedure TSetBanco.SetDatabasename(value : string);
@@ -132,6 +140,10 @@ begin
     if  BuscaChave(arquivo,'PASSWORD:',posicao) then
     begin
       FPassword := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'PORT:',posicao) then
+    begin
+      FPORT := RetiraInfo(arquivo.Strings[posicao]);
     end;
 
 end;
@@ -205,7 +217,8 @@ begin
   arquivo.Append('SCHEME:'+FScheme);
   arquivo.Append('USER:'+FUser);
   arquivo.Append('PASSWORD:'+FPassword);
-  arquivo.SaveToFile(filename);
+  arquivo.Append('PASSWORD:'+FPassword);
+  arquivo.SaveToFile(Fpath+filename);
 end;
 
 destructor TSetBanco.destroy();

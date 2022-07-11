@@ -9,7 +9,7 @@ uses
   SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion,
   SynHighlighterPython, SynHighlighterPHP, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
-  setmain, mquery, TypeDB, folders, funcoes, LCLType, chgtext;
+  setmain, mquery, TypeDB, folders, funcoes, LCLType, chgtext, hint;
 
 
 const versao = '2.12';
@@ -65,7 +65,6 @@ type
     popFind: TPopupMenu;
     popSysEdit: TPopupMenu;
     PopupMenu1: TPopupMenu;
-    PopupNotifier1: TPopupNotifier;
     ReplaceDialog1: TReplaceDialog;
     SaveDialog1: TSaveDialog;
     SynAutoComplete1: TSynAutoComplete;
@@ -259,15 +258,10 @@ end;
 
 procedure TfrmMNote.MessageHint(info: string);
 var
-  x , y : integer;
+  frmHint : TfrmHint;
 begin
-     PopupNotifier1.Title:='Atenção!';
-     PopupNotifier1.Text:=info;
-     y := Screen.Height;
-     x := screen.Width;
-     PopupNotifier1.ShowAtPos(x,y);
-     PopupNotifier1.Show;
-     sleep(2000);
+  frmHint := TfrmHint.create(self);
+  frmHint.messagehint(info);
 end;
 
 procedure TfrmMNote.Carregar(arquivo : String);
@@ -417,9 +411,8 @@ begin
       if (pesquisa<>-1) then
       begin
         info := Application.Params[a];
-        if FileExists(Application.Params[a]) then
+        if FileExists(info) then
         begin
-
           MessageHint(info);
           if not ExistFileOpen(info) then  //Verifica se existe essa aba ja
           begin
@@ -555,9 +548,12 @@ begin
         end
         else
         begin
+           (*
            PopupNotifier1.Title:='Atenção!';
            PopupNotifier1.Text:='Associação de extensão somente possivel quando estiver rodando como administrador';
            PopupNotifier1.Show;
+           *)
+          MessageHint('Associação de extensão somente possivel quando estiver rodando como administrador');
         end;
         {$endif}
    end;

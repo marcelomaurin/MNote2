@@ -24,9 +24,8 @@ type
     MenuItem11: TMenuItem;
     MenuItem2: TMenuItem;
     mnconection1: TMenuItem;
-    MenuItem4: TMenuItem;
-    MenuItem5: TMenuItem;
-    MenuItem6: TMenuItem;
+    miedit: TMenuItem;
+    miDelete: TMenuItem;
     MenuItem7: TMenuItem;
     MenuItem8: TMenuItem;
     mnFixar: TMenuItem;
@@ -51,6 +50,8 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure MenuItem11Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
+    procedure MenuItem7Click(Sender: TObject);
+    procedure mieditClick(Sender: TObject);
     procedure mnconection1Click(Sender: TObject);
     procedure mnitemNewClick(Sender: TObject);
     procedure mnStayClick(Sender: TObject);
@@ -66,7 +67,6 @@ type
     posicaoSequence : TTreeNode;
     sequences : TStringList;
     FSetBanco : TSetBanco;
-    FSetMQuery : TSetMQuery;
     FScheme : String;
     procedure ListarTabelasMy();
     procedure ListarTabelasPost();
@@ -380,9 +380,14 @@ end;
 
 procedure TfrmMQuery.FormDestroy(Sender: TObject);
 begin
-  Fsetmquery.posx := Left;
-  Fsetmquery.posy := top;
-  Fsetmquery.SalvaContexto(false);
+  if (Fsetmquery<> nil) then
+  begin
+       Fsetmquery.posx := Left;
+       Fsetmquery.posy := top;
+       Fsetmquery.SalvaContexto(false);
+
+  end;
+
 end;
 
 procedure TfrmMQuery.MenuItem11Click(Sender: TObject);
@@ -394,6 +399,42 @@ end;
 procedure TfrmMQuery.MenuItem2Click(Sender: TObject);
 begin
 
+end;
+
+procedure TfrmMQuery.MenuItem7Click(Sender: TObject);
+begin
+  close;
+end;
+
+procedure TfrmMQuery.mieditClick(Sender: TObject);
+begin
+    tvBanco.items.clear;
+  zmycon.Connected:=false;
+  zpostcon.connected := false;
+  if FSetBanco = nil then
+  begin
+     FSetBanco := TSetBanco.create(0);
+  end;
+  if frmcfgdb = nil then
+  begin
+       frmcfgdb := Tfrmcfgdb.Create(self);
+  end;
+  frmcfgdb.setbanco := FSetBanco;
+  frmcfgdb.ShowModal;
+  if (frmcfgdb.Save = true) then
+  begin
+    (*Salva o contexto*)
+
+    FSetBanco.HostName:=frmcfgdb.edHostname.text;
+    FSetBanco.Password:=frmcfgdb.edPassword.text;
+    FSetBanco.User:=frmcfgdb.edUsername.text;
+    FSetBanco.TipoBanco:=TypeDatabase(frmcfgdb.cbdbtype.ItemIndex);
+    FSetBanco.Port := frmcfgdb.edPort.text;
+    FSetBanco.Databasename:=frmcfgdb.edDatabase.text;
+
+    FSetBanco.SalvaContexto(false);
+  end;
+  AtualizaConexoesDB();
 end;
 
 procedure TfrmMQuery.mnconection1Click(Sender: TObject);
@@ -425,6 +466,7 @@ begin
     FSetBanco.User:=frmcfgdb.edUsername.text;
     FSetBanco.TipoBanco:=TypeDatabase(frmcfgdb.cbdbtype.ItemIndex);
     FSetBanco.Databasename:=frmcfgdb.edDatabase.text;
+
     FSetBanco.SalvaContexto(false);
   end;
   AtualizaConexoesDB();
@@ -436,6 +478,8 @@ begin
   if FSetBanco <> nil then
   begin
     mnconection1.Visible:=true;
+    miedit.Visible:=true;
+    miDelete.Visible:=true;
     mnconection1.Caption:= fsetbanco.Databasename;
   end;
 end;
@@ -443,6 +487,7 @@ end;
 procedure TfrmMQuery.ConectarMy();
 var
   ltvitem : TTreeNode;
+  location : string;
 begin
    try
         //tvBanco.items.clear;
@@ -465,10 +510,20 @@ begin
         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
         {$ENDIF}
         {$IFDEF DARWIN}
-         zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
+         location := '/usr/local/mysql-connector-c-6.1.11-macos10.12-x86_64/lib/libmysqlclient.dylib';
+         if FileExists(location) then
+         begin
+            zmycon.LibLocation:= location;
+            //zmycon.LibraryLocation:='/usr/local/mysql-connector-c-6.1.11-macos10.12-x86_64/lib/libmysqlclient.dylib';
+         end
+         else
+         begin
+            showmessage('Lib not found:'+location);
+            close;
+         end;
         {$ENDIF}
         {$IFDEF LINUX}
-         zmycon.LibraryLocation:='/usr/lib64/libmysqlclient.so';
+         zmycon.LibraryLocation:='/usr/lib/x86_64-linux-gnu/libmysqlclient.so';
         {$ENDIF}
         zmycon.Connect;
         if zmycon.Connected then
