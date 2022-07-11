@@ -465,6 +465,7 @@ begin
     FSetBanco.Password:=frmcfgdb.edPassword.text;
     FSetBanco.User:=frmcfgdb.edUsername.text;
     FSetBanco.TipoBanco:=TypeDatabase(frmcfgdb.cbdbtype.ItemIndex);
+    FSetBanco.Port := frmcfgdb.edPort.text;
     FSetBanco.Databasename:=frmcfgdb.edDatabase.text;
 
     FSetBanco.SalvaContexto(false);
@@ -505,9 +506,21 @@ begin
            zmycon.LoginPrompt:=false;
            zmycon.Password:= FSetBanco.Password;//edPasswrd.Text;
         end;
-        zmycon.port := 3306;
+        zmycon.port := strtoint(FSetBanco.Port);
         {$IFDEF WINDOWS}
-        zmycon.LibraryLocation:=ExtractFilePath(application.ExeName)+'libmysql64.dll';
+        location := ExtractFilePath(application.ExeName)+'libmysql64.dll';
+        if FileExists(location) then
+        begin
+            zmycon.LibraryLocation:=location;
+            zmycon.Database:='mysql';
+            zmycon.Protocol:='mysqld-5';
+        end
+        else
+        begin
+           showmessage('Lib not found:'+location);
+           close;
+        end;
+
         {$ENDIF}
         {$IFDEF DARWIN}
          location := '/usr/local/mysql-connector-c-6.1.11-macos10.12-x86_64/lib/libmysqlclient.dylib';
@@ -523,8 +536,18 @@ begin
          end;
         {$ENDIF}
         {$IFDEF LINUX}
-         zmycon.LibraryLocation:='/usr/lib/x86_64-linux-gnu/libmysqlclient.so';
+         location :=  '/usr/lib/x86_64-linux-gnu/libmysqlclient.so';
+         if FileExists(location) then
+         begin
+                zmycon.LibraryLocation:=location;
+         end
+               else
+         begin
+                  showmessage('Lib not found:'+location);
+                  close;
+         end;
         {$ENDIF}
+
         zmycon.Connect;
         if zmycon.Connected then
         begin
@@ -597,14 +620,14 @@ procedure TfrmMQuery.mnStayClick(Sender: TObject);
 begin
   if FormStyle = fsNormal then
   begin
-    FormStyle:= fsStayOnTop;
-    Fsetmquery.stay := true;
+    //FormStyle:= fsStayOnTop;
+    //Fsetmquery.stay := true;
     mnStay.Caption:='Normal';
   end
   else
   begin
-    FormStyle:=fsNormal;
-    Fsetmquery.stay := false;
+    //FormStyle:=fsNormal;
+    //Fsetmquery.stay := false;
     mnStay.Caption:='On Top';
   end;
   refresh;
@@ -615,7 +638,7 @@ procedure TfrmMQuery.mnFixarClick(Sender: TObject);
 begin
     if (BorderStyle = bsNone) then
     begin
-      BorderStyle:=bsSingle;
+      //BorderStyle:=bsSingle;
       Fsetmquery.fixar := true;
       mnFixar.Caption:='Fix';
 
@@ -623,7 +646,7 @@ begin
     end
     else
     begin
-      BorderStyle:=bsNone;
+      //BorderStyle:=bsNone;
       Fsetmquery.fixar := false;
       mnFixar.Caption:='Move';
       //self.hide;
@@ -657,7 +680,7 @@ begin
        end;
        if FSetMQuery.fixar then
        begin
-            BorderStyle:=bsSingle;
+            //BorderStyle:=bsSingle;
        end
   else
   begin

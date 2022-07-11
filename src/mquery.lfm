@@ -172,9 +172,7 @@ object frmMQuery: TfrmMQuery
     HostName = '127.0.0.1'
     Port = 3306
     Database = 'mysql'
-    User = 'root'
-    Password = 'Marcella@123'
-    Protocol = 'mysql'
+    Protocol = 'mysqld-5'
     LibraryLocation = '/usr/local/mysql-connector-c-6.1.11-macos10.12-x86_64/lib/libmysqlclient.18.dylib'
     Left = 232
     Top = 32
