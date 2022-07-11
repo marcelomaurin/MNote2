@@ -1,14 +1,14 @@
 object frmcfgdb: Tfrmcfgdb
-  Left = 852
+  Left = -524
   Height = 385
-  Top = 190
+  Top = 391
   Width = 284
   Caption = 'Config Database'
   ClientHeight = 385
   ClientWidth = 284
   OnCreate = FormCreate
   OnShow = FormShow
-  LCLVersion = '2.0.10.0'
+  LCLVersion = '2.2.2.0'
   object Label1: TLabel
     Left = 23
     Height = 15

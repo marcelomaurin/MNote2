@@ -27,7 +27,7 @@
         <Filename Value="classes/item.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Item"/>
-        <EditorIndex Value="7"/>
+        <EditorIndex Value="6"/>
         <TopLine Value="16"/>
         <UsageCount Value="134"/>
         <Loaded Value="True"/>
@@ -54,7 +54,7 @@
       <Unit5>
         <Filename Value="setmain.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="8"/>
+        <EditorIndex Value="7"/>
         <TopLine Value="134"/>
         <CursorPos Y="135"/>
         <UsageCount Value="111"/>
@@ -63,7 +63,7 @@
       <Unit6>
         <Filename Value="funcoes.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="11"/>
+        <EditorIndex Value="10"/>
         <TopLine Value="183"/>
         <CursorPos Y="187"/>
         <UsageCount Value="111"/>
@@ -81,7 +81,7 @@
       <Unit8>
         <Filename Value="classes/setbanco.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="9"/>
+        <EditorIndex Value="8"/>
         <TopLine Value="207"/>
         <CursorPos X="36" Y="220"/>
         <UsageCount Value="105"/>
@@ -91,7 +91,7 @@
         <Filename Value="classes/setmquery.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="setMQuery"/>
-        <EditorIndex Value="12"/>
+        <EditorIndex Value="11"/>
         <TopLine Value="38"/>
         <CursorPos X="15" Y="58"/>
         <UsageCount Value="105"/>
@@ -122,7 +122,7 @@
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="344"/>
+        <TopLine Value="545"/>
         <CursorPos X="61" Y="559"/>
         <UsageCount Value="105"/>
         <Loaded Value="True"/>
@@ -134,7 +134,7 @@
         <ComponentName Value="frmcfgdb"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="13"/>
+        <EditorIndex Value="12"/>
         <TopLine Value="40"/>
         <CursorPos X="33" Y="88"/>
         <UsageCount Value="105"/>
@@ -147,7 +147,7 @@
         <ComponentName Value="frmFolders"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="6"/>
+        <EditorIndex Value="5"/>
         <TopLine Value="44"/>
         <CursorPos Y="50"/>
         <UsageCount Value="90"/>
@@ -158,7 +158,7 @@
         <Filename Value="classes/setfolders.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="setFolders"/>
-        <EditorIndex Value="10"/>
+        <EditorIndex Value="9"/>
         <TopLine Value="180"/>
         <CursorPos X="36" Y="198"/>
         <UsageCount Value="87"/>
@@ -187,7 +187,7 @@
         <ComponentName Value="frmchgtext"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="3"/>
         <TopLine Value="163"/>
         <CursorPos Y="177"/>
         <UsageCount Value="33"/>
@@ -197,7 +197,7 @@
       <Unit19>
         <Filename Value="setchgtext.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="4"/>
         <TopLine Value="185"/>
         <CursorPos Y="209"/>
         <UsageCount Value="26"/>
@@ -209,7 +209,7 @@
         <ComponentName Value="frmHint"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="2"/>
         <TopLine Value="23"/>
         <CursorPos X="31" Y="36"/>
         <UsageCount Value="24"/>
@@ -545,11 +545,10 @@
       </Unit65>
       <Unit66>
         <Filename Value="C:/Users/marce/AppData/Local/lazarus/onlinepackagemanager/packages/zeosdbo/src/component/ZAbstractConnection.pas"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="479"/>
         <CursorPos Y="494"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit66>
     </Units>
