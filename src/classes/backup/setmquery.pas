@@ -167,7 +167,6 @@ begin
          createdir(fpath);
       end;
   {$ENDIF}
-  //filename := 'Work'+ FormatDateTime('ddmmyy',now())+'.cfg';
 
   if (FileExists(fpath+filename)) then
   begin

@@ -12,7 +12,7 @@ uses
   setmain, mquery, TypeDB, folders, funcoes, LCLType, chgtext;
 
 
-const versao = '2.11';
+const versao = '2.12';
 
 type
 
@@ -92,6 +92,7 @@ type
     procedure MenuItem12Click(Sender: TObject);
     procedure MenuItem14Click(Sender: TObject);
     procedure MenuItem15Click(Sender: TObject);
+    procedure MenuItem16Click(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure miUndoClick(Sender: TObject);
     procedure mnFixWClick(Sender: TObject);
@@ -155,7 +156,7 @@ type
 
   public
     { public declarations }
-
+    function ExistFileOpen(Arquivo : string): boolean;
     procedure CarregarArquivo(arquivo : string);
   end;
 
@@ -169,6 +170,27 @@ implementation
 { TfrmMNote }
 uses Sobre;
 
+
+function TfrmMNote.ExistFileOpen(Arquivo : string): boolean;
+var
+  resposta : boolean;
+  cont : integer;
+  syn : TSynEdit;
+  item : TItem;
+begin
+  resposta := false;
+  for cont:=0 to pgMain.PageCount-1 do
+  begin
+     item := TItem(pgMain.Pages[cont].Tag);
+
+     if (Arquivo=item.FileName) then
+     begin
+       resposta := true;
+     end;
+  end;
+  result := resposta;
+
+end;
 
 procedure TfrmMNote.synChange(Sender: TObject);
 var
@@ -314,8 +336,11 @@ begin
     begin
       if FileExists(OpenDialog1.FileName) then
       begin
+          if not ExistFileOpen(OpenDialog1.FileName) then  //Verifica se existe essa aba ja
+          begin
             Carregar(OpenDialog1.FileName);
             Application.ProcessMessages;
+          end;
       end
       else
       begin
@@ -325,9 +350,12 @@ begin
   end
   else
   begin
-     if FileExists(OpenDialog1.FileName) then
+     if FileExists(arquivo) then
      begin
+        if not ExistFileOpen(arquivo) then  //Verifica se existe essa aba ja
+        begin
           Carregar(arquivo);
+        end;
      end;
   end;
 end;
@@ -388,11 +416,14 @@ begin
       pesquisa := pos('--',Application.Params[a]);
       if (pesquisa<>-1) then
       begin
-        if FileExists(Application.Params[a]) then
+        info := Application.Params[a];
+        if FileExists(info) then
         begin
-          info := Application.Params[a];
           MessageHint(info);
-          Carregar(info);
+          if not ExistFileOpen(info) then  //Verifica se existe essa aba ja
+          begin
+            Carregar(info);
+          end;
           application.ProcessMessages;
         end
         else
@@ -420,7 +451,10 @@ begin
      if(FileExists(info)) then
      begin
          MessageHint(info);
-         Carregar(info);
+         if not ExistFileOpen(info) then  //Verifica se existe essa aba ja
+         begin
+           Carregar(info);
+         end;
          Application.ProcessMessages;
      end;
   end;
@@ -743,7 +777,19 @@ end;
 
 procedure TfrmMNote.MenuItem15Click(Sender: TObject);
 begin
-  frmFolders.show();
+  if frmFolders.Showing then
+  begin
+    frmFolders.hide;
+  end
+  else
+  begin
+    frmFolders.show();
+  end;
+end;
+
+procedure TfrmMNote.MenuItem16Click(Sender: TObject);
+begin
+
 end;
 
 procedure TfrmMNote.MenuItem4Click(Sender: TObject);
@@ -752,7 +798,14 @@ begin
   begin
     frmmquery := TFrmMQuery.create(self);
   end;
-  frmmquery.show();
+  if frmMQuery.Showing then
+  begin
+    frmmquery.hide();
+  end
+  else
+  begin
+    frmmquery.show();
+  end;
 end;
 
 procedure TfrmMNote.miUndoClick(Sender: TObject);

@@ -67,7 +67,7 @@ object frmMNote: TfrmMNote
       end
     end
     object MenuItem3: TMenuItem
-      Caption = 'Search'
+      Caption = 'Edit'
       ImageIndex = 6
       OnClick = MenuItem3Click
       object mnPesqItem: TMenuItem
@@ -94,16 +94,20 @@ object frmMNote: TfrmMNote
       object MenuItem4: TMenuItem
         Caption = 'MQuery'
         ImageIndex = 8
+        ShortCut = 115
         OnClick = MenuItem4Click
       end
       object MenuItem15: TMenuItem
         Caption = 'Folders'
         ImageIndex = 5
+        ShortCut = 113
         OnClick = MenuItem15Click
       end
       object MenuItem16: TMenuItem
         Caption = 'LogView'
         ImageIndex = 6
+        ShortCut = 122
+        OnClick = MenuItem16Click
       end
     end
     object mnSetup: TMenuItem

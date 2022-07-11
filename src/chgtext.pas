@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  Menus,finds, SynEdit,item, ComCtrls,types, LCLType;
+  Menus,finds, SynEdit,item, ComCtrls,types, LCLType, setchgtext;
 
 type
 
@@ -36,11 +36,14 @@ type
     procedure btchangeClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure lstFindClick(Sender: TObject);
     procedure Panel4Click(Sender: TObject);
 
   private
     procedure setSelLength(var textComponent:TSynEdit; newValue:integer);
+    procedure CarregaContexto();
   public
     strFind : String;
     FPos : integer;
@@ -59,6 +62,37 @@ uses main;
 {$R *.lfm}
 
 { Tfrmchgtext }
+
+procedure Tfrmchgtext.CarregaContexto();
+begin
+  FSetchgtext.CarregaContexto();
+  Left:= FSetchgtext.posx;
+  top:= FSetchgtext.posy;
+  if FSetchgtext.stay then
+  begin
+    //FormStyle:= fsStayOnTop;
+    //mnStay.Caption:='Normal';
+    //mnOnTopW.Caption:='Normal';
+  end
+  else
+  begin
+    //FormStyle:= fsNormal;
+    //mnStay.Caption:='On Top';
+    //mnOnTopW.Caption:='On Top';
+  end;
+  if not FSetchgtext.fixar then
+  begin
+    //BorderStyle:=bsSingle;
+    //mnFixar.Caption:='Fix';
+    //mnFixW.Caption:='Fix';
+  end
+  else
+  begin
+    //BorderStyle:=bsNone;
+    //mnFixar.Caption:= 'Move';
+    //mnFixW.caption := 'Move' ;
+  end;
+end;
 
 procedure Tfrmchgtext.setSelLength(var textComponent:TSynEdit; newValue:integer);
 begin
@@ -128,6 +162,31 @@ begin
   end;
 end;
 
+procedure Tfrmchgtext.FormCreate(Sender: TObject);
+begin
+  if (FSetchgtext = nil) then
+  begin
+        FSetchgtext := TSetchgtext.create();
+  end;
+  CarregaContexto();
+end;
+
+procedure Tfrmchgtext.FormDestroy(Sender: TObject);
+var
+   info : string;
+begin
+  FSetchgtext.posx := Left;
+  FSetchgtext.posy := top;
+
+  FSetchgtext.SalvaContexto(false);
+  if FSetchgtext <> nil then
+  begin
+    FSetchgtext.Free();
+    FSetchgtext := nil;
+  end;
+
+end;
+
 
 
 procedure Tfrmchgtext.btchangeClick(Sender: TObject);
@@ -174,9 +233,6 @@ begin
     frmchgtext.lstFind.Items.clear;
 
     repeat
-
-       //following 'if' added by mike
-
        if ckMatchcase.Checked then
           IPos := Pos(strFind, Copy(syn.Text,FPos+1,SLen-FPos))
        else
@@ -206,8 +262,8 @@ begin
       //pnBotton.Visible:= false;
       Res := Application.MessageBox('Text was not found!',
              'Find',  mb_OK + mb_ICONWARNING);
-      FPos := 0;     //mike  nb user might cancel dialog, so setting here is not enough
-    end;             //   - also do it before exec of dialog.
+      FPos := 0;
+    end;
 
 end;
 

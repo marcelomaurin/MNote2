@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, main, Item, sobre, funcoes, zcomponent, finds, folders,
-  chgtext
+  chgtext, setchgtext
   { you can add units after this };
 
 
