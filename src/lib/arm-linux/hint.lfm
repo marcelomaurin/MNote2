@@ -1,0 +1,27 @@
+object frmHint: TfrmHint
+  Left = 681
+  Height = 240
+  Top = 341
+  Width = 320
+  Caption = 'HINT'
+  LCLVersion = '2.2.2.0'
+  object Timer1: TTimer
+    Enabled = False
+    Interval = 5000
+    OnTimer = Timer1Timer
+    Left = 47
+    Top = 70
+  end
+  object PopupNotifier1: TPopupNotifier
+    Color = clInfoBk
+    Icon.Data = {
+      07544269746D617000000000
+    }
+    Text = 'Text'
+    Title = 'Caption'
+    TitleFont.Style = [fsBold]
+    Visible = False
+    Left = 224
+    Top = 96
+  end
+end

@@ -1,0 +1,71 @@
+object frmFolders: TfrmFolders
+  Left = -661
+  Height = 563
+  Top = 35
+  Width = 511
+  AutoSize = True
+  Caption = 'Folders'
+  ClientHeight = 563
+  ClientWidth = 511
+  DoubleBuffered = True
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  ParentBiDiMode = False
+  ParentDoubleBuffered = False
+  LCLVersion = '2.2.2.0'
+  object Panel1: TPanel
+    Left = 0
+    Height = 563
+    Top = 0
+    Width = 170
+    Align = alLeft
+    ClientHeight = 563
+    ClientWidth = 170
+    TabOrder = 0
+    object ShellTreeView1: TShellTreeView
+      Left = 1
+      Height = 561
+      Top = 1
+      Width = 168
+      Align = alClient
+      FileSortType = fstNone
+      PopupMenu = PopupMenu2
+      TabOrder = 0
+      ObjectTypes = [otFolders]
+      ShellListView = ShellListView1
+    end
+  end
+  object ShellListView1: TShellListView
+    Left = 175
+    Height = 563
+    Top = 0
+    Width = 336
+    Align = alClient
+    Color = clDefault
+    PopupMenu = PopupMenu1
+    TabOrder = 1
+    ObjectTypes = [otNonFolders]
+    ShellTreeView = ShellTreeView1
+  end
+  object Splitter1: TSplitter
+    Left = 170
+    Height = 563
+    Top = 0
+    Width = 5
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 343
+    Top = 181
+    object MenuItem1: TMenuItem
+      Caption = 'Open file'
+      OnClick = MenuItem1Click
+    end
+  end
+  object PopupMenu2: TPopupMenu
+    Left = 41
+    Top = 86
+    object MenuItem2: TMenuItem
+      Caption = 'Set Default'
+    end
+  end
+end
