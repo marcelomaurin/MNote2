@@ -1,6 +1,6 @@
 Package: mnote2
 Version: 2.8
-Depends:  libcanberra-gtk-module , libcanberra-gtk3-module, mysql-client
+Depends:  libcanberra0 , libcanberra-gtk3-0, mysql-common
 Section: custom
 Priority: optional
 Architecture: all
