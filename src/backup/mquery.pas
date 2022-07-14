@@ -684,7 +684,7 @@ begin
        end
   else
   begin
-    BorderStyle:=bsNone;
+    //BorderStyle:=bsNone;
     //mnFixar.Caption:= 'Move';
     //mnFixW.caption := 'Move' ;
   end;

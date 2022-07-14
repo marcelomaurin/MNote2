@@ -31,6 +31,8 @@ type
         FStay : boolean;
         FLastFiles : String;
         FPATH : string;
+        FHeight : integer;
+        FWidth : integer;
         //filename : String;
         procedure SetDevice(const Value : Boolean);
         procedure SetPOSX(value : integer);
@@ -49,6 +51,8 @@ type
         property fixar : boolean read FFixar write SetFixar;
         property stay : boolean read FStay write SetStay;
         property lastfiles: string read FLastFiles write SetLastFiles;
+        property Height: integer read FHeight write FHeight;
+        property Width : integer read FWidth write FWidth;
   end;
 
   var
@@ -125,6 +129,14 @@ begin
     begin
       FLastFiles := RetiraInfo(arquivo.Strings[posicao]);
     end;
+    if  BuscaChave(arquivo,'HEIGHT:',posicao) then
+    begin
+      FHEIGHT := strtoint(RetiraInfo(arquivo.Strings[posicao]));
+    end;
+    if  BuscaChave(arquivo,'WIDTH:',posicao) then
+    begin
+      FWidth := strtoint(RetiraInfo(arquivo.Strings[posicao]));
+    end;
 
 end;
 
@@ -192,6 +204,8 @@ begin
   arquivo.Append('FIXAR:'+booltostr(FFixar));
   arquivo.Append('STAY:'+booltostr(FStay));
   arquivo.Append('LASTFILES:'+FLastFiles);
+  arquivo.Append('HEIGHT:'+inttostr(FHEIGHT));
+  arquivo.Append('WIDTH:'+inttostr(FWIDTH));
 
   arquivo.SaveToFile(fpath+filename);
 end;

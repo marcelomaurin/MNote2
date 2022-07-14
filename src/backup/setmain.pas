@@ -30,6 +30,9 @@ type
         FFixar : boolean;
         FStay : boolean;
         FLastFiles : String;
+        FPATH : string;
+        FHeight : integer;
+        FWidth : integer;
         //filename : String;
         procedure SetDevice(const Value : Boolean);
         procedure SetPOSX(value : integer);
@@ -48,6 +51,8 @@ type
         property fixar : boolean read FFixar write SetFixar;
         property stay : boolean read FStay write SetStay;
         property lastfiles: string read FLastFiles write SetLastFiles;
+                property Height: integer read FHeight write FHeight;
+        property Width : integer read FWidth write FWidth;
   end;
 
   var
@@ -68,6 +73,7 @@ begin
     ckdevice := false;
     fixar:=false;
     stay:=false;
+
 end;
 
 procedure TSetMain.SetPOSX(value: integer);
@@ -121,7 +127,15 @@ begin
     end;
     if  BuscaChave(arquivo,'LASTFILES:',posicao) then
     begin
-      FLastFiles := strtoBool(RetiraInfo(arquivo.Strings[posicao]));
+      FLastFiles := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'HEIGHT:',posicao) then
+    begin
+      FHEIGHT := strtoint(RetiraInfo(arquivo.Strings[posicao]));
+    end;
+    if  BuscaChave(arquivo,'WIDTH:',posicao) then
+    begin
+      FWidth := strtoint(RetiraInfo(arquivo.Strings[posicao]));
     end;
 
 end;
@@ -130,10 +144,33 @@ end;
 procedure TSetMain.IdentificaArquivo(flag: boolean);
 begin
   //filename := 'Work'+ FormatDateTime('ddmmyy',now())+'.cfg';
-
-  if (FileExists(filename)) then
+  {$ifdef Darwin}
+    //Nao testado ainda
+    Fpath :=GetAppConfigDir(false);
+    if not(FileExists(FPATH)) then
+    begin
+      createdir(fpath);
+    end;
+  {$ENDIF}
+  {$IFDEF LINUX}
+      //Fpath :='/home/';
+      //Fpath := GetUserDir()
+      Fpath :=GetAppConfigDir(false);
+      if not(FileExists(FPATH)) then
+      begin
+         createdir(fpath);
+      end;
+  {$ENDIF}
+  {$IFDEF WINDOWS}
+      Fpath :=GetAppConfigDir(false);
+      if not(FileExists(FPATH)) then
+      begin
+         createdir(fpath);
+      end;
+  {$ENDIF}
+  if (FileExists(fpath+filename)) then
   begin
-    arquivo.LoadFromFile(filename);
+    arquivo.LoadFromFile(fpath+filename);
     CarregaContexto();
   end
   else
@@ -167,8 +204,10 @@ begin
   arquivo.Append('FIXAR:'+booltostr(FFixar));
   arquivo.Append('STAY:'+booltostr(FStay));
   arquivo.Append('LASTFILES:'+FLastFiles);
+  arquivo.Append('HEIGHT:'+inttostr(FHEIGHT));
+  arquivo.Append('WIDTH:'+inttostr(FWIDTH));
 
-  arquivo.SaveToFile(filename);
+  arquivo.SaveToFile(fpath+filename);
 end;
 
 destructor TSetMain.destroy();

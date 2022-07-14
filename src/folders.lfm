@@ -1,54 +1,88 @@
 object frmFolders: TfrmFolders
-  Left = -661
+  Left = -687
   Height = 563
-  Top = 35
-  Width = 511
+  Top = -94
+  Width = 568
   AutoSize = True
   Caption = 'Folders'
   ClientHeight = 563
-  ClientWidth = 511
+  ClientWidth = 568
   DoubleBuffered = True
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnShow = FormShow
   ParentBiDiMode = False
   ParentDoubleBuffered = False
   LCLVersion = '2.2.2.0'
+  object Panel2: TPanel
+    Left = 205
+    Height = 563
+    Top = 0
+    Width = 363
+    Align = alClient
+    ClientHeight = 563
+    ClientWidth = 363
+    TabOrder = 0
+    object Panel3: TPanel
+      Left = 1
+      Height = 122
+      Top = 1
+      Width = 361
+      Align = alTop
+      ClientHeight = 122
+      ClientWidth = 361
+      TabOrder = 0
+      object edFolder: TEdit
+        Left = 0
+        Height = 23
+        Top = 101
+        Width = 417
+        Anchors = [akTop, akLeft, akRight]
+        OnKeyPress = edFolderKeyPress
+        TabOrder = 0
+        Text = 'edFolder'
+      end
+    end
+    object ShellListView1: TShellListView
+      Left = 1
+      Height = 439
+      Top = 123
+      Width = 361
+      Align = alClient
+      Color = clDefault
+      PopupMenu = PopupMenu1
+      TabOrder = 1
+      ObjectTypes = [otNonFolders]
+      ShellTreeView = ShellTreeView1
+    end
+  end
   object Panel1: TPanel
     Left = 0
     Height = 563
     Top = 0
-    Width = 170
+    Width = 200
     Align = alLeft
     ClientHeight = 563
-    ClientWidth = 170
-    TabOrder = 0
+    ClientWidth = 200
+    TabOrder = 1
     object ShellTreeView1: TShellTreeView
       Left = 1
       Height = 561
       Top = 1
-      Width = 168
+      Width = 198
       Align = alClient
       FileSortType = fstNone
       PopupMenu = PopupMenu2
       TabOrder = 0
+      OnChange = ShellTreeView1Change
+      OnChanging = ShellTreeView1Changing
+      OnGetSelectedIndex = ShellTreeView1GetSelectedIndex
       ObjectTypes = [otFolders]
       ShellListView = ShellListView1
     end
   end
-  object ShellListView1: TShellListView
-    Left = 175
-    Height = 563
-    Top = 0
-    Width = 336
-    Align = alClient
-    Color = clDefault
-    PopupMenu = PopupMenu1
-    TabOrder = 1
-    ObjectTypes = [otNonFolders]
-    ShellTreeView = ShellTreeView1
-  end
   object Splitter1: TSplitter
-    Left = 170
+    Left = 200
     Height = 563
     Top = 0
     Width = 5
@@ -66,6 +100,22 @@ object frmFolders: TfrmFolders
     Top = 86
     object MenuItem2: TMenuItem
       Caption = 'Set Default'
+      OnClick = MenuItem2Click
+    end
+    object Separator1: TMenuItem
+      Caption = '-'
+    end
+    object mirefresh: TMenuItem
+      Caption = 'Refresh'
+      OnClick = mirefreshClick
+    end
+    object miCreatedir: TMenuItem
+      Caption = 'Create dir'
+      OnClick = miCreatedirClick
+    end
+    object miDelete: TMenuItem
+      Caption = 'Delete'
+      OnClick = miDeleteClick
     end
   end
 end

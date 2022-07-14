@@ -311,4 +311,8 @@ object frmMQuery: TfrmMQuery
       EB7F0FEC853609C67A76FD4F49F6FBFF4AC97EFF9F5DFFD3CA7F01C7843756
     }
   end
+  object PopupMenu1: TPopupMenu
+    Left = 84
+    Top = 232
+  end
 end
