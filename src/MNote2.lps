@@ -19,7 +19,7 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <TopLine Value="513"/>
-        <CursorPos X="28" Y="537"/>
+        <CursorPos X="25" Y="528"/>
         <UsageCount Value="149"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -55,9 +55,10 @@
       <Unit5>
         <Filename Value="setmain.pas"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="10"/>
-        <TopLine Value="34"/>
-        <CursorPos Y="54"/>
+        <TopLine Value="35"/>
+        <CursorPos X="55" Y="38"/>
         <UsageCount Value="126"/>
         <Loaded Value="True"/>
       </Unit5>
@@ -147,10 +148,9 @@
         <ComponentName Value="frmFolders"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="5"/>
-        <TopLine Value="143"/>
-        <CursorPos Y="162"/>
+        <TopLine Value="144"/>
+        <CursorPos X="174" Y="154"/>
         <UsageCount Value="105"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -564,7 +564,7 @@
         <EditorIndex Value="6"/>
         <TopLine Value="71"/>
         <CursorPos Y="85"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="11"/>
         <Loaded Value="True"/>
       </Unit68>
       <Unit69>
@@ -572,7 +572,7 @@
         <EditorIndex Value="7"/>
         <TopLine Value="56"/>
         <CursorPos Y="86"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="11"/>
         <Loaded Value="True"/>
       </Unit69>
     </Units>

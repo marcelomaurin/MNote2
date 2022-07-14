@@ -1,126 +1,156 @@
 object frmMNote: TfrmMNote
-  Left = 492
+  Left = -747
   Height = 394
-  Top = 168
-  Width = 538
+  Top = 268
+  Width = 630
   BorderStyle = bsDialog
-  Caption = 'MNote2 - Notepad do Maurin'
+  Caption = 'MNote2 - Maurin Notepad'
   ClientHeight = 374
-  ClientWidth = 538
+  ClientWidth = 630
   Menu = MainMenu1
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '2.0.10.0'
+  Position = poMainFormCenter
+  LCLVersion = '2.2.2.0'
   object Panel1: TPanel
     Left = 0
     Height = 50
     Top = 0
-    Width = 538
+    Width = 630
     Align = alTop
     TabOrder = 0
     OnClick = Panel1Click
   end
   object pgMain: TPageControl
-    Left = 114
-    Height = 240
+    Left = 0
+    Height = 324
     Top = 50
-    Width = 424
+    Width = 630
     Align = alClient
     Images = ImageList1
     TabOrder = 1
     OnChange = pgMainChange
   end
-  object pnBotton: TPanel
-    Left = 0
-    Height = 84
-    Top = 290
-    Width = 538
-    Align = alBottom
-    ClientHeight = 84
-    ClientWidth = 538
-    ParentBidiMode = False
-    TabOrder = 2
-    Visible = False
-    OnClick = pnBottonClick
-    object lstFind: TListBox
-      Left = 1
-      Height = 82
-      Top = 1
-      Width = 536
-      Align = alClient
-      ItemHeight = 0
-      OnChangeBounds = lstFindChangeBounds
-      OnClick = lstFindClick
-      PopupMenu = popFind
-      ScrollWidth = 534
-      TabOrder = 0
-    end
-  end
-  object pntv: TPanel
-    Left = 0
-    Height = 240
-    Top = 50
-    Width = 114
-    Align = alLeft
-    TabOrder = 3
-    Visible = False
-    OnClick = pntvClick
-  end
   object MainMenu1: TMainMenu
-    Left = 40
+    Images = ImageList1
+    Left = 32
     Top = 8
     object MenuItem1: TMenuItem
-      Caption = 'Arquivos'
+      Caption = 'File'
+      ImageIndex = 5
       OnClick = MenuItem1Click
       object btNovo: TMenuItem
-        Caption = 'Novo'
+        Caption = 'New'
+        ImageIndex = 4
         OnClick = btNovoClick
       end
       object mnCarregar: TMenuItem
-        Caption = 'Carregar'
+        Caption = 'Load'
+        ImageIndex = 3
         OnClick = mnCarregarClick
       end
       object mnSalvar: TMenuItem
-        Caption = 'Salvar'
+        Caption = 'Save'
+        ImageIndex = 2
         OnClick = mnSalvarClick
       end
       object mnSalvarComo: TMenuItem
-        Caption = 'Salvar como'
+        Caption = 'Save as'
+        ImageIndex = 2
         OnClick = mnSalvarComoClick
       end
       object MenuItem6: TMenuItem
-        Caption = 'Sair'
+        Caption = 'Exit'
+        ImageIndex = 0
         OnClick = MenuItem6Click
       end
     end
     object MenuItem3: TMenuItem
-      Caption = 'Pesquisar'
+      Caption = 'Edit'
+      ImageIndex = 6
       OnClick = MenuItem3Click
       object mnPesqItem: TMenuItem
-        Caption = 'Item'
-        ShortCut = 16454
-        ShortCutKey2 = 114
+        Caption = 'Find'
+        ImageIndex = 6
+        ShortCut = 114
         OnClick = mnPesqItemClick
       end
-      object MenuItem9: TMenuItem
-        Caption = 'Substituir'
-        OnClick = MenuItem9Click
+      object miUndo: TMenuItem
+        Caption = 'Undo'
+        ShortCut = 16474
+        OnClick = miUndoClick
       end
     end
     object mnScript: TMenuItem
       Caption = 'Scripts'
+      ImageIndex = 1
       OnClick = mnScriptClick
+    end
+    object MenuItem12: TMenuItem
+      Caption = 'Tools'
+      ImageIndex = 11
+      OnClick = MenuItem12Click
+      object MenuItem4: TMenuItem
+        Caption = 'MQuery'
+        ImageIndex = 8
+        ShortCut = 115
+        OnClick = MenuItem4Click
+      end
+      object MenuItem15: TMenuItem
+        Caption = 'Folders'
+        ImageIndex = 5
+        ShortCut = 113
+        OnClick = MenuItem15Click
+      end
+      object MenuItem16: TMenuItem
+        Caption = 'LogView'
+        ImageIndex = 6
+        ShortCut = 122
+        OnClick = MenuItem16Click
+      end
     end
     object mnSetup: TMenuItem
       Caption = 'Setup'
+      ImageIndex = 7
       object mnfont: TMenuItem
         Caption = 'Fonts'
+        ImageIndex = 9
         OnClick = mnfontClick
+      end
+      object MenuItem5: TMenuItem
+        Caption = 'Language'
+        ImageIndex = 14
+        object MenuItem7: TMenuItem
+          Caption = 'Portuguese'
+        end
+        object MenuItem8: TMenuItem
+          Caption = 'English'
+        end
+        object MenuItem11: TMenuItem
+          Caption = 'Spanish'
+        end
+      end
+    end
+    object MenuItem13: TMenuItem
+      Caption = 'Windows'
+      ImageIndex = 10
+      object mnFixW: TMenuItem
+        Caption = 'Fix'
+        OnClick = mnFixWClick
+      end
+      object mnOnTopW: TMenuItem
+        Caption = 'On Top'
+        OnClick = mnOnTopWClick
+      end
+      object mnDesktopCenterW: TMenuItem
+        Caption = 'Desktop Center'
+        OnClick = mnDesktopCenterWClick
       end
     end
     object MenuItem10: TMenuItem
-      Caption = 'Sobre'
+      Caption = 'About'
+      ImageIndex = 12
       OnClick = MenuItem10Click
     end
   end
@@ -132,24 +162,13 @@ object frmMNote: TfrmMNote
     Left = 255
     Top = 11
   end
-  object popFind: TPopupMenu
-    Left = 157
-    Top = 302
-    object MenuItem2: TMenuItem
-      Caption = 'Esconder'
-      OnClick = MenuItem2Click
-    end
-  end
-  object FindDialog1: TFindDialog
-    OnFind = FindDialog1Find
-    Left = 313
-    Top = 25
-  end
   object popFechar: TPopupMenu
+    Images = ImageList1
     Left = 157
     Top = 133
     object mnFechar: TMenuItem
       Caption = 'Fechar'
+      ImageIndex = 0
       OnClick = mnFecharClick
     end
   end
@@ -157,44 +176,95 @@ object frmMNote: TfrmMNote
     Left = 216
     Top = 176
     Bitmap = {
-      4C69010000001000000010000000000000000000000000000000000000003838
-      C6323535C9993535C9DB3636C7FA3636C7FA3434C9DA3535C9983535C9300000
-      000000000000000000000000000000000000000000003333CC0A3535C99D3636
-      C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3535
-      C9993838C6090000000000000000000000003333CC0A3535C9C33636C9FF3636
-      C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636
-      C9FF3636C7C13838C60900000000000000003535C99D3636C9FF3636C9FF7C7C
-      DCFF3C3CCAFF3636C9FF3636C9FF3636C9FF3636C9FF3D3DCBFF7F7FDCFF3636
-      C9FF3636C9FF3535C998000000003838C6323636C9FF3636C9FF7C7CDCFFFFFF
-      FFFFC5C5EFFF3C3CCAFF3636C9FF3636C9FF3C3CCBFFC9C9F0FFFFFFFFFF7A7A
-      DBFF3636C9FF3636C9FF3535C9303535C9993636C9FF3636C9FF3C3CCAFFC5C5
-      F0FFFFFFFFFFC5C5F0FF3C3CCAFF3C3CCBFFC8C8F0FFFFFFFFFFC0C0EEFF3A3A
-      CAFF3636C9FF3636C9FF3636C8963535C9DB3636C9FF3636C9FF3636C9FF3C3C
-      CAFFC5C5F0FFFFFFFFFFC6C6F0FFC7C7F0FFFFFFFFFFC2C2EEFF3A3ACAFF3636
-      C9FF3636C9FF3636C9FF3636C7D83636C7FA3636C9FF3636C9FF3636C9FF3636
-      C9FF3C3CCAFFC6C6F0FFFFFFFFFFFFFFFFFFC3C3EFFF3B3BCAFF3636C9FF3636
-      C9FF3636C9FF3636C9FF3636C7F93636C7FA3636C9FF3636C9FF3636C9FF3636
-      C9FF3C3CCBFFC7C7F0FFFFFFFFFFFFFFFFFFC4C4EFFF3C3CCAFF3636C9FF3636
-      C9FF3636C9FF3636C9FF3636C7F93434C9DA3636C9FF3636C9FF3636C9FF3C3C
-      CBFFC8C8F0FFFFFFFFFFC4C4EFFFC4C4EFFFFFFFFFFFC4C4EFFF3C3CCAFF3636
-      C9FF3636C9FF3636C9FF3636C8D73535C9983636C9FF3636C9FF3D3DCBFFC9C9
-      F0FFFFFFFFFFC2C2EEFF3B3BCAFF3C3CCAFFC4C4EFFFFFFFFFFFC4C4EFFF3C3C
-      CAFF3636C9FF3636C9FF3535C9943535C9303636C9FF3636C9FF7F7FDCFFFFFF
-      FFFFC0C0EEFF3A3ACAFF3636C9FF3636C9FF3C3CCAFFC4C4EFFFFFFFFFFF7C7C
-      DCFF3636C9FF3636C9FF3737C72E000000003535C9993636C9FF3636C9FF7A7A
-      DBFF3A3ACAFF3636C9FF3636C9FF3636C9FF3636C9FF3C3CCAFF7C7CDCFF3636
-      C9FF3636C9FF3636C89500000000000000003838C6093636C7C13636C9FF3636
-      C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636
-      C9FF3535C9BF3F3FBF080000000000000000000000003838C6093535C9993636
-      C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636C9FF3636
-      C8953F3FBF080000000000000000000000000000000000000000000000003535
-      C9303636C8963636C7D83636C7F93636C7F93636C8D73535C9943737C72E0000
-      0000000000000000000000000000
+      4C7A1000000010000000100000002D0A00000000000078DAED9B0B7017C51DC7
+      0F2484405089484C4102010D45C5E0D0C4060208D51290501095024DA350B448
+      62CC4B7C0046C8145AA4D6883C6CC747B5A2820D1A2355AB757C80A8E3503A7D
+      2023F6DD3AA596B1826081EE6FF2B9C9B2EEDDEDFDF3681CFB9BF94E36BBFBBD
+      DBDBFBEDFE1E7B7FCF6B1739456198C217C130EAA2E47C85E7148E2A1C377094
+      B61101DC028583169E8983F4D52559E10F46BF2301E5E3F44DD6F8D32DF799A8
+      D0A4D0A030C9D23E5DE32FB5B4EF5318AC3044E18F96F6A51ABFC6D22EF73D4B
+      E16C85A72CED351A3FDFD2BE9031ECA36CB6E71B73F8A2C3DCFB78D1F2FECE50
+      D8EDC0DD4D5F9BF450A850789971BF07F65157419FCE26329717298C4337C72A
+      642BA43BF24F52E8AAD08D72F7568E2739024921E358AFB03A048F29D4295C6F
+      E19FA67097C21D21584FDFCA007E7D047FA3C2D72847DD7F9665FCB2A6BFA750
+      12C0973EB51A4EE6596F54B85C214BA15A6171007F15ED55F0BFA93057E15B0A
+      B72A5CAC5046BB0BFF06C6B498B92B8BC9CF5358A4304361057AE9CABF19EE4A
+      8546859BE02E669E7D99CBFB5CA2F020E54AED1A37B3DF9DC13C7647D77CA976
+      D0E94BB02FB6BE53B5310741EE7F8FC2FC0E58FF05ECDBA91DB4FE7B296C5778
+      57E123853F51F67148E11FE85ED0DCFE90B2D89DF38CF69F2B8C51F8B5C2972C
+      FC29ACDB30FE207C89DFA28341FCC7B011AF6B38A0D09FF60B19477A005FF6B7
+      BE06FA18F7BB078E8DEF22F5EDC89FA3707700663BF01BB0F7930D2CA4CD852F
+      EFEF498537C1A3D4C5E1A732EF7DD0CFB8FC1734FD6D8CE08F56D8865E3DAF50
+      445947116DD9F41D6DBC935A6C830B6A43D6FF04F6DC8131F4A1ADED7F6715D1
+      C19F58EAC5A6EC37B0CCD24F7CDE672CF5CB2D7EE65FB1D733F0D5C5B6BDA5F0
+      174BFCB0DCC16F2DC6FE355AFC279FBF1A3D186FC198907911FE6BE88FC40A7F
+      76C0D5065F9EE90D47FFFD63854C8D2F7BFA9531FCFFD5C6F8653EF63A72FF69
+      D98FE5FF87143639605627F7FFC7B2079C49DCDCE573BAFE2FC2E75A4A394EEE
+      417CFC2B289F4279A3630E62AD165F9E09FCF8746D0457FC93EB0CBFE812EDFF
+      EBE81324DF50C861EF97BD6E1D58485D0E7D8264A6C297F16106B3C6AFA69C4C
+      DBCC10FEE9F8F841E35F419F30113FFA2B945380475DB5E33B94FDFCFBACD559
+      94CB62EA8FC4F9A3408F4EAEEBFAFABF90B91A40EEA7BDEDFF7CFCE3A0FDF613
+      F6D6F9C4C405DCCB9703C447C5F43151484C51A25DF3EFC484A99A6D0CBA7F35
+      B678BEA5ED3EFE9684F01787F05FE26F2E7A668E7D1E763F8A3F37E4FE550EFC
+      AB5A39FE7921F32FBAF56104DF051DC5DF48DFFF24C89F8A5E7D98205FF2C3EF
+      3B8EFF17AD7C7E79B7BF77E01ED374ECDF0A4F68B1782EF9DD970220B1F335E4
+      BCA669FBB14D2EE7997610373F6DC9F306C92AD66335B9800DE8F5CF226C96C7
+      B33C8C9D9A8CCF9384CD13BBF56A443CB445616848FB65E496826447C4F824F7
+      F04848FB2B117B6E0E7A1D242B98FB20A98B683F8D387B48801FB5C3C897D964
+      38EFBC8EF38A22F285CF2AFC0ADFA567C435BAC1BB4DE1167C590F1B7C9C31F6
+      49D046DED506D7B8BB0DAFB1AD15F67E9991BFB6E5FF642D9CFA398CFF65FDFF
+      C8B29E53D857E6867067109736A1CBBADCABF076842F2879E6DF79CDE753EF6A
+      F52BC93B24458CBDB7C2FDECA17266783BD8E4B0FE4C99C6357E9A0057CE1CBE
+      4BBC7204FF597CA42F387087B3D7ADE2BE72FEF0017BD4AE883D40B87FC3468D
+      D2F69F1F537EC292BBF5250DEE47E43B7CE9CE5ADBC93C06492AB9DF7101ED29
+      9F11FF5F9E7DA263ACDA96EB3FC36B3EA7125BFA1BFCFA63E000755BE8936170
+      AF2127E4EA0B7D0CC7973D31B83EF668FC5D09F07769FC91D84857EE0E38BE5C
+      C9BE7216BEF81A74B5116CA26E1E7D7AC0F1E51DD698F42B670FBC8033A0B329
+      4BDD0DF4F9008EEE1FC47DFE3A8DDF133FB29E79396CE97F98B67AFAEAFBC04E
+      F69B7CFC35D1C57E5EF3596716E5AEB4E5D377A7C6DF6EC49B7BF1A9B68157A8
+      FB44EBB75DE30F608F39E4F0DC87E83B40E3DF887F99C21AFC3639D13BC172EA
+      C6D167201C5D7F8FE157AC658D5CC119C314CAD7D3F6267DF7B4E1FAF1F353E6
+      FA3D0AF4F55BE6D9BF9F1889EE9546A0DCD07D4F3B773A1DDFB110A403FFFF49
+      F49913C09F4CAE7D28F6630E1845DD74FAD8F853F057BB69F6C4E7A769FEE97A
+      E3ECC70BB14726DF8B618B6DFC4CFC88CC04F8C9F81297F23739263F83F7D7C4
+      DF8C04C65F416C5691C0F8B3D8BB7EC0DFAC98FC2E700BF91B96174F42477DFE
+      48EA4A692F8DB8F7BDE8792E28A7AE023D8C7AFE5C4DE77DE4E2FB145A7C20DD
+      FEE792FF4BEB60FBDF1A29213E8B831223B69B899D93B93E175BE951B7C2C04C
+      EFC4EF47A4DC408CBF97BCCADBB4C9F5CCB3C12D067F33F16A1C6CD6F8EBB071
+      71B0CE187F22F1F0FFF9CDB2D16BF9D6D4157A3E6604F63D0E46B493FFFFBFF8
+      FEC7234F5D8E7D09924BE9531570EE534CFC12E43B8CA74F8D859F474EA49FB6
+      EF9AE8479F3C0BBF81B61AFA16687B4D017535F4D91A101F8A4FDB97F3B62AED
+      FCA98ABABEF4196CD8F074F61EFFFCECABECDFFEB72369F83E75E408C66AB931
+      FD1A5DB88EDCA756B31DB5D42D89B07BF26C137847C3E8BF847239716565C4D9
+      9DFF7D5F193AD555FB3F3BE20C6F39FB751536F7263092BA0BE81326F28D637F
+      7288C3C16DD4DD1AC0E9054E66FEF3583BBEFF9DCAB95A1DEBD69CFB22E0119F
+      C9FD96B21EC7515E465BA6857F92C52FECE9B57CC7D833C6FA1F8DFE7474FCDF
+      9692CA3A5F038A63EC65D3C8134DD56CE554EA8A22B8930CDFB0BFD7F2DD9FEF
+      3F4E0AC95D6F35DEE3B3409FE7AD5A8CA18BF86C0B8CBA72A0CB02D6A129A5E8
+      A8792E619E4D489F4516FE024BEEEB21A0CB78CB3845CEF73EFDCD948DBF2CC4
+      F63DEE9DF87DC01B469CDF8F3E4122FBEA93DA3BD3A53F6D83227440E2FA0789
+      B54BC05AEA06C4D061D98F2F06E9EDBC5EF4F59F87BD1A18A0679FA5FCBFF830
+      433CB76F98FCB86D25903CBF7F0EFB3EF9E85E11FC14F2F74F91775B835FF00C
+      B9AB5723E6348573837FC17954C37BD8816247FE2FBD13BF413E4EDE25CB91BF
+      4AB31F951ADF73E41F240FEFC3852FB6F261F8F5AC751F2EFCB1EC970DE4D836
+      6870E18B7C873CDF6B9C7D3CE035FFEECB95EFB18E1E40172477780E634B4A40
+      87933A609D98F65F706A0C7E6758FF99F8D7BEAF5FE398E7D2F37F13F0558751
+      9E13939FEDB57CF327E5A7F1371739CC493EEBFB16F2031BC8DBE692AFBEDF21
+      F757C8BDA6606FFCDF113D821DF9BAC373DC4E1EF70EAFE5FB47B15FD7D2E612
+      C79DCB3EE5DBAF6BD977AA1CF863F093376BE36F200691FCEB6C876B2CC06FC8
+      671FBF93EB54F36C2EDF739E83EF24F9D21C2D979C13532F66338E4C90EFF80C
+      BE64306FBE5E5739E44E5BB3FEC7F0CE0691A718DAC1EB7F08F7D4E19A8B4CF3
+      ECE7156B62E4DC6D7C89E10F3B5C2388FF3AF6AC3E22160BE2EB488BE0EF0FC9
+      79EE6F677E6F2FFAB727BD43F89213937345F98D959C53C9EFA476837740D877
+      4C4DCC5125B15629FEB7FEFBE42607BED8EC19F0AF62CD1D71E0377A2DDFE5C9
+      9E2BDF9EDD47CCD6405B6384AD8F3AFF6A0F7FC0B4FF13D9ABB2DBDBFEFF179D
+      964686
     }
   end
   object ReplaceDialog1: TReplaceDialog
     Options = [frDown, frReplace, frReplaceAll, frHidePromptOnReplace]
     OnFind = FindDialog1Find
+    OnReplace = ReplaceDialog1Replace
     Left = 379
     Top = 25
   end
@@ -205,10 +275,12 @@ object frmMNote: TfrmMNote
     Top = 121
   end
   object popSysEdit: TPopupMenu
+    Images = ImageList1
     Left = 352
     Top = 216
     object mnAssociar: TMenuItem
       Caption = 'Associar'
+      ImageIndex = 14
       OnClick = mnAssociarClick
       object mnLazarus: TMenuItem
         Caption = 'Lazarus/Pascal'
@@ -216,14 +288,21 @@ object frmMNote: TfrmMNote
       end
       object mnPython: TMenuItem
         Caption = 'Python'
+        OnClick = mnPythonClick
       end
       object mnC: TMenuItem
         Caption = 'C/C++'
         OnClick = mnCClick
       end
+      object MenuItem14: TMenuItem
+        Caption = 'SQL'
+        ImageIndex = 15
+        OnClick = MenuItem14Click
+      end
     end
     object mnFechar2: TMenuItem
       Caption = 'Fechar'
+      ImageIndex = 0
       OnClick = mnFechar2Click
     end
   end
@@ -827,19 +906,92 @@ object frmMNote: TfrmMNote
     Top = 151
   end
   object PopupMenu1: TPopupMenu
+    Images = ImageList1
     Left = 424
     Top = 152
     object mnFixar: TMenuItem
-      Caption = 'Fixar'
+      Caption = 'Fix'
       OnClick = mnFixarClick
     end
     object mnStay: TMenuItem
       Caption = 'On Top'
       OnClick = mnStayClick
     end
-    object MenuItem4: TMenuItem
+    object mnDesktopCenter: TMenuItem
       Caption = 'Desktop Center'
-      OnClick = MenuItem4Click
+      OnClick = mnDesktopCenterClick
+    end
+  end
+  object SynSQLSyn1: TSynSQLSyn
+    DefaultFilter = 'SQL Files (*.sql)|*.sql'
+    Enabled = False
+    SQLDialect = sqlPostgres
+    Left = 344
+    Top = 94
+  end
+  object SynCompletion1: TSynCompletion
+    OnExecute = SynCompletion1Execute
+    Position = 0
+    LinesInWindow = 6
+    OnSearchPosition = SynCompletion1SearchPosition
+    SelectedColor = clHighlight
+    CaseSensitive = False
+    Width = 262
+    AutoUseSingleIdent = True
+    ShortCut = 16416
+    EndOfTokenChr = '()[].'
+    OnCodeCompletion = SynCompletion1CodeCompletion
+    ExecCommandID = ecSynCompletionExecute
+    ToggleReplaceWhole = False
+    Left = 416
+    Top = 90
+  end
+  object SynPasSyn1: TSynPasSyn
+    Enabled = False
+    CompilerMode = pcmDelphi
+    NestedComments = False
+    TypeHelpers = True
+    Left = 559
+    Top = 320
+  end
+  object SynCppSyn1: TSynCppSyn
+    DefaultFilter = 'Arquivos C++ (*.c,*.cpp,*.h,*.hpp,*.hh)|*.c;*.cpp;*.h;*.hpp;*.hh'
+    Enabled = False
+    Left = 504
+    Top = 320
+  end
+  object SynPythonSyn1: TSynPythonSyn
+    DefaultFilter = 'Arquivos Python (*.py)|*.py'
+    Enabled = False
+    Left = 448
+    Top = 320
+  end
+  object SynSQLSyn2: TSynSQLSyn
+    DefaultFilter = 'Arquivos SQL (*.sql)|*.sql'
+    Enabled = False
+    SQLDialect = sqlSybase
+    Left = 392
+    Top = 320
+  end
+  object SynPHPSyn1: TSynPHPSyn
+    DefaultFilter = 'Arquivos PHP (*.php,*.php3,*.phtml,*.inc)|*.php;*.php3;*.phtml;*.inc'
+    Enabled = False
+    Left = 336
+    Top = 320
+  end
+  object SynAutoComplete1: TSynAutoComplete
+    EndOfTokenChr = '()[].'
+    ShortCut = 8224
+    ExecCommandID = ecSynAutoCompletionExecute
+    Left = 544
+    Top = 226
+  end
+  object popFind: TPopupMenu
+    Left = 157
+    Top = 302
+    object MenuItem2: TMenuItem
+      Caption = 'Esconder'
+      OnClick = MenuItem2Click
     end
   end
 end

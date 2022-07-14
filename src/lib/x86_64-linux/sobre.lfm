@@ -4,24 +4,24 @@ object frmSobre: TfrmSobre
   Top = 284
   Width = 320
   BorderStyle = bsDialog
-  Caption = 'Sobre '
+  Caption = 'About'
   ClientHeight = 200
   ClientWidth = 320
   OnCreate = FormCreate
-  LCLVersion = '1.2.4.0'
+  LCLVersion = '2.0.12.0'
   object Label1: TLabel
     Left = 8
-    Height = 21
+    Height = 15
     Top = 8
-    Width = 147
-    Caption = 'Sobre este programa'
+    Width = 33
+    Caption = 'About'
     ParentColor = False
   end
   object Label2: TLabel
     Left = 40
-    Height = 21
+    Height = 15
     Top = 200
-    Width = 246
+    Width = 186
     Caption = 'Criado por Marcelo Maurin Martins'
     ParentColor = False
   end
@@ -30,32 +30,32 @@ object frmSobre: TfrmSobre
     Height = 23
     Top = 160
     Width = 90
-    Caption = 'Voltar'
+    Caption = 'Close'
     OnChange = ToggleBox1Change
     TabOrder = 0
   end
   object Label3: TLabel
     Left = 10
-    Height = 21
+    Height = 15
     Top = 46
-    Width = 205
-    Caption = 'MNote2 - Notepad do Maurin'
+    Width = 119
+    Caption = 'MNote2 - Maurin note'
     ParentColor = False
   end
   object Label4: TLabel
     Left = 104
-    Height = 21
+    Height = 15
     Top = 111
-    Width = 49
-    Caption = 'Versão'
+    Width = 38
+    Caption = 'Version'
     ParentColor = False
     OnClick = Label4Click
   end
   object lbversao: TLabel
     Left = 172
-    Height = 21
+    Height = 15
     Top = 113
-    Width = 22
+    Width = 15
     Caption = '0.1'
     ParentColor = False
   end

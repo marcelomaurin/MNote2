@@ -1,5 +1,7 @@
 #!/bin/bash
 ARQUITETURA=$(uname -m)
+VERSAO=2.13
+
 case $(uname -m) in
 	i386) 	ARQUITETURA="i386";;
 	i686) 	ARQUITETURA="i386";;
@@ -21,8 +23,10 @@ then
 	echo "Empacotando"
 	dpkg-deb --build mnote2
 	echo "Movendo para pasta repositorio"
-	mv mnote2.deb mnote2-2.10_amd64.deb
-	cp ./mnote2-2.10_amd64.deb ./bin/
+	FILE=`echo "mnote2-$VERSAO""_amd64.deb"`
+	echo $FILE
+	mv mnote2.deb $FILE
+	cp $FILE ./bin/
 	exit 1;
 fi
 
@@ -38,8 +42,10 @@ then
 	echo "Empacotando"
 	dpkg-deb --build mnote2
 	echo "Movendo para pasta repositorio"
-	mv mnote2.deb mnote2-2.9_i686.deb
-	cp ./mnote2-2.9_i686.deb ./bin/
+        FILE=`echo "mnote2-$VERSAO""_i686.deb"`
+        echo $FILE
+	mv mnote2.deb $FILE
+	cp ./$FILE ./bin/
 	exit 1;
 fi
 
@@ -55,8 +61,10 @@ then
 	echo "Empacotando"
 	dpkg-deb --build mnote2
 	echo "Movendo para pasta repositorio"
-	mv mnote2.deb mnote2-2.9_i386.deb
-	cp ./mnote2-2.9_i386.deb ./bin/
+        FILE=`echo "mnote2-$VERSAO""_i386.deb"`
+        echo $FILE
+	mv mnote2.deb $FILE
+	cp ./$FILE ./bin/
 	exit 1;
 fi
 
@@ -71,7 +79,9 @@ if [ $ARQUITETURA =  'armv7l' ]; then
 	echo "Empacotando"
 	dpkg-deb --build mnote2
 	echo "Movendo para pasta repositorio"
-	mv mnote2.deb mnote2-2.9_arm.deb
-	cp ./mnote2-2.9_arm.deb ./bin/	
+        FILE=`echo "mnote2-$VERSAO""_arm.deb"`
+        echo $FILE
+	mv mnote2.deb $FILE
+	cp ./$FILE ./bin/
 	exit 1;
 fi
