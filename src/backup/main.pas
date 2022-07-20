@@ -152,11 +152,11 @@ type
     procedure CarregaContexto();
     procedure AssociarExtensao(item: Titem);
     function classificaTipo(arquivo : string): TTypeItem;
-    procedure MessageHint(info : string);
+
 
   public
     { public declarations }
-
+    procedure MessageHint(info : string);
     function ExistFileOpen(Arquivo : string): boolean;
     procedure CarregarArquivo(arquivo : string);
   end;

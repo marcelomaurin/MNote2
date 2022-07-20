@@ -105,6 +105,7 @@
       <Unit10>
         <Filename Value="classes/tabela.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Tabela"/>
       </Unit10>
       <Unit11>
         <Filename Value="classes/typedb.pas"/>

@@ -12,7 +12,7 @@ uses
   setmain, mquery, TypeDB, folders, funcoes, LCLType, chgtext, hint;
 
 
-const versao = '2.14';
+const versao = '2.15';
 
 type
 
