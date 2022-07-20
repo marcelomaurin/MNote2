@@ -1,0 +1,92 @@
+object frmRegistrar: TfrmRegistrar
+  Left = -622
+  Height = 251
+  Top = 483
+  Width = 547
+  BorderStyle = bsNone
+  Caption = 'Registro'
+  ClientHeight = 251
+  ClientWidth = 547
+  OnCreate = FormCreate
+  OnShow = FormShow
+  Position = poMainFormCenter
+  LCLVersion = '2.0.12.0'
+  object Label1: TLabel
+    Left = 232
+    Height = 15
+    Top = 64
+    Width = 36
+    Caption = 'Nome:'
+    ParentColor = False
+  end
+  object edNome: TEdit
+    Left = 232
+    Height = 23
+    Top = 81
+    Width = 188
+    TabOrder = 0
+  end
+  object Label2: TLabel
+    Left = 232
+    Height = 15
+    Top = 120
+    Width = 32
+    Caption = 'Email:'
+    ParentColor = False
+  end
+  object edEmail: TEdit
+    Left = 232
+    Height = 23
+    Top = 134
+    Width = 308
+    TabOrder = 1
+  end
+  object Memo1: TMemo
+    Left = 16
+    Height = 170
+    Top = 64
+    Width = 206
+    Lines.Strings = (
+      'O Projeto Balança é Gratuíto, nenhuma taxa será cobrada.'
+      ''
+      ''
+      'Porem pedimos apenas a identificação para que possamos '
+      'saber sua opnião.'
+      'Identificando as proximas melhorias necessárias para tornar este produto cada vez melhor.'
+    )
+    OnChange = Memo1Change
+    ReadOnly = True
+    TabOrder = 2
+  end
+  object Label3: TLabel
+    Left = 144
+    Height = 40
+    Top = 8
+    Width = 266
+    Caption = 'Registro necessário'
+    Font.Height = -29
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+  end
+  object Button1: TButton
+    Left = 448
+    Height = 41
+    Top = 184
+    Width = 91
+    Caption = 'Registrar'
+    OnClick = Button1Click
+    TabOrder = 3
+  end
+  object LTCPComponent1: TLTCPComponent
+    Host = 'http://maurinsoft.com.br'
+    Port = 80
+    OnReceive = LTCPComponent1Receive
+    OnConnect = LTCPComponent1Connect
+    OnAccept = LTCPComponent1Accept
+    Timeout = 0
+    ReuseAddress = True
+    Left = 262
+    Top = 185
+  end
+end

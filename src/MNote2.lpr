@@ -7,8 +7,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, main, Item, sobre, funcoes, zcomponent, finds, folders,
-  chgtext, setchgtext, hint
+  Forms, lnetvisual, main, Item, sobre, funcoes, zcomponent, finds, folders,
+  chgtext, setchgtext, hint, registro
   { you can add units after this };
 
 

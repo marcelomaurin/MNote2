@@ -9,10 +9,10 @@ uses
   SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion,
   SynHighlighterPython, SynHighlighterPHP, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
-  setmain, mquery, TypeDB, folders, funcoes, LCLType, chgtext, hint;
+  setmain, mquery, TypeDB, folders, funcoes, LCLType, chgtext, hint, registro;
 
 
-const versao = '2.13';
+const versao = '2.15';
 
 type
 
@@ -33,6 +33,7 @@ type
     MenuItem16: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem4: TMenuItem;
+    MenuItem9: TMenuItem;
     miUndo: TMenuItem;
     mnFixW: TMenuItem;
     mnOnTopW: TMenuItem;
@@ -151,10 +152,11 @@ type
     procedure CarregaContexto();
     procedure AssociarExtensao(item: Titem);
     function classificaTipo(arquivo : string): TTypeItem;
-    procedure MessageHint(info : string);
+
 
   public
     { public declarations }
+    procedure MessageHint(info : string);
     function ExistFileOpen(Arquivo : string): boolean;
     procedure CarregarArquivo(arquivo : string);
   end;
@@ -413,7 +415,7 @@ begin
         info := Application.Params[a];
         if FileExists(info) then
         begin
-          MessageHint(info);
+          //MessageHint(info);
           if not ExistFileOpen(info) then  //Verifica se existe essa aba ja
           begin
             Carregar(info);
@@ -444,7 +446,7 @@ begin
      info :=lista[a];
      if(FileExists(info)) then
      begin
-         MessageHint(info);
+         //MessageHint(info);
          if not ExistFileOpen(info) then  //Verifica se existe essa aba ja
          begin
            Carregar(info);
@@ -482,6 +484,8 @@ begin
   {$endif}
   CarregarOld();
   CarregarParametros();
+  frmRegistrar := TfrmRegistrar.Create(self);
+  frmRegistrar.Identifica();
 end;
 
 procedure TfrmMNote.CarregaContexto();
@@ -489,6 +493,8 @@ begin
   FSetMain.CarregaContexto();
   Left:= FsetMain.posx;
   top:= FSetMain.posy;
+  Width:=   FSetMain.width;
+  Height:= FSetMain.Height;
   if FSetMain.stay then
   begin
     FormStyle:= fsStayOnTop;
@@ -536,12 +542,12 @@ begin
                   if  RegistrarExtensao(  ExtractFileExt(application.ExeName), 'Aplicativo de edição de texto', ExtractFileName(application.ExeName), Application.ExeName) then
                   begin
                     //showmessage('Extensão associada!');
-                    MessageHint('Extensão associada!');
+                    //MessageHint('Extensão associada!');
                   end
                   else
                   begin
                      //showmessage('Extensão não foi associada!');
-                    MessageHint('Extensão não foi associada!');
+                    //MessageHint('Extensão não foi associada!');
                   end;
              end;
           end;
@@ -553,7 +559,7 @@ begin
            PopupNotifier1.Text:='Associação de extensão somente possivel quando estiver rodando como administrador';
            PopupNotifier1.Show;
            *)
-          MessageHint('Associação de extensão somente possivel quando estiver rodando como administrador');
+          //MessageHint('Associação de extensão somente possivel quando estiver rodando como administrador');
         end;
         {$endif}
    end;
@@ -609,7 +615,7 @@ var
 begin
    resultado := false;
    BoxStyle := MB_ICONQuestion + MB_YESNO;
-   Reply := Application.MessageBox('Deseja Salvar os textos', 'Confirma', BOXStyle);
+   Reply := Application.MessageBox('Do you want to save the files?', 'Confirm', BOXStyle);
    if Reply = IDYES then
    begin
       resultado := true;
@@ -645,14 +651,9 @@ begin
     begin
       //Deve salvar antes
       SalvarTudo();
-
-      CloseAction:= caNone;
-    end
-     else
-    begin
-      CloseAction:= caFree;
     end;
-  end
+  end;
+  CloseAction:= caFree;
 end;
 
 procedure TfrmMNote.FindDialog1Find(Sender: TObject);
@@ -676,6 +677,8 @@ var
 begin
   Fsetmain.posx := Left;
   Fsetmain.posy := top;
+  Fsetmain.width := Width;
+  Fsetmain.Height:= Height;
 
   if (frmMQuery <> nil) then
   begin
@@ -781,6 +784,7 @@ begin
   else
   begin
     frmFolders.show();
+
   end;
 end;
 
@@ -848,8 +852,10 @@ procedure TfrmMNote.mnDesktopCenterClick(Sender: TObject);
 begin
   frmMNote.top := (Screen.WorkAreaTop  - frmMNote.Height) DIV 2;
   frmMNote.left := (Screen.WorkAreaLeft  - frmMNote.Width) DIV 2;
-  Fsetmain.posx:=frmMNote.Left;
-  Fsetmain.posy:=frmMNote.top;
+  Fsetmain.posx:=Left;
+  Fsetmain.posy:=top;
+  Fsetmain.width := Width;
+  Fsetmain.Height:= Height;
 end;
 
 procedure TfrmMNote.mnCClick(Sender: TObject);
@@ -973,8 +979,16 @@ begin
 end;
 
 procedure TfrmMNote.MenuItem9Click(Sender: TObject);
-
+var
+   pagecont : integer;
+   tb :TTabSheet;
 begin
+  for pagecont:=0 to pgMain.PageCount-1 do
+  begin
+      tb := pgMain.Pages[pagecont];
+      SalvarTab(tb);
+   end;
+   MessageHint('All Saved!');
 
 end;
 
@@ -1069,11 +1083,17 @@ end;
 procedure TfrmMNote.mnSalvarClick(Sender: TObject);
 var
    tb : TTabSheet;
+   arquivo : string;
+   item : TItem;
 begin
    if (pgMain.ActivePage <> nil) then
    begin
       tb := pgMain.ActivePage;
+      item := TItem(tb.Tag);
+
+      arquivo := item.FileName;
       SalvarTab(tb);
+      MessageHint('Saved in '+ arquivo);
    end;
 end;
 

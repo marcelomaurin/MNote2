@@ -31,6 +31,9 @@ type
         FStay : boolean;
         FLastFiles : String;
         FPATH : string;
+        FDefaultfolder : string;
+        FHeight : integer;
+        FWidth : integer;
         //filename : String;
         procedure SetDevice(const Value : Boolean);
         procedure SetPOSX(value : integer);
@@ -38,6 +41,7 @@ type
         procedure SetFixar(value : boolean);
         procedure SetStay(value : boolean);
         procedure SetLastFiles(value : string);
+        procedure SetDefaultFolder(value: string);
         procedure Default();
   public
         procedure SalvaContexto(flag : boolean);
@@ -49,6 +53,9 @@ type
         property fixar : boolean read FFixar write SetFixar;
         property stay : boolean read FStay write SetStay;
         property lastfiles: string read FLastFiles write SetLastFiles;
+        property DefaultFolder : string read FDefaultFolder write SetDefaultFolder;
+        property Height: integer read FHeight write FHeight;
+        property Width : integer read FWidth write FWidth;
   end;
 
   var
@@ -96,6 +103,11 @@ begin
   FLastFiles:= value;
 end;
 
+procedure TSetFolders.SetDefaultFolder(value: string);
+begin
+  FDefaultfolder:=value;
+end;
+
 procedure TSetFolders.CarregaContexto();
 var
   posicao: integer;
@@ -124,6 +136,19 @@ begin
     begin
       FLastFiles := RetiraInfo(arquivo.Strings[posicao]);
     end;
+    if  BuscaChave(arquivo,'DEFAULTFOLDER:',posicao) then
+    begin
+      FDefaultFolder := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'HEIGHT:',posicao) then
+    begin
+      FHEIGHT := strtoint(RetiraInfo(arquivo.Strings[posicao]));
+    end;
+    if  BuscaChave(arquivo,'WIDTH:',posicao) then
+    begin
+      FWidth := strtoint(RetiraInfo(arquivo.Strings[posicao]));
+    end;
+
 
 end;
 
@@ -194,6 +219,10 @@ begin
   arquivo.Append('FIXAR:'+booltostr(FFixar));
   arquivo.Append('STAY:'+booltostr(FStay));
   arquivo.Append('LASTFILES:'+FLastFiles);
+  arquivo.Append('DEFAULTFOLDER:'+FDefaultfolder);
+  arquivo.Append('HEIGHT:'+inttostr(FHEIGHT));
+  arquivo.Append('WIDTH:'+inttostr(FWIDTH));
+
 
   arquivo.SaveToFile(fpath+filename);
 end;
