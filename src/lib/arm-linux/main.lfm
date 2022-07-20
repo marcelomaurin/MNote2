@@ -1,7 +1,7 @@
 object frmMNote: TfrmMNote
-  Left = -747
+  Left = 426
   Height = 394
-  Top = 268
+  Top = 160
   Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
@@ -43,26 +43,36 @@ object frmMNote: TfrmMNote
       object btNovo: TMenuItem
         Caption = 'New'
         ImageIndex = 4
+        ShortCut = 16462
         OnClick = btNovoClick
       end
       object mnCarregar: TMenuItem
         Caption = 'Load'
         ImageIndex = 3
+        ShortCut = 16460
         OnClick = mnCarregarClick
       end
       object mnSalvar: TMenuItem
         Caption = 'Save'
         ImageIndex = 2
+        ShortCut = 16467
         OnClick = mnSalvarClick
       end
       object mnSalvarComo: TMenuItem
         Caption = 'Save as'
         ImageIndex = 2
+        ShortCut = 49235
         OnClick = mnSalvarComoClick
+      end
+      object MenuItem9: TMenuItem
+        Caption = 'Save &All'
+        ShortCut = 16449
+        OnClick = MenuItem9Click
       end
       object MenuItem6: TMenuItem
         Caption = 'Exit'
         ImageIndex = 0
+        ShortCut = 16472
         OnClick = MenuItem6Click
       end
     end
