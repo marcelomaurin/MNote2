@@ -19,7 +19,10 @@
         <ComponentName Value="frmMNote"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <CursorPos X="21" Y="15"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="854"/>
+        <CursorPos Y="857"/>
+        <ComponentState Value="1"/>
         <UsageCount Value="154"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -125,6 +128,7 @@
         <EditorIndex Value="3"/>
         <TopLine Value="264"/>
         <CursorPos Y="288"/>
+        <ComponentState Value="1"/>
         <UsageCount Value="125"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -138,6 +142,7 @@
         <EditorIndex Value="15"/>
         <TopLine Value="40"/>
         <CursorPos X="33" Y="88"/>
+        <ComponentState Value="1"/>
         <UsageCount Value="125"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -151,6 +156,7 @@
         <EditorIndex Value="7"/>
         <TopLine Value="144"/>
         <CursorPos X="37" Y="153"/>
+        <ComponentState Value="1"/>
         <UsageCount Value="110"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -191,6 +197,7 @@
         <EditorIndex Value="5"/>
         <TopLine Value="163"/>
         <CursorPos Y="177"/>
+        <ComponentState Value="1"/>
         <UsageCount Value="53"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -213,6 +220,7 @@
         <EditorIndex Value="4"/>
         <TopLine Value="49"/>
         <CursorPos X="6" Y="59"/>
+        <ComponentState Value="1"/>
         <UsageCount Value="44"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -223,9 +231,9 @@
         <ComponentName Value="frmRegistrar"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
         <CursorPos X="53" Y="11"/>
+        <ComponentState Value="1"/>
         <UsageCount Value="21"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -589,123 +597,123 @@
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="mquery.pas"/>
-        <Caret Line="269" TopLine="254"/>
+        <Caret Line="268" Column="12" TopLine="167"/>
       </Position1>
       <Position2>
         <Filename Value="mquery.pas"/>
-        <Caret Line="268" Column="12" TopLine="167"/>
+        <Caret Line="563" Column="20" TopLine="538"/>
       </Position2>
       <Position3>
         <Filename Value="mquery.pas"/>
-        <Caret Line="563" Column="20" TopLine="538"/>
+        <Caret Line="75" Column="30" TopLine="66"/>
       </Position3>
       <Position4>
         <Filename Value="mquery.pas"/>
-        <Caret Line="75" Column="30" TopLine="66"/>
+        <Caret Line="259" Column="22" TopLine="259"/>
       </Position4>
       <Position5>
         <Filename Value="mquery.pas"/>
-        <Caret Line="259" Column="22" TopLine="259"/>
+        <Caret Line="571" Column="27" TopLine="547"/>
       </Position5>
       <Position6>
         <Filename Value="mquery.pas"/>
-        <Caret Line="571" Column="27" TopLine="547"/>
+        <Caret Line="76" Column="32" TopLine="61"/>
       </Position6>
       <Position7>
         <Filename Value="mquery.pas"/>
-        <Caret Line="76" Column="32" TopLine="61"/>
+        <Caret Line="620" Column="31" TopLine="596"/>
       </Position7>
       <Position8>
         <Filename Value="mquery.pas"/>
-        <Caret Line="620" Column="31" TopLine="596"/>
+        <Caret Line="737" Column="92" TopLine="725"/>
       </Position8>
       <Position9>
         <Filename Value="mquery.pas"/>
-        <Caret Line="737" Column="92" TopLine="725"/>
+        <Caret Line="571" Column="27" TopLine="554"/>
       </Position9>
       <Position10>
         <Filename Value="mquery.pas"/>
-        <Caret Line="571" Column="27" TopLine="554"/>
+        <Caret Line="75" Column="30" TopLine="61"/>
       </Position10>
       <Position11>
         <Filename Value="mquery.pas"/>
-        <Caret Line="75" Column="30" TopLine="61"/>
+        <Caret Line="288" TopLine="266"/>
       </Position11>
       <Position12>
         <Filename Value="mquery.pas"/>
-        <Caret Line="288" TopLine="266"/>
+        <Caret Line="278" Column="26" TopLine="261"/>
       </Position12>
       <Position13>
         <Filename Value="mquery.pas"/>
-        <Caret Line="278" Column="26" TopLine="261"/>
+        <Caret Line="728" Column="13" TopLine="705"/>
       </Position13>
       <Position14>
         <Filename Value="mquery.pas"/>
-        <Caret Line="728" Column="13" TopLine="705"/>
+        <Caret Line="283" Column="35" TopLine="264"/>
       </Position14>
       <Position15>
         <Filename Value="mquery.pas"/>
-        <Caret Line="283" Column="35" TopLine="264"/>
+        <Caret Line="279" TopLine="264"/>
       </Position15>
       <Position16>
         <Filename Value="mquery.pas"/>
-        <Caret Line="279" TopLine="264"/>
+        <Caret Line="278" TopLine="264"/>
       </Position16>
       <Position17>
         <Filename Value="mquery.pas"/>
-        <Caret Line="278" TopLine="264"/>
+        <Caret Line="281" TopLine="264"/>
       </Position17>
       <Position18>
-        <Filename Value="mquery.pas"/>
-        <Caret Line="281" TopLine="264"/>
-      </Position18>
-      <Position19>
         <Filename Value="registro.pas"/>
         <Caret Line="12" Column="63"/>
+      </Position18>
+      <Position19>
+        <Filename Value="main.pas"/>
+        <Caret Line="187" Column="29" TopLine="172"/>
       </Position19>
       <Position20>
         <Filename Value="main.pas"/>
-        <Caret Line="187" Column="29" TopLine="172"/>
+        <Caret Line="265" Column="29" TopLine="241"/>
       </Position20>
       <Position21>
         <Filename Value="main.pas"/>
-        <Caret Line="265" Column="29" TopLine="241"/>
+        <Caret Line="369" Column="25" TopLine="345"/>
       </Position21>
       <Position22>
         <Filename Value="main.pas"/>
-        <Caret Line="369" Column="25" TopLine="345"/>
+        <Caret Line="376" Column="41" TopLine="352"/>
       </Position22>
       <Position23>
         <Filename Value="main.pas"/>
-        <Caret Line="376" Column="41" TopLine="352"/>
+        <Caret Line="383" Column="44" TopLine="359"/>
       </Position23>
       <Position24>
         <Filename Value="main.pas"/>
-        <Caret Line="383" Column="44" TopLine="359"/>
+        <Caret Line="386" Column="23" TopLine="363"/>
       </Position24>
       <Position25>
         <Filename Value="main.pas"/>
-        <Caret Line="386" Column="23" TopLine="363"/>
+        <Caret Line="441" Column="30" TopLine="417"/>
       </Position25>
       <Position26>
-        <Filename Value="main.pas"/>
-        <Caret Line="441" Column="30" TopLine="417"/>
-      </Position26>
-      <Position27>
         <Filename Value="registro.pas"/>
         <Caret Line="36" Column="25" TopLine="13"/>
-      </Position27>
-      <Position28>
+      </Position26>
+      <Position27>
         <Filename Value="main.pas"/>
         <Caret Line="15" Column="21"/>
-      </Position28>
-      <Position29>
+      </Position27>
+      <Position28>
         <Filename Value="MNote2.lpr"/>
         <Caret Line="24"/>
-      </Position29>
-      <Position30>
+      </Position28>
+      <Position29>
         <Filename Value="registro.pas"/>
         <Caret Line="121" TopLine="107"/>
+      </Position29>
+      <Position30>
+        <Filename Value="main.pas"/>
+        <Caret Line="15" Column="21" TopLine="31"/>
       </Position30>
     </JumpHistory>
     <RunParams>

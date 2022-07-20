@@ -19,6 +19,8 @@
         <ComponentName Value="frmMNote"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="31"/>
         <CursorPos X="21" Y="15"/>
         <UsageCount Value="154"/>
         <Loaded Value="True"/>
@@ -223,7 +225,6 @@
         <ComponentName Value="frmRegistrar"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
         <CursorPos X="53" Y="11"/>
         <UsageCount Value="21"/>

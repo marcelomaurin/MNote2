@@ -1,7 +1,7 @@
 object frmMQuery: TfrmMQuery
-  Left = 337
+  Left = -541
   Height = 487
-  Top = 116
+  Top = 184
   Width = 313
   Align = alRight
   Caption = 'MQuery'
@@ -310,5 +310,9 @@ object frmMQuery: TfrmMQuery
       C54E0C50007F0ACF549286EF8AF4FFB3F8F69BB03B07247CFF12EBBB4A21A79A
       EB7F0FEC853609C67A76FD4F49F6FBFF4AC97EFF9F5DFFD3CA7F01C7843756
     }
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 84
+    Top = 232
   end
 end
