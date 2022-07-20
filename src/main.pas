@@ -9,7 +9,7 @@ uses
   SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion,
   SynHighlighterPython, SynHighlighterPHP, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
-  setmain, mquery, TypeDB, folders, funcoes, LCLType, chgtext, hint;
+  setmain, mquery, TypeDB, folders, funcoes, LCLType, chgtext, hint, registro;
 
 
 const versao = '2.15';
@@ -484,6 +484,8 @@ begin
   {$endif}
   CarregarOld();
   CarregarParametros();
+  frmRegistrar := TfrmRegistrar.Create(self);
+  frmRegistrar.Identifica();
 end;
 
 procedure TfrmMNote.CarregaContexto();

@@ -140,7 +140,7 @@ begin
   pathfolder := edFolder.text;
   //edFolder.text :=  ShellListView1.Selected.GetNamePath;
  // showmessage(ShellListView1.Root);
-  ShellTreeView1.Path:=ShellListView1.Root;
+  //ShellTreeView1.Path:=ShellListView1.Root;
 
   if ShowConfirm('Confirm delete '+pathfolder+'?') then
   begin
