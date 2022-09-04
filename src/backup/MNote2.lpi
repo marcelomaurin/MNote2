@@ -178,6 +178,7 @@
         <Filename Value="splash.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmSplash"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit22>
     </Units>
