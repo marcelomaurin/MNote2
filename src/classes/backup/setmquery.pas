@@ -206,7 +206,7 @@ begin
   arquivo.Append('LASTFILES:'+FLastFiles);
   arquivo.Append('IDIOMA:'+FIDIOMA);
 
-  arquivo.SaveToFile(filename);
+  arquivo.SaveToFile(fpath+filename);
 end;
 
 destructor TSetMQuery.destroy();

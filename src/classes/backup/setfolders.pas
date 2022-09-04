@@ -221,7 +221,7 @@ begin
   arquivo.Append('LASTFILES:'+FLastFiles);
   arquivo.Append('DEFAULTFOLDER:'+FDefaultfolder);
   arquivo.Append('HEIGHT:'+inttostr(FHEIGHT));
-  arquivo.Append('WIDTH:'+inttostr(FWIDTH);
+  arquivo.Append('WIDTH:'+inttostr(FWIDTH));
 
 
   arquivo.SaveToFile(fpath+filename);

@@ -51,7 +51,7 @@ type
         property fixar : boolean read FFixar write SetFixar;
         property stay : boolean read FStay write SetStay;
         property lastfiles: string read FLastFiles write SetLastFiles;
-                property Height: integer read FHeight write FHeight;
+        property Height: integer read FHeight write FHeight;
         property Width : integer read FWidth write FWidth;
   end;
 
@@ -73,6 +73,15 @@ begin
     ckdevice := false;
     fixar:=false;
     stay:=false;
+    FPosX :=100;
+    FPosY := 100;
+    FFixar :=false;
+    FStay := false;
+    //FLastFiles :="";
+    //    FPATH : string;
+    FHeight :=100;
+    FWidth :=100;
+
 
 end;
 
@@ -176,7 +185,7 @@ begin
   else
   begin
     default();
-    SalvaContexto(false);
+    //SalvaContexto(false);
   end;
 
 end;

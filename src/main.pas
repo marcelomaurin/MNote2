@@ -9,10 +9,11 @@ uses
   SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion,
   SynHighlighterPython, SynHighlighterPHP, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
-  setmain, mquery, TypeDB, folders, funcoes, LCLType, chgtext, hint, registro;
+  setmain, mquery, TypeDB, folders, funcoes, LCLType, chgtext, hint, registro,
+  splash;
 
 
-const versao = '2.15';
+const versao = '2.16';
 
 type
 
@@ -82,6 +83,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure btNovoClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure lstFindChangeBounds(Sender: TObject);
     procedure lstFindClick(Sender: TObject);
     procedure lstFindContextPopup(Sender: TObject; MousePos: TPoint;
@@ -237,7 +239,8 @@ begin
   end;
   if extensao = '.sh' then
   begin
-    result := ti_BASH;
+    result := ti_BASH.;
+
   end;
   if extensao = '.sql' then
   begin
@@ -459,7 +462,9 @@ end;
 
 procedure TfrmMNote.FormCreate(Sender: TObject);
 begin
-
+  frmSplash := TfrmSplash.Create(self);
+  frmSplash.lbversao.Caption:= versao;
+  frmSplash.show();
   if (FSetMain = nil) then
   begin
         FsetMain := TsetMain.create();
@@ -703,6 +708,16 @@ begin
   begin
     Fsetmain.Free();
     Fsetmain := nil;
+  end;
+end;
+
+procedure TfrmMNote.FormShow(Sender: TObject);
+begin
+  if (frmSplash <> nil) then
+  begin
+    frmSplash.hide;
+    frmSplash.Free;
+    frmSplash := nil;
   end;
 end;
 
@@ -1179,18 +1194,14 @@ begin
       syn := TSynEdit(tb.tag);
       listagem := TListBox.Create(syn);
       listagem.Items.Text:= SourceValue;
-      //listagem
-      //SourceValue :=  SourceValue;
-      (*
       if SourceStart.x > 0 then
       begin
-        if syn.Lines[SourceStart.y - 1][SourceStart.x-1] = '\' then
-        begin
-          SourceStart.x -= 1;
-          SourceValue := '\' + SourceValue;
-        end;
+           if syn.Lines[SourceStart.y - 1][SourceStart.x-1] = '\' then
+           begin
+                SourceStart.x -= 1;
+                SourceValue := '\' + SourceValue;
+           end;
       end;
-      *)
    end;
 end;
 

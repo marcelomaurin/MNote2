@@ -186,7 +186,7 @@ begin
   else
   begin
     default();
-    SalvaContexto(false);
+    //SalvaContexto(false);
   end;
 
 end;

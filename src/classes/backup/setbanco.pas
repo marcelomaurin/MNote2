@@ -217,7 +217,7 @@ begin
   arquivo.Append('SCHEME:'+FScheme);
   arquivo.Append('USER:'+FUser);
   arquivo.Append('PASSWORD:'+FPassword);
-  arquivo.Append('PASSWORD:'+FPassword);
+  arquivo.Append('PORT:'+FPORT);
   arquivo.SaveToFile(Fpath+filename);
 end;
 

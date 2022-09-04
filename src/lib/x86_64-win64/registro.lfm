@@ -1,7 +1,7 @@
 object frmRegistrar: TfrmRegistrar
-  Left = -622
+  Left = 89
   Height = 251
-  Top = 483
+  Top = 430
   Width = 547
   BorderStyle = bsNone
   Caption = 'Registro'
@@ -10,33 +10,31 @@ object frmRegistrar: TfrmRegistrar
   OnCreate = FormCreate
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '2.2.2.0'
+  LCLVersion = '2.2.0.4'
   object Label1: TLabel
     Left = 232
-    Height = 15
+    Height = 22
     Top = 64
-    Width = 36
+    Width = 45
     Caption = 'Nome:'
-    ParentColor = False
   end
   object edNome: TEdit
     Left = 232
-    Height = 23
+    Height = 32
     Top = 81
     Width = 188
     TabOrder = 0
   end
   object Label2: TLabel
     Left = 232
-    Height = 15
+    Height = 22
     Top = 120
-    Width = 32
+    Width = 43
     Caption = 'Email:'
-    ParentColor = False
   end
   object edEmail: TEdit
     Left = 232
-    Height = 23
+    Height = 32
     Top = 134
     Width = 308
     TabOrder = 1
@@ -60,13 +58,12 @@ object frmRegistrar: TfrmRegistrar
   end
   object Label3: TLabel
     Left = 144
-    Height = 40
+    Height = 39
     Top = 8
-    Width = 266
+    Width = 257
     Caption = 'Registro necessário'
     Font.Height = -29
     Font.Style = [fsBold]
-    ParentColor = False
     ParentFont = False
   end
   object Button1: TButton

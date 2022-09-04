@@ -11,6 +11,7 @@ object frmMNote: TfrmMNote
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnShow = FormShow
   Position = poMainFormCenter
   LCLVersion = '2.2.2.0'
   object Panel1: TPanel

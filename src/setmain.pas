@@ -73,6 +73,15 @@ begin
     ckdevice := false;
     fixar:=false;
     stay:=false;
+    FPosX :=100;
+    FPosY := 100;
+    FFixar :=false;
+    FStay := false;
+    //FLastFiles :="";
+    //    FPATH : string;
+    FHeight :=400;
+    FWidth :=400;
+
 
 end;
 
@@ -176,7 +185,7 @@ begin
   else
   begin
     default();
-    SalvaContexto(false);
+    //SalvaContexto(false);
   end;
 
 end;
