@@ -11,9 +11,9 @@ object frmSplash: TfrmSplash
   Position = poMainFormCenter
   LCLVersion = '2.2.2.0'
   object Label1: TLabel
-    Left = 288
+    Left = 264
     Height = 40
-    Top = 24
+    Top = 32
     Width = 113
     Caption = 'MNote2'
     Font.Height = -29

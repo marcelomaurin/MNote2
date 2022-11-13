@@ -7,13 +7,13 @@ interface
 uses
   Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, SynHighlighterPo,
   SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion,
-  SynHighlighterPython, SynHighlighterPHP, Forms, Controls, Graphics, Dialogs,
-  Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
-  setmain, mquery, TypeDB, folders, funcoes, LCLType, chgtext, hint, registro,
-  splash;
+  SynHighlighterPython, SynHighlighterPHP, synhighlighterunixshellscript, Forms,
+  Controls, Graphics, Dialogs, Menus, ExtCtrls, ComCtrls, StdCtrls, Grids,
+  PopupNotifier, item, types, finds, setmain, mquery, TypeDB, folders, funcoes,
+  LCLType, chgtext, hint, registro, splash;
 
 
-const versao = '2.16';
+const versao = '2.17';
 
 type
 
@@ -77,6 +77,7 @@ type
     SynPythonSyn1: TSynPythonSyn;
     SynSQLSyn1: TSynSQLSyn;
     SynSQLSyn2: TSynSQLSyn;
+    SynUNIXShellScriptSyn1: TSynUNIXShellScriptSyn;
     TrayIcon1: TTrayIcon;
     procedure FindDialog1Find(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -140,7 +141,7 @@ type
   private
     { private declarations }
 
-
+    procedure CheckTipoArquivo(syn : TSynEdit; arquivo : String);
     procedure CarregarParametros();
     procedure CarregarOld();
     function NovoItem():TTabSheet;
@@ -269,6 +270,49 @@ begin
   frmHint.messagehint(info);
 end;
 
+procedure TfrmMNote.CheckTipoArquivo(syn : TSynEdit;arquivo : String);
+var
+  posicao : integer;
+begin
+  posicao := pos('.pas',arquivo);
+  if (posicao <>0) then
+  begin
+    syn.Highlighter := SynPasSyn1;
+    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+  end;
+  if (pos('.sh',arquivo) <>0) then
+  begin
+    syn.Highlighter := SynUNIXShellScriptSyn1;
+    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+  end;
+  if (pos('.php',arquivo) <>0) then
+  begin
+    syn.Highlighter := SynPHPSyn1;
+    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+  end;
+  if (pos('.c',arquivo) <>0) then
+  begin
+    syn.Highlighter := SynCppSyn1;
+    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+  end;
+  if (pos('.cpp',arquivo) <>0) then
+  begin
+    syn.Highlighter := SynCppSyn1;
+    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+  end;
+  if (pos('.h',arquivo) <>0) then
+    begin
+      syn.Highlighter := SynCppSyn1;
+      AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+  end;
+  if (pos('.sql',arquivo) <>0) then
+  begin
+    syn.Highlighter := SynSQLSyn1;
+    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+  end;
+
+end;
+
 procedure TfrmMNote.Carregar(arquivo : String);
 var
    tb : TTabSheet;
@@ -286,6 +330,8 @@ begin
     else
     begin
       tb := NovoItem();
+      //item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+      //syn := item.syn;
       item := Titem(tb.tag);
       syn := item.syn;
       try
@@ -305,7 +351,8 @@ begin
 
         end;
       end;
-      syn.OnChange := @synChange ;
+
+
       tb.tag := PtrInt(item);
       tb.ImageIndex:=0;
       tb.PopupMenu := popFechar;
@@ -322,8 +369,9 @@ begin
       begin
            tb.Caption:= item.Name;
       end;
+      CheckTipoArquivo(syn,arquivo);
       pgMain.Refresh();
-      AssociarExtensao(item);
+
   end;
 end;
 
@@ -778,13 +826,14 @@ begin
   sql := TSynSQLSyn.create(self);
   fsynCompletion :=  item.synCompletion;
   fAutoComplete := item.AutoComplete;
-  fAutoComplete.AutoCompleteList.LoadFromFile('sql.dci');
+  //fAutoComplete.AutoCompleteList.LoadFromFile('sql.dci');
 
 
   sql.sqldialect := sqlMySQL;
   sql.TableNames.clear;
 
-  syn.Highlighter := sql;
+  //syn.Highlighter := sql;
+  syn.Highlighter :=  SynSQLSyn1;
   item.ItemType:= ti_SQL;
 
 
@@ -878,15 +927,16 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-   cpp : TSynCppSyn;
+   //cpp : TSynCppSyn;
 
 begin
   //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
   //item := TItem(syn.tag);
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  cpp := TSynCppSyn.create(self);
-  syn.Highlighter := cpp;
+
+  //cpp := TSynCppSyn.create(self);
+  syn.Highlighter := SynCppSyn1;
 
 end;
 
@@ -923,7 +973,7 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-   pas : TSynPasSyn;
+   //pas : TSynPasSyn;
    fAutoComplete : TSynAutoComplete;
 begin
   //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
@@ -931,9 +981,10 @@ begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
   fAutoComplete := item.AutoComplete;
-  fAutoComplete.AutoCompleteList.LoadFromFile('Delphi32.dci');
-  pas := TSynPasSyn.create(self);
-  syn.Highlighter := pas;
+  //fAutoComplete.AutoCompleteList.LoadFromFile('Delphi32.dci');
+  //pas := TSynPasSyn.create(self);
+  //syn.Highlighter := pas;
+  syn.Highlighter := SynPasSyn1;
 end;
 
 procedure TfrmMNote.mnAssociarClick(Sender: TObject);
@@ -963,7 +1014,7 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-   python : TSynPythonSyn;
+   //python : TSynPythonSyn;
    fAutoComplete : TSynAutoComplete;
 begin
   //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
@@ -971,10 +1022,11 @@ begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
   fAutoComplete := item.AutoComplete;
-  fAutoComplete.AutoCompleteList.LoadFromFile('python.dci');
+  //fAutoComplete.AutoCompleteList.LoadFromFile('python.dci');
 
-  python := TSynPythonSyn.create(self);
-  syn.Highlighter := python;
+  //python := TSynPythonSyn.create(self);
+  //syn.Highlighter := python;
+  syn.Highlighter := SynPythonSyn1;
 end;
 
 procedure TfrmMNote.mnScriptClick(Sender: TObject);
