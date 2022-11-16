@@ -1005,4 +1005,10 @@ object frmMNote: TfrmMNote
       OnClick = MenuItem2Click
     end
   end
+  object SynUNIXShellScriptSyn1: TSynUNIXShellScriptSyn
+    DefaultFilter = 'UNIX Shell Scripts (*.sh)|*.sh'
+    Enabled = False
+    Left = 272
+    Top = 320
+  end
 end
