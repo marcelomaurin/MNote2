@@ -141,7 +141,7 @@ type
   private
     { private declarations }
 
-    procedure CheckTipoArquivo(syn : TSynEdit; arquivo : String);
+    procedure CheckTipoArquivo(syn : TSynEdit; arquivo : String;  Out item : TItem );
     procedure CarregarParametros();
     procedure CarregarOld();
     function NovoItem():TTabSheet;
@@ -213,52 +213,54 @@ function TfrmMNote.classificaTipo(arquivo : string): TTypeItem;
 var
   extensao : string;
 begin
+  result := ti_ALL;
   extensao := ExtractFileExt(arquivo);
-  if extensao = '.txt' then
+  if(extensao = '.txt') then
   begin
     result := ti_TXT;
   end;
-  if extensao = '.cfg' then
+  if( extensao = '.cfg') then
   begin
     result := ti_CFG;
   end;
-  if extensao = '.h' then
+  if(extensao = '.h') then
   begin
     result := ti_H;
   end;
-  if extensao = '.c' then
+  if(extensao = '.c') then
   begin
     result := ti_CCP;
   end;
-  if extensao = '.cc' then
+  if(extensao = '.cc') then
   begin
     result := ti_CCP;
   end;
-  if extensao = '.ccp' then
+  if(extensao = '.ccp') then
   begin
     result := ti_CCP;
   end;
-  if extensao = '.sh' then
+  if(extensao = '.sh') then
   begin
     result := ti_BASH.;
 
   end;
-  if extensao = '.sql' then
+  if (extensao = '.sql') then
   begin
     result := ti_SQL;
   end;
-  if extensao = '.bak' then
+  if( extensao = '.bak') then
   begin
     result := ti_SQL;
   end;
-  if extensao = '.pas' then
+  if( extensao = '.pas') then
   begin
     result := ti_PAS;
   end;
-  if extensao = '.py' then
+  if (extensao = '.py') then
   begin
     result := ti_PY;
   end;
+  //
 end;
 
 
@@ -270,45 +272,55 @@ begin
   frmHint.messagehint(info);
 end;
 
-procedure TfrmMNote.CheckTipoArquivo(syn : TSynEdit;arquivo : String);
+procedure TfrmMNote.CheckTipoArquivo(syn : TSynEdit; arquivo : String; Out item : TItem );
 var
   posicao : integer;
 begin
+   //item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+   //syn := item.syn;
+   //if (item.ItemType = ti_sql) then
   posicao := pos('.pas',arquivo);
   if (posicao <>0) then
   begin
     syn.Highlighter := SynPasSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+    item.itemType := ti_PAS;
   end;
   if (pos('.sh',arquivo) <>0) then
   begin
     syn.Highlighter := SynUNIXShellScriptSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+    item.itemType := ti_BASH;
   end;
   if (pos('.php',arquivo) <>0) then
   begin
     syn.Highlighter := SynPHPSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+    item.itemType := ti_TXT;
   end;
   if (pos('.c',arquivo) <>0) then
   begin
     syn.Highlighter := SynCppSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+    item.itemType := ti_CCP;
   end;
   if (pos('.cpp',arquivo) <>0) then
   begin
     syn.Highlighter := SynCppSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+    item.itemType := ti_CCP;
   end;
   if (pos('.h',arquivo) <>0) then
     begin
       syn.Highlighter := SynCppSyn1;
       AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+      item.itemType := ti_CCP;
   end;
   if (pos('.sql',arquivo) <>0) then
   begin
     syn.Highlighter := SynSQLSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+    item.itemType := ti_SQL;
   end;
 
 end;
@@ -369,7 +381,7 @@ begin
       begin
            tb.Caption:= item.Name;
       end;
-      CheckTipoArquivo(syn,arquivo);
+      CheckTipoArquivo(syn,arquivo, item);
       pgMain.Refresh();
 
   end;

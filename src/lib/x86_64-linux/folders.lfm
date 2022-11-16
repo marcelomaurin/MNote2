@@ -1,7 +1,7 @@
 object frmFolders: TfrmFolders
-  Left = -655
+  Left = 403
   Height = 563
-  Top = -225
+  Top = 294
   Width = 568
   AutoSize = True
   Caption = 'Folders'

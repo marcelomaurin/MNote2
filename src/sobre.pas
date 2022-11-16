@@ -5,14 +5,15 @@ unit sobre;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls;
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  ExtCtrls;
 
 type
 
   { TfrmSobre }
 
   TfrmSobre = class(TForm)
-    Label1: TLabel;
+    Image1: TImage;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
