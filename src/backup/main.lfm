@@ -1,7 +1,7 @@
 object frmMNote: TfrmMNote
-  Left = 426
+  Left = 446
   Height = 394
-  Top = 160
+  Top = 222
   Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
@@ -97,6 +97,27 @@ object frmMNote: TfrmMNote
       Caption = 'Scripts'
       ImageIndex = 1
       OnClick = mnScriptClick
+      object miConfig: TMenuItem
+        Caption = 'Config'
+        OnClick = miConfigClick
+      end
+      object Separator1: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem17: TMenuItem
+        Caption = 'RUN'
+        ShortCut = 116
+      end
+      object MenuItem18: TMenuItem
+        Caption = 'DEBUG'
+        ShortCut = 16500
+      end
+      object MenuItem19: TMenuItem
+        Caption = 'CLEAN'
+      end
+      object MenuItem20: TMenuItem
+        Caption = 'INSTALL'
+      end
     end
     object MenuItem12: TMenuItem
       Caption = 'Tools'

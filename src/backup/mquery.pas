@@ -725,7 +725,7 @@ begin
     zpostqry.First;
     //pgbar1.Max:= zpostqry.RecordCount;
     //pgbar1.Position:=0;
-    tn.DeleteChildren;
+    tntables.DeleteChildren;
     while not zpostqry.EOF do
     begin
       if zpostqry.FieldByName('table_schema').asstring = FScheme then

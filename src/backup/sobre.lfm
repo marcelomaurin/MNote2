@@ -1,9 +1,9 @@
 object frmSobre: TfrmSobre
-  Left = 406
+  Left = 1884
   Height = 200
-  Top = 284
+  Top = -941
   Width = 320
-  BorderStyle = bsNone
+  BorderStyle = bsDialog
   Caption = 'About'
   ClientHeight = 200
   ClientWidth = 320

@@ -33,6 +33,12 @@ type
         FPATH : string;
         FHeight : integer;
         FWidth : integer;
+
+        FRunScript : string;    //Script de Compilação
+        FDebugScript : string;  //Script de Debug
+        FCleanScript : string;  //Script de Limpeza
+        FInstall : string;      //Script de Instalacao
+
         //filename : String;
         procedure SetDevice(const Value : Boolean);
         procedure SetPOSX(value : integer);
@@ -53,6 +59,10 @@ type
         property lastfiles: string read FLastFiles write SetLastFiles;
         property Height: integer read FHeight write FHeight;
         property Width : integer read FWidth write FWidth;
+        property RunScript : string read FRunScript write FRunScript;
+        property DebugScript : string read FDebugScript write FDebugScript;
+        property CleanScript : string read FCleanScript write FCleanScript;
+        property Install : string read FInstall write FInstall;
   end;
 
   var
@@ -81,6 +91,10 @@ begin
     //    FPATH : string;
     FHeight :=400;
     FWidth :=400;
+    FRunScript := '';   //Script de Run
+    FDebugScript :='';  //Script de Debug
+    FCleanScript :='';  //Script de Limpeza
+    FInstall :='';      //Script de Instalacao
 
 
 end;
@@ -146,7 +160,22 @@ begin
     begin
       FWidth := strtoint(RetiraInfo(arquivo.Strings[posicao]));
     end;
-
+    if  BuscaChave(arquivo,'RUNSCRIPT:',posicao) then
+    begin
+      FRunScript := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'DEBUGSCRIPT:',posicao) then
+    begin
+      FDebugScript := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'CLEANSCRIPT:',posicao) then
+    begin
+      FCleanScript := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'INSTALLSCRIPT:',posicao) then
+    begin
+      FInstall := RetiraInfo(arquivo.Strings[posicao]);
+    end;
 end;
 
 
@@ -215,6 +244,11 @@ begin
   arquivo.Append('LASTFILES:'+FLastFiles);
   arquivo.Append('HEIGHT:'+inttostr(FHEIGHT));
   arquivo.Append('WIDTH:'+inttostr(FWIDTH));
+  arquivo.Append('RUNSCRIPT:'+FRunScript);
+  arquivo.Append('DEBUGSCRIPT:'+FDebugScript);
+  arquivo.Append('CLEANSCRIPT:'+FCleanScript);
+  arquivo.Append('INSTALLSCRIPT:'+FInstall);
+
 
   arquivo.SaveToFile(fpath+filename);
 end;

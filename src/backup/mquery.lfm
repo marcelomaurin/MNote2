@@ -1,7 +1,7 @@
 object frmMQuery: TfrmMQuery
-  Left = -541
+  Left = 855
   Height = 487
-  Top = 184
+  Top = 146
   Width = 313
   Align = alRight
   Caption = 'MQuery'
@@ -10,6 +10,7 @@ object frmMQuery: TfrmMQuery
   Menu = MainMenu1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  Position = poDesktopCenter
   LCLVersion = '2.2.2.0'
   object Panel1: TPanel
     Left = 0

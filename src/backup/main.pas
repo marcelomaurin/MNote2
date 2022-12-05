@@ -10,10 +10,10 @@ uses
   SynHighlighterPython, SynHighlighterPHP, synhighlighterunixshellscript, Forms,
   Controls, Graphics, Dialogs, Menus, ExtCtrls, ComCtrls, StdCtrls, Grids,
   PopupNotifier, item, types, finds, setmain, mquery, TypeDB, folders, funcoes,
-  LCLType, chgtext, hint, registro, splash;
+  LCLType, chgtext, hint, registro, splash, setFolders, config;
 
 
-const versao = '2.17';
+const versao = '2.18';
 
 type
 
@@ -32,6 +32,12 @@ type
     MenuItem14: TMenuItem;
     MenuItem15: TMenuItem;
     MenuItem16: TMenuItem;
+    MenuItem17: TMenuItem;
+    MenuItem18: TMenuItem;
+    MenuItem19: TMenuItem;
+    MenuItem20: TMenuItem;
+    Separator1: TMenuItem;
+    miConfig: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem4: TMenuItem;
     MenuItem9: TMenuItem;
@@ -97,6 +103,7 @@ type
     procedure MenuItem15Click(Sender: TObject);
     procedure MenuItem16Click(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
+    procedure miConfigClick(Sender: TObject);
     procedure miUndoClick(Sender: TObject);
     procedure mnFixWClick(Sender: TObject);
     procedure mnOnTopWClick(Sender: TObject);
@@ -213,6 +220,7 @@ function TfrmMNote.classificaTipo(arquivo : string): TTypeItem;
 var
   extensao : string;
 begin
+  result := ti_ALL;
   extensao := ExtractFileExt(arquivo);
   if(extensao = '.txt') then
   begin
@@ -259,6 +267,10 @@ begin
   begin
     result := ti_PY;
   end;
+  if (extensao = '.php') then
+  begin
+    result := ti_PHP;
+  end;
   //
 end;
 
@@ -295,7 +307,7 @@ begin
   begin
     syn.Highlighter := SynPHPSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    item.itemType := ti_TXT;
+    item.itemType := ti_PHP;
   end;
   if (pos('.c',arquivo) <>0) then
   begin
@@ -320,6 +332,12 @@ begin
     syn.Highlighter := SynSQLSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
     item.itemType := ti_SQL;
+  end;
+  if (pos('.py',arquivo) <>0) then
+  begin
+    syn.Highlighter := SynPythonSyn1;
+    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+    item.itemType := ti_PY;
   end;
 
 end;
@@ -390,6 +408,7 @@ procedure TfrmMNote.CarregarArquivo(arquivo : string);
 begin
   if (arquivo = '') then
   begin
+    OpenDialog1.InitialDir:= FSetFolders.DefaultFolder;
     if OpenDialog1.execute then
     begin
       if FileExists(OpenDialog1.FileName) then
@@ -882,6 +901,13 @@ begin
   begin
     frmmquery.show();
   end;
+end;
+
+procedure TfrmMNote.miConfigClick(Sender: TObject);
+begin
+  frmConfig := TfrmConfig.create(self);
+  frmConfig.showmodal();
+  frmConfig.
 end;
 
 procedure TfrmMNote.miUndoClick(Sender: TObject);

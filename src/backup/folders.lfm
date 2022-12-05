@@ -1,7 +1,7 @@
 object frmFolders: TfrmFolders
-  Left = -655
+  Left = 578
   Height = 563
-  Top = -225
+  Top = 291
   Width = 568
   AutoSize = True
   Caption = 'Folders'
@@ -13,6 +13,7 @@ object frmFolders: TfrmFolders
   OnShow = FormShow
   ParentBiDiMode = False
   ParentDoubleBuffered = False
+  Position = poDesktopCenter
   LCLVersion = '2.2.2.0'
   object Panel2: TPanel
     Left = 205

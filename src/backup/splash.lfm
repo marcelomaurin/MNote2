@@ -1,13 +1,15 @@
 object frmSplash: TfrmSplash
-  Left = 664
+  Left = 2078
   Height = 342
-  Top = 287
+  Top = -939
   Width = 465
   BorderIcons = []
+  BorderStyle = bsNone
   Caption = 'frmSplash'
   ClientHeight = 342
   ClientWidth = 465
   DefaultMonitor = dmMainForm
+  FormStyle = fsSplash
   Position = poMainFormCenter
   LCLVersion = '2.2.2.0'
   object Label1: TLabel
