@@ -102,6 +102,7 @@ type
     procedure MenuItem14Click(Sender: TObject);
     procedure MenuItem15Click(Sender: TObject);
     procedure MenuItem16Click(Sender: TObject);
+    procedure MenuItem17Click(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure miConfigClick(Sender: TObject);
     procedure miUndoClick(Sender: TObject);
@@ -887,6 +888,15 @@ begin
 
 end;
 
+procedure TfrmMNote.MenuItem17Click(Sender: TObject);
+begin
+   {$IFDEF WINDOWS}
+   {$ENDIF}
+   {$IFDEF LINUX}
+   {$ENDIF}
+     {$ifdef Darwin}
+end;
+
 procedure TfrmMNote.MenuItem4Click(Sender: TObject);
 begin
   if frmmquery = nil then
@@ -907,7 +917,7 @@ procedure TfrmMNote.miConfigClick(Sender: TObject);
 begin
   frmConfig := TfrmConfig.create(self);
   frmConfig.showmodal();
-  frmConfig.
+  frmConfig.free();
 end;
 
 procedure TfrmMNote.miUndoClick(Sender: TObject);

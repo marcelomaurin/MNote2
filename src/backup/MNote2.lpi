@@ -185,6 +185,7 @@
         <Filename Value="config.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmconfig"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit23>
     </Units>

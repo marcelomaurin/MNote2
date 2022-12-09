@@ -102,6 +102,7 @@ type
     procedure MenuItem14Click(Sender: TObject);
     procedure MenuItem15Click(Sender: TObject);
     procedure MenuItem16Click(Sender: TObject);
+    procedure MenuItem17Click(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure miConfigClick(Sender: TObject);
     procedure miUndoClick(Sender: TObject);
@@ -885,6 +886,16 @@ end;
 procedure TfrmMNote.MenuItem16Click(Sender: TObject);
 begin
 
+end;
+
+procedure TfrmMNote.MenuItem17Click(Sender: TObject);
+begin
+   {$IFDEF WINDOWS}
+   {$ENDIF}
+   {$IFDEF LINUX}
+   {$ENDIF}
+   {$ifdef Darwin}
+   {$ENDIF}
 end;
 
 procedure TfrmMNote.MenuItem4Click(Sender: TObject);
