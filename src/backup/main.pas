@@ -889,12 +889,38 @@ begin
 end;
 
 procedure TfrmMNote.MenuItem17Click(Sender: TObject);
+var
+   filename : string;
+   source : string;
+   resultado : boolean;
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
 begin
+   filename := FSetMain.RunScript;
+   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+
    {$IFDEF WINDOWS}
+   source := DirName+'\'+item.Name;
+   //RunAsAdmin(self.Handle, 'rundll32.exe shell32.dll,Control_RunDLL appwiz.cpl', '');
+   resultado :=RunBatch(self.Handle,filename, source);
    {$ENDIF}
    {$IFDEF LINUX}
+   source := item.DirName+'/'+item.Name;
    {$ENDIF}
-     {$ifdef Darwin}
+   {$ifdef Darwin}
+   source := item.DirName+'/'+item.Name;
+   {$ENDIF}
+   if(resultado=true) then
+   begin
+      //showmessage('Run program!!');
+      MessageHint('Run script'+ filename);
+   end
+   else
+   begin
+     //showmessage('Fail run!!');
+     MessageHint('fail run script'+ filename);
+   end;
 end;
 
 procedure TfrmMNote.MenuItem4Click(Sender: TObject);

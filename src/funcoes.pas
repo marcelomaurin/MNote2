@@ -9,7 +9,7 @@ uses
 Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
 StdCtrls, ExtCtrls, UTF8Process, Process
 {$IFDEF MSWINDOWS}
-,windows, jwaWinBase
+,windows, jwaWinBase, shellAPI
 {$ENDIF}
 {$IFDEF LINUX}
 //LCLType,
@@ -45,6 +45,9 @@ function  VerificaRegExt(extensao : string) : boolean;
 function RegisterFileType2(const DocFileName: string; AppName : string): boolean;
 function RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executavel: string) : boolean;
 function IsAdministrator: Boolean;
+function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
+function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
+
 {$ENDIF}
 
 {$IFDEF Darwin}
@@ -169,6 +172,43 @@ begin
   end;
 end;
 
+
+{$IFDEF WINDOWS}
+function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
+var
+  sei: TShellExecuteInfoA;
+begin
+  FillChar(sei, SizeOf(sei), 0);
+  sei.cbSize := SizeOf(sei);
+  sei.Wnd := Handle;
+  sei.fMask := SEE_MASK_FLAG_DDEWAIT or SEE_MASK_FLAG_NO_UI;
+  sei.lpVerb := 'runas';
+  sei.lpFile := PAnsiChar(Path);
+  sei.lpParameters := PAnsiChar(Params);
+  sei.nShow := SW_SHOWNORMAL;
+  Result := ShellExecuteExA(@sei);
+end;
+
+
+function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
+var
+  resultado : boolean;
+
+begin
+  resultado := false;
+   //  ( Handle, nil/'open'/'edit'/'find'/'explore'/'print',   // 'open' isn't always needed
+  //      path+prog, params, working folder,
+  //        0=hide / 1=SW_SHOWNORMAL / 3=max / 7=min)   // for SW_ constants : uses ... Windows ...
+//  Function ShellExecute(HWND: hwnd;lpOperation : LPCSTR ; lpFile : LPCSTR ; lpParameters : LPCSTR; lpDirectory:  LPCSTR; nShowCmd:LONGINT):HInst; external shell32 name 'ShellExecuteA';
+//Function ShellExecute(hwnd: HWND;lpOperation : LPCWSTR ; lpFile : LPCWSTR ; lpParameters : LPCWSTR; lpDirectory:  LPCWSTR; nShowCmd:LONGINT):HInst; external shell32 name 'ShellExecuteW';
+  if ShellExecute(0,'open', PChar('cmd'),PChar('/c '+batch+' '+Params),nil,1) >32  then
+  begin
+    resultado := true;
+  end;
+  result := resultado;
+end;
+
+{$ENDIF}
 
 
 function RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executavel: string) : boolean;

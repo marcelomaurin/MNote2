@@ -107,6 +107,7 @@ object frmMNote: TfrmMNote
       object MenuItem17: TMenuItem
         Caption = 'RUN'
         ShortCut = 116
+        OnClick = MenuItem17Click
       end
       object MenuItem18: TMenuItem
         Caption = 'DEBUG'
