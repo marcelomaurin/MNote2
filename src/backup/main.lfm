@@ -104,20 +104,23 @@ object frmMNote: TfrmMNote
       object Separator1: TMenuItem
         Caption = '-'
       end
-      object MenuItem17: TMenuItem
+      object mnrun: TMenuItem
         Caption = 'RUN'
         ShortCut = 116
-        OnClick = MenuItem17Click
+        OnClick = mnrunClick
       end
-      object MenuItem18: TMenuItem
+      object mndebug: TMenuItem
         Caption = 'DEBUG'
         ShortCut = 16500
+        OnClick = mndebugClick
       end
-      object MenuItem19: TMenuItem
+      object mnclean: TMenuItem
         Caption = 'CLEAN'
+        OnClick = mncleanClick
       end
-      object MenuItem20: TMenuItem
+      object mninstall: TMenuItem
         Caption = 'INSTALL'
+        OnClick = mninstallClick
       end
     end
     object MenuItem12: TMenuItem
@@ -315,6 +318,10 @@ object frmMNote: TfrmMNote
       Caption = 'Associar'
       ImageIndex = 14
       OnClick = mnAssociarClick
+      object mnNone: TMenuItem
+        Caption = 'None'
+        OnClick = mnNoneClick
+      end
       object mnLazarus: TMenuItem
         Caption = 'Lazarus/Pascal'
         OnClick = mnLazarusClick
@@ -327,10 +334,18 @@ object frmMNote: TfrmMNote
         Caption = 'C/C++'
         OnClick = mnCClick
       end
-      object MenuItem14: TMenuItem
+      object mnSQL: TMenuItem
         Caption = 'SQL'
         ImageIndex = 15
-        OnClick = MenuItem14Click
+        OnClick = mnSQLClick
+      end
+      object mnPHP: TMenuItem
+        Caption = 'PHP'
+        OnClick = mnPHPClick
+      end
+      object mnJava: TMenuItem
+        Caption = 'Java'
+        OnClick = mnJavaClick
       end
     end
     object mnFechar2: TMenuItem

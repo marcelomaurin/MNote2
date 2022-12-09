@@ -283,8 +283,6 @@ begin
        TabelaNome := zmyqry.FieldByName('table_name').asstring;
        Tabela := TTabela.create(zmyqry1,TabelaNome, DBMysql);
 
-       //tnitem := TTreenode.Create(tvBanco.items);
-       //tnitem := tvBanco.Items.AddChildObject(tnDatabase,tnposicaofields,TabelaNome,pointer(Tabela),naAddChild);
        tnitem := tvBanco.Items.AddChildObject(tnTables,TabelaNome,pointer(Tabela));
        tnitem.ImageIndex:=17;
 

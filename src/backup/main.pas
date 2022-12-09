@@ -29,13 +29,16 @@ type
     MenuItem11: TMenuItem;
     MenuItem12: TMenuItem;
     MenuItem13: TMenuItem;
-    MenuItem14: TMenuItem;
+    mnNone: TMenuItem;
+    mnJava: TMenuItem;
+    mnSQL: TMenuItem;
     MenuItem15: TMenuItem;
     MenuItem16: TMenuItem;
-    MenuItem17: TMenuItem;
-    MenuItem18: TMenuItem;
-    MenuItem19: TMenuItem;
-    MenuItem20: TMenuItem;
+    mnrun: TMenuItem;
+    mndebug: TMenuItem;
+    mnclean: TMenuItem;
+    mninstall: TMenuItem;
+    mnPHP: TMenuItem;
     Separator1: TMenuItem;
     miConfig: TMenuItem;
     MenuItem2: TMenuItem;
@@ -99,10 +102,16 @@ type
     procedure lstFindSelectionChange(Sender: TObject; User: boolean);
     procedure MenuItem10Click(Sender: TObject);
     procedure MenuItem12Click(Sender: TObject);
-    procedure MenuItem14Click(Sender: TObject);
+    procedure mncleanClick(Sender: TObject);
+    procedure mndebugClick(Sender: TObject);
+    procedure mninstallClick(Sender: TObject);
+    procedure mnJavaClick(Sender: TObject);
+    procedure mnNoneClick(Sender: TObject);
+    procedure mnPHPClick(Sender: TObject);
+    procedure mnSQLClick(Sender: TObject);
     procedure MenuItem15Click(Sender: TObject);
     procedure MenuItem16Click(Sender: TObject);
-    procedure MenuItem17Click(Sender: TObject);
+    procedure mnrunClick(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure miConfigClick(Sender: TObject);
     procedure miUndoClick(Sender: TObject);
@@ -146,6 +155,7 @@ type
       var Handled: Boolean);
     procedure TabSheet2ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
+    function Callprg(filename: string): boolean;
   private
     { private declarations }
 
@@ -841,7 +851,74 @@ begin
 
 end;
 
-procedure TfrmMNote.MenuItem14Click(Sender: TObject);
+procedure TfrmMNote.mncleanClick(Sender: TObject);
+begin
+    MessageHint('Not yet');
+end;
+
+procedure TfrmMNote.mndebugClick(Sender: TObject);
+begin
+  MessageHint('Not yet');
+end;
+
+procedure TfrmMNote.mninstallClick(Sender: TObject);
+begin
+
+end;
+
+procedure TfrmMNote.mnJavaClick(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+
+   fAutoComplete : TSynAutoComplete;
+begin
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
+  fAutoComplete := item.AutoComplete;
+  //fAutoComplete.AutoCompleteList.LoadFromFile('python.dci');
+  //fAutoComplete.AutoCompleteList.Clear;
+  //item.AutoComplete.clear;
+  fAutoComplete := item.AutoComplete;
+  //python := TSynPythonSyn.create(self);
+  //syn.Highlighter := python;
+  syn.Highlighter := nil;
+end;
+
+procedure TfrmMNote.mnNoneClick(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+   //python : TSynPythonSyn;
+   fAutoComplete : TSynAutoComplete;
+begin
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
+  fAutoComplete := item.AutoComplete;
+  syn.Highlighter := nil;
+end;
+
+procedure TfrmMNote.mnPHPClick(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+
+   fAutoComplete : TSynAutoComplete;
+begin
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
+  fAutoComplete := item.AutoComplete;
+  //fAutoComplete.AutoCompleteList.LoadFromFile('python.dci');
+  fAutoComplete.AutoCompleteList.Clear;
+  //python := TSynPythonSyn.create(self);
+  //syn.Highlighter := python;
+  syn.Highlighter := nil;
+end;
+
+procedure TfrmMNote.mnSQLClick(Sender: TObject);
 var
    tb : TTabSheet;
    syn : TSynEdit;
@@ -850,20 +927,15 @@ var
    fSynCompletion:TSynCompletion;
    fAutoComplete : TSynAutoComplete;
 begin
-  //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  //item := TItem(syn.tag);
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
   sql := TSynSQLSyn.create(self);
   fsynCompletion :=  item.synCompletion;
   fAutoComplete := item.AutoComplete;
-  //fAutoComplete.AutoCompleteList.LoadFromFile('sql.dci');
-
-
   sql.sqldialect := sqlMySQL;
   sql.TableNames.clear;
 
-  //syn.Highlighter := sql;
+
   syn.Highlighter :=  SynSQLSyn1;
   item.ItemType:= ti_SQL;
 
@@ -888,39 +960,57 @@ begin
 
 end;
 
-procedure TfrmMNote.MenuItem17Click(Sender: TObject);
+function tfrmMNote.Callprg(filename: string): boolean;
 var
-   filename : string;
    source : string;
    resultado : boolean;
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
+
 begin
-   filename := FSetMain.RunScript;
+   resultado := false;
    item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
 
    {$IFDEF WINDOWS}
-   source := DirName+'\'+item.Name;
-   //RunAsAdmin(self.Handle, 'rundll32.exe shell32.dll,Control_RunDLL appwiz.cpl', '');
+   source := item.DirName+'\'+item.Name;
    resultado :=RunBatch(self.Handle,filename, source);
    {$ENDIF}
+
    {$IFDEF LINUX}
    source := item.DirName+'/'+item.Name;
    {$ENDIF}
+
    {$ifdef Darwin}
    source := item.DirName+'/'+item.Name;
    {$ENDIF}
-   if(resultado=true) then
+    result := resultado;
+
+end;
+
+procedure TfrmMNote.mnrunClick(Sender: TObject);
+var
+   filename : string;
+begin
+   filename := FSetMain.RunScript;
+   if (filename <> '') then
    begin
-      //showmessage('Run program!!');
-      MessageHint('Run script'+ filename);
+        if(Callprg(filename)=true) then
+        begin
+             //showmessage('Run program!!');
+             MessageHint('Run script'+ filename);
+        end
+        else
+        begin
+             //showmessage('Fail run!!');
+             MessageHint('fail run script'+ filename);
+        end;
    end
    else
    begin
-     //showmessage('Fail run!!');
-     MessageHint('fail run script'+ filename);
+       MessageHint('Config RUN need!'+ filename);
    end;
+
 end;
 
 procedure TfrmMNote.MenuItem4Click(Sender: TObject);
@@ -1007,7 +1097,8 @@ begin
   //item := TItem(syn.tag);
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-
+  //fsynCompletion :=  item.synCompletion;
+  //fAutoComplete.AutoCompleteList.Clear;
   //cpp := TSynCppSyn.create(self);
   syn.Highlighter := SynCppSyn1;
 

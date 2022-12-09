@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, contnrs, SynCompletion, ExtCtrls, SynEdit;
 
 type
-TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BASH, ti_BAT, ti_CFG , ti_TXT, ti_SQL,ti_PY, ti_PHP, ti_ALL);
+TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BASH, ti_BAT, ti_CFG , ti_TXT, ti_SQL,ti_PY, ti_PHP, ti_JAVA, ti_ALL);
 TProjetoTipo = (pt_NODEFINE, pt_TEXT, pt_ProjetoRoot, pt_ProjetoSetup, pt_ProjetoSetupItem, pt_ProjetoFiles, pt_ProjetoDirFiles, pt_ProjetoFilesItem);
 TTipoInfo = (Name, Path);
 
@@ -92,29 +92,49 @@ begin
     end;
     ti_PY :
     begin
+      (*
       if FileExists('python.dci') then
             AutoComplete.AutoCompleteList.LoadFromFile('python.dci');
+      *)
+       AutoComplete.AutoCompleteList.clear;
     end;
     ti_SQL :
     begin
+      (*
       if FileExists('sql.dci') then
             AutoComplete.AutoCompleteList.LoadFromFile('sql.dci');
+      *)
+      AutoComplete.AutoCompleteList.clear;
     end;
     ti_CCP :
     begin
+      (*
       if FileExists('cpp.dci') then
             AutoComplete.AutoCompleteList.LoadFromFile('cpp.dci');
+      *)
+      AutoComplete.AutoCompleteList.clear;
     end;
     ti_H :
     begin
+      (*
       if FileExists('cpp.dci') then
             AutoComplete.AutoCompleteList.LoadFromFile('cpp.dci');
+      *)
+      AutoComplete.AutoCompleteList.clear;
     end;
     ti_PHP :
     begin
-      if FileExists('cpp.dci') then
+      (*
+      if FileExists('php.dci') then
             AutoComplete.AutoCompleteList.LoadFromFile('php.dci');
+      *)
+      AutoComplete.AutoCompleteList.clear;
     end;
+    ti_JAVA :
+    begin
+      AutoComplete.AutoCompleteList.clear;
+    end;
+
     ti_TXT :
     begin
       AutoComplete.AutoCompleteList.clear;

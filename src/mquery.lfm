@@ -1,7 +1,7 @@
 object frmMQuery: TfrmMQuery
-  Left = 855
+  Left = 332
   Height = 487
-  Top = 146
+  Top = 256
   Width = 313
   Align = alRight
   Caption = 'MQuery'
@@ -94,7 +94,9 @@ object frmMQuery: TfrmMQuery
           Width = 302
           Align = alClient
           Images = ImageList2
+          ReadOnly = True
           TabOrder = 0
+          Options = [tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
         end
       end
     end
