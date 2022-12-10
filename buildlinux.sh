@@ -1,6 +1,6 @@
 #!/bin/bash
 ARQUITETURA=$(uname -m)
-VERSAO=2.17
+VERSAO=2.18
 
 case $(uname -m) in
 	i386) 	ARQUITETURA="i386";;
