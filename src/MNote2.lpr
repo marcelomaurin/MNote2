@@ -18,8 +18,8 @@ begin
   RequireDerivedFormResource := True;
   Application.Initialize;
   Application.CreateForm(TfrmMNote, frmMNote);
-  Application.CreateForm(TfrmFolders, frmFolders);
   Application.CreateForm(Tfrmchgtext, frmchgtext);
+  Application.CreateForm(TfrmFolders, frmFolders);
   Application.Run;
 end.
 

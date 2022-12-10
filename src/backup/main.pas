@@ -23,6 +23,8 @@ type
     FontDialog1: TFontDialog;
     ImageList1: TImageList;
     MainMenu1: TMainMenu;
+    mnHideResult: TMenuItem;
+    meResult: TMemo;
     MenuItem1: TMenuItem;
     MenuItem10: TMenuItem;
     btNovo: TMenuItem;
@@ -39,6 +41,8 @@ type
     mnclean: TMenuItem;
     mninstall: TMenuItem;
     mnPHP: TMenuItem;
+    pnResult: TPanel;
+    pmResult: TPopupMenu;
     Separator1: TMenuItem;
     miConfig: TMenuItem;
     MenuItem2: TMenuItem;
@@ -104,6 +108,7 @@ type
     procedure MenuItem12Click(Sender: TObject);
     procedure mncleanClick(Sender: TObject);
     procedure mndebugClick(Sender: TObject);
+    procedure mnHideResultClick(Sender: TObject);
     procedure mninstallClick(Sender: TObject);
     procedure mnJavaClick(Sender: TObject);
     procedure mnNoneClick(Sender: TObject);
@@ -155,7 +160,7 @@ type
       var Handled: Boolean);
     procedure TabSheet2ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
-    function Callprg(filename: string): boolean;
+    function Callprg(filename: string; var Output : string): boolean;
   private
     { private declarations }
 
@@ -861,9 +866,14 @@ begin
   MessageHint('Not yet');
 end;
 
+procedure TfrmMNote.mnHideResultClick(Sender: TObject);
+begin
+  pnResult.Visible:=false;
+end;
+
 procedure TfrmMNote.mninstallClick(Sender: TObject);
 begin
-
+  MessageHint('Not yet');
 end;
 
 procedure TfrmMNote.mnJavaClick(Sender: TObject);
@@ -960,13 +970,14 @@ begin
 
 end;
 
-function tfrmMNote.Callprg(filename: string): boolean;
+function tfrmMNote.Callprg(filename: string; var Output : String): boolean;
 var
    source : string;
    resultado : boolean;
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
+   //output : String;
 
 begin
    resultado := false;
@@ -979,6 +990,7 @@ begin
 
    {$IFDEF LINUX}
    source := item.DirName+'/'+item.Name;
+   resultado :=RunBatch(filename, source, Output);
    {$ENDIF}
 
    {$ifdef Darwin}
@@ -990,25 +1002,30 @@ end;
 
 procedure TfrmMNote.mnrunClick(Sender: TObject);
 var
+   Output : string;
    filename : string;
 begin
    filename := FSetMain.RunScript;
    if (filename <> '') then
    begin
-        if(Callprg(filename)=true) then
+        if(Callprg(filename, Output)=true) then
         begin
              //showmessage('Run program!!');
              MessageHint('Run script'+ filename);
+             meResult.Lines.Text:= Output;
+             pnResult.Visible:= true;
         end
         else
         begin
              //showmessage('Fail run!!');
              MessageHint('fail run script'+ filename);
+             pnResult.Visible:= false;
         end;
    end
    else
    begin
        MessageHint('Config RUN need!'+ filename);
+       pnResult.Visible:= false;
    end;
 
 end;

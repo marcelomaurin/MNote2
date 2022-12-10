@@ -5,7 +5,7 @@ object frmMNote: TfrmMNote
   Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 374
+  ClientHeight = 369
   ClientWidth = 630
   Menu = MainMenu1
   OnClose = FormClose
@@ -13,7 +13,7 @@ object frmMNote: TfrmMNote
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '2.2.2.0'
+  LCLVersion = '2.2.0.4'
   object Panel1: TPanel
     Left = 0
     Height = 50
@@ -25,13 +25,36 @@ object frmMNote: TfrmMNote
   end
   object pgMain: TPageControl
     Left = 0
-    Height = 324
+    Height = 214
     Top = 50
     Width = 630
     Align = alClient
     Images = ImageList1
     TabOrder = 1
     OnChange = pgMainChange
+  end
+  object pnResult: TPanel
+    Left = 0
+    Height = 105
+    Top = 264
+    Width = 630
+    Align = alBottom
+    Caption = 'pnResult'
+    ClientHeight = 105
+    ClientWidth = 630
+    PopupMenu = pmResult
+    TabOrder = 2
+    Visible = False
+    object meResult: TMemo
+      Left = 1
+      Height = 103
+      Top = 1
+      Width = 628
+      Align = alClient
+      PopupMenu = pmResult
+      ReadOnly = True
+      TabOrder = 0
+    end
   end
   object MainMenu1: TMainMenu
     Images = ImageList1
@@ -1047,5 +1070,13 @@ object frmMNote: TfrmMNote
     Enabled = False
     Left = 272
     Top = 320
+  end
+  object pmResult: TPopupMenu
+    Left = 72
+    Top = 296
+    object mnHideResult: TMenuItem
+      Caption = 'Hide'
+      OnClick = mnHideResultClick
+    end
   end
 end

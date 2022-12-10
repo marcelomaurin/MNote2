@@ -50,6 +50,9 @@ function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
 
 {$ENDIF}
 
+{$IFDEF LINUX}
+function RunBatch(const batch, Params: string; var Output : string): boolean;
+{$ENDIF}
 {$IFDEF Darwin}
 function VerifyAdminLogin:boolean;
 {$endif}
@@ -120,6 +123,25 @@ begin
 end;
 {$endif}
 
+{$IFDEF LINUX}
+
+function RunBatch(const batch, Params: string; var Output : string): boolean;
+var
+  resultado : boolean;
+  //Output : string;
+  comando : string;
+begin
+  resultado := false;
+  //comando := 'bash -c ' + extractfilepath(application.exename)+'run_python.sh '+Params ;
+  comando := extractfilepath(application.exename)+'run_python.sh '+Params ;
+  if RunCommand(comando,Output) then
+  begin
+    resultado := true;
+  end;
+  result := resultado;
+end;
+
+{$endif}
 
 {$IFDEF WINDOWS}
 
@@ -172,8 +194,6 @@ begin
   end;
 end;
 
-
-{$IFDEF WINDOWS}
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 var
   sei: TShellExecuteInfoA;
@@ -208,7 +228,7 @@ begin
   result := resultado;
 end;
 
-{$ENDIF}
+
 
 
 function RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executavel: string) : boolean;

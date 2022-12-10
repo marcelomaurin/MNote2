@@ -50,6 +50,9 @@ function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
 
 {$ENDIF}
 
+{$IFDEF LINUX}
+function RunBatch(const batch, Params: string; var Output : string): boolean;
+{$ENDIF}
 {$IFDEF Darwin}
 function VerifyAdminLogin:boolean;
 {$endif}
@@ -120,6 +123,25 @@ begin
 end;
 {$endif}
 
+{$IFDEF LINUX}
+
+function RunBatch(const batch, Params: string; var Output : string): boolean;
+var
+  resultado : boolean;
+  //Output : string;
+  comando : string;
+begin
+  resultado := false;
+  //comando := 'bash -c ' + extractfilepath(application.exename)+'run_python.sh '+Params ;
+  comando := extractfilepath(application.exename)+'run_python.sh '+Params ;
+  if RunCommand(comando,Output) then
+  begin
+    resultado := true;
+  end;
+  result := resultado;
+end;
+
+{$endif}
 
 {$IFDEF WINDOWS}
 
@@ -172,8 +194,6 @@ begin
   end;
 end;
 
-
-{$IFDEF WINDOWS}
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 var
   sei: TShellExecuteInfoA;
@@ -199,8 +219,8 @@ begin
    //  ( Handle, nil/'open'/'edit'/'find'/'explore'/'print',   // 'open' isn't always needed
   //      path+prog, params, working folder,
   //        0=hide / 1=SW_SHOWNORMAL / 3=max / 7=min)   // for SW_ constants : uses ... Windows ...
-  Function ShellExecute(HWND: hwnd;lpOperation : LPCSTR ; lpFile : LPCSTR ; lpParameters : LPCSTR; lpDirectory:  LPCSTR; nShowCmd:LONGINT):HInst; external shell32 name 'ShellExecuteA';
-Function ShellExecute(hwnd: HWND;lpOperation : LPCWSTR ; lpFile : LPCWSTR ; lpParameters : LPCWSTR; lpDirectory:  LPCWSTR; nShowCmd:LONGINT):HInst; external shell32 name 'ShellExecuteW';
+//  Function ShellExecute(HWND: hwnd;lpOperation : LPCSTR ; lpFile : LPCSTR ; lpParameters : LPCSTR; lpDirectory:  LPCSTR; nShowCmd:LONGINT):HInst; external shell32 name 'ShellExecuteA';
+//Function ShellExecute(hwnd: HWND;lpOperation : LPCWSTR ; lpFile : LPCWSTR ; lpParameters : LPCWSTR; lpDirectory:  LPCWSTR; nShowCmd:LONGINT):HInst; external shell32 name 'ShellExecuteW';
   if ShellExecute(0,'open', PChar('cmd'),PChar('/c '+batch+' '+Params),nil,1) >32  then
   begin
     resultado := true;
@@ -208,7 +228,7 @@ Function ShellExecute(hwnd: HWND;lpOperation : LPCWSTR ; lpFile : LPCWSTR ; lpPa
   result := resultado;
 end;
 
-{$ENDIF}
+
 
 
 function RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executavel: string) : boolean;

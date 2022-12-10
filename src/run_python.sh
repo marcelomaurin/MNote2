@@ -1,7 +1,7 @@
 #!/bin/bash
+ 
+/bin/python3 -I $1
 
-/bin/python $1
-
-read -p "Press any key to continue..." -n1 -s
+#read -p "Press any key to continue..." -n1 -s
 
 
