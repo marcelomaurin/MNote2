@@ -1,7 +1,7 @@
 object frmMNote: TfrmMNote
-  Left = 426
+  Left = 446
   Height = 394
-  Top = 160
+  Top = 222
   Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
@@ -97,6 +97,31 @@ object frmMNote: TfrmMNote
       Caption = 'Scripts'
       ImageIndex = 1
       OnClick = mnScriptClick
+      object miConfig: TMenuItem
+        Caption = 'Config'
+        OnClick = miConfigClick
+      end
+      object Separator1: TMenuItem
+        Caption = '-'
+      end
+      object mnrun: TMenuItem
+        Caption = 'RUN'
+        ShortCut = 116
+        OnClick = mnrunClick
+      end
+      object mndebug: TMenuItem
+        Caption = 'DEBUG'
+        ShortCut = 16500
+        OnClick = mndebugClick
+      end
+      object mnclean: TMenuItem
+        Caption = 'CLEAN'
+        OnClick = mncleanClick
+      end
+      object mninstall: TMenuItem
+        Caption = 'INSTALL'
+        OnClick = mninstallClick
+      end
     end
     object MenuItem12: TMenuItem
       Caption = 'Tools'
@@ -293,6 +318,10 @@ object frmMNote: TfrmMNote
       Caption = 'Associar'
       ImageIndex = 14
       OnClick = mnAssociarClick
+      object mnNone: TMenuItem
+        Caption = 'None'
+        OnClick = mnNoneClick
+      end
       object mnLazarus: TMenuItem
         Caption = 'Lazarus/Pascal'
         OnClick = mnLazarusClick
@@ -305,10 +334,18 @@ object frmMNote: TfrmMNote
         Caption = 'C/C++'
         OnClick = mnCClick
       end
-      object MenuItem14: TMenuItem
+      object mnSQL: TMenuItem
         Caption = 'SQL'
         ImageIndex = 15
-        OnClick = MenuItem14Click
+        OnClick = mnSQLClick
+      end
+      object mnPHP: TMenuItem
+        Caption = 'PHP'
+        OnClick = mnPHPClick
+      end
+      object mnJava: TMenuItem
+        Caption = 'Java'
+        OnClick = mnJavaClick
       end
     end
     object mnFechar2: TMenuItem

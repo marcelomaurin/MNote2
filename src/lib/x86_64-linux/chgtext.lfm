@@ -1,7 +1,7 @@
 object frmchgtext: Tfrmchgtext
-  Left = -555
+  Left = 693
   Height = 439
-  Top = -63
+  Top = 230
   Width = 467
   Caption = 'Change Text'
   ClientHeight = 439

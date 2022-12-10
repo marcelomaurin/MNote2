@@ -1,0 +1,97 @@
+object frmconfig: Tfrmconfig
+  Left = 579
+  Height = 318
+  Top = 299
+  Width = 443
+  Caption = 'Config'
+  ClientHeight = 318
+  ClientWidth = 443
+  OnCreate = FormCreate
+  LCLVersion = '2.2.2.0'
+  object btSave: TButton
+    Left = 352
+    Height = 25
+    Top = 272
+    Width = 75
+    Caption = 'Save'
+    OnClick = btSaveClick
+    TabOrder = 0
+  end
+  object btCancel: TButton
+    Left = 256
+    Height = 25
+    Top = 272
+    Width = 75
+    Caption = 'Cancel'
+    OnClick = btCancelClick
+    TabOrder = 1
+  end
+  object Label1: TLabel
+    Left = 15
+    Height = 15
+    Top = 12
+    Width = 34
+    Caption = 'Install:'
+    ParentColor = False
+  end
+  object edInstall: TEdit
+    Left = 15
+    Height = 23
+    Hint = 'Run Script Install'
+    Top = 32
+    Width = 336
+    TabOrder = 2
+    TextHint = 'Path + Filename Script Install'
+  end
+  object Label2: TLabel
+    Left = 15
+    Height = 15
+    Top = 64
+    Width = 33
+    Caption = 'Clean:'
+    ParentColor = False
+  end
+  object edClean: TEdit
+    Left = 15
+    Height = 23
+    Hint = 'Run Script Clean'
+    Top = 84
+    Width = 336
+    TabOrder = 3
+    TextHint = 'Path + Filename Script Clean'
+  end
+  object edRun: TEdit
+    Left = 16
+    Height = 23
+    Hint = 'Run Script Run'
+    Top = 140
+    Width = 336
+    TabOrder = 4
+    TextHint = 'Path + Filename Script Run'
+  end
+  object Label3: TLabel
+    Left = 16
+    Height = 15
+    Top = 120
+    Width = 24
+    Caption = 'Run:'
+    ParentColor = False
+  end
+  object Label4: TLabel
+    Left = 15
+    Height = 15
+    Top = 176
+    Width = 38
+    Caption = 'Debug:'
+    ParentColor = False
+  end
+  object edDebug: TEdit
+    Left = 15
+    Height = 23
+    Hint = 'Run Script Debug'
+    Top = 196
+    Width = 336
+    TabOrder = 5
+    TextHint = 'Path + Filename Script Debug'
+  end
+end

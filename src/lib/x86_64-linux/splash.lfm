@@ -1,7 +1,7 @@
 object frmSplash: TfrmSplash
-  Left = 664
+  Left = 616
   Height = 342
-  Top = 287
+  Top = 385
   Width = 465
   BorderIcons = []
   BorderStyle = bsNone
