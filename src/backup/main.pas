@@ -85,7 +85,6 @@ type
     SynAutoComplete1: TSynAutoComplete;
     SynCompletion1: TSynCompletion;
     SynCppSyn1: TSynCppSyn;
-    SynPasSyn1: TSynPasSyn;
     SynPHPSyn1: TSynPHPSyn;
     SynPythonSyn1: TSynPythonSyn;
     SynSQLSyn1: TSynSQLSyn;
@@ -1005,6 +1004,7 @@ var
    Output : string;
    filename : string;
 begin
+   mnSalvarClick(self); (*Salva antes de rodar*)
    filename := FSetMain.RunScript;
    if (filename <> '') then
    begin

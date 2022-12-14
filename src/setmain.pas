@@ -20,8 +20,7 @@ type
   { TSetMain }
 
   TSetMain = class(TObject)
-    constructor create();
-    destructor destroy();
+
   private
         arquivo :Tstringlist;
         ckdevice : boolean;
@@ -48,6 +47,8 @@ type
         procedure SetLastFiles(value : string);
         procedure Default();
   public
+        constructor create();
+        destructor Destroy();
         procedure SalvaContexto(flag : boolean);
         Procedure CarregaContexto();
         procedure IdentificaArquivo(flag : boolean);
@@ -255,7 +256,7 @@ end;
 
 destructor TSetMain.destroy();
 begin
-  SalvaContexto(true);
+  SalvaContexto(false);
   arquivo.free;
   arquivo := nil;
 end;

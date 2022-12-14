@@ -20,8 +20,7 @@ type
   { TSetMain }
 
   TSetMain = class(TObject)
-    constructor create();
-    destructor destroy();
+
   private
         arquivo :Tstringlist;
         ckdevice : boolean;
@@ -48,6 +47,8 @@ type
         procedure SetLastFiles(value : string);
         procedure Default();
   public
+        constructor create();
+        destructor Destroy();
         procedure SalvaContexto(flag : boolean);
         Procedure CarregaContexto();
         procedure IdentificaArquivo(flag : boolean);
@@ -62,7 +63,7 @@ type
         property RunScript : string read FRunScript write FRunScript;
         property DebugScript : string read FDebugScript write FDebugScript;
         property CleanScript : string read FCleanScript write FCleanScript;
-        property Install : string read FCleanScript write FCleanScript;
+        property Install : string read FInstall write FInstall;
   end;
 
   var
