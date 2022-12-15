@@ -904,7 +904,7 @@ begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
   //syn.CommandProcessor(TsynEditorCommand(ecPaste),'',nil);
-  syn.PasteFromClipboard(false);
+  syn.PasteFromClipboard;
 
 end;
 
