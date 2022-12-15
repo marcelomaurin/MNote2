@@ -76,6 +76,11 @@ begin
     ckdevice := false;
     fixar:=false;
     stay:=false;
+    {$IFDEF WINDOWS}
+    FDefaultfolder:= 'c:';
+    {$ELSE}
+    FDefaultfolder:= '/';
+    {$ENDIF}
 end;
 
 procedure TSetFolders.SetPOSX(value: integer);

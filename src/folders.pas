@@ -189,6 +189,17 @@ begin
   end;
   CarregaContexto();
   edFolder.text := FSetFolders.DefaultFolder;
+
+  if (edFolder.text = '') then
+  begin
+    {$IFDEF LINUX}
+    edFolder.text := ExtractFilePath(application.ExeName);
+    {$ENDIF}
+    {$IFDEF WINDOWS}
+    ShellTreeView1.Path:=ExtractFilePath(application.ExeName);
+    {$ENDIF}
+  end;
+
   ShellTreeView1.Path:=edFolder.text;
 
 end;

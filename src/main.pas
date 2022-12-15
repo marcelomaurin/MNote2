@@ -10,10 +10,10 @@ uses
   SynHighlighterPython, SynHighlighterPHP, synhighlighterunixshellscript, Forms,
   Controls, Graphics, Dialogs, Menus, ExtCtrls, ComCtrls, StdCtrls, Grids,
   PopupNotifier, item, types, finds, setmain, mquery, TypeDB, folders, funcoes,
-  LCLType, chgtext, hint, registro, splash, setFolders, config;
+  LCLType, chgtext, hint, registro, splash, setFolders, config, SynEditKeyCmds;
 
 
-const versao = '2.18';
+const versao = '2.19';
 
 type
 
@@ -23,6 +23,16 @@ type
     FontDialog1: TFontDialog;
     ImageList1: TImageList;
     MainMenu1: TMainMenu;
+    MenuItem14: TMenuItem;
+    MenuItem17: TMenuItem;
+    miRedo: TMenuItem;
+    miSelectAll: TMenuItem;
+    miSelectCmd: TMenuItem;
+    miSelectBlock: TMenuItem;
+    Separator3: TMenuItem;
+    Separator2: TMenuItem;
+    miPaste: TMenuItem;
+    micopy: TMenuItem;
     mnHideResult: TMenuItem;
     meResult: TMemo;
     MenuItem1: TMenuItem;
@@ -106,6 +116,10 @@ type
     procedure lstFindSelectionChange(Sender: TObject; User: boolean);
     procedure MenuItem10Click(Sender: TObject);
     procedure MenuItem12Click(Sender: TObject);
+    procedure MenuItem14Click(Sender: TObject);
+    procedure micopyClick(Sender: TObject);
+    procedure miPasteClick(Sender: TObject);
+    procedure miRedoClick(Sender: TObject);
     procedure mncleanClick(Sender: TObject);
     procedure mndebugClick(Sender: TObject);
     procedure mnHideResultClick(Sender: TObject);
@@ -854,6 +868,56 @@ end;
 procedure TfrmMNote.MenuItem12Click(Sender: TObject);
 begin
 
+end;
+
+procedure TfrmMNote.MenuItem14Click(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+begin
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
+  //syn.CommandProcessor(TsynEditorCommand(ecCut),'',nil);
+  syn.CutToClipboard;
+end;
+
+procedure TfrmMNote.micopyClick(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+begin
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
+  //syn.CommandProcessor(TsynEditorCommand(ecCopy),'',nil);
+  syn.CopyToClipboard;
+
+end;
+
+procedure TfrmMNote.miPasteClick(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+begin
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
+  //syn.CommandProcessor(TsynEditorCommand(ecPaste),'',nil);
+  syn.PasteFromClipboard(false);
+
+end;
+
+procedure TfrmMNote.miRedoClick(Sender: TObject);
+var
+
+tb : TTabSheet;
+syn : TSynEdit;
+item : TItem;
+begin
+item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+syn := item.syn;
+syn.Redo;
 end;
 
 procedure TfrmMNote.mncleanClick(Sender: TObject);

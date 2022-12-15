@@ -76,6 +76,11 @@ begin
     ckdevice := false;
     fixar:=false;
     stay:=false;
+    {$IFDEF WINDOWS}
+    FDefaultfolder:= ExtractFilePath(application.ExeName);
+    {$ELSE}
+    FDefaultfolder:= ExtractFilePath(application.ExeName);
+    {$ENDIF}
 end;
 
 procedure TSetFolders.SetPOSX(value: integer);
@@ -190,7 +195,7 @@ begin
   else
   begin
     default();
-    SalvaContexto(false);
+    //SalvaContexto(false);
   end;
 
 end;
