@@ -18,8 +18,12 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
+<<<<<<< HEAD
         <TopLine Value="898"/>
         <CursorPos X="25" Y="907"/>
+=======
+        <CursorPos X="4" Y="4"/>
+>>>>>>> fd73eae4f92f02ee7b8b550b8e195eb981b0d83f
         <UsageCount Value="188"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -68,7 +72,11 @@
         <Filename Value="funcoes.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="7"/>
+<<<<<<< HEAD
         <TopLine Value="139"/>
+=======
+        <TopLine Value="141"/>
+>>>>>>> fd73eae4f92f02ee7b8b550b8e195eb981b0d83f
         <CursorPos X="6" Y="139"/>
         <UsageCount Value="165"/>
         <Loaded Value="True"/>
@@ -738,7 +746,11 @@
         <UsageCount Value="10"/>
       </Unit91>
     </Units>
+<<<<<<< HEAD
     <JumpHistory Count="21" HistoryIndex="20">
+=======
+    <JumpHistory Count="20" HistoryIndex="19">
+>>>>>>> fd73eae4f92f02ee7b8b550b8e195eb981b0d83f
       <Position1>
         <Filename Value="folders.pas"/>
         <Caret Line="196" Column="44" TopLine="193"/>
@@ -819,10 +831,13 @@
         <Filename Value="main.pas"/>
         <Caret Line="918" Column="7" TopLine="900"/>
       </Position20>
+<<<<<<< HEAD
       <Position21>
         <Filename Value="funcoes.pas"/>
         <Caret Line="139" Column="6" TopLine="139"/>
       </Position21>
+=======
+>>>>>>> fd73eae4f92f02ee7b8b550b8e195eb981b0d83f
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
