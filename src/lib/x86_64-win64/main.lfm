@@ -5,7 +5,7 @@ object frmMNote: TfrmMNote
   Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 374
+  ClientHeight = 369
   ClientWidth = 630
   Menu = MainMenu1
   OnClose = FormClose
@@ -13,7 +13,7 @@ object frmMNote: TfrmMNote
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '2.2.2.0'
+  LCLVersion = '2.2.0.4'
   object Panel1: TPanel
     Left = 0
     Height = 50
@@ -25,13 +25,36 @@ object frmMNote: TfrmMNote
   end
   object pgMain: TPageControl
     Left = 0
-    Height = 324
+    Height = 214
     Top = 50
     Width = 630
     Align = alClient
     Images = ImageList1
     TabOrder = 1
     OnChange = pgMainChange
+  end
+  object pnResult: TPanel
+    Left = 0
+    Height = 105
+    Top = 264
+    Width = 630
+    Align = alBottom
+    Caption = 'pnResult'
+    ClientHeight = 105
+    ClientWidth = 630
+    PopupMenu = pmResult
+    TabOrder = 2
+    Visible = False
+    object meResult: TMemo
+      Left = 1
+      Height = 103
+      Top = 1
+      Width = 628
+      Align = alClient
+      PopupMenu = pmResult
+      ReadOnly = True
+      TabOrder = 0
+    end
   end
   object MainMenu1: TMainMenu
     Images = ImageList1
@@ -62,12 +85,11 @@ object frmMNote: TfrmMNote
       object mnSalvarComo: TMenuItem
         Caption = 'Save as'
         ImageIndex = 2
-        ShortCut = 49235
         OnClick = mnSalvarComoClick
       end
       object MenuItem9: TMenuItem
         Caption = 'Save &All'
-        ShortCut = 16449
+        ShortCutKey2 = 49235
         OnClick = MenuItem9Click
       end
       object MenuItem6: TMenuItem
@@ -81,6 +103,41 @@ object frmMNote: TfrmMNote
       Caption = 'Edit'
       ImageIndex = 6
       OnClick = MenuItem3Click
+      object micopy: TMenuItem
+        Caption = 'Copy'
+        ShortCut = 16451
+        OnClick = micopyClick
+      end
+      object miPaste: TMenuItem
+        Caption = 'Paste'
+        ShortCut = 16470
+        OnClick = miPasteClick
+      end
+      object MenuItem14: TMenuItem
+        Caption = 'Cut'
+        ShortCut = 16472
+        OnClick = MenuItem14Click
+      end
+      object Separator3: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem17: TMenuItem
+        Caption = 'Select '
+        object miSelectAll: TMenuItem
+          Caption = 'Select All'
+          ShortCut = 16449
+        end
+        object miSelectCmd: TMenuItem
+          Caption = 'Select Comand'
+          ShortCut = 49217
+        end
+        object miSelectBlock: TMenuItem
+          Caption = 'Select Block'
+        end
+      end
+      object Separator2: TMenuItem
+        Caption = '-'
+      end
       object mnPesqItem: TMenuItem
         Caption = 'Find'
         ImageIndex = 6
@@ -91,6 +148,11 @@ object frmMNote: TfrmMNote
         Caption = 'Undo'
         ShortCut = 16474
         OnClick = miUndoClick
+      end
+      object miRedo: TMenuItem
+        Caption = 'Redo'
+        ShortCut = 49242
+        OnClick = miRedoClick
       end
     end
     object mnScript: TMenuItem
@@ -994,14 +1056,6 @@ object frmMNote: TfrmMNote
     Left = 416
     Top = 90
   end
-  object SynPasSyn1: TSynPasSyn
-    Enabled = False
-    CompilerMode = pcmDelphi
-    NestedComments = False
-    TypeHelpers = True
-    Left = 559
-    Top = 320
-  end
   object SynCppSyn1: TSynCppSyn
     DefaultFilter = 'Arquivos C++ (*.c,*.cpp,*.h,*.hpp,*.hh)|*.c;*.cpp;*.h;*.hpp;*.hh'
     Enabled = False
@@ -1047,5 +1101,21 @@ object frmMNote: TfrmMNote
     Enabled = False
     Left = 272
     Top = 320
+  end
+  object pmResult: TPopupMenu
+    Left = 72
+    Top = 296
+    object mnHideResult: TMenuItem
+      Caption = 'Hide'
+      OnClick = mnHideResultClick
+    end
+  end
+  object SynPasSyn1: TSynPasSyn
+    Enabled = False
+    CompilerMode = pcmDelphi
+    NestedComments = False
+    TypeHelpers = True
+    Left = 560
+    Top = 296
   end
 end
