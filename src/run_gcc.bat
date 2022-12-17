@@ -1,6 +1,10 @@
 @ECHO ON
-ECHO "RUN Python Script"
+ECHO "RUN GCC"
 ECHO %1
 
-C:\Python27\python.exe %1 
+rem Iniciando compilação
+C:\MinGW\bin\gcc.exe -o %1 prog.exe
+
+rem Executando binario
+prog.exe
 PAUSE
