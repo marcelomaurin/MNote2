@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, lnetvisual, main, Item, sobre, funcoes, zcomponent, finds, folders,
-  chgtext, setchgtext, hint, registro, splash
+  chgtext, setchgtext, hint, registro, splash, config
   { you can add units after this };
 
 
@@ -18,9 +18,8 @@ begin
   RequireDerivedFormResource := True;
   Application.Initialize;
   Application.CreateForm(TfrmMNote, frmMNote);
-  Application.CreateForm(TfrmFolders, frmFolders);
   Application.CreateForm(Tfrmchgtext, frmchgtext);
-  Application.CreateForm(TfrmSplash, frmSplash);
+  Application.CreateForm(TfrmFolders, frmFolders);
   Application.Run;
 end.
 

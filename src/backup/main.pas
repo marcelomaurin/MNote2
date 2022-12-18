@@ -13,7 +13,7 @@ uses
   LCLType, chgtext, hint, registro, splash, setFolders, config, SynEditKeyCmds;
 
 
-const versao = '2.19';
+const versao = '2.20';
 
 type
 
@@ -904,7 +904,7 @@ begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
   //syn.CommandProcessor(TsynEditorCommand(ecPaste),'',nil);
-  syn.;
+  syn.PasteFromClipboard;
 
 end;
 
@@ -1018,6 +1018,7 @@ end;
 
 procedure TfrmMNote.MenuItem15Click(Sender: TObject);
 begin
+  {$ifndef Darwin}
   if frmFolders.Showing then
   begin
     frmFolders.hide;
@@ -1027,6 +1028,11 @@ begin
     frmFolders.show();
 
   end;
+  {$ENDIF}
+  {$ifdef Darwin}
+   MessageHint('Folder not run in MACOS');
+  {$ENDIF}
+
 end;
 
 procedure TfrmMNote.MenuItem16Click(Sender: TObject);

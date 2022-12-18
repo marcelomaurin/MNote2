@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "MNote2"
-#define MyAppVersion "2.19"
+#define MyAppVersion "2.20"
 #define MyAppPublisher "Maurinsoft"
 #define MyAppURL "http://maurinsoft.com.br"
 #define MyAppExeName "MNote2.exe"
@@ -24,7 +24,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\MEDIT2
 DisableProgramGroupPage=yes
 OutputDir=D:\projetos\maurinsoft\MNote2\bin
-OutputBaseFilename=win_MNote2_19
+OutputBaseFilename=win_MNote2_20
 SetupIconFile=d:\projetos\maurinsoft\MNote2\src\MNote2.ico
 Compression=lzma
 SolidCompression=yes
@@ -40,6 +40,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "d:\projetos\maurinsoft\MNote2\src\MNote2.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "d:\projetos\maurinsoft\MNote2\src\*.dci"; DestDir: "{app}"; Flags: ignoreversion
 Source: "d:\projetos\maurinsoft\MNote2\src\*.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "d:\projetos\maurinsoft\MNote2\sample\gcc\hello.c"; DestDir: "{app}\sample\gcc\"; Flags: ignoreversion
+Source: "d:\projetos\maurinsoft\MNote2\sample\python\hello\hello.py"; DestDir: "{app}\sample\python\hello\"; Flags: ignoreversion
+Source: "d:\projetos\maurinsoft\MNote2\tools\windows\mingw-get-setup.exe"; DestDir: "{app}\tools\"; Flags: ignoreversion
 Source: "d:\projetos\maurinsoft\MNote2\libs\sqlite\win32\*.*"; DestDir: "{app}\libs\sqlite\win32\"; Flags: ignoreversion
 Source: "d:\projetos\maurinsoft\MNote2\libs\sqlite\win64\*.*"; DestDir: "{app}\libs\sqlite\win64\"; Flags: ignoreversion
 Source: "d:\projetos\maurinsoft\MNote2\libs\postgres\win32\*.*"; DestDir: "{app}\libs\postgres\win32\"; Flags: ignoreversion
@@ -55,6 +58,8 @@ Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
+Filename: "{app}\tools\mingw-get-setup.exe"; Description: "{cm:LaunchProgram,{#StringChange("C Compiler", '&', '&&')}}"; Flags: nowait postinstall skipifsilent  runascurrentuser 
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent  runascurrentuser 
+
 
 

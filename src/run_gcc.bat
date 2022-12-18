@@ -1,9 +1,11 @@
 @ECHO ON
 ECHO "RUN GCC"
 ECHO %1
+set PATH=%PATH%;C:\MinGW\lib\;C:\MinGW\bin\
 
 rem Iniciando compilação
-C:\MinGW\bin\gcc.exe -o %1 prog.exe
+gcc.exe %1 -o prog.exe
+
 
 rem Executando binario
 prog.exe
