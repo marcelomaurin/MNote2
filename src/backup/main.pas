@@ -9,11 +9,19 @@ uses
   SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion,
   SynHighlighterPython, SynHighlighterPHP, synhighlighterunixshellscript, Forms,
   Controls, Graphics, Dialogs, Menus, ExtCtrls, ComCtrls, StdCtrls, Grids,
-  PopupNotifier, item, types, finds, setmain, mquery, TypeDB, folders, funcoes,
-  LCLType, chgtext, hint, registro, splash, setFolders, config, SynEditKeyCmds;
+  PopupNotifier,
+  item,
+  types,
+  finds,
+  setmain, mquery,
+  TypeDB,
+  folders, funcoes,
+  LCLType, chgtext, hint, registro, splash,
+  setFolders,
+  config, SynEditKeyCmds;
 
 
-const versao = '2.20';
+const versao = '2.21';
 
 type
 
@@ -192,7 +200,8 @@ type
     procedure CarregaContexto();
     procedure AssociarExtensao(item: Titem);
     function classificaTipo(arquivo : string): TTypeItem;
-
+    procedure SynEdit1KeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
 
   public
     { public declarations }
@@ -210,6 +219,7 @@ implementation
 
 { TfrmMNote }
 uses Sobre;
+
 
 
 function TfrmMNote.ExistFileOpen(Arquivo : string): boolean;
@@ -304,6 +314,26 @@ begin
   //
 end;
 
+procedure TfrmMNote.SynEdit1KeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  syn : TSynEdit;
+begin
+  //Altered:= TRUE;
+  if (Shift = [ssCtrl]) then
+  begin
+    syn := TSynedit(Sender);
+    case Key of
+    VK_C: syn.CommandProcessor(TSynEditorCommand(ecCopy), ' ', nil);
+    VK_V: syn.CommandProcessor(TSynEditorCommand(ecPaste), ' ', nil);
+    VK_X: syn.CommandProcessor(TSynEditorCommand(ecCut), ' ', nil);
+    end;
+  end;
+
+end;
+
+
+
 
 procedure TfrmMNote.MessageHint(info: string);
 var
@@ -313,7 +343,8 @@ begin
   frmHint.messagehint(info);
 end;
 
-procedure TfrmMNote.CheckTipoArquivo(syn : TSynEdit; arquivo : String; Out item : TItem );
+procedure TfrmMNote.CheckTipoArquivo(syn: TSynEdit; arquivo: String; out
+  item: TItem);
 var
   posicao : integer;
 begin
@@ -483,6 +514,7 @@ begin
   syn.Lines.Clear;
   syn.PopupMenu := popSysEdit;
   syn.OnChange:= @synChange;
+  syn.OnKeyDown:=@SynEdit1KeyDown;
   (*Complete*)
   SynCompletion := TSynCompletion.Create(self);
   SynCompletion.Editor := syn;
@@ -634,7 +666,7 @@ begin
   end;
 end;
 
-procedure TfrmMNote.AssociarExtensao(item: TItem);
+procedure TfrmMNote.AssociarExtensao(item: Titem);
 var
    arquivo: string;
    ext : string;
@@ -1028,8 +1060,7 @@ begin
     frmFolders.show();
 
   end;
-  {$ENDIF}
-  {$ifdef Darwin}
+  {$else}
    MessageHint('Folder not run in MACOS');
   {$ENDIF}
 
@@ -1040,7 +1071,7 @@ begin
 
 end;
 
-function tfrmMNote.Callprg(filename: string; var Output : String): boolean;
+function TfrmMNote.Callprg(filename: string; var Output: string): boolean;
 var
    source : string;
    resultado : boolean;

@@ -4,13 +4,13 @@
     <PathDelim Value="\"/>
     <Version Value="12"/>
     <BuildModes Active="Default"/>
-    <Units Count="24">
+    <Units Count="25">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
         <CursorPos X="3" Y="13"/>
-        <UsageCount Value="20"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="21"/>
       </Unit0>
       <Unit1>
         <Filename Value="main.pas"/>
@@ -19,18 +19,16 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="1099"/>
-        <CursorPos X="10" Y="1032"/>
-        <UsageCount Value="20"/>
+        <TopLine Value="301"/>
+        <CursorPos X="77" Y="304"/>
+        <UsageCount Value="21"/>
         <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="classes\item.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Item"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit2>
       <Unit3>
         <Filename Value="sobre.pas"/>
@@ -38,50 +36,50 @@
         <ComponentName Value="frmSobre"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit3>
       <Unit4>
         <Filename Value="classes\finds.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit4>
       <Unit5>
         <Filename Value="setmain.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit5>
       <Unit6>
         <Filename Value="funcoes.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit6>
       <Unit7>
         <Filename Value="classes\chaves.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit7>
       <Unit8>
         <Filename Value="classes\setbanco.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit8>
       <Unit9>
         <Filename Value="classes\setmquery.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="setMQuery"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit9>
       <Unit10>
         <Filename Value="classes\tabela.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Tabela"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit10>
       <Unit11>
         <Filename Value="classes\typedb.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="TypeDB"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit11>
       <Unit12>
         <Filename Value="mquery.pas"/>
@@ -89,7 +87,7 @@
         <ComponentName Value="frmMQuery"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit12>
       <Unit13>
         <Filename Value="cfgdb.pas"/>
@@ -97,7 +95,7 @@
         <ComponentName Value="frmcfgdb"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit13>
       <Unit14>
         <Filename Value="folders.pas"/>
@@ -105,23 +103,23 @@
         <ComponentName Value="frmFolders"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit14>
       <Unit15>
         <Filename Value="classes\setfolders.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="setFolders"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit15>
       <Unit16>
         <Filename Value="Manifest.manifest"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit16>
       <Unit17>
         <Filename Value="Manifest.rc"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit17>
       <Unit18>
         <Filename Value="chgtext.pas"/>
@@ -129,12 +127,12 @@
         <ComponentName Value="frmchgtext"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit18>
       <Unit19>
         <Filename Value="setchgtext.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit19>
       <Unit20>
         <Filename Value="hint.pas"/>
@@ -142,7 +140,7 @@
         <ComponentName Value="frmHint"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit20>
       <Unit21>
         <Filename Value="registro.pas"/>
@@ -150,7 +148,7 @@
         <ComponentName Value="frmRegistrar"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit21>
       <Unit22>
         <Filename Value="splash.pas"/>
@@ -158,7 +156,7 @@
         <ComponentName Value="frmSplash"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit22>
       <Unit23>
         <Filename Value="config.pas"/>
@@ -166,18 +164,87 @@
         <ComponentName Value="frmconfig"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit23>
+      <Unit24>
+        <Filename Value="C:\lazarus\components\synedit\synedit.pp"/>
+        <UnitName Value="SynEdit"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="131"/>
+        <CursorPos X="21" Y="172"/>
+        <UsageCount Value="10"/>
+      </Unit24>
     </Units>
-    <JumpHistory Count="1">
+    <JumpHistory Count="10" HistoryIndex="9">
       <Position1>
         <Filename Value="main.pas"/>
-        <Caret Line="583" Column="3" TopLine="578"/>
+        <Caret Line="287" Column="39" TopLine="277"/>
       </Position1>
+      <Position2>
+        <Filename Value="main.pas"/>
+        <Caret Line="13" Column="9" TopLine="7"/>
+      </Position2>
+      <Position3>
+        <Filename Value="main.pas"/>
+        <Caret Line="320" Column="5" TopLine="296"/>
+      </Position3>
+      <Position4>
+        <Filename Value="main.pas"/>
+        <Caret Line="322" Column="23" TopLine="300"/>
+      </Position4>
+      <Position5>
+        <Filename Value="main.pas"/>
+        <Caret Line="326" TopLine="300"/>
+      </Position5>
+      <Position6>
+        <Filename Value="main.pas"/>
+        <Caret Line="329" TopLine="300"/>
+      </Position6>
+      <Position7>
+        <Filename Value="main.pas"/>
+        <Caret Line="333" TopLine="300"/>
+      </Position7>
+      <Position8>
+        <Filename Value="main.pas"/>
+        <Caret Line="327" TopLine="300"/>
+      </Position8>
+      <Position9>
+        <Filename Value="main.pas"/>
+        <Caret Line="333" TopLine="300"/>
+      </Position9>
+      <Position10>
+        <Filename Value="main.pas"/>
+        <Caret Line="328" TopLine="300"/>
+      </Position10>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
       <Modes ActiveMode="default"/>
     </RunParams>
   </ProjectSession>
+  <Debugging>
+    <BreakPoints>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="main.pas"/>
+        <Line Value="327"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="main.pas"/>
+        <Line Value="328"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="main.pas"/>
+        <Line Value="329"/>
+      </Item>
+    </BreakPoints>
+  </Debugging>
 </CONFIG>

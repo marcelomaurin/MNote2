@@ -9,15 +9,8 @@ uses
   SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion,
   SynHighlighterPython, SynHighlighterPHP, synhighlighterunixshellscript, Forms,
   Controls, Graphics, Dialogs, Menus, ExtCtrls, ComCtrls, StdCtrls, Grids,
-  PopupNotifier,
-  item,
-  types,
-  finds,
-  setmain, mquery,
-  TypeDB,
-  folders, funcoes,
-  LCLType, chgtext, hint, registro, splash,
-  setFolders,
+  PopupNotifier, item, types, finds, setmain, mquery, TypeDB, folders, funcoes,
+  LCLType, chgtext, hint, registro, splash, //setFolders,
   config, SynEditKeyCmds;
 
 
@@ -200,8 +193,9 @@ type
     procedure CarregaContexto();
     procedure AssociarExtensao(item: Titem);
     function classificaTipo(arquivo : string): TTypeItem;
-    procedure SynEdit1KeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure SynEdit1CutCopy(Sender: TObject; var AText: String;
+        var AMode: TSynSelectionMode; ALogStartPos: TPoint;
+        var AnAction: TSynCopyPasteAction);
 
   public
     { public declarations }
@@ -220,7 +214,12 @@ implementation
 { TfrmMNote }
 uses Sobre;
 
+procedure TfrmMNote.SynEdit1CutCopy(Sender: TObject; var AText: String;
+  var AMode: TSynSelectionMode; ALogStartPos: TPoint;
+  var AnAction: TSynCopyPasteAction);
+begin
 
+end;
 
 function TfrmMNote.ExistFileOpen(Arquivo : string): boolean;
 var
@@ -312,24 +311,6 @@ begin
     result := ti_PHP;
   end;
   //
-end;
-
-procedure TfrmMNote.SynEdit1KeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-var
-  syn : TSynEdit;
-begin
-  //Altered:= TRUE;
-  if (Shift = [ssCtrl]) then
-  begin
-    syn := TSynedit(Sender);
-    case Key of
-    VK_C: syn.CommandProcessor(TSynEditorCommand(ecCopy), ' ', nil);
-    VK_V: syn.CommandProcessor(TSynEditorCommand(ecPaste), ' ', nil);
-    VK_X: syn.CommandProcessor(TSynEditorCommand(ecCut), ' ', nil);
-    end;
-  end;
-
 end;
 
 
@@ -514,7 +495,7 @@ begin
   syn.Lines.Clear;
   syn.PopupMenu := popSysEdit;
   syn.OnChange:= @synChange;
-  syn.OnKeyDown:=@SynEdit1KeyDown;
+  syn.OnCutCopy:=@sy;
   (*Complete*)
   SynCompletion := TSynCompletion.Create(self);
   SynCompletion.Editor := syn;
