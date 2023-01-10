@@ -1,7 +1,7 @@
 object frmMNote: TfrmMNote
   Left = 392
   Height = 394
-  Top = 222
+  Top = 344
   Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
@@ -105,17 +105,14 @@ object frmMNote: TfrmMNote
       OnClick = MenuItem3Click
       object micopy: TMenuItem
         Caption = 'Copy'
-        ShortCut = 16451
         OnClick = micopyClick
       end
       object miPaste: TMenuItem
         Caption = 'Paste'
-        ShortCut = 16470
         OnClick = miPasteClick
       end
       object MenuItem14: TMenuItem
         Caption = 'Cut'
-        ShortCut = 16472
         OnClick = MenuItem14Click
       end
       object Separator3: TMenuItem

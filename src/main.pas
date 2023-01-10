@@ -311,6 +311,18 @@ begin
   begin
     result := ti_PHP;
   end;
+  if (extensao = '.java') then
+  begin
+    result := ti_JAVA;
+  end;
+  if (extensao = '.js') then
+  begin
+    result := ti_JS;
+  end;
+  if (extensao = '.htm') or (extensao = '.html') then
+  begin
+    result := ti_HTML;
+  end;
   //
 end;
 
