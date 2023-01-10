@@ -200,8 +200,10 @@ type
     procedure CarregaContexto();
     procedure AssociarExtensao(item: Titem);
     function classificaTipo(arquivo : string): TTypeItem;
+
     procedure SynEdit1KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure SynEditkey(Sender: TObject; var Key: char);
 
   public
     { public declarations }
@@ -326,6 +328,7 @@ begin
   //
 end;
 
+(*
 procedure TfrmMNote.SynEdit1KeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
@@ -334,13 +337,57 @@ begin
   //Altered:= TRUE;
   if (Shift = [ssCtrl]) then
   begin
+
     syn := TSynedit(Sender);
     case Key of
-    VK_C: syn.CommandProcessor(TSynEditorCommand(ecCopy), ' ', nil);
-    VK_V: syn.CommandProcessor(TSynEditorCommand(ecPaste), ' ', nil);
-    VK_X: syn.CommandProcessor(TSynEditorCommand(ecCut), ' ', nil);
+      VK_C:
+      begin
+        syn.CommandProcessor(TSynEditorCommand(ecCopy), ' ', nil);
+
+      end;
+      VK_V:
+      begin
+        //syn.CommandProcessor(TSynEditorCommand(ecPaste), ' ', nil);
+        //syn.PasteFromClipboard;
+        miPasteClick(sender);
+      end;
+      VK_X:
+      begin
+        syn.CommandProcessor(TSynEditorCommand(ecCut), ' ', nil);
+        //syn.PasteFromClipboard;
+
+      end;
     end;
   end;
+
+end;
+*)
+
+procedure TfrmMNote.SynEditkey(Sender: TObject; var Key: char);
+var
+  syn : TSynEdit;
+begin
+   syn := TSynedit(Sender);
+   case Key of
+      char(VK_C):
+      begin
+        syn.CommandProcessor(TSynEditorCommand(ecCopy), ' ', nil);
+
+      end;
+      char(VK_V):
+      begin
+        //syn.CommandProcessor(TSynEditorCommand(ecPaste), ' ', nil);
+        //syn.PasteFromClipboard;
+        miPasteClick(sender);
+      end;
+      char(VK_X):
+      begin
+        syn.CommandProcessor(TSynEditorCommand(ecCut), ' ', nil);
+        //syn.PasteFromClipboard;
+
+      end;
+
+   end;
 
 end;
 
@@ -526,7 +573,8 @@ begin
   syn.Lines.Clear;
   syn.PopupMenu := popSysEdit;
   syn.OnChange:= @synChange;
-  syn.OnKeyDown:=@SynEdit1KeyDown;
+  //syn.OnKeyDown:=@SynEdit1KeyDown;
+  syn.OnKeyPress:= @SynEditkey;
   (*Complete*)
   SynCompletion := TSynCompletion.Create(self);
   SynCompletion.Editor := syn;

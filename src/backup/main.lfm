@@ -113,7 +113,6 @@ object frmMNote: TfrmMNote
       end
       object MenuItem14: TMenuItem
         Caption = 'Cut'
-        ShortCut = 16472
         OnClick = MenuItem14Click
       end
       object Separator3: TMenuItem
