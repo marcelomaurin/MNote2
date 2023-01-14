@@ -4,13 +4,13 @@
     <PathDelim Value="\"/>
     <Version Value="12"/>
     <BuildModes Active="Default"/>
-    <Units Count="29">
+    <Units Count="30">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="3" Y="13"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit0>
       <Unit1>
         <Filename Value="main.pas"/>
@@ -20,7 +20,7 @@
         <ResourceBaseClass Value="Form"/>
         <TopLine Value="383"/>
         <CursorPos X="26" Y="395"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -28,10 +28,10 @@
         <Filename Value="classes\item.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Item"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="6"/>
         <TopLine Value="185"/>
         <CursorPos X="83" Y="12"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
@@ -40,58 +40,58 @@
         <ComponentName Value="frmSobre"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit3>
       <Unit4>
         <Filename Value="classes\finds.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit4>
       <Unit5>
         <Filename Value="setmain.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="4"/>
         <TopLine Value="29"/>
         <CursorPos X="25" Y="66"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
         <Loaded Value="True"/>
       </Unit5>
       <Unit6>
         <Filename Value="funcoes.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="5"/>
         <TopLine Value="69"/>
         <CursorPos X="5" Y="78"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
         <Loaded Value="True"/>
       </Unit6>
       <Unit7>
         <Filename Value="classes\chaves.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit7>
       <Unit8>
         <Filename Value="classes\setbanco.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit8>
       <Unit9>
         <Filename Value="classes\setmquery.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="setMQuery"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit9>
       <Unit10>
         <Filename Value="classes\tabela.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Tabela"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit10>
       <Unit11>
         <Filename Value="classes\typedb.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="TypeDB"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit11>
       <Unit12>
         <Filename Value="mquery.pas"/>
@@ -99,7 +99,7 @@
         <ComponentName Value="frmMQuery"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit12>
       <Unit13>
         <Filename Value="cfgdb.pas"/>
@@ -107,7 +107,7 @@
         <ComponentName Value="frmcfgdb"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit13>
       <Unit14>
         <Filename Value="folders.pas"/>
@@ -115,23 +115,23 @@
         <ComponentName Value="frmFolders"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit14>
       <Unit15>
         <Filename Value="classes\setfolders.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="setFolders"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit15>
       <Unit16>
         <Filename Value="Manifest.manifest"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit16>
       <Unit17>
         <Filename Value="Manifest.rc"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit17>
       <Unit18>
         <Filename Value="chgtext.pas"/>
@@ -139,12 +139,12 @@
         <ComponentName Value="frmchgtext"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit18>
       <Unit19>
         <Filename Value="setchgtext.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit19>
       <Unit20>
         <Filename Value="hint.pas"/>
@@ -152,7 +152,7 @@
         <ComponentName Value="frmHint"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit20>
       <Unit21>
         <Filename Value="registro.pas"/>
@@ -160,7 +160,13 @@
         <ComponentName Value="frmRegistrar"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="26"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="79"/>
+        <CursorPos X="50" Y="121"/>
+        <UsageCount Value="27"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit21>
       <Unit22>
         <Filename Value="splash.pas"/>
@@ -168,7 +174,7 @@
         <ComponentName Value="frmSplash"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
       </Unit22>
       <Unit23>
         <Filename Value="config.pas"/>
@@ -176,11 +182,10 @@
         <ComponentName Value="frmconfig"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <TopLine Value="20"/>
         <CursorPos X="3" Y="45"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="27"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit23>
@@ -225,126 +230,136 @@
         <CursorPos X="16" Y="35"/>
         <UsageCount Value="10"/>
       </Unit28>
+      <Unit29>
+        <Filename Value="C:\Users\marce\AppData\Local\lazarus\onlinepackagemanager\packages\lnet\lib\lnet.pp"/>
+        <UnitName Value="lNet"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="1052"/>
+        <CursorPos Y="1076"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit29>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="main.pas"/>
-        <Caret Line="365" Column="24" TopLine="357"/>
+        <Caret Line="206" Column="9" TopLine="192"/>
       </Position1>
       <Position2>
         <Filename Value="main.pas"/>
-        <Caret Line="363" Column="31" TopLine="355"/>
+        <Caret Line="333" Column="36" TopLine="319"/>
       </Position2>
       <Position3>
         <Filename Value="main.pas"/>
-        <Caret Line="574" Column="31" TopLine="561"/>
+        <Caret Line="577" TopLine="564"/>
       </Position3>
       <Position4>
         <Filename Value="main.pas"/>
-        <Caret Line="21" Column="21" TopLine="13"/>
+        <Caret Line="1002" Column="63" TopLine="946"/>
       </Position4>
       <Position5>
         <Filename Value="main.pas"/>
-        <Caret Line="205" Column="56" TopLine="193"/>
+        <Caret Line="966" Column="57" TopLine="946"/>
       </Position5>
       <Position6>
         <Filename Value="main.pas"/>
-        <Caret Line="574" Column="31" TopLine="566"/>
+        <Caret Line="1181" Column="62" TopLine="1165"/>
       </Position6>
       <Position7>
         <Filename Value="main.pas"/>
-        <Caret Line="21" Column="21" TopLine="13"/>
+        <Caret Line="1030" Column="59" TopLine="1016"/>
       </Position7>
       <Position8>
         <Filename Value="main.pas"/>
-        <Caret Line="205" Column="56" TopLine="196"/>
+        <Caret Line="1184" Column="27" TopLine="1165"/>
       </Position8>
       <Position9>
         <Filename Value="main.pas"/>
-        <Caret Line="331" Column="36" TopLine="325"/>
+        <Caret Line="1028" Column="78" TopLine="1021"/>
       </Position9>
       <Position10>
         <Filename Value="main.pas"/>
+        <Caret Line="18" Column="51"/>
       </Position10>
       <Position11>
         <Filename Value="main.pas"/>
-        <Caret Line="206" Column="9" TopLine="192"/>
+        <Caret Line="1044" Column="42" TopLine="1038"/>
       </Position11>
       <Position12>
         <Filename Value="main.pas"/>
-        <Caret Line="333" Column="36" TopLine="319"/>
+        <Caret Line="431" Column="78" TopLine="419"/>
       </Position12>
       <Position13>
         <Filename Value="main.pas"/>
-        <Caret Line="577" TopLine="564"/>
+        <Caret Line="432" Column="78" TopLine="420"/>
       </Position13>
       <Position14>
         <Filename Value="main.pas"/>
-        <Caret Line="1002" Column="63" TopLine="946"/>
+        <Caret Line="433" Column="78" TopLine="421"/>
       </Position14>
       <Position15>
         <Filename Value="main.pas"/>
-        <Caret Line="966" Column="57" TopLine="946"/>
+        <Caret Line="458" Column="102" TopLine="422"/>
       </Position15>
       <Position16>
         <Filename Value="main.pas"/>
-        <Caret Line="1181" Column="62" TopLine="1165"/>
+        <Caret Line="457" Column="102" TopLine="421"/>
       </Position16>
       <Position17>
         <Filename Value="main.pas"/>
-        <Caret Line="1030" Column="59" TopLine="1016"/>
+        <Caret Line="450" Column="102" TopLine="414"/>
       </Position17>
       <Position18>
         <Filename Value="main.pas"/>
-        <Caret Line="1184" Column="27" TopLine="1165"/>
+        <Caret Line="452" Column="102" TopLine="416"/>
       </Position18>
       <Position19>
         <Filename Value="main.pas"/>
-        <Caret Line="1028" Column="78" TopLine="1021"/>
+        <Caret Line="473" Column="28" TopLine="432"/>
       </Position19>
       <Position20>
-        <Filename Value="main.pas"/>
-        <Caret Line="18" Column="51"/>
-      </Position20>
-      <Position21>
-        <Filename Value="main.pas"/>
-        <Caret Line="1044" Column="42" TopLine="1038"/>
-      </Position21>
-      <Position22>
-        <Filename Value="main.pas"/>
-        <Caret Line="431" Column="78" TopLine="419"/>
-      </Position22>
-      <Position23>
-        <Filename Value="main.pas"/>
-        <Caret Line="432" Column="78" TopLine="420"/>
-      </Position23>
-      <Position24>
-        <Filename Value="main.pas"/>
-        <Caret Line="433" Column="78" TopLine="421"/>
-      </Position24>
-      <Position25>
-        <Filename Value="main.pas"/>
-        <Caret Line="458" Column="102" TopLine="422"/>
-      </Position25>
-      <Position26>
-        <Filename Value="main.pas"/>
-        <Caret Line="457" Column="102" TopLine="421"/>
-      </Position26>
-      <Position27>
-        <Filename Value="main.pas"/>
-        <Caret Line="450" Column="102" TopLine="414"/>
-      </Position27>
-      <Position28>
-        <Filename Value="main.pas"/>
-        <Caret Line="452" Column="102" TopLine="416"/>
-      </Position28>
-      <Position29>
-        <Filename Value="main.pas"/>
-        <Caret Line="473" Column="28" TopLine="432"/>
-      </Position29>
-      <Position30>
         <Filename Value="config.pas"/>
         <Caret Line="11" Column="104"/>
+      </Position20>
+      <Position21>
+        <Filename Value="registro.pas"/>
+        <Caret Line="113" Column="99" TopLine="82"/>
+      </Position21>
+      <Position22>
+        <Filename Value="registro.pas"/>
+        <Caret Line="101" Column="40" TopLine="82"/>
+      </Position22>
+      <Position23>
+        <Filename Value="registro.pas"/>
+        <Caret Line="110" Column="66" TopLine="79"/>
+      </Position23>
+      <Position24>
+        <Filename Value="registro.pas"/>
+        <Caret Line="89" TopLine="79"/>
+      </Position24>
+      <Position25>
+        <Filename Value="registro.pas"/>
+        <Caret Line="91" TopLine="79"/>
+      </Position25>
+      <Position26>
+        <Filename Value="C:\Users\marce\AppData\Local\lazarus\onlinepackagemanager\packages\lnet\lib\lnet.pp"/>
+        <Caret Line="1076" TopLine="1052"/>
+      </Position26>
+      <Position27>
+        <Filename Value="registro.pas"/>
+        <Caret Line="97" TopLine="79"/>
+      </Position27>
+      <Position28>
+        <Filename Value="registro.pas"/>
+        <Caret Line="96" TopLine="79"/>
+      </Position28>
+      <Position29>
+        <Filename Value="registro.pas"/>
+        <Caret Line="87" TopLine="79"/>
+      </Position29>
+      <Position30>
+        <Filename Value="registro.pas"/>
+        <Caret Line="97" TopLine="79"/>
       </Position30>
     </JumpHistory>
     <RunParams>

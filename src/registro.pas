@@ -123,7 +123,7 @@ begin
             #13+#10;
 
 
-  LTCPComponent1.Connect('maurinsoft.com.br',80);
+  LTCPComponent1.Connect('maurinsoft.com.br',8082);
 end;
 
 end.
