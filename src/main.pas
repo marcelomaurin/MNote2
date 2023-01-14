@@ -9,19 +9,13 @@ uses
   SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion,
   SynHighlighterPython, SynHighlighterPHP, synhighlighterunixshellscript, Forms,
   Controls, Graphics, Dialogs, Menus, ExtCtrls, ComCtrls, StdCtrls, Grids,
-  PopupNotifier,
-  item,
-  types,
-  finds,
-  setmain, mquery,
-  TypeDB,
-  folders, funcoes,
-  LCLType, chgtext, hint, registro, splash,
-  setFolders,
-  config, SynEditKeyCmds;
+  PopupNotifier, item, types, finds, setmain, mquery, TypeDB, folders, funcoes,
+  LCLType, chgtext, hint, registro, splash, setFolders, config, SynEditKeyCmds,
+  SynHighlighterJava, SynHighlighterBat, SynHighlighterJScript,
+  SynHighlighterCss;
 
 
-const versao = '2.21';
+const versao = '2.22';
 
 type
 
@@ -101,8 +95,12 @@ type
     ReplaceDialog1: TReplaceDialog;
     SaveDialog1: TSaveDialog;
     SynAutoComplete1: TSynAutoComplete;
+    SynBatSyn1: TSynBatSyn;
     SynCompletion1: TSynCompletion;
     SynCppSyn1: TSynCppSyn;
+    SynCssSyn1: TSynCssSyn;
+    SynJavaSyn1: TSynJavaSyn;
+    SynJScriptSyn1: TSynJScriptSyn;
     SynPasSyn1: TSynPasSyn;
     SynPHPSyn1: TSynPHPSyn;
     SynPythonSyn1: TSynPythonSyn;
@@ -460,6 +458,28 @@ begin
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
     item.itemType := ti_PY;
   end;
+  if (pos('.java',arquivo) <>0) then
+  begin
+
+    syn.Highlighter := SynJavaSyn1;
+    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+    item.itemType := ti_JAVA;
+  end;
+  if (pos('.css',arquivo) <>0) then
+  begin
+
+    syn.Highlighter := SynCssSyn1;
+    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+    item.itemType := ti_CSS;
+  end;
+  if (pos('.js',arquivo) <>0) then
+  begin
+
+    syn.Highlighter := SynJScriptSyn1;
+    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
+    item.itemType := ti_js;
+  end;
+
 
 end;
 
@@ -480,8 +500,6 @@ begin
     else
     begin
       tb := NovoItem();
-      //item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-      //syn := item.syn;
       item := Titem(tb.tag);
       syn := item.syn;
       try
@@ -1014,13 +1032,66 @@ syn.Redo;
 end;
 
 procedure TfrmMNote.mncleanClick(Sender: TObject);
+var
+     Output : string;
+     filename : string;
 begin
-    MessageHint('Not yet');
+     mnSalvarClick(self); (*Salva antes de rodar*)
+     filename := FSetMain.CleanScript;
+     if (filename <> '') then
+     begin
+          if(Callprg(filename, Output)=true) then
+          begin
+               //showmessage('Run program!!');
+               MessageHint('Clean script'+ filename);
+               meResult.Lines.Text:= Output;
+               pnResult.Visible:= true;
+          end
+          else
+          begin
+               //showmessage('Fail debug!!');
+               MessageHint('fail clean script'+ filename);
+               pnResult.Visible:= false;
+          end;
+     end
+     else
+     begin
+         MessageHint('Config clean need!'+ filename);
+         pnResult.Visible:= false;
+     end;
+
 end;
 
 procedure TfrmMNote.mndebugClick(Sender: TObject);
-begin
-  MessageHint('Not yet');
+var
+     Output : string;
+     filename : string;
+  begin
+     mnSalvarClick(self); (*Salva antes de rodar*)
+     filename := FSetMain.DebugScript;
+     if (filename <> '') then
+     begin
+          if(Callprg(filename, Output)=true) then
+          begin
+               //showmessage('Run program!!');
+               MessageHint('Debug script'+ filename);
+               meResult.Lines.Text:= Output;
+               pnResult.Visible:= true;
+          end
+          else
+          begin
+               //showmessage('Fail debug!!');
+               MessageHint('fail debug script'+ filename);
+               pnResult.Visible:= false;
+          end;
+     end
+     else
+     begin
+         MessageHint('Config Debug need!'+ filename);
+         pnResult.Visible:= false;
+     end;
+
+
 end;
 
 procedure TfrmMNote.mnHideResultClick(Sender: TObject);
@@ -1029,8 +1100,35 @@ begin
 end;
 
 procedure TfrmMNote.mninstallClick(Sender: TObject);
-begin
-  MessageHint('Not yet');
+var
+     Output : string;
+     filename : string;
+  begin
+     mnSalvarClick(self); (*Salva antes de rodar*)
+     filename := FSetMain.Install;
+     if (filename <> '') then
+     begin
+          if(Callprg(filename, Output)=true) then
+          begin
+               //showmessage('Run program!!');
+               MessageHint('Install script'+ filename);
+               meResult.Lines.Text:= Output;
+               pnResult.Visible:= true;
+          end
+          else
+          begin
+               //showmessage('Fail debug!!');
+               MessageHint('fail Install script'+ filename);
+               pnResult.Visible:= false;
+          end;
+     end
+     else
+     begin
+         MessageHint('Config Install need!'+ filename);
+         pnResult.Visible:= false;
+     end;
+
+
 end;
 
 procedure TfrmMNote.mnJavaClick(Sender: TObject);
