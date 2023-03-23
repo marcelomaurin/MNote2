@@ -9,7 +9,7 @@ unit setmain;
 interface
 
 uses
-  Classes, SysUtils, funcoes;
+  Classes, SysUtils, funcoes, graphics;
 
 const filename = 'Setmain.cfg';
 
@@ -32,6 +32,7 @@ type
         FPATH : string;
         FHeight : integer;
         FWidth : integer;
+        FFONT : TFont;
 
         FRunScript : string;    //Script de Compilação
         FDebugScript : string;  //Script de Debug
@@ -45,6 +46,7 @@ type
         procedure SetFixar(value : boolean);
         procedure SetStay(value : boolean);
         procedure SetLastFiles(value : string);
+        procedure SetFont(value : TFont);
         procedure Default();
   public
         constructor create();
@@ -64,6 +66,7 @@ type
         property DebugScript : string read FDebugScript write FDebugScript;
         property CleanScript : string read FCleanScript write FCleanScript;
         property Install : string read FInstall write FInstall;
+        property Font : TFont read FFont write SetFont;
   end;
 
   var
@@ -96,6 +99,11 @@ begin
     FDebugScript :='';  //Script de Debug
     FCleanScript :='';  //Script de Limpeza
     FInstall :='';      //Script de Instalacao
+    if FFont = nil then
+    begin
+         FFONT := TFont.create();
+
+    end;
 
 
 end;
@@ -123,6 +131,12 @@ end;
 procedure TSetMain.SetLastFiles(value: string);
 begin
   FLastFiles:= value;
+end;
+
+procedure TSetMain.SetFont(value: TFont);
+begin
+  //StringToFont(value,FFONT);
+  FFont := value;
 end;
 
 procedure TSetMain.CarregaContexto();
@@ -177,6 +191,10 @@ begin
     begin
       FInstall := RetiraInfo(arquivo.Strings[posicao]);
     end;
+    if  BuscaChave(arquivo,'FONT:',posicao) then
+    begin
+      StringToFont(RetiraInfo(arquivo.Strings[posicao]),FFONT);
+    end;
 end;
 
 
@@ -224,7 +242,9 @@ end;
 constructor TSetMain.create();
 begin
     arquivo := TStringList.create();
+    FFONT := TFont.create();
     IdentificaArquivo(true);
+
 
 end;
 
@@ -249,16 +269,18 @@ begin
   arquivo.Append('DEBUGSCRIPT:'+FDebugScript);
   arquivo.Append('CLEANSCRIPT:'+FCleanScript);
   arquivo.Append('INSTALLSCRIPT:'+FInstall);
+  arquivo.Append('FONT:'+FontToString(FFONT));
 
 
   arquivo.SaveToFile(fpath+filename);
 end;
 
-destructor TSetMain.destroy();
+destructor TSetMain.Destroy;
 begin
-  SalvaContexto(true);
+  SalvaContexto(false);
   arquivo.free;
   arquivo := nil;
+  FFONT.free;
 end;
 
 end.

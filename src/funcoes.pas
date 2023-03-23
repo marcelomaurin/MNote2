@@ -7,7 +7,7 @@ interface
 
 uses
 Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
-StdCtrls, ExtCtrls, UTF8Process, Process
+StdCtrls, ExtCtrls, UTF8Process, Process, TypInfo
 {$IFDEF MSWINDOWS}
 ,windows, jwaWinBase, shellAPI
 {$ENDIF}
@@ -39,6 +39,8 @@ function ShowConfirm(Mensagem : string) : boolean;
 function GetGPUTemperature(device : integer): string;
 function GetGPUCount : integer;
 function GetGPUName(device : integer): string;
+procedure StringToFont(const AFontStr: string; var AFont: TFont);
+function FontToString(AFont: TFont): string;
 {$IFDEF WINDOWS}
 function RegisterFileType(ExtName: string; AppName: string): boolean;
 function  VerificaRegExt(extensao : string) : boolean;
@@ -621,6 +623,42 @@ begin
   LastProcessorTime := processorTime;
 end;
 
+
+
+function FontToString(AFont: TFont): string;
+begin
+  Result := Format('%s,%d,%d,%d,%d,%d',
+    [AFont.Name, AFont.Size, GetOrdProp(AFont, 'Style'), AFont.Orientation, AFont.Color, AFont.Quality]);
+end;
+
+procedure StringToFont(const AFontStr: string; var AFont: TFont);
+var
+  FontProps: TStringList;
+begin
+  if AFont = nil then
+  begin
+    AFont := TFont.create();
+  end;
+  FontProps := TStringList.Create;
+  FontProps.Delimiter := ','; // Define o delimitador como vírgula
+  FontProps.StrictDelimiter := True; // Ignora espaços ao redor do delimitador
+
+  try
+    //FontProps.CommaText := AFontStr;
+    FontProps.DelimitedText := AFontStr; // Atribui a lista de itens separados por vírgula ao DelimitedText
+    if (FontProps.Count = 6) then
+    begin
+         AFont.Name := FontProps[0];
+         AFont.Size := StrToInt(FontProps[1]);
+         SetOrdProp(AFont, 'Style', StrToInt(FontProps[2]));
+         AFont.Orientation := StrToInt(FontProps[3]);
+         AFont.Color := TColor(StrToInt(FontProps[4]));
+         AFont.Quality := TFontQuality(StrToInt(FontProps[5]));
+    end;
+  finally
+    FontProps.Free;
+  end;
+end;
 
 
 

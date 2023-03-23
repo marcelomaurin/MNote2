@@ -15,7 +15,7 @@ uses
   SynHighlighterCss;
 
 
-const versao = '2.22';
+const versao = '2.23';
 
 type
 
@@ -181,6 +181,7 @@ type
     procedure TabSheet2ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     function Callprg(filename: string; var Output : string): boolean;
+    procedure MudaTodasaFontes();
   private
     { private declarations }
 
@@ -592,8 +593,10 @@ begin
   syn.Lines.Clear;
   syn.PopupMenu := popSysEdit;
   syn.OnChange:= @synChange;
+  syn.Font := FSetMain.Font;
   //syn.OnKeyDown:=@SynEdit1KeyDown;
   syn.OnKeyPress:= @SynEditkey;
+
   (*Complete*)
   SynCompletion := TSynCompletion.Create(self);
   SynCompletion.Editor := syn;
@@ -1434,6 +1437,23 @@ begin
 
 end;
 
+procedure TfrmMNote.MudaTodasaFontes();
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+   a : integer;
+
+begin
+  for a := 0 to pgMain.PageCount-1 do
+  begin
+       item := TItem(pgMain.Pages[a].Tag);
+       syn := item.syn;
+       syn.Font := FSetMain.Font;
+  end;
+
+end;
+
 procedure TfrmMNote.mnfontClick(Sender: TObject);
 var
    tb : TTabSheet;
@@ -1444,10 +1464,16 @@ begin
   //item := TItem(syn.tag);
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  FontDialog1.Font :=  syn.Font;
+  FontDialog1.Font := syn.Font;
+
   if FontDialog1.Execute then
   begin
       syn.Font := FontDialog1.Font;
+      FSetMain.Font := FontDialog1.Font;
+      MudaTodasaFontes();
+      FSetMain.SalvaContexto(false);
+
+
   end;
 end;
 
