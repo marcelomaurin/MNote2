@@ -1,7 +1,7 @@
 object frmMNote: TfrmMNote
-  Left = 392
+  Left = 3001
   Height = 492
-  Top = 344
+  Top = 213
   Width = 788
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
@@ -1137,6 +1137,6 @@ object frmMNote: TfrmMNote
     DefaultFilter = 'Folhas Estilo Cascata (*.css)|*.css'
     Enabled = False
     Left = 151
-    Top = 404
+    Top = 403
   end
 end

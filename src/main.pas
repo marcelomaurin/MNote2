@@ -199,6 +199,7 @@ type
     procedure CarregaContexto();
     procedure AssociarExtensao(item: Titem);
     function classificaTipo(arquivo : string): TTypeItem;
+    procedure ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
     (*
     procedure SynEdit1KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -434,18 +435,21 @@ begin
     syn.Highlighter := SynCppSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
     item.itemType := ti_CCP;
+    ConfigureCppHighlighter(SynCppSyn1);
   end;
   if (pos('.cpp',arquivo) <>0) then
   begin
     syn.Highlighter := SynCppSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
     item.itemType := ti_CCP;
+    ConfigureCppHighlighter(SynCppSyn1);
   end;
   if (pos('.h',arquivo) <>0) then
     begin
       syn.Highlighter := SynCppSyn1;
       AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
       item.itemType := ti_CCP;
+      ConfigureCppHighlighter(SynCppSyn1);
   end;
   if (pos('.sql',arquivo) <>0) then
   begin
@@ -748,6 +752,39 @@ begin
   end;
 end;
 
+procedure TfrmMNote.ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
+begin
+  // Configuração padrão para comentários
+  ACppHighlighter.CommentAttri.Foreground := clGreen;
+  ACppHighlighter.CommentAttri.Style := [fsItalic];
+
+  // Configuração padrão para palavras-chave
+
+
+
+  ACppHighlighter.KeyAttri.Foreground := clNavy;
+  ACppHighlighter.KeywordAttribute.Style := [fsBold];
+  // Configuração padrão para identificadores
+  ACppHighlighter.IdentifierAttri.Foreground := clBlack;
+
+  // Configuração padrão para números
+  ACppHighlighter.NumberAttri.Foreground := clTeal;
+
+  // Configuração padrão para strings e caracteres
+  ACppHighlighter.StringAttri.Foreground := clMaroon;
+  //ACppHighlighter.CharAttri.Foreground := clMaroon;
+
+
+  // Configuração padrão para diretivas de pré-processador
+  //ACppHighlighter.PreprocessorAttri.Foreground := clPurple;
+
+  //ACppHighlighter.PreprocessorAttri.Style := [fsBold];
+
+  // Configuração padrão para símbolos e pontuação
+  ACppHighlighter.SymbolAttri.Foreground := clBlack;
+end;
+
+
 procedure TfrmMNote.AssociarExtensao(item: Titem);
 var
    arquivo: string;
@@ -755,6 +792,7 @@ var
 begin
    ext := ExtractFileExt(item.FileName);
    arquivo := Application.ExeName;
+
    if not (ext = '') then
    begin
         ext := copy(ext,2,Length(ext));
@@ -1382,6 +1420,7 @@ begin
   //fAutoComplete.AutoCompleteList.Clear;
   //cpp := TSynCppSyn.create(self);
   syn.Highlighter := SynCppSyn1;
+  ConfigureCppHighlighter(SynCppSyn1);
 
 end;
 
