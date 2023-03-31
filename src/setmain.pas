@@ -33,6 +33,7 @@ type
         FHeight : integer;
         FWidth : integer;
         FFONT : TFont;
+        FCHATGPT : string;
 
         FRunScript : string;    //Script de Compilação
         FDebugScript : string;  //Script de Debug
@@ -47,6 +48,7 @@ type
         procedure SetStay(value : boolean);
         procedure SetLastFiles(value : string);
         procedure SetFont(value : TFont);
+        procedure SetCHATGPT(value : String);
         procedure Default();
   public
         constructor create();
@@ -67,6 +69,7 @@ type
         property CleanScript : string read FCleanScript write FCleanScript;
         property Install : string read FInstall write FInstall;
         property Font : TFont read FFont write SetFont;
+        property CHATGPT: String read FCHATGPT write SetCHATGPT;
   end;
 
   var
@@ -104,6 +107,7 @@ begin
          FFONT := TFont.create();
 
     end;
+    FCHATGPT:=''; //CHATGPT TOKEN
 
 
 end;
@@ -137,6 +141,11 @@ procedure TSetMain.SetFont(value: TFont);
 begin
   //StringToFont(value,FFONT);
   FFont := value;
+end;
+
+procedure TSetMain.SetCHATGPT(value: String);
+begin
+  FCHATGPT:= value;
 end;
 
 procedure TSetMain.CarregaContexto();
@@ -195,6 +204,11 @@ begin
     begin
       StringToFont(RetiraInfo(arquivo.Strings[posicao]),FFONT);
     end;
+    if  BuscaChave(arquivo,'CHATGPT:',posicao) then
+    begin
+      FCHATGPT := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+
 end;
 
 
@@ -244,8 +258,6 @@ begin
     arquivo := TStringList.create();
     FFONT := TFont.create();
     IdentificaArquivo(true);
-
-
 end;
 
 
@@ -270,7 +282,7 @@ begin
   arquivo.Append('CLEANSCRIPT:'+FCleanScript);
   arquivo.Append('INSTALLSCRIPT:'+FInstall);
   arquivo.Append('FONT:'+FontToString(FFONT));
-
+  arquivo.Append('CHATGPT:'+FCHATGPT);
 
   arquivo.SaveToFile(fpath+filename);
 end;

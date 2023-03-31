@@ -15,7 +15,7 @@ uses
   SynHighlighterCss;
 
 
-const versao = '2.23';
+const versao = '2.24';
 
 type
 
@@ -372,7 +372,7 @@ begin
    case Key of
       char(VK_C):
       begin
-        syn.CommandProcessor(TSynEditorCommand(ecCopy), ' ', nil);
+        //syn.CommandProcessor(TSynEditorCommand(ecCopy), ' ', nil);
 
       end;
       char(VK_V):
@@ -385,7 +385,10 @@ begin
       begin
         syn.CommandProcessor(TSynEditorCommand(ecCut), ' ', nil);
         //syn.PasteFromClipboard;
-
+      end;
+      else
+      begin
+        showmessage(inttostr(ord(Key)));
       end;
 
    end;
@@ -759,11 +762,9 @@ begin
   ACppHighlighter.CommentAttri.Style := [fsItalic];
 
   // Configuração padrão para palavras-chave
-
-
-
   ACppHighlighter.KeyAttri.Foreground := clNavy;
   ACppHighlighter.KeywordAttribute.Style := [fsBold];
+
   // Configuração padrão para identificadores
   ACppHighlighter.IdentifierAttri.Foreground := clBlack;
 
@@ -776,8 +777,12 @@ begin
 
 
   // Configuração padrão para diretivas de pré-processador
-  ACppHighlighter.PreprocessorAttri.Foreground := clPurple;
-  ACppHighlighter.PreprocessorAttri.Style := [fsBold];
+  //ACppHighlighter.PreprocessorAttri.Foreground := clPurple;
+
+  //ACppHighlighter.PreprocessorAttri.Style := [fsBold];
+  ACppHighlighter.GetTokenAttribute.Style := [fsBold];
+
+
 
   // Configuração padrão para símbolos e pontuação
   ACppHighlighter.SymbolAttri.Foreground := clBlack;

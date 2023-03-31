@@ -14,6 +14,7 @@ type
   Tfrmconfig = class(TForm)
     btSave: TButton;
     btCancel: TButton;
+    edCHATGPT: TEdit;
     edRun: TEdit;
     edInstall: TEdit;
     edClean: TEdit;
@@ -22,6 +23,7 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
+    Label5: TLabel;
     procedure btCancelClick(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);

@@ -36,6 +36,8 @@ type
     procedure btchangeClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure cbSearchEnter(Sender: TObject);
+    procedure cbSearchKeyPress(Sender: TObject; var Key: char);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lstFindClick(Sender: TObject);
@@ -160,6 +162,19 @@ begin
         Trocar(self);
       end;
   end;
+end;
+
+procedure Tfrmchgtext.cbSearchEnter(Sender: TObject);
+begin
+
+end;
+
+procedure Tfrmchgtext.cbSearchKeyPress(Sender: TObject; var Key: char);
+begin
+    if (key=#13) then
+    begin
+        Button1Click(sender);
+    end;
 end;
 
 procedure Tfrmchgtext.FormCreate(Sender: TObject);
