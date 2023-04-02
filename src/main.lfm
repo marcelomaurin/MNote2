@@ -1,11 +1,11 @@
 object frmMNote: TfrmMNote
-  Left = 3001
+  Left = 394
   Height = 394
   Top = 213
   Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 374
+  ClientHeight = 369
   ClientWidth = 630
   Menu = MainMenu1
   OnClose = FormClose
@@ -25,7 +25,7 @@ object frmMNote: TfrmMNote
   end
   object pgMain: TPageControl
     Left = 0
-    Height = 219
+    Height = 214
     Top = 50
     Width = 630
     Align = alClient
@@ -36,7 +36,7 @@ object frmMNote: TfrmMNote
   object pnResult: TPanel
     Left = 0
     Height = 105
-    Top = 269
+    Top = 264
     Width = 630
     Align = alBottom
     Caption = 'pnResult'

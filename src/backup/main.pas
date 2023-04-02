@@ -388,7 +388,7 @@ begin
       end;
       else
       begin
-        showmessage(inttostr(ord(Key)));
+        //showmessage(inttostr(ord(Key)));
       end;
 
    end;

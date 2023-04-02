@@ -1,7 +1,7 @@
 object frmMNote: TfrmMNote
-  Left = 446
+  Left = 394
   Height = 394
-  Top = 222
+  Top = 213
   Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
@@ -13,7 +13,7 @@ object frmMNote: TfrmMNote
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '2.2.0.4'
+  LCLVersion = '2.2.4.0'
   object Panel1: TPanel
     Left = 0
     Height = 50
@@ -105,17 +105,14 @@ object frmMNote: TfrmMNote
       OnClick = MenuItem3Click
       object micopy: TMenuItem
         Caption = 'Copy'
-        ShortCut = 16451
         OnClick = micopyClick
       end
       object miPaste: TMenuItem
         Caption = 'Paste'
-        ShortCut = 16470
         OnClick = miPasteClick
       end
       object MenuItem14: TMenuItem
         Caption = 'Cut'
-        ShortCut = 16472
         OnClick = MenuItem14Click
       end
       object Separator3: TMenuItem
@@ -1089,8 +1086,8 @@ object frmMNote: TfrmMNote
     Top = 226
   end
   object popFind: TPopupMenu
-    Left = 157
-    Top = 302
+    Left = 128
+    Top = 288
     object MenuItem2: TMenuItem
       Caption = 'Esconder'
       OnClick = MenuItem2Click
@@ -1115,7 +1112,30 @@ object frmMNote: TfrmMNote
     CompilerMode = pcmDelphi
     NestedComments = False
     TypeHelpers = True
-    Left = 560
-    Top = 296
+    Left = 224
+    Top = 323
+  end
+  object SynJavaSyn1: TSynJavaSyn
+    DefaultFilter = 'Arquivos Java (*.java)|*.java'
+    Enabled = False
+    Left = 554
+    Top = 323
+  end
+  object SynBatSyn1: TSynBatSyn
+    DefaultFilter = 'Arquivos Lote MS-DOS (*.bat;*.cmd)|*.bat;*.cmd'
+    Enabled = False
+    Left = 600
+    Top = 325
+  end
+  object SynJScriptSyn1: TSynJScriptSyn
+    Enabled = False
+    Left = 179
+    Top = 322
+  end
+  object SynCssSyn1: TSynCssSyn
+    DefaultFilter = 'Folhas Estilo Cascata (*.css)|*.css'
+    Enabled = False
+    Left = 121
+    Top = 322
   end
 end
