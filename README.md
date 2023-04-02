@@ -1,11 +1,19 @@
 Portuguese
 ==========
-Simples editor de texto escrito em Lazarus.
-MNote2 foi criado para ser multiplataforma.
-Rodando em plataformas windows, linux, mac, arm.
+## Projeto MNote2
+O Projeto MNote2, é um simples editor de texto multi plataforma.
 
-Site do projeto:
-http://maurinsoft.com.br/index.php/projeto-mnote2/
+## Plataformas de Compatibilidade
+Criado para rodar em:
+
+- Linux X86
+- Windows
+- Raspberry PI 3.
+Nota: O MAC deixa de ser compatível com o MNote devido aos custos do equipamento. Por este motivo, deixaremos apenas as versões históricas.
+
+Ele é bem simples, porem foi desenvolvido para demonstrar a capacidade de desenvolvimento de projetos multi plataforma do lazarus.
+
+[![MNote2]([IMAGE_URL](https://img.youtube.com/vi/3GepM6Q5Y1o/maxresdefault.jpg))](https://www.youtube.com/embed/3GepM6Q5Y1o)
 
 
 English
