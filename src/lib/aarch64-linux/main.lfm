@@ -1,11 +1,11 @@
 object frmMNote: TfrmMNote
-  Left = 392
-  Height = 394
-  Top = 344
+  Left = 292
+  Height = 438
+  Top = 190
   Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 366
+  ClientHeight = 410
   ClientWidth = 630
   Menu = MainMenu1
   OnClose = FormClose
@@ -25,7 +25,7 @@ object frmMNote: TfrmMNote
   end
   object pgMain: TPageControl
     Left = 0
-    Height = 211
+    Height = 255
     Top = 50
     Width = 630
     Align = alClient
@@ -36,7 +36,7 @@ object frmMNote: TfrmMNote
   object pnResult: TPanel
     Left = 0
     Height = 105
-    Top = 261
+    Top = 305
     Width = 630
     Align = alBottom
     Caption = 'pnResult'
@@ -1483,12 +1483,6 @@ object frmMNote: TfrmMNote
     Left = 416
     Top = 90
   end
-  object SynCppSyn1: TSynCppSyn
-    DefaultFilter = 'Arquivos C++ (*.c,*.cpp,*.h,*.hpp,*.hh)|*.c;*.cpp;*.h;*.hpp;*.hh'
-    Enabled = False
-    Left = 504
-    Top = 320
-  end
   object SynPythonSyn1: TSynPythonSyn
     DefaultFilter = 'Arquivos Python (*.py)|*.py'
     Enabled = False
@@ -1516,8 +1510,8 @@ object frmMNote: TfrmMNote
     Top = 226
   end
   object popFind: TPopupMenu
-    Left = 157
-    Top = 302
+    Left = 128
+    Top = 288
     object MenuItem2: TMenuItem
       Caption = 'Esconder'
       OnClick = MenuItem2Click
@@ -1541,7 +1535,36 @@ object frmMNote: TfrmMNote
     Enabled = False
     CompilerMode = pcmDelphi
     NestedComments = False
-    Left = 560
-    Top = 296
+    Left = 224
+    Top = 323
+  end
+  object SynJavaSyn1: TSynJavaSyn
+    DefaultFilter = 'Arquivos Java (*.java)|*.java'
+    Enabled = False
+    Left = 554
+    Top = 323
+  end
+  object SynBatSyn1: TSynBatSyn
+    DefaultFilter = 'Arquivos Lote MS-DOS (*.bat;*.cmd)|*.bat;*.cmd'
+    Enabled = False
+    Left = 600
+    Top = 325
+  end
+  object SynJScriptSyn1: TSynJScriptSyn
+    Enabled = False
+    Left = 179
+    Top = 322
+  end
+  object SynCssSyn1: TSynCssSyn
+    DefaultFilter = 'Folhas Estilo Cascata (*.css)|*.css'
+    Enabled = False
+    Left = 121
+    Top = 322
+  end
+  object SynCppSyn1: TSynCppSyn
+    DefaultFilter = 'C++ Files (*.c,*.cpp,*.h,*.hpp,*.hh)|*.c;*.cpp;*.h;*.hpp;*.hh'
+    Enabled = False
+    Left = 496
+    Top = 323
   end
 end

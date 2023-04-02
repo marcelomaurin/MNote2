@@ -780,7 +780,7 @@ begin
   //ACppHighlighter.PreprocessorAttri.Foreground := clPurple;
 
   //ACppHighlighter.PreprocessorAttri.Style := [fsBold];
-  ACppHighlighter.GetTokenAttribute.Style := [fsBold];
+  //ACppHighlighter.GetTokenAttribute.Style := [fsBold];
 
 
 
