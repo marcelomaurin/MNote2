@@ -18,6 +18,7 @@ TTipoInfo = (Name, Path);
 TItem = class
       private
          FListaItem: TObjectList;
+         FPalavrasReservadas : TStringList;
          FItemType : TTypeItem; (*Nao esta sendo usado p nada*)
          Fsyn : TSynEdit;
          Ftimer : TTimer;
@@ -51,6 +52,7 @@ TItem = class
          procedure Loadfile(arquivo: string);
          property ItemType : TTypeItem read FItemType write setItemType;
          property syn :TSynEdit read Fsyn write setSyn;
+         property PalavrasReservadas : TStringlist read FPalavrasReservadas write FPalavrasReservadas;
 end;
 
 implementation
@@ -67,6 +69,7 @@ begin
   Ftimer.Enabled := false;
   Ftimer.Interval:= 1000;
   Ftimer.OnTimer:= @TimerEvento;
+  FPalavrasReservadas.clear;
 
 
   ItemType :=  ti_NODEFINE;
@@ -75,6 +78,7 @@ begin
   DirName := '';
   FileName := '';
   FileExt := '';
+
   {#ifdef WINDOWS}
   VolName:= '';
   {#endif}
@@ -88,8 +92,10 @@ begin
   case FItemType of
     ti_PAS :
     begin
-      if FileExists('Delphi32.dci') then
-            AutoComplete.AutoCompleteList.LoadFromFile('Delphi32.dci');
+      if FileExists(ExtractFilePath(ApplicationName)+'pascallist.txt') then
+            FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'pascallist.txt');
+      if FileExists(ExtractFilePath(ApplicationName)+'Delphi32.dci') then
+            AutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'Delphi32.dci');
     end;
     ti_PY :
     begin
@@ -98,6 +104,8 @@ begin
             AutoComplete.AutoCompleteList.LoadFromFile('python.dci');
       *)
        AutoComplete.AutoCompleteList.clear;
+       if FileExists(ExtractFilePath(ApplicationName)+'pythonlist.txt') then
+              FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'pythonlist.txt');
     end;
     ti_SQL :
     begin
@@ -106,6 +114,8 @@ begin
             AutoComplete.AutoCompleteList.LoadFromFile('sql.dci');
       *)
       AutoComplete.AutoCompleteList.clear;
+      if FileExists(ExtractFilePath(ApplicationName)+'sqllist.txt') then
+         FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'sqllist.txt');
     end;
     ti_CCP :
     begin
@@ -114,6 +124,10 @@ begin
             AutoComplete.AutoCompleteList.LoadFromFile('cpp.dci');
       *)
       AutoComplete.AutoCompleteList.clear;
+      if FileExists(ExtractFilePath(ApplicationName)+'c.dci') then
+          AutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'c.dci');
+      if FileExists(ExtractFilePath(ApplicationName)+'clist.txt') then
+         FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'clist.txt');
     end;
     ti_H :
     begin
@@ -122,6 +136,10 @@ begin
             AutoComplete.AutoCompleteList.LoadFromFile('cpp.dci');
       *)
       AutoComplete.AutoCompleteList.clear;
+      if FileExists(ExtractFilePath(ApplicationName)+'c.dci') then
+          AutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'c.dci');
+      if FileExists(ExtractFilePath(ApplicationName)+'clist.txt') then
+         FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'clist.txt');
     end;
     ti_PHP :
     begin
@@ -130,18 +148,24 @@ begin
             AutoComplete.AutoCompleteList.LoadFromFile('php.dci');
       *)
       AutoComplete.AutoCompleteList.clear;
+      if FileExists(ExtractFilePath(ApplicationName)+'phplist.txt') then
+            FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'phplist.txt');
     end;
     ti_JAVA :
     begin
       AutoComplete.AutoCompleteList.clear;
+      if FileExists(ExtractFilePath(ApplicationName)+'javalist.txt') then
+         FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'javalist.txt');
     end;
     ti_TXT :
     begin
       AutoComplete.AutoCompleteList.clear;
+      FPalavrasReservadas.clear;
     end;
     ti_CFG :
     begin
       AutoComplete.AutoCompleteList.clear;
+      FPalavrasReservadas.clear;
     end;
   end;
   //AutoComplete.AutoCompleteList.;
@@ -161,6 +185,7 @@ constructor TItem.Create(Sender: TComponent);
 begin
   FSender := Sender;
   Ftimer := TTimer.create(Sender);
+  FPalavrasReservadas := TStringlist.create();
 
   default();
   Salvo := false;
@@ -168,7 +193,9 @@ end;
 
 destructor TItem.destroy();
 begin
-  Ftimer.free;;
+  Ftimer.free;
+  FPalavrasReservadas.free;
+  PalavrasReservadas:= nil;
 end;
 
 procedure TItem.Mudou();

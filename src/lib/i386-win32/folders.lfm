@@ -1,0 +1,125 @@
+object frmFolders: TfrmFolders
+  Left = 578
+  Height = 578
+  Top = 291
+  Width = 758
+  AutoSize = True
+  Caption = 'Folders'
+  ClientHeight = 578
+  ClientWidth = 758
+  DoubleBuffered = True
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnShow = FormShow
+  ParentBiDiMode = False
+  ParentDoubleBuffered = False
+  Position = poMainFormCenter
+  LCLVersion = '2.2.0.4'
+  object Panel2: TPanel
+    Left = 205
+    Height = 578
+    Top = 0
+    Width = 553
+    Align = alClient
+    ClientHeight = 578
+    ClientWidth = 553
+    TabOrder = 0
+    object Panel3: TPanel
+      Left = 1
+      Height = 122
+      Top = 1
+      Width = 551
+      Align = alTop
+      ClientHeight = 122
+      ClientWidth = 551
+      TabOrder = 0
+      object edFolder: TEdit
+        Left = 1
+        Height = 33
+        Top = 87
+        Width = 543
+        Anchors = [akTop, akLeft, akRight]
+        OnKeyPress = edFolderKeyPress
+        TabOrder = 0
+        Text = 'edFolder'
+      end
+    end
+    object ShellListView1: TShellListView
+      Left = 1
+      Height = 454
+      Top = 123
+      Width = 551
+      Align = alClient
+      Color = clDefault
+      PopupMenu = PopupMenu1
+      ReadOnly = True
+      TabOrder = 1
+      ObjectTypes = [otNonFolders]
+      ShellTreeView = ShellTreeView1
+    end
+  end
+  object Panel1: TPanel
+    Left = 0
+    Height = 578
+    Top = 0
+    Width = 200
+    Align = alLeft
+    ClientHeight = 578
+    ClientWidth = 200
+    TabOrder = 1
+    object ShellTreeView1: TShellTreeView
+      Left = 1
+      Height = 576
+      Top = 1
+      Width = 198
+      Align = alClient
+      FileSortType = fstNone
+      PopupMenu = PopupMenu2
+      ReadOnly = True
+      TabOrder = 0
+      OnChange = ShellTreeView1Change
+      OnChanging = ShellTreeView1Changing
+      OnGetSelectedIndex = ShellTreeView1GetSelectedIndex
+      Options = [tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
+      ObjectTypes = [otFolders]
+      ShellListView = ShellListView1
+    end
+  end
+  object Splitter1: TSplitter
+    Left = 200
+    Height = 578
+    Top = 0
+    Width = 5
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 343
+    Top = 181
+    object MenuItem1: TMenuItem
+      Caption = 'Open file'
+      OnClick = MenuItem1Click
+    end
+  end
+  object PopupMenu2: TPopupMenu
+    Left = 41
+    Top = 86
+    object MenuItem2: TMenuItem
+      Caption = 'Set Default'
+      OnClick = MenuItem2Click
+    end
+    object Separator1: TMenuItem
+      Caption = '-'
+    end
+    object mirefresh: TMenuItem
+      Caption = 'Refresh'
+      OnClick = mirefreshClick
+    end
+    object miCreatedir: TMenuItem
+      Caption = 'Create dir'
+      OnClick = miCreatedirClick
+    end
+    object miDelete: TMenuItem
+      Caption = 'Delete'
+      OnClick = miDeleteClick
+    end
+  end
+end

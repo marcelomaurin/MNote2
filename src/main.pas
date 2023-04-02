@@ -388,7 +388,7 @@ begin
       end;
       else
       begin
-        showmessage(inttostr(ord(Key)));
+        //showmessage(inttostr(ord(Key)));
       end;
 
    end;
@@ -1751,6 +1751,7 @@ var
    listagem : TListBox;
 
 begin
+  (*
    if (pgMain.ActivePage <> nil) then
    begin
       tb := pgMain.ActivePage;
@@ -1766,12 +1767,35 @@ begin
            end;
       end;
    end;
+   *)
 end;
 
 procedure TfrmMNote.SynCompletion1Execute(Sender: TObject);
+var
+    i: Integer;
+    syn : TSynEdit;
+    tb : TTabSheet;
+    item : TItem;
 begin
-  //showmessage('execute');
-  MessageHint('execute');
+   if (pgMain.ActivePage <> nil) then
+   begin
+      tb := pgMain.ActivePage;
+      syn := TSynEdit(tb.tag);
+      item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+      // Limpa a lista de sugestões antes de adicionar novas
+      SynCompletion1.ItemList.Clear;
+
+      // Adiciona sugestões à lista de itens
+      for i := 0 to item.PalavrasReservadas.Count - 1 do
+      begin
+        // PalavrasReservadas é uma TStringList que contém palavras-chave ou sugestões
+        //if Pos(SynCompletion1.CurrentInput, item.PalavrasReservadas[i]) = 1 then
+        if Pos(SynCompletion1.CurrentString, item.PalavrasReservadas[i]) = 1 then
+        begin
+          SynCompletion1.ItemList.Add(item.PalavrasReservadas[i]);
+        end;
+      end;
+   end;
 end;
 
 procedure TfrmMNote.SynCompletion1SearchPosition(var APosition: integer);

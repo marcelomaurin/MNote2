@@ -9,7 +9,7 @@ uses
 
 type
 TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BASH, ti_BAT,
-           ti_CFG , ti_TXT, ti_SQL,ti_PY, ti_PHP, ti_JAVA, ti_JS, ti_HTML, ti_ALL);
+           ti_CFG , ti_TXT, ti_SQL,ti_PY, ti_PHP, ti_JAVA, ti_JS, ti_HTML, ti_CSS, ti_ALL);
 TProjetoTipo = (pt_NODEFINE, pt_TEXT, pt_ProjetoRoot, pt_ProjetoSetup, pt_ProjetoSetupItem, pt_ProjetoFiles, pt_ProjetoDirFiles, pt_ProjetoFilesItem);
 TTipoInfo = (Name, Path);
 
@@ -18,6 +18,7 @@ TTipoInfo = (Name, Path);
 TItem = class
       private
          FListaItem: TObjectList;
+         FPalavrasReservadas : TStringList;
          FItemType : TTypeItem; (*Nao esta sendo usado p nada*)
          Fsyn : TSynEdit;
          Ftimer : TTimer;
@@ -51,6 +52,7 @@ TItem = class
          procedure Loadfile(arquivo: string);
          property ItemType : TTypeItem read FItemType write setItemType;
          property syn :TSynEdit read Fsyn write setSyn;
+         property PalavrasReservadas : TStringlist read FPalavrasReservadas write FPalavrasReservadas;
 end;
 
 implementation
@@ -67,6 +69,7 @@ begin
   Ftimer.Enabled := false;
   Ftimer.Interval:= 1000;
   Ftimer.OnTimer:= @TimerEvento;
+  FPalavrasReservadas.clear;
 
 
   ItemType :=  ti_NODEFINE;
@@ -75,6 +78,7 @@ begin
   DirName := '';
   FileName := '';
   FileExt := '';
+
   {#ifdef WINDOWS}
   VolName:= '';
   {#endif}
@@ -88,6 +92,7 @@ begin
   case FItemType of
     ti_PAS :
     begin
+      FPalavrasReservadas.LoadFromFile('pascallist.txt');
       if FileExists('Delphi32.dci') then
             AutoComplete.AutoCompleteList.LoadFromFile('Delphi32.dci');
     end;
@@ -98,6 +103,7 @@ begin
             AutoComplete.AutoCompleteList.LoadFromFile('python.dci');
       *)
        AutoComplete.AutoCompleteList.clear;
+       FPalavrasReservadas.LoadFromFile('pythonlist.txt');
     end;
     ti_SQL :
     begin
@@ -106,6 +112,7 @@ begin
             AutoComplete.AutoCompleteList.LoadFromFile('sql.dci');
       *)
       AutoComplete.AutoCompleteList.clear;
+      FPalavrasReservadas.LoadFromFile('sqllist.txt');
     end;
     ti_CCP :
     begin
@@ -114,6 +121,9 @@ begin
             AutoComplete.AutoCompleteList.LoadFromFile('cpp.dci');
       *)
       AutoComplete.AutoCompleteList.clear;
+      if FileExists('c.dci') then
+          AutoComplete.AutoCompleteList.LoadFromFile('c.dci');
+      FPalavrasReservadas.LoadFromFile('clist.txt');
     end;
     ti_H :
     begin
@@ -122,6 +132,10 @@ begin
             AutoComplete.AutoCompleteList.LoadFromFile('cpp.dci');
       *)
       AutoComplete.AutoCompleteList.clear;
+      if FileExists('c.dci') then
+          AutoComplete.AutoCompleteList.LoadFromFile('c.dci');
+
+      FPalavrasReservadas.LoadFromFile('clist.txt');
     end;
     ti_PHP :
     begin
@@ -130,18 +144,22 @@ begin
             AutoComplete.AutoCompleteList.LoadFromFile('php.dci');
       *)
       AutoComplete.AutoCompleteList.clear;
+      FPalavrasReservadas.LoadFromFile('phplist.txt');
     end;
     ti_JAVA :
     begin
       AutoComplete.AutoCompleteList.clear;
+      FPalavrasReservadas.LoadFromFile('javalist.txt');
     end;
     ti_TXT :
     begin
       AutoComplete.AutoCompleteList.clear;
+      FPalavrasReservadas.clear;
     end;
     ti_CFG :
     begin
       AutoComplete.AutoCompleteList.clear;
+      FPalavrasReservadas.clear;
     end;
   end;
   //AutoComplete.AutoCompleteList.;
@@ -161,6 +179,7 @@ constructor TItem.Create(Sender: TComponent);
 begin
   FSender := Sender;
   Ftimer := TTimer.create(Sender);
+  FPalavrasReservadas := TStringlist.create();
 
   default();
   Salvo := false;
@@ -168,7 +187,9 @@ end;
 
 destructor TItem.destroy();
 begin
-  Ftimer.free;;
+  Ftimer.free;
+  FPalavrasReservadas.free;
+  PalavrasReservadas:= nil;
 end;
 
 procedure TItem.Mudou();
