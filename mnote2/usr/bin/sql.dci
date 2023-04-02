@@ -1,0 +1,12 @@
+[select | select]
+select field1, field2, field3 
+from table1 as tb1, 
+     table2 as tb2
+where tb1.indice = tb2.indice
+
+
+[update | atualização ]
+update table 
+set field1 = value
+where field1 = value
+

@@ -1,0 +1,12 @@
+[function | Funcao]
+def |(): 
+	
+[class | Classe ]
+class |:
+	
+[Dict | Dicionário]
+| = {
+	"item1": "Valor1",
+	"item2": "Valor2"
+}
+

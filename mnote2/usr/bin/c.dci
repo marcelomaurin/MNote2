@@ -1,0 +1,85 @@
+[arrayd | Array Declaration (var)]
+int array[|];
+
+[arrayc | Array Declaration (const)]
+const int array[|] = {|};
+
+[cases | case statement]
+switch (|) {
+case :
+    // code
+    break;
+case :
+    // code
+    break;
+}
+
+[casee | case statement (with else)]
+switch (|) {
+case :
+    // code
+    break;
+case :
+    // code
+    break;
+default:
+    // else code
+    break;
+}
+
+[fors | for (without begin/end)]
+for (|; ; ) {
+    // code
+}
+
+[forb | for loop]
+for (|; ; ) {
+    // code
+}
+
+[function | function declaration]
+return_type function_name(|) {
+    // code
+}
+
+[ifs | if (without braces)]
+if (|)
+    // code
+
+[ifb | if statement]
+if (|) {
+    // code
+}
+
+[ife | if then (without braces) else (without braces)]
+if (|)
+    // code
+else
+    // code
+
+[ifeb | if then else]
+if (|) {
+    // code
+} else {
+    // code
+}
+
+[procedure | procedure declaration]
+void procedure_name(|) {
+    // code
+}
+
+
+[whileb | while loop]
+while (|) {
+    // code
+}
+
+[whiles | while (without braces)]
+while (|)
+    // code
+
+
+[set | settings.inc] (C does not have a direct equivalent, use #include)
+#include "settings.h"
+|
