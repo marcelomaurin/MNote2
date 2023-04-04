@@ -27,6 +27,7 @@ type
     MainMenu1: TMainMenu;
     MenuItem14: TMenuItem;
     MenuItem17: TMenuItem;
+    mniJSONVALID: TMenuItem;
     mnidos2unix: TMenuItem;
     Separator4: TMenuItem;
     miRedo: TMenuItem;
@@ -132,6 +133,7 @@ type
     procedure mndebugClick(Sender: TObject);
     procedure mnHideResultClick(Sender: TObject);
     procedure mnidos2unixClick(Sender: TObject);
+    procedure mniJSONVALIDClick(Sender: TObject);
     procedure mninstallClick(Sender: TObject);
     procedure mnJavaClick(Sender: TObject);
     procedure mnNoneClick(Sender: TObject);
@@ -1153,13 +1155,34 @@ var
    syn : TSynEdit;
    item : TItem;
 begin
-  if pgMain.PageCount <>0 ) then
+  if (pgMain.PageCount <>0 ) then
   begin
     item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
     syn := item.syn;
     RemoveCtrlMFromSynEdit(syn);
   end;
 
+end;
+
+procedure TfrmMNote.mniJSONVALIDClick(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+begin
+  if (pgMain.PageCount <>0 ) then
+  begin
+    item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+    syn := item.syn;
+    if ValidateJson(syn) then
+    begin
+      ShowMessage('JSON VALID!');
+    end
+    else
+    begin
+      ShowMessage('JSON NOT VALID'!);
+    end;
+  end;
 end;
 
 procedure TfrmMNote.mninstallClick(Sender: TObject);

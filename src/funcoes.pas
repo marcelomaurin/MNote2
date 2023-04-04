@@ -7,7 +7,7 @@ interface
 
 uses
 Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
-StdCtrls, ExtCtrls, UTF8Process, Process, TypInfo , SynEdit
+StdCtrls, ExtCtrls, UTF8Process, Process, TypInfo , SynEdit, fpjson
 {$IFDEF MSWINDOWS}
 ,windows, jwaWinBase, shellAPI
 {$ENDIF}
@@ -50,6 +50,7 @@ function IsAdministrator: Boolean;
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
 procedure RemoveCtrlMFromSynEdit(SynEdit: TSynEdit);
+function ValidateJson(SynEdit: TSynEdit): Boolean;
 
 {$ENDIF}
 
@@ -82,6 +83,25 @@ var LastTickCount     : cardinal = 0;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
 
+
+function ValidateJson(SynEdit: TSynEdit): Boolean;
+var
+      JsonData: TJSONData;
+begin
+      Result := False;
+      try
+        JsonData := GetJSON(SynEdit.Text);
+        try
+          Result := True;
+        finally
+          JsonData.Free;
+        end;
+      except
+        //on E: EJSONParser do
+          // Erro ao analisar a string JSON, considera inválido
+
+      end;
+end;
 
 procedure RemoveCtrlMFromSynEdit(SynEdit: TSynEdit);
 var

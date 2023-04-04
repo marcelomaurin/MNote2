@@ -212,6 +212,10 @@ object frmMNote: TfrmMNote
         Caption = 'DOS2UNIX'
         OnClick = mnidos2unixClick
       end
+      object mniJSONVALID: TMenuItem
+        Caption = 'JSON VALID'
+        OnClick = mniJSONVALIDClick
+      end
     end
     object mnSetup: TMenuItem
       Caption = 'Setup'
