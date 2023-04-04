@@ -1,11 +1,11 @@
 object frmMNote: TfrmMNote
-  Left = 3001
-  Height = 492
-  Top = 213
+  Left = 292
+  Height = 548
+  Top = 190
   Width = 788
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 467
+  ClientHeight = 523
   ClientWidth = 788
   DesignTimePPI = 120
   Menu = MainMenu1
@@ -26,7 +26,7 @@ object frmMNote: TfrmMNote
   end
   object pgMain: TPageControl
     Left = 0
-    Height = 274
+    Height = 330
     Top = 62
     Width = 788
     Align = alClient
@@ -37,7 +37,7 @@ object frmMNote: TfrmMNote
   object pnResult: TPanel
     Left = 0
     Height = 131
-    Top = 336
+    Top = 392
     Width = 788
     Align = alBottom
     Caption = 'pnResult'
@@ -204,6 +204,13 @@ object frmMNote: TfrmMNote
         ImageIndex = 6
         ShortCut = 122
         OnClick = MenuItem16Click
+      end
+      object Separator4: TMenuItem
+        Caption = '-'
+      end
+      object mnidos2unix: TMenuItem
+        Caption = 'DOS2UNIX'
+        OnClick = mnidos2unixClick
       end
     end
     object mnSetup: TMenuItem
@@ -1054,12 +1061,6 @@ object frmMNote: TfrmMNote
     Left = 520
     Top = 113
   end
-  object SynCppSyn1: TSynCppSyn
-    DefaultFilter = 'Arquivos C++ (*.c,*.cpp,*.h,*.hpp,*.hh)|*.c;*.cpp;*.h;*.hpp;*.hh'
-    Enabled = False
-    Left = 630
-    Top = 400
-  end
   object SynPythonSyn1: TSynPythonSyn
     DefaultFilter = 'Arquivos Python (*.py)|*.py'
     Enabled = False
@@ -1138,5 +1139,11 @@ object frmMNote: TfrmMNote
     Enabled = False
     Left = 151
     Top = 403
+  end
+  object SynCppSyn1: TSynCppSyn
+    DefaultFilter = 'C++ Files (*.c,*.cpp,*.h,*.hpp,*.hh)|*.c;*.cpp;*.h;*.hpp;*.hh'
+    Enabled = False
+    Left = 620
+    Top = 404
   end
 end

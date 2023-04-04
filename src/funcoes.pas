@@ -7,7 +7,7 @@ interface
 
 uses
 Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
-StdCtrls, ExtCtrls, UTF8Process, Process, TypInfo
+StdCtrls, ExtCtrls, UTF8Process, Process, TypInfo , SynEdit
 {$IFDEF MSWINDOWS}
 ,windows, jwaWinBase, shellAPI
 {$ENDIF}
@@ -49,6 +49,7 @@ function RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executave
 function IsAdministrator: Boolean;
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
+procedure RemoveCtrlMFromSynEdit(SynEdit: TSynEdit);
 
 {$ENDIF}
 
@@ -80,6 +81,25 @@ var LastTickCount     : cardinal = 0;
     FLastIdleTime: Int64;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
+
+
+procedure RemoveCtrlMFromSynEdit(SynEdit: TSynEdit);
+var
+  i: Integer;
+  Line: string;
+begin
+  for i := 0 to SynEdit.Lines.Count - 1 do
+  begin
+    Line := SynEdit.Lines[i];
+
+    // Remove o CTRL-M (ASCII 13) do final da linha
+    if (Length(Line) > 0) and (Ord(Line[Length(Line)]) = 13) then
+    begin
+      Line := Copy(Line, 1, Length(Line) - 1);
+      SynEdit.Lines[i] := Line;
+    end;
+  end;
+end;
 
 
 function ShowConfirm(Mensagem : string) : boolean;

@@ -15,7 +15,7 @@ uses
   SynHighlighterCss;
 
 
-const versao = '2.24';
+const versao = '2.25';
 
 type
 
@@ -27,6 +27,8 @@ type
     MainMenu1: TMainMenu;
     MenuItem14: TMenuItem;
     MenuItem17: TMenuItem;
+    mnidos2unix: TMenuItem;
+    Separator4: TMenuItem;
     miRedo: TMenuItem;
     miSelectAll: TMenuItem;
     miSelectCmd: TMenuItem;
@@ -129,6 +131,7 @@ type
     procedure mncleanClick(Sender: TObject);
     procedure mndebugClick(Sender: TObject);
     procedure mnHideResultClick(Sender: TObject);
+    procedure mnidos2unixClick(Sender: TObject);
     procedure mninstallClick(Sender: TObject);
     procedure mnJavaClick(Sender: TObject);
     procedure mnNoneClick(Sender: TObject);
@@ -1142,6 +1145,21 @@ end;
 procedure TfrmMNote.mnHideResultClick(Sender: TObject);
 begin
   pnResult.Visible:=false;
+end;
+
+procedure TfrmMNote.mnidos2unixClick(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+begin
+  if pgMain.PageCount <>0 ) then
+  begin
+    item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+    syn := item.syn;
+    RemoveCtrlMFromSynEdit(syn);
+  end;
+
 end;
 
 procedure TfrmMNote.mninstallClick(Sender: TObject);
