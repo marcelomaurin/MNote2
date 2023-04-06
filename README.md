@@ -3,6 +3,8 @@ Portuguese
 ## Projeto MNote2
 O Projeto MNote2, é um simples editor de texto multi plataforma.
 
+<img src="https://github.com/marcelomaurin/MNote2/blob/master/imgs/MNote2.jpg">
+
 ## Plataformas de Compatibilidade
 Criado para rodar em:
 
