@@ -8,8 +8,9 @@ uses
   Classes, SysUtils, contnrs, SynCompletion, ExtCtrls, SynEdit;
 
 type
-TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BASH, ti_BAT,
-           ti_CFG , ti_TXT, ti_SQL,ti_PY, ti_PHP, ti_JAVA, ti_JS, ti_HTML, ti_CSS, ti_ALL);
+TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BAT,
+           ti_CFG , ti_TXT, ti_SQL,ti_PY, ti_PHP, ti_JAVA, ti_JS, ti_HTML, ti_CSS,
+           ti_INO, ti_SHELL, ti_ALL);
 TProjetoTipo = (pt_NODEFINE, pt_TEXT, pt_ProjetoRoot, pt_ProjetoSetup, pt_ProjetoSetupItem, pt_ProjetoFiles, pt_ProjetoDirFiles, pt_ProjetoFilesItem);
 TTipoInfo = (Name, Path);
 
@@ -21,6 +22,7 @@ TItem = class
          FPalavrasReservadas : TStringList;
          FItemType : TTypeItem; (*Nao esta sendo usado p nada*)
          Fsyn : TSynEdit;
+         FSynAutoComplete: TSynAutoComplete;
          Ftimer : TTimer;
          FSender: TObject;
          function PesquisaPar(param: string; lst: TStringlist): string;
@@ -29,6 +31,7 @@ TItem = class
          procedure SetItemType(value : TTypeItem);
          procedure SetSyn(value : TSynEdit);
          procedure  TimerEvento(Sender: TObject);
+         procedure SynCompletion1Execute(Sender: TObject);
       public
          Name: String;
          FileName : String;
@@ -41,7 +44,7 @@ TItem = class
          ProjetoTipo : TProjetoTipo;  (*Nao esta sendo usado p nada*)
          Salvo : Boolean;
          synCompletion : TSynCompletion;
-         AutoComplete : TSynAutoComplete;
+
 
          constructor Create(Sender: TComponent);
          destructor destroy();
@@ -50,9 +53,11 @@ TItem = class
          procedure AtribuiNovoNome();
          procedure Savefile(arquivo: string);
          procedure Loadfile(arquivo: string);
+         function classificaTipo(arquivo : string): TTypeItem;
          property ItemType : TTypeItem read FItemType write setItemType;
          property syn :TSynEdit read Fsyn write setSyn;
          property PalavrasReservadas : TStringlist read FPalavrasReservadas write FPalavrasReservadas;
+         property SynAutoComplete: TSynAutoComplete read FSynAutoComplete write FSynAutoComplete;
 end;
 
 implementation
@@ -61,6 +66,90 @@ procedure TItem.AtribuiNovoNome();
 begin
      default();
 
+end;
+
+procedure TItem.SynCompletion1Execute(Sender: TObject);
+begin
+
+end;
+
+(*Classificação a partir da extensão*)
+function TItem.classificaTipo(arquivo : string): TTypeItem;
+var
+  extensao : string;
+begin
+  result := ti_ALL;
+  extensao := ExtractFileExt(arquivo);
+  if(extensao = '.txt') then
+  begin
+    result := ti_TXT;
+  end;
+  if( extensao = '.cfg') then
+  begin
+    result := ti_CFG;
+  end;
+  if(extensao = '.h') then
+  begin
+    result := ti_H;
+  end;
+  if(extensao = '.c') then
+  begin
+    result := ti_CCP;
+  end;
+  if(extensao = '.cc') then
+  begin
+    result := ti_CCP;
+  end;
+  if(extensao = '.ccp') then
+  begin
+    result := ti_CCP;
+  end;
+  if(extensao = '.ino') then
+  begin
+    result := ti_INO.;
+  end;
+  if(extensao = '.sh') then
+  begin
+    result := ti_SHELL;
+  end;
+  if(extensao = '.bat') then
+  begin
+    result := ti_BAT.;
+  end;
+
+  if (extensao = '.sql') then
+  begin
+    result := ti_SQL;
+  end;
+  if( extensao = '.bak') then
+  begin
+    result := ti_SQL;
+  end;
+  if( extensao = '.pas') then
+  begin
+    result := ti_PAS;
+  end;
+  if (extensao = '.py') then
+  begin
+    result := ti_PY;
+  end;
+  if (extensao = '.php') then
+  begin
+    result := ti_PHP;
+  end;
+  if (extensao = '.java') then
+  begin
+    result := ti_JAVA;
+  end;
+  if (extensao = '.js') then
+  begin
+    result := ti_JS;
+  end;
+  if (extensao = '.htm') or (extensao = '.html') then
+  begin
+    result := ti_HTML;
+  end;
+  //
 end;
 
 procedure TItem.default();
@@ -92,80 +181,88 @@ begin
   case FItemType of
     ti_PAS :
     begin
-      if FileExists(ExtractFilePath(ApplicationName)+'pascallist.txt') then
-            FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'pascallist.txt');
-      if FileExists(ExtractFilePath(ApplicationName)+'Delphi32.dci') then
-            AutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'Delphi32.dci');
+      FSynAutoComplete.AutoCompleteList.clear;
+      if FileExists(ExtractFilePath(ApplicationName)+'delphi32.dci') then
+      begin
+            FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'delphi32.dci');
+      end;
     end;
     ti_PY :
     begin
-      (*
-      if FileExists('python.dci') then
-            AutoComplete.AutoCompleteList.LoadFromFile('python.dci');
-      *)
-       AutoComplete.AutoCompleteList.clear;
-       if FileExists(ExtractFilePath(ApplicationName)+'pythonlist.txt') then
-              FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'pythonlist.txt');
+       FSynAutoComplete.AutoCompleteList.clear;
+       if FileExists(ExtractFilePath(ApplicationName)+'pythonlist.dci') then
+       begin
+              FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'pythonlist.dci');
+       end;
     end;
     ti_SQL :
     begin
-      (*
-      if FileExists('sql.dci') then
-            AutoComplete.AutoCompleteList.LoadFromFile('sql.dci');
-      *)
-      AutoComplete.AutoCompleteList.clear;
-      if FileExists(ExtractFilePath(ApplicationName)+'sqllist.txt') then
-         FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'sqllist.txt');
+      FSynAutoComplete.AutoCompleteList.clear;
+      if FileExists(ExtractFilePath(ApplicationName)+'sqllist.dci') then
+      begin
+         FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'sqllist.dci');
+      end;
     end;
+    ti_SHELL :
+    begin
+      FSynAutoComplete.AutoCompleteList.clear;
+      if FileExists(ExtractFilePath(ApplicationName)+'c.dci') then
+      begin
+          FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'c.dci');
+      end;
+    end;
+
     ti_CCP :
     begin
-      (*
-      if FileExists('cpp.dci') then
-            AutoComplete.AutoCompleteList.LoadFromFile('cpp.dci');
-      *)
-      AutoComplete.AutoCompleteList.clear;
+      FSynAutoComplete.AutoCompleteList.clear;
       if FileExists(ExtractFilePath(ApplicationName)+'c.dci') then
-          AutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'c.dci');
-      if FileExists(ExtractFilePath(ApplicationName)+'clist.txt') then
-         FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'clist.txt');
+      begin
+          FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'c.dci');
+      end;
     end;
     ti_H :
     begin
-      (*
-      if FileExists('cpp.dci') then
-            AutoComplete.AutoCompleteList.LoadFromFile('cpp.dci');
-      *)
-      AutoComplete.AutoCompleteList.clear;
+      FSynAutoComplete.AutoCompleteList.clear;
       if FileExists(ExtractFilePath(ApplicationName)+'c.dci') then
-          AutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'c.dci');
-      if FileExists(ExtractFilePath(ApplicationName)+'clist.txt') then
-         FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'clist.txt');
+      begin
+          FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'c.dci');
+      end;
+
     end;
+    ti_INO :
+      begin
+        FSynAutoComplete.AutoCompleteList.clear;
+        if FileExists(ExtractFilePath(ApplicationName)+'c.dci') then
+        begin
+            FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'c.dci');
+        end;
+
+      end;
     ti_PHP :
     begin
-      (*
-      if FileExists('php.dci') then
-            AutoComplete.AutoCompleteList.LoadFromFile('php.dci');
-      *)
-      AutoComplete.AutoCompleteList.clear;
-      if FileExists(ExtractFilePath(ApplicationName)+'phplist.txt') then
-            FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'phplist.txt');
+      FSynAutoComplete.AutoCompleteList.clear;
+      if FileExists(ExtractFilePath(ApplicationName)+'phplist.dci') then
+      begin
+            FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'phplist.dci');
+      end;
     end;
     ti_JAVA :
     begin
-      AutoComplete.AutoCompleteList.clear;
-      if FileExists(ExtractFilePath(ApplicationName)+'javalist.txt') then
-         FPalavrasReservadas.LoadFromFile(ExtractFilePath(ApplicationName)+'javalist.txt');
+      FSynAutoComplete.AutoCompleteList.clear;
+      if FileExists(ExtractFilePath(ApplicationName)+'javalist.dci') then
+      begin
+         FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'javalist.dci');
+      end;
     end;
     ti_TXT :
     begin
-      AutoComplete.AutoCompleteList.clear;
-      FPalavrasReservadas.clear;
+      FSynAutoComplete.AutoCompleteList.clear;
+
     end;
     ti_CFG :
     begin
-      AutoComplete.AutoCompleteList.clear;
-      FPalavrasReservadas.clear;
+      FSynAutoComplete.AutoCompleteList.clear;
+
     end;
   end;
   //AutoComplete.AutoCompleteList.;
@@ -174,6 +271,8 @@ end;
 procedure TItem.SetSyn(value: TSynEdit);
 begin
   fsyn := value;
+  FSynAutoComplete.Editor := value;
+
 end;
 
 procedure TItem.TimerEvento(Sender: TObject);
@@ -186,7 +285,8 @@ begin
   FSender := Sender;
   Ftimer := TTimer.create(Sender);
   FPalavrasReservadas := TStringlist.create();
-
+  FSynAutoComplete:= TSynAutoComplete.Create(sender);
+  FSynAutoComplete.ExecCommandID:= ecSynAutoCompletionExecute;
   default();
   Salvo := false;
 end;
@@ -223,12 +323,14 @@ begin
        {#ifdef WINDOWS}
        VolName:= ExtractFileDrive(Arquivo);
        {#endif}
+       FItemType := classificaTipo(arquivo);
   end;
 end;
 
 procedure TItem.Savefile(arquivo: string);
 begin
   AtribuiNome(arquivo);
+  FItemType := classificaTipo(arquivo);
 
 end;
 
@@ -253,6 +355,7 @@ end;
 procedure TItem.Loadfile(arquivo: string);
 begin
   AtribuiNome(arquivo);
+  FItemType := classificaTipo(arquivo);
 
 end;
 

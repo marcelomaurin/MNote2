@@ -1,13 +1,12 @@
 object frmMNote: TfrmMNote
   Left = 292
-  Height = 548
+  Height = 438
   Top = 190
-  Width = 788
+  Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 523
-  ClientWidth = 788
-  DesignTimePPI = 120
+  ClientHeight = 418
+  ClientWidth = 630
   Menu = MainMenu1
   OnClose = FormClose
   OnCreate = FormCreate
@@ -17,18 +16,18 @@ object frmMNote: TfrmMNote
   LCLVersion = '2.2.4.0'
   object Panel1: TPanel
     Left = 0
-    Height = 62
+    Height = 50
     Top = 0
-    Width = 788
+    Width = 630
     Align = alTop
     TabOrder = 0
     OnClick = Panel1Click
   end
   object pgMain: TPageControl
     Left = 0
-    Height = 330
-    Top = 62
-    Width = 788
+    Height = 263
+    Top = 50
+    Width = 630
     Align = alClient
     Images = ImageList1
     TabOrder = 1
@@ -36,21 +35,21 @@ object frmMNote: TfrmMNote
   end
   object pnResult: TPanel
     Left = 0
-    Height = 131
-    Top = 392
-    Width = 788
+    Height = 105
+    Top = 313
+    Width = 630
     Align = alBottom
     Caption = 'pnResult'
-    ClientHeight = 131
-    ClientWidth = 788
+    ClientHeight = 105
+    ClientWidth = 630
     PopupMenu = pmResult
     TabOrder = 2
     Visible = False
     object meResult: TMemo
       Left = 1
-      Height = 129
+      Height = 103
       Top = 1
-      Width = 786
+      Width = 628
       Align = alClient
       PopupMenu = pmResult
       ReadOnly = True
@@ -59,8 +58,8 @@ object frmMNote: TfrmMNote
   end
   object MainMenu1: TMainMenu
     Images = ImageList1
-    Left = 40
-    Top = 10
+    Left = 32
+    Top = 8
     object MenuItem1: TMenuItem
       Caption = 'File'
       ImageIndex = 5
@@ -262,17 +261,17 @@ object frmMNote: TfrmMNote
     end
   end
   object OpenDialog1: TOpenDialog
-    Left = 200
-    Top = 10
+    Left = 160
+    Top = 8
   end
   object SaveDialog1: TSaveDialog
-    Left = 319
-    Top = 14
+    Left = 255
+    Top = 11
   end
   object popFechar: TPopupMenu
     Images = ImageList1
-    Left = 196
-    Top = 166
+    Left = 157
+    Top = 133
     object mnFechar: TMenuItem
       Caption = 'Fechar'
       ImageIndex = 0
@@ -280,8 +279,8 @@ object frmMNote: TfrmMNote
     end
   end
   object ImageList1: TImageList
-    Left = 270
-    Top = 220
+    Left = 216
+    Top = 176
     Bitmap = {
       4C7A1000000010000000100000002D0A00000000000078DAED9B0B7017C51DC7
       0F2484405089484C4102010D45C5E0D0C4060208D51290501095024DA350B448
@@ -372,19 +371,19 @@ object frmMNote: TfrmMNote
     Options = [frDown, frReplace, frReplaceAll, frHidePromptOnReplace]
     OnFind = FindDialog1Find
     OnReplace = ReplaceDialog1Replace
-    Left = 474
-    Top = 31
+    Left = 379
+    Top = 25
   end
   object FontDialog1: TFontDialog
     MinFontSize = 0
     MaxFontSize = 0
-    Left = 319
-    Top = 151
+    Left = 255
+    Top = 121
   end
   object popSysEdit: TPopupMenu
     Images = ImageList1
-    Left = 440
-    Top = 270
+    Left = 352
+    Top = 216
     object mnAssociar: TMenuItem
       Caption = 'Associar'
       ImageIndex = 14
@@ -1021,13 +1020,13 @@ object frmMNote: TfrmMNote
     }
     Hint = 'MNote2 Little Editor'
     Visible = True
-    Left = 604
-    Top = 189
+    Left = 483
+    Top = 151
   end
   object PopupMenu1: TPopupMenu
     Images = ImageList1
-    Left = 530
-    Top = 190
+    Left = 424
+    Top = 152
     object mnFixar: TMenuItem
       Caption = 'Fix'
       OnClick = mnFixarClick
@@ -1045,8 +1044,8 @@ object frmMNote: TfrmMNote
     DefaultFilter = 'SQL Files (*.sql)|*.sql'
     Enabled = False
     SQLDialect = sqlPostgres
-    Left = 430
-    Top = 118
+    Left = 344
+    Top = 94
   end
   object SynCompletion1: TSynCompletion
     OnExecute = SynCompletion1Execute
@@ -1062,38 +1061,31 @@ object frmMNote: TfrmMNote
     OnCodeCompletion = SynCompletion1CodeCompletion
     ExecCommandID = ecSynCompletionExecute
     ToggleReplaceWhole = False
-    Left = 520
-    Top = 113
+    Left = 416
+    Top = 90
   end
   object SynPythonSyn1: TSynPythonSyn
     DefaultFilter = 'Arquivos Python (*.py)|*.py'
     Enabled = False
-    Left = 560
-    Top = 400
+    Left = 448
+    Top = 320
   end
   object SynSQLSyn2: TSynSQLSyn
     DefaultFilter = 'Arquivos SQL (*.sql)|*.sql'
     Enabled = False
     SQLDialect = sqlSybase
-    Left = 490
-    Top = 400
+    Left = 392
+    Top = 320
   end
   object SynPHPSyn1: TSynPHPSyn
     DefaultFilter = 'Arquivos PHP (*.php,*.php3,*.phtml,*.inc)|*.php;*.php3;*.phtml;*.inc'
     Enabled = False
-    Left = 420
-    Top = 400
-  end
-  object SynAutoComplete1: TSynAutoComplete
-    EndOfTokenChr = '()[].'
-    ShortCut = 8224
-    ExecCommandID = ecSynAutoCompletionExecute
-    Left = 680
-    Top = 283
+    Left = 336
+    Top = 320
   end
   object popFind: TPopupMenu
-    Left = 160
-    Top = 360
+    Left = 128
+    Top = 288
     object MenuItem2: TMenuItem
       Caption = 'Esconder'
       OnClick = MenuItem2Click
@@ -1102,12 +1094,12 @@ object frmMNote: TfrmMNote
   object SynUNIXShellScriptSyn1: TSynUNIXShellScriptSyn
     DefaultFilter = 'UNIX Shell Scripts (*.sh)|*.sh'
     Enabled = False
-    Left = 340
-    Top = 400
+    Left = 272
+    Top = 320
   end
   object pmResult: TPopupMenu
-    Left = 90
-    Top = 370
+    Left = 72
+    Top = 296
     object mnHideResult: TMenuItem
       Caption = 'Hide'
       OnClick = mnHideResultClick
@@ -1118,36 +1110,36 @@ object frmMNote: TfrmMNote
     CompilerMode = pcmDelphi
     NestedComments = False
     TypeHelpers = True
-    Left = 280
-    Top = 404
+    Left = 224
+    Top = 323
   end
   object SynJavaSyn1: TSynJavaSyn
     DefaultFilter = 'Arquivos Java (*.java)|*.java'
     Enabled = False
-    Left = 693
-    Top = 404
+    Left = 554
+    Top = 323
   end
   object SynBatSyn1: TSynBatSyn
     DefaultFilter = 'Arquivos Lote MS-DOS (*.bat;*.cmd)|*.bat;*.cmd'
     Enabled = False
-    Left = 750
-    Top = 406
+    Left = 600
+    Top = 325
   end
   object SynJScriptSyn1: TSynJScriptSyn
     Enabled = False
-    Left = 224
-    Top = 403
+    Left = 179
+    Top = 322
   end
   object SynCssSyn1: TSynCssSyn
     DefaultFilter = 'Folhas Estilo Cascata (*.css)|*.css'
     Enabled = False
-    Left = 151
-    Top = 403
+    Left = 121
+    Top = 322
   end
   object SynCppSyn1: TSynCppSyn
     DefaultFilter = 'C++ Files (*.c,*.cpp,*.h,*.hpp,*.hh)|*.c;*.cpp;*.h;*.hpp;*.hh'
     Enabled = False
-    Left = 620
-    Top = 404
+    Left = 496
+    Top = 323
   end
 end

@@ -1,11 +1,11 @@
 object frmMNote: TfrmMNote
-  Left = 3001
-  Height = 394
-  Top = 213
+  Left = 292
+  Height = 438
+  Top = 190
   Width = 630
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 374
+  ClientHeight = 418
   ClientWidth = 630
   Menu = MainMenu1
   OnClose = FormClose
@@ -25,7 +25,7 @@ object frmMNote: TfrmMNote
   end
   object pgMain: TPageControl
     Left = 0
-    Height = 219
+    Height = 263
     Top = 50
     Width = 630
     Align = alClient
@@ -36,7 +36,7 @@ object frmMNote: TfrmMNote
   object pnResult: TPanel
     Left = 0
     Height = 105
-    Top = 269
+    Top = 313
     Width = 630
     Align = alBottom
     Caption = 'pnResult'
@@ -203,6 +203,17 @@ object frmMNote: TfrmMNote
         ImageIndex = 6
         ShortCut = 122
         OnClick = MenuItem16Click
+      end
+      object Separator4: TMenuItem
+        Caption = '-'
+      end
+      object mnidos2unix: TMenuItem
+        Caption = 'DOS2UNIX'
+        OnClick = mnidos2unixClick
+      end
+      object mniJSONVALID: TMenuItem
+        Caption = 'JSON VALID'
+        OnClick = mniJSONVALIDClick
       end
     end
     object mnSetup: TMenuItem
@@ -1053,12 +1064,6 @@ object frmMNote: TfrmMNote
     Left = 416
     Top = 90
   end
-  object SynCppSyn1: TSynCppSyn
-    DefaultFilter = 'Arquivos C++ (*.c,*.cpp,*.h,*.hpp,*.hh)|*.c;*.cpp;*.h;*.hpp;*.hh'
-    Enabled = False
-    Left = 504
-    Top = 320
-  end
   object SynPythonSyn1: TSynPythonSyn
     DefaultFilter = 'Arquivos Python (*.py)|*.py'
     Enabled = False
@@ -1077,13 +1082,6 @@ object frmMNote: TfrmMNote
     Enabled = False
     Left = 336
     Top = 320
-  end
-  object SynAutoComplete1: TSynAutoComplete
-    EndOfTokenChr = '()[].'
-    ShortCut = 8224
-    ExecCommandID = ecSynAutoCompletionExecute
-    Left = 544
-    Top = 226
   end
   object popFind: TPopupMenu
     Left = 128
@@ -1137,5 +1135,11 @@ object frmMNote: TfrmMNote
     Enabled = False
     Left = 121
     Top = 322
+  end
+  object SynCppSyn1: TSynCppSyn
+    DefaultFilter = 'C++ Files (*.c,*.cpp,*.h,*.hpp,*.hh)|*.c;*.cpp;*.h;*.hpp;*.hh'
+    Enabled = False
+    Left = 496
+    Top = 323
   end
 end

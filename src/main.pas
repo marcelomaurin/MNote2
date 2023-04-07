@@ -97,7 +97,6 @@ type
     PopupMenu1: TPopupMenu;
     ReplaceDialog1: TReplaceDialog;
     SaveDialog1: TSaveDialog;
-    SynAutoComplete1: TSynAutoComplete;
     SynBatSyn1: TSynBatSyn;
     SynCompletion1: TSynCompletion;
     SynCppSyn1: TSynCppSyn;
@@ -203,7 +202,7 @@ type
     procedure SalvarTudo();
     procedure CarregaContexto();
     procedure AssociarExtensao(item: Titem);
-    function classificaTipo(arquivo : string): TTypeItem;
+
     procedure ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
     (*
     procedure SynEdit1KeyDown(Sender: TObject; var Key: Word;
@@ -263,76 +262,7 @@ begin
   item.mudou();
 end;
 
-(*Classificação a partir da extensão*)
-function TfrmMNote.classificaTipo(arquivo : string): TTypeItem;
-var
-  extensao : string;
-begin
-  result := ti_ALL;
-  extensao := ExtractFileExt(arquivo);
-  if(extensao = '.txt') then
-  begin
-    result := ti_TXT;
-  end;
-  if( extensao = '.cfg') then
-  begin
-    result := ti_CFG;
-  end;
-  if(extensao = '.h') then
-  begin
-    result := ti_H;
-  end;
-  if(extensao = '.c') then
-  begin
-    result := ti_CCP;
-  end;
-  if(extensao = '.cc') then
-  begin
-    result := ti_CCP;
-  end;
-  if(extensao = '.ccp') then
-  begin
-    result := ti_CCP;
-  end;
-  if(extensao = '.sh') then
-  begin
-    result := ti_BASH.;
 
-  end;
-  if (extensao = '.sql') then
-  begin
-    result := ti_SQL;
-  end;
-  if( extensao = '.bak') then
-  begin
-    result := ti_SQL;
-  end;
-  if( extensao = '.pas') then
-  begin
-    result := ti_PAS;
-  end;
-  if (extensao = '.py') then
-  begin
-    result := ti_PY;
-  end;
-  if (extensao = '.php') then
-  begin
-    result := ti_PHP;
-  end;
-  if (extensao = '.java') then
-  begin
-    result := ti_JAVA;
-  end;
-  if (extensao = '.js') then
-  begin
-    result := ti_JS;
-  end;
-  if (extensao = '.htm') or (extensao = '.html') then
-  begin
-    result := ti_HTML;
-  end;
-  //
-end;
 
 (*
 procedure TfrmMNote.SynEdit1KeyDown(Sender: TObject; var Key: Word;
@@ -424,73 +354,73 @@ begin
   begin
     syn.Highlighter := SynPasSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    item.itemType := ti_PAS;
+    //item.itemType := ti_PAS;
   end;
   if (pos('.sh',arquivo) <>0) then
   begin
     syn.Highlighter := SynUNIXShellScriptSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    item.itemType := ti_BASH;
+    //item.itemType := ti_BASH;
   end;
   if (pos('.php',arquivo) <>0) then
   begin
     syn.Highlighter := SynPHPSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    item.itemType := ti_PHP;
+    //item.itemType := ti_PHP;
   end;
   if (pos('.c',arquivo) <>0) then
   begin
     syn.Highlighter := SynCppSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    item.itemType := ti_CCP;
+    //item.itemType := ti_CCP;
     ConfigureCppHighlighter(SynCppSyn1);
   end;
   if (pos('.cpp',arquivo) <>0) then
   begin
     syn.Highlighter := SynCppSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    item.itemType := ti_CCP;
+    //item.itemType := ti_CCP;
     ConfigureCppHighlighter(SynCppSyn1);
   end;
   if (pos('.h',arquivo) <>0) then
     begin
       syn.Highlighter := SynCppSyn1;
       AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-      item.itemType := ti_CCP;
+      //item.itemType := ti_CCP;
       ConfigureCppHighlighter(SynCppSyn1);
   end;
   if (pos('.sql',arquivo) <>0) then
   begin
     syn.Highlighter := SynSQLSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    item.itemType := ti_SQL;
+    //item.itemType := ti_SQL;
   end;
   if (pos('.py',arquivo) <>0) then
   begin
     syn.Highlighter := SynPythonSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    item.itemType := ti_PY;
+    //item.itemType := ti_PY;
   end;
   if (pos('.java',arquivo) <>0) then
   begin
 
     syn.Highlighter := SynJavaSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    item.itemType := ti_JAVA;
+    //item.itemType := ti_JAVA;
   end;
   if (pos('.css',arquivo) <>0) then
   begin
 
     syn.Highlighter := SynCssSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    item.itemType := ti_CSS;
+    //item.itemType := ti_CSS;
   end;
   if (pos('.js',arquivo) <>0) then
   begin
 
     syn.Highlighter := SynJScriptSyn1;
     AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    item.itemType := ti_js;
+    //item.itemType := ti_js;
   end;
 
 
@@ -501,8 +431,6 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-   fSynCompletion : TSynCompletion;
-   fAutoComplete : TSynAutoComplete;
 begin
   if FileExists(arquivo) then
   begin
@@ -517,11 +445,9 @@ begin
       syn := item.syn;
       try
 
-        fSynCompletion := item.synCompletion;
-        fAutoComplete := item.AutoComplete;
         syn.Lines.LoadFromFile(arquivo);
 
-        item.ItemType := classificaTipo(arquivo);
+        //item.ItemType := classificaTipo(arquivo);
         except
             on E: Exception do
             begin
@@ -616,14 +542,9 @@ begin
   SynCompletion.OnExecute:=@SynCompletion1Execute;
   SynCompletion.OnSearchPosition:=@SynCompletion1SearchPosition;
 
-  (*Autocomplete*)
-  synAutoComplet := TSynAutoComplete.create(self);
-  synAutoComplet.Editor := syn;
 
   item := TItem.create(self);
   item.AtribuiNovoNome();
-  item.synCompletion:= SynCompletion;    //Ponteiro de SynCompletion
-  item.AutoComplete :=  synAutoComplet;  //Ponteiro de synAutocompletion
   item.syn := syn; //Ponteiro de editor
 
   tb.PopupMenu := popFechar;
@@ -1222,18 +1143,9 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-
-   fAutoComplete : TSynAutoComplete;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  fAutoComplete := item.AutoComplete;
-  //fAutoComplete.AutoCompleteList.LoadFromFile('python.dci');
-  //fAutoComplete.AutoCompleteList.Clear;
-  //item.AutoComplete.clear;
-  fAutoComplete := item.AutoComplete;
-  //python := TSynPythonSyn.create(self);
-  //syn.Highlighter := python;
   syn.Highlighter := nil;
 end;
 
@@ -1242,12 +1154,9 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-   //python : TSynPythonSyn;
-   fAutoComplete : TSynAutoComplete;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  fAutoComplete := item.AutoComplete;
   syn.Highlighter := nil;
 end;
 
@@ -1256,16 +1165,9 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-
-   fAutoComplete : TSynAutoComplete;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  fAutoComplete := item.AutoComplete;
-  //fAutoComplete.AutoCompleteList.LoadFromFile('python.dci');
-  fAutoComplete.AutoCompleteList.Clear;
-  //python := TSynPythonSyn.create(self);
-  //syn.Highlighter := python;
   syn.Highlighter := nil;
 end;
 
@@ -1275,14 +1177,10 @@ var
    syn : TSynEdit;
    item : TItem;
    sql : TSynSQLSyn;
-   fSynCompletion:TSynCompletion;
-   fAutoComplete : TSynAutoComplete;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
   sql := TSynSQLSyn.create(self);
-  fsynCompletion :=  item.synCompletion;
-  fAutoComplete := item.AutoComplete;
   sql.sqldialect := sqlMySQL;
   sql.TableNames.clear;
 
@@ -1461,8 +1359,6 @@ begin
   //item := TItem(syn.tag);
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  //fsynCompletion :=  item.synCompletion;
-  //fAutoComplete.AutoCompleteList.Clear;
   //cpp := TSynCppSyn.create(self);
   syn.Highlighter := SynCppSyn1;
   ConfigureCppHighlighter(SynCppSyn1);
@@ -1502,17 +1398,10 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-   //pas : TSynPasSyn;
-   fAutoComplete : TSynAutoComplete;
+
 begin
-  //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  //item := TItem(syn.tag);
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  fAutoComplete := item.AutoComplete;
-  //fAutoComplete.AutoCompleteList.LoadFromFile('Delphi32.dci');
-  //pas := TSynPasSyn.create(self);
-  //syn.Highlighter := pas;
   syn.Highlighter := SynPasSyn1;
 end;
 
@@ -1566,18 +1455,11 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-   //python : TSynPythonSyn;
-   fAutoComplete : TSynAutoComplete;
 begin
   //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
   //item := TItem(syn.tag);
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  fAutoComplete := item.AutoComplete;
-  //fAutoComplete.AutoCompleteList.LoadFromFile('python.dci');
-
-  //python := TSynPythonSyn.create(self);
-  //syn.Highlighter := python;
   syn.Highlighter := SynPythonSyn1;
 end;
 
@@ -1845,8 +1727,6 @@ var
    syn : TSynEdit;
    item : TItem;
    sql : TSynSQLSyn;
-   fSynCompletion:TSynCompletion;
-   fAutoComplete : TSynAutoComplete;
 begin
    //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
    //item := TItem(syn.tag);
@@ -1857,8 +1737,6 @@ begin
 
 
    end;
-   fSynCompletion :=  item.synCompletion;
-   fAutoComplete := item.AutoComplete;
 
    if frmMQuery <> nil then
     begin
@@ -1873,7 +1751,6 @@ begin
         begin
           sql.SQLDialect:= sqlPostgres;
         end;
-        fSynCompletion.ItemList.Append(frmMQuery.GetTables().Text);
         sql.tableNames := frmMQuery.GetTables();
       end;
     end;
