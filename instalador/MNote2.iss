@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "MNote2"
-#define MyAppVersion "2.24"
+#define MyAppVersion "2.25"
 #define MyAppPublisher "Maurinsoft"
 #define MyAppURL "http://maurinsoft.com.br"
 #define MyAppExeName "MNote2.exe"
@@ -24,7 +24,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\MEDIT2
 DisableProgramGroupPage=yes
 OutputDir=D:\projetos\maurinsoft\MNote2\bin
-OutputBaseFilename=win_MNote2_24
+OutputBaseFilename=win_MNote2_25
 SetupIconFile=D:\projetos\maurinsoft\MNote2\src\MNote2.ico
 Compression=lzma
 SolidCompression=yes
@@ -41,6 +41,7 @@ Source: "D:\projetos\maurinsoft\MNote2\src\MNote2.exe"; DestDir: "{app}"; Flags:
 Source: "D:\projetos\maurinsoft\MNote2\src\*.dci"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\src\*.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\src\*.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\projetos\maurinsoft\MNote2\src\*.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\sample\gcc\hello.c"; DestDir: "{app}\sample\gcc\"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\sample\python\hello\hello.py"; DestDir: "{app}\sample\python\hello\"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\tools\windows\mingw-get-setup.exe"; DestDir: "{app}\tools\"; Flags: ignoreversion
