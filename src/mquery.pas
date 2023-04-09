@@ -510,8 +510,13 @@ begin
            zmycon.Password:= FSetBanco.Password;//edPasswrd.Text;
         end;
         zmycon.port := strtoint(FSetBanco.Port);
-        {$IFDEF WINDOWS}
+        {$IFDEF MSWINDOWS}
+        {$IFDEF WIN32}
+         location := ExtractFilePath(application.ExeName)+'libmysql32.dll';
+        {$ENDIF}
+        {$IFDEF WIN64}
         location := ExtractFilePath(application.ExeName)+'libmysql64.dll';
+        {$ENDIF}
         if FileExists(location) then
         begin
             zmycon.LibraryLocation:=location;

@@ -41,13 +41,13 @@
     </RunParams>
     <RequiredPackages Count="5">
       <Item1>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="lr_zeosdb"/>
       </Item1>
       <Item2>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="lnetvisual"/>
       </Item2>
       <Item3>
-        <PackageName Value="lr_zeosdb"/>
+        <PackageName Value="zcomponent"/>
       </Item3>
       <Item4>
         <PackageName Value="SynEdit"/>

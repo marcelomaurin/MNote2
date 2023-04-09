@@ -13,7 +13,7 @@ object frmMNote: TfrmMNote
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '2.2.6.0'
   object Panel1: TPanel
     Left = 0
     Height = 50
@@ -1040,55 +1040,19 @@ object frmMNote: TfrmMNote
       OnClick = mnDesktopCenterClick
     end
   end
-  object SynSQLSyn1: TSynSQLSyn
-    DefaultFilter = 'SQL Files (*.sql)|*.sql'
-    Enabled = False
-    SQLDialect = sqlPostgres
-    Left = 344
-    Top = 94
-  end
   object SynCompletion1: TSynCompletion
-    OnExecute = SynCompletion1Execute
     Position = 0
     LinesInWindow = 6
-    OnSearchPosition = SynCompletion1SearchPosition
     SelectedColor = clHighlight
     CaseSensitive = False
     Width = 262
     AutoUseSingleIdent = True
     ShortCut = 16416
     EndOfTokenChr = '()[].'
-    OnCodeCompletion = SynCompletion1CodeCompletion
     ExecCommandID = ecSynCompletionExecute
     ToggleReplaceWhole = False
     Left = 416
     Top = 90
-  end
-  object SynPythonSyn1: TSynPythonSyn
-    DefaultFilter = 'Arquivos Python (*.py)|*.py'
-    Enabled = False
-    Left = 448
-    Top = 320
-  end
-  object SynSQLSyn2: TSynSQLSyn
-    DefaultFilter = 'Arquivos SQL (*.sql)|*.sql'
-    Enabled = False
-    SQLDialect = sqlSybase
-    Left = 392
-    Top = 320
-  end
-  object SynPHPSyn1: TSynPHPSyn
-    DefaultFilter = 'Arquivos PHP (*.php,*.php3,*.phtml,*.inc)|*.php;*.php3;*.phtml;*.inc'
-    Enabled = False
-    Left = 336
-    Top = 320
-  end
-  object SynAutoComplete1: TSynAutoComplete
-    EndOfTokenChr = '()[].'
-    ShortCut = 8224
-    ExecCommandID = ecSynCompletionExecute
-    Left = 544
-    Top = 226
   end
   object popFind: TPopupMenu
     Left = 128
@@ -1098,12 +1062,6 @@ object frmMNote: TfrmMNote
       OnClick = MenuItem2Click
     end
   end
-  object SynUNIXShellScriptSyn1: TSynUNIXShellScriptSyn
-    DefaultFilter = 'UNIX Shell Scripts (*.sh)|*.sh'
-    Enabled = False
-    Left = 272
-    Top = 320
-  end
   object pmResult: TPopupMenu
     Left = 72
     Top = 296
@@ -1111,42 +1069,5 @@ object frmMNote: TfrmMNote
       Caption = 'Hide'
       OnClick = mnHideResultClick
     end
-  end
-  object SynPasSyn1: TSynPasSyn
-    Enabled = False
-    CompilerMode = pcmDelphi
-    NestedComments = False
-    TypeHelpers = True
-    Left = 224
-    Top = 323
-  end
-  object SynJavaSyn1: TSynJavaSyn
-    DefaultFilter = 'Arquivos Java (*.java)|*.java'
-    Enabled = False
-    Left = 554
-    Top = 323
-  end
-  object SynBatSyn1: TSynBatSyn
-    DefaultFilter = 'Arquivos Lote MS-DOS (*.bat;*.cmd)|*.bat;*.cmd'
-    Enabled = False
-    Left = 600
-    Top = 325
-  end
-  object SynJScriptSyn1: TSynJScriptSyn
-    Enabled = False
-    Left = 179
-    Top = 322
-  end
-  object SynCssSyn1: TSynCssSyn
-    DefaultFilter = 'Folhas Estilo Cascata (*.css)|*.css'
-    Enabled = False
-    Left = 121
-    Top = 322
-  end
-  object SynCppSyn1: TSynCppSyn
-    DefaultFilter = 'C++ Files (*.c,*.cpp,*.h,*.hpp,*.hh)|*.c;*.cpp;*.h;*.hpp;*.hh'
-    Enabled = False
-    Left = 496
-    Top = 323
   end
 end

@@ -11,7 +11,7 @@ object frmMQuery: TfrmMQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poMainFormCenter
-  LCLVersion = '2.2.2.0'
+  LCLVersion = '2.2.6.0'
   object Panel1: TPanel
     Left = 0
     Height = 56
@@ -168,15 +168,19 @@ object frmMQuery: TfrmMQuery
     AutoEncodeStrings = True
     Properties.Strings = (
       'AutoEncodeStrings=ON'
+      'controls_cp=CP_UTF8'
     )
     UseMetadata = False
+    LoginPrompt = True
     DesignConnection = True
     SQLHourGlass = True
     HostName = '127.0.0.1'
     Port = 3306
     Database = 'mysql'
-    Protocol = 'mysqld-5'
-    LibraryLocation = '/usr/local/mysql-connector-c-6.1.11-macos10.12-x86_64/lib/libmysqlclient.18.dylib'
+    User = 'root'
+    Password = '226468'
+    Protocol = 'mysql-5'
+    LibraryLocation = 'D:\projetos\maurinsoft\MNote2\src\libmysql32.dll'
     Left = 232
     Top = 32
   end

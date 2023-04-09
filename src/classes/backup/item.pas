@@ -5,7 +5,10 @@ unit Item;
 interface
 
 uses
-  Classes, SysUtils, contnrs, SynCompletion, ExtCtrls, SynEdit;
+  Classes, SysUtils, contnrs, SynCompletion, ExtCtrls, SynEdit, SynHighlighterPas,
+  SynHighlighterAny,SynHighlighterPo,SynHighlighterCpp,SynHighlighterSQL,SynHighlighterPython,
+  SynHighlighterPHP,synhighlighterunixshellscript,SynHighlighterJava,SynHighlighterBat,
+  SynHighlighterJScript,SynHighlighterCss, Graphics, SynEditKeyCmds, LCLType, mquery;
 
 type
 TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BAT,
@@ -25,13 +28,35 @@ TItem = class
          FSynAutoComplete: TSynAutoComplete;
          Ftimer : TTimer;
          FSender: TObject;
+
+         (*Decoration*)
+         FSynPasSyn1: TSynPasSyn;
+         FSynBatSyn1: TSynBatSyn;
+
+         FSynCppSyn1: TSynCppSyn;
+         FSynCssSyn1: TSynCssSyn;
+         FSynJavaSyn1: TSynJavaSyn;
+         FSynJScriptSyn1: TSynJScriptSyn;
+         FSynPHPSyn1: TSynPHPSyn;
+         FSynPythonSyn1: TSynPythonSyn;
+         FSynSQLSyn1: TSynSQLSyn;
+         FSynSQLSyn2: TSynSQLSyn;
+         FSynUNIXShellScriptSyn1: TSynUNIXShellScriptSyn;
+         FsynCompletion : TSynCompletion;
+
          function PesquisaPar(param: string; lst: TStringlist): string;
-         function AtribuiExt(Extensao: string): TTypeItem;
+
          procedure default();
          procedure SetItemType(value : TTypeItem);
          procedure SetSyn(value : TSynEdit);
          procedure  TimerEvento(Sender: TObject);
          procedure SynCompletion1Execute(Sender: TObject);
+         procedure CheckTipoArquivo();
+         procedure ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
+         procedure SynCompletion1CodeCompletion(var Value: string;
+                     SourceValue: string; var SourceStart, SourceEnd: TPoint; KeyChar: TUTF8Char;
+                     Shift: TShiftState);
+         procedure SynCompletion1SearchPosition(var APosition: integer);
       public
          Name: String;
          FileName : String;
@@ -43,7 +68,7 @@ TItem = class
 
          ProjetoTipo : TProjetoTipo;  (*Nao esta sendo usado p nada*)
          Salvo : Boolean;
-         synCompletion : TSynCompletion;
+
 
 
          constructor Create(Sender: TComponent);
@@ -53,7 +78,7 @@ TItem = class
          procedure AtribuiNovoNome();
          procedure Savefile(arquivo: string);
          procedure Loadfile(arquivo: string);
-         function classificaTipo(arquivo : string): TTypeItem;
+         //function classificaTipo(arquivo : string): TTypeItem;
          property ItemType : TTypeItem read FItemType write setItemType;
          property syn :TSynEdit read Fsyn write setSyn;
          property PalavrasReservadas : TStringlist read FPalavrasReservadas write FPalavrasReservadas;
@@ -62,95 +87,115 @@ end;
 
 implementation
 
+
+procedure TItem.SynCompletion1SearchPosition(var APosition: integer);
+begin
+  (*
+   if (FItemType = ti_sql) then
+   begin
+     if frmMQuery <> nil then
+      begin
+        sql.sqldialect := sqlMySQL;
+        if (frmMQuery.zmycon.Connected) then
+        begin
+          if (frmMQuery.getdatabasetype = DBMysql) then
+          begin
+            sql.SQLDialect:= sqlMySQL;
+          end;
+          if (frmMQuery.getdatabasetype = DBPostgres) then
+          begin
+            sql.SQLDialect:= sqlPostgres;
+          end;
+          sql.tableNames := frmMQuery.GetTables();
+        end;
+
+
+   end;
+    *)
+
+
+end;
+
+
+procedure TItem.SynCompletion1CodeCompletion(var Value: string;
+  SourceValue: string; var SourceStart, SourceEnd: TPoint; KeyChar: TUTF8Char;
+  Shift: TShiftState);
+var
+   listagem : TStringlist;
+
+begin
+   listagem := TStringlist.Create();
+   listagem.Text:= SourceValue;
+   if SourceStart.x > 0 then
+   begin
+       if syn.Lines[SourceStart.y - 1][SourceStart.x-1] = '\' then
+       begin
+           SourceStart.x -= 1;
+           SourceValue := '\' + SourceValue;
+       end;
+    end;
+end;
+
+procedure TItem.SynCompletion1Execute(Sender: TObject);
+var
+    i: Integer;
+begin
+   // Limpa a lista de sugestões antes de adicionar novas
+   FSynCompletion.ItemList.Clear;
+
+   // Adiciona sugestões à lista de itens
+   for i := 0 to FPalavrasReservadas.Count - 1 do
+   begin
+        if Pos(FSynCompletion.CurrentString, FPalavrasReservadas[i]) = 1 then
+        begin
+          FSynCompletion.ItemList.Add(FPalavrasReservadas[i]);
+        end;
+   end;
+
+end;
+
+procedure TItem.ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
+begin
+  // Configuração padrão para comentários
+  ACppHighlighter.CommentAttri.Foreground := clGreen;
+  ACppHighlighter.CommentAttri.Style := [fsItalic];
+
+  // Configuração padrão para palavras-chave
+  ACppHighlighter.KeyAttri.Foreground := clNavy;
+  ACppHighlighter.KeywordAttribute.Style := [fsBold];
+
+  // Configuração padrão para identificadores
+  ACppHighlighter.IdentifierAttri.Foreground := clBlack;
+
+  // Configuração padrão para números
+  ACppHighlighter.NumberAttri.Foreground := clTeal;
+
+  // Configuração padrão para strings e caracteres
+  ACppHighlighter.StringAttri.Foreground := clMaroon;
+  //ACppHighlighter.CharAttri.Foreground := clMaroon;
+
+
+  // Configuração padrão para diretivas de pré-processador
+  //ACppHighlighter.PreprocessorAttri.Foreground := clPurple;
+
+  //ACppHighlighter.PreprocessorAttri.Style := [fsBold];
+  //ACppHighlighter.GetTokenAttribute.Style := [fsBold];
+
+
+
+  // Configuração padrão para símbolos e pontuação
+  ACppHighlighter.SymbolAttri.Foreground := clBlack;
+end;
+
 procedure TItem.AtribuiNovoNome();
 begin
      default();
 
 end;
 
-procedure TItem.SynCompletion1Execute(Sender: TObject);
-begin
 
-end;
 
-(*Classificação a partir da extensão*)
-function TItem.classificaTipo(arquivo : string): TTypeItem;
-var
-  extensao : string;
-begin
-  result := ti_ALL;
-  extensao := ExtractFileExt(arquivo);
-  if(extensao = '.txt') then
-  begin
-    result := ti_TXT;
-  end;
-  if( extensao = '.cfg') then
-  begin
-    result := ti_CFG;
-  end;
-  if(extensao = '.h') then
-  begin
-    result := ti_H;
-  end;
-  if(extensao = '.c') then
-  begin
-    result := ti_CCP;
-  end;
-  if(extensao = '.cc') then
-  begin
-    result := ti_CCP;
-  end;
-  if(extensao = '.ccp') then
-  begin
-    result := ti_CCP;
-  end;
-  if(extensao = '.ino') then
-  begin
-    result := ti_INO.;
-  end;
-  if(extensao = '.sh') then
-  begin
-    result := ti_SHELL;
-  end;
-  if(extensao = '.bat') then
-  begin
-    result := ti_BAT.;
-  end;
 
-  if (extensao = '.sql') then
-  begin
-    result := ti_SQL;
-  end;
-  if( extensao = '.bak') then
-  begin
-    result := ti_SQL;
-  end;
-  if( extensao = '.pas') then
-  begin
-    result := ti_PAS;
-  end;
-  if (extensao = '.py') then
-  begin
-    result := ti_PY;
-  end;
-  if (extensao = '.php') then
-  begin
-    result := ti_PHP;
-  end;
-  if (extensao = '.java') then
-  begin
-    result := ti_JAVA;
-  end;
-  if (extensao = '.js') then
-  begin
-    result := ti_JS;
-  end;
-  if (extensao = '.htm') or (extensao = '.html') then
-  begin
-    result := ti_HTML;
-  end;
-  //
-end;
 
 procedure TItem.default();
 begin
@@ -159,6 +204,15 @@ begin
   Ftimer.Interval:= 1000;
   Ftimer.OnTimer:= @TimerEvento;
   FPalavrasReservadas.clear;
+  if (FSynCompletion = nil) then
+     FSynCompletion := TSynCompletion.Create(TComponent(Fsender));
+  FSynCompletion.Editor := Fsyn;
+  FSynCompletion.OnCodeCompletion:=@SynCompletion1CodeCompletion;
+  FSynCompletion.OnExecute:=@SynCompletion1Execute;
+  FSynCompletion.OnSearchPosition:=@SynCompletion1SearchPosition;
+
+
+
 
 
   ItemType :=  ti_NODEFINE;
@@ -171,8 +225,118 @@ begin
   {#ifdef WINDOWS}
   VolName:= '';
   {#endif}
+end;
 
+procedure TItem.CheckTipoArquivo();
+begin
+   //item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+   //syn := item.syn;
+   //if (item.ItemType = ti_sql) then
+  //posicao := pos('.pas',arquivo);
+  if(FileExt ='.pas') then
+  begin
+    if (FSynPasSyn1 = nil) then
+    begin
+      FSynPasSyn1 := TSynPasSyn.Create(TComponent(FSender));
+    end;
+    Fsyn.Highlighter := FSynPasSyn1;
+    FItemType := ti_PAS;
+  end;
+  if(FileExt ='.sh')  then
+  begin
+    if(FSynUNIXShellScriptSyn1 = nil) then
+    begin
+      FSynUNIXShellScriptSyn1 := TSynUNIXShellScriptSyn.create(TComponent(FSender));
+    end;
+    Fsyn.Highlighter := FSynUNIXShellScriptSyn1;
+    FItemType := ti_SHELL;
+  end;
+  if(FileExt = '.php') then
+  begin
+    if(FSynPHPSyn1 = nil) then
+    begin
+      FSynPHPSyn1 := TSynPHPSyn.create(TComponent(FSender));
+    end;
 
+    Fsyn.Highlighter := FSynPHPSyn1;
+    FItemType := ti_PHP;
+  end;
+  if(FileExt='.c') then
+  begin
+    if(FSynCppSyn1 = nil) then
+    begin
+      FSynCppSyn1 := TSynCppSyn.create(TComponent(FSender));
+    end;
+    Fsyn.Highlighter := FSynCppSyn1;
+    FItemType := ti_CCP;
+    ConfigureCppHighlighter(FSynCppSyn1);
+  end;
+  if(FileExt = '.cpp') then
+  begin
+    if(FSynCppSyn1 = nil) then
+    begin
+      FSynCppSyn1 := TSynCppSyn.create(TComponent(FSender));
+    end;
+    Fsyn.Highlighter := FSynCppSyn1;
+    FItemType := ti_CCP;
+
+    ConfigureCppHighlighter(FSynCppSyn1);
+  end;
+  if(FileExt ='.h') then
+  begin
+    if(FSynCppSyn1 = nil) then
+    begin
+      FSynCppSyn1 := TSynCppSyn.create(TComponent(FSender));
+    end;
+    Fsyn.Highlighter := FSynCppSyn1;
+    FItemType := ti_CCP;
+    ConfigureCppHighlighter(FSynCppSyn1);
+  end;
+  if(FileExt = '.sql') then
+  begin
+    if(FSynSQLSyn1 = nil) then
+    begin
+      FSynSQLSyn1 := TSynSQLSyn.create(TComponent(FSender));
+    end;
+    Fsyn.Highlighter := FSynSQLSyn1;
+    FItemType := ti_SQL;
+  end;
+  if(FileExt = '.py') then
+  begin
+    if(FSynPythonSyn1 = nil) then
+    begin
+      FSynPythonSyn1 := TSynPythonSyn.create(TComponent(FSender));
+    end;
+    Fsyn.Highlighter := FSynPythonSyn1;
+    FItemType := ti_PY;
+  end;
+  if(FileExt='.java') then
+  begin
+    if(FSynJavaSyn1 = nil) then
+    begin
+      FSynJavaSyn1 := TSynJavaSyn.create(TComponent(FSender));
+    end;
+    Fsyn.Highlighter := FSynJavaSyn1;
+    FItemType := ti_JAVA;
+  end;
+  if(FileExt='.css') then
+  begin
+    if(FSynCssSyn1 = nil) then
+    begin
+      FSynCssSyn1 := TSynCssSyn.create(TComponent(FSender));
+    end;
+    Fsyn.Highlighter := FSynCssSyn1;
+    FItemType := ti_CSS;
+  end;
+  if(FileExt='.js') then
+  begin
+    if(FSynJScriptSyn1 = nil) then
+    begin
+      FSynJScriptSyn1 := TSynJScriptSyn.create(TComponent(FSender));
+    end;
+    Fsyn.Highlighter := FSynJScriptSyn1;
+    FItemType := ti_js;
+  end;
 end;
 
 procedure TItem.SetItemType(value: TTypeItem);
@@ -210,8 +374,6 @@ begin
       begin
           FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'c.dci');
       end;
-      if FileExists(ExtractFilePath(ApplicationName)+'clist.txt') then
-         FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'clist.txt');
     end;
 
     ti_CCP :
@@ -221,8 +383,6 @@ begin
       begin
           FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'c.dci');
       end;
-      if FileExists(ExtractFilePath(ApplicationName)+'clist.txt') then
-         FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'clist.txt');
     end;
     ti_H :
     begin
@@ -239,7 +399,6 @@ begin
         if FileExists(ExtractFilePath(ApplicationName)+'c.dci') then
         begin
             FSynAutoComplete.AutoCompleteList.LoadFromFile(ExtractFilePath(ApplicationName)+'c.dci');
-
         end;
 
       end;
@@ -288,10 +447,13 @@ end;
 constructor TItem.Create(Sender: TComponent);
 begin
   FSender := Sender;
-  Ftimer := TTimer.create(Sender);
+  Ftimer := TTimer.create(TComponent(FSender);
   FPalavrasReservadas := TStringlist.create();
-  FSynAutoComplete:= TSynAutoComplete.Create(sender);
+  FSynCompletion := TSynCompletion.create(TComponent(Fsender));
+  FSynAutoComplete:= TSynAutoComplete.Create(FSynCompletion);
+
   FSynAutoComplete.ExecCommandID:= ecSynAutoCompletionExecute;
+
   default();
   Salvo := false;
 end;
@@ -308,12 +470,6 @@ begin
   Salvo := false;
 end;
 
-//Atribui Extensao
-function TItem.AtribuiExt(Extensao: string):TTypeItem;
-begin
-
-
-end;
 
 procedure TItem.AtribuiNome(Arquivo:String);
 begin
@@ -324,18 +480,19 @@ begin
        DirName := ExtractFileDir(Arquivo);
        FileName := Arquivo;
        FileExt:= ExtractFileExt(Arquivo);
-       ItemType := AtribuiExt(FileExt);
+       //ItemType := AtribuiExt(FileExt);
        {#ifdef WINDOWS}
        VolName:= ExtractFileDrive(Arquivo);
        {#endif}
-       FItemType := classificaTipo(arquivo);
+       CheckTipoArquivo();
   end;
 end;
 
 procedure TItem.Savefile(arquivo: string);
 begin
   AtribuiNome(arquivo);
-  FItemType := classificaTipo(arquivo);
+
+  CheckTipoArquivo();
 
 end;
 
@@ -360,7 +517,8 @@ end;
 procedure TItem.Loadfile(arquivo: string);
 begin
   AtribuiNome(arquivo);
-  FItemType := classificaTipo(arquivo);
+  //FItemType := classificaTipo(arquivo);
+  CheckTipoArquivo();
 
 end;
 

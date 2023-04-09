@@ -5,14 +5,10 @@ unit main;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, SynHighlighterPo,
-  SynHighlighterPas, SynHighlighterCpp, SynHighlighterSQL, SynCompletion,
-  SynHighlighterPython, SynHighlighterPHP, synhighlighterunixshellscript, Forms,
+  Classes, SysUtils, FileUtil, SynEdit,  Forms,
   Controls, Graphics, Dialogs, Menus, ExtCtrls, ComCtrls, StdCtrls, Grids,
   PopupNotifier, item, types, finds, setmain, mquery, TypeDB, folders, funcoes,
-  LCLType, chgtext, hint, registro, splash, setFolders, config, SynEditKeyCmds,
-  SynHighlighterJava, SynHighlighterBat, SynHighlighterJScript,
-  SynHighlighterCss;
+  LCLType, chgtext, hint, registro, splash, setFolders, config, SynEditKeyCmds;
 
 
 const versao = '2.25';
@@ -97,19 +93,6 @@ type
     PopupMenu1: TPopupMenu;
     ReplaceDialog1: TReplaceDialog;
     SaveDialog1: TSaveDialog;
-    SynAutoComplete1: TSynAutoComplete;
-    SynBatSyn1: TSynBatSyn;
-    SynCompletion1: TSynCompletion;
-    SynCppSyn1: TSynCppSyn;
-    SynCssSyn1: TSynCssSyn;
-    SynJavaSyn1: TSynJavaSyn;
-    SynJScriptSyn1: TSynJScriptSyn;
-    SynPasSyn1: TSynPasSyn;
-    SynPHPSyn1: TSynPHPSyn;
-    SynPythonSyn1: TSynPythonSyn;
-    SynSQLSyn1: TSynSQLSyn;
-    SynSQLSyn2: TSynSQLSyn;
-    SynUNIXShellScriptSyn1: TSynUNIXShellScriptSyn;
     TrayIcon1: TTrayIcon;
     procedure FindDialog1Find(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -176,11 +159,8 @@ type
     procedure ReplaceDialog1Replace(Sender: TObject);
     procedure pntvClick(Sender: TObject);
     procedure pgMainChange(Sender: TObject);
-    procedure SynCompletion1CodeCompletion(var Value: string;
-      SourceValue: string; var SourceStart, SourceEnd: TPoint;
-      KeyChar: TUTF8Char; Shift: TShiftState);
-    procedure SynCompletion1Execute(Sender: TObject);
-    procedure SynCompletion1SearchPosition(var APosition: integer);
+
+
     procedure TabSheet1ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure TabSheet2ContextPopup(Sender: TObject; MousePos: TPoint;
@@ -190,7 +170,7 @@ type
   private
     { private declarations }
 
-    procedure CheckTipoArquivo(syn : TSynEdit; arquivo : String;  Out item : TItem );
+
     procedure CarregarParametros();
     procedure CarregarOld();
     function NovoItem():TTabSheet;
@@ -204,7 +184,7 @@ type
     procedure CarregaContexto();
     procedure AssociarExtensao(item: Titem);
 
-    procedure ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
+    //procedure ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
     (*
     procedure SynEdit1KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -342,90 +322,7 @@ begin
   frmHint.messagehint(info);
 end;
 
-procedure TfrmMNote.CheckTipoArquivo(syn: TSynEdit; arquivo: String; out
-  item: TItem);
-var
-  posicao : integer;
-begin
-   //item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-   //syn := item.syn;
-   //if (item.ItemType = ti_sql) then
-  posicao := pos('.pas',arquivo);
-  if (posicao <>0) then
-  begin
-    syn.Highlighter := SynPasSyn1;
-    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    //item.itemType := ti_PAS;
-  end;
-  if (pos('.sh',arquivo) <>0) then
-  begin
-    syn.Highlighter := SynUNIXShellScriptSyn1;
-    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    //item.itemType := ti_BASH;
-  end;
-  if (pos('.php',arquivo) <>0) then
-  begin
-    syn.Highlighter := SynPHPSyn1;
-    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    //item.itemType := ti_PHP;
-  end;
-  if (pos('.c',arquivo) <>0) then
-  begin
-    syn.Highlighter := SynCppSyn1;
-    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    //item.itemType := ti_CCP;
-    ConfigureCppHighlighter(SynCppSyn1);
-  end;
-  if (pos('.cpp',arquivo) <>0) then
-  begin
-    syn.Highlighter := SynCppSyn1;
-    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    //item.itemType := ti_CCP;
-    ConfigureCppHighlighter(SynCppSyn1);
-  end;
-  if (pos('.h',arquivo) <>0) then
-    begin
-      syn.Highlighter := SynCppSyn1;
-      AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-      //item.itemType := ti_CCP;
-      ConfigureCppHighlighter(SynCppSyn1);
-  end;
-  if (pos('.sql',arquivo) <>0) then
-  begin
-    syn.Highlighter := SynSQLSyn1;
-    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    //item.itemType := ti_SQL;
-  end;
-  if (pos('.py',arquivo) <>0) then
-  begin
-    syn.Highlighter := SynPythonSyn1;
-    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    //item.itemType := ti_PY;
-  end;
-  if (pos('.java',arquivo) <>0) then
-  begin
 
-    syn.Highlighter := SynJavaSyn1;
-    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    //item.itemType := ti_JAVA;
-  end;
-  if (pos('.css',arquivo) <>0) then
-  begin
-
-    syn.Highlighter := SynCssSyn1;
-    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    //item.itemType := ti_CSS;
-  end;
-  if (pos('.js',arquivo) <>0) then
-  begin
-
-    syn.Highlighter := SynJScriptSyn1;
-    AssociarExtensao(TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag));
-    //item.itemType := ti_js;
-  end;
-
-
-end;
 
 procedure TfrmMNote.Carregar(arquivo : String);
 var
@@ -477,7 +374,7 @@ begin
       begin
            tb.Caption:= item.Name;
       end;
-      CheckTipoArquivo(syn,arquivo, item);
+      //CheckTipoArquivo(syn,arquivo, item);
       pgMain.Refresh();
 
   end;
@@ -521,8 +418,7 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-   SynCompletion : TSynCompletion;
-   synAutoComplet : TSynAutoComplete;
+
 begin
   tb := pgMain.AddTabSheet();
 
@@ -536,12 +432,6 @@ begin
   //syn.OnKeyDown:=@SynEdit1KeyDown;
   syn.OnKeyPress:= @SynEditkey;
 
-  (*Complete*)
-  SynCompletion := TSynCompletion.Create(self);
-  SynCompletion.Editor := syn;
-  SynCompletion.OnCodeCompletion:=@SynCompletion1CodeCompletion;
-  SynCompletion.OnExecute:=@SynCompletion1Execute;
-  SynCompletion.OnSearchPosition:=@SynCompletion1SearchPosition;
 
 
   item := TItem.create(self);
@@ -682,6 +572,7 @@ begin
   end;
 end;
 
+(*
 procedure TfrmMNote.ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
 begin
   // Configuração padrão para comentários
@@ -714,7 +605,7 @@ begin
   // Configuração padrão para símbolos e pontuação
   ACppHighlighter.SymbolAttri.Foreground := clBlack;
 end;
-
+*)
 
 procedure TfrmMNote.AssociarExtensao(item: Titem);
 var
@@ -1177,17 +1068,17 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-   sql : TSynSQLSyn;
+  // sql : TSynSQLSyn;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  sql := TSynSQLSyn.create(self);
-  sql.sqldialect := sqlMySQL;
-  sql.TableNames.clear;
+  //sql := TSynSQLSyn.create(self);
+  //sql.sqldialect := sqlMySQL;
+  //sql.TableNames.clear;
 
 
-  syn.Highlighter :=  SynSQLSyn1;
-  item.ItemType:= ti_SQL;
+  //syn.Highlighter :=  SynSQLSyn1;
+  //item.ItemType:= ti_SQL;
 
 
 end;
@@ -1304,12 +1195,12 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-   cpp : TSynCppSyn;
+   //cpp : TSynCppSyn;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  cpp := TSynCppSyn.create(self);
-  syn.Highlighter := cpp;
+  //cpp := TSynCppSyn.create(self);
+  //syn.Highlighter := cpp;
   syn.Undo;
 end;
 
@@ -1361,8 +1252,8 @@ begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
   //cpp := TSynCppSyn.create(self);
-  syn.Highlighter := SynCppSyn1;
-  ConfigureCppHighlighter(SynCppSyn1);
+  //syn.Highlighter := SynCppSyn1;
+  //ConfigureCppHighlighter(SynCppSyn1);
 
 end;
 
@@ -1403,7 +1294,7 @@ var
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  syn.Highlighter := SynPasSyn1;
+  //syn.Highlighter := SynPasSyn1;
 end;
 
 procedure TfrmMNote.mnAssociarClick(Sender: TObject);
@@ -1461,7 +1352,7 @@ begin
   //item := TItem(syn.tag);
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  syn.Highlighter := SynPythonSyn1;
+  //syn.Highlighter := SynPythonSyn1;
 end;
 
 procedure TfrmMNote.mnScriptClick(Sender: TObject);
@@ -1575,11 +1466,13 @@ begin
         begin
              syn.Lines.SaveToFile(arquivo);
         end;
+        //CheckTipoArquivo(syn,arquivo, item);
    end
    else
    begin
         SalvarComo(tb);
    end;
+
 end;
 
 procedure TfrmMNote.mnSalvarClick(Sender: TObject);
@@ -1666,96 +1559,9 @@ begin
 
 end;
 
-procedure TfrmMNote.SynCompletion1CodeCompletion(var Value: string;
-  SourceValue: string; var SourceStart, SourceEnd: TPoint; KeyChar: TUTF8Char;
-  Shift: TShiftState);
-var
-   syn : TSynEdit;
-   tb : TTabSheet;
-   listagem : TListBox;
-
-begin
-  (*
-   if (pgMain.ActivePage <> nil) then
-   begin
-      tb := pgMain.ActivePage;
-      syn := TSynEdit(tb.tag);
-      listagem := TListBox.Create(syn);
-      listagem.Items.Text:= SourceValue;
-      if SourceStart.x > 0 then
-      begin
-           if syn.Lines[SourceStart.y - 1][SourceStart.x-1] = '\' then
-           begin
-                SourceStart.x -= 1;
-                SourceValue := '\' + SourceValue;
-           end;
-      end;
-   end;
-   *)
-end;
-
-procedure TfrmMNote.SynCompletion1Execute(Sender: TObject);
-var
-    i: Integer;
-    syn : TSynEdit;
-    tb : TTabSheet;
-    item : TItem;
-begin
-   if (pgMain.ActivePage <> nil) then
-   begin
-      tb := pgMain.ActivePage;
-      syn := TSynEdit(tb.tag);
-      item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-      // Limpa a lista de sugestões antes de adicionar novas
-      SynCompletion1.ItemList.Clear;
-
-      // Adiciona sugestões à lista de itens
-      for i := 0 to item.PalavrasReservadas.Count - 1 do
-      begin
-        // PalavrasReservadas é uma TStringList que contém palavras-chave ou sugestões
-        //if Pos(SynCompletion1.CurrentInput, item.PalavrasReservadas[i]) = 1 then
-        if Pos(SynCompletion1.CurrentString, item.PalavrasReservadas[i]) = 1 then
-        begin
-          SynCompletion1.ItemList.Add(item.PalavrasReservadas[i]);
-        end;
-      end;
-   end;
-end;
-
-procedure TfrmMNote.SynCompletion1SearchPosition(var APosition: integer);
-var
-   tb : TTabSheet;
-   syn : TSynEdit;
-   item : TItem;
-   sql : TSynSQLSyn;
-begin
-   //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-   //item := TItem(syn.tag);
-   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-   syn := item.syn;
-   if (item.ItemType = ti_sql) then
-   begin
 
 
-   end;
 
-   if frmMQuery <> nil then
-    begin
-      sql.sqldialect := sqlMySQL;
-      if (frmMQuery.zmycon.Connected) then
-      begin
-        if (frmMQuery.getdatabasetype = DBMysql) then
-        begin
-          sql.SQLDialect:= sqlMySQL;
-        end;
-        if (frmMQuery.getdatabasetype = DBPostgres) then
-        begin
-          sql.SQLDialect:= sqlPostgres;
-        end;
-        sql.tableNames := frmMQuery.GetTables();
-      end;
-    end;
-end;
 
 procedure TfrmMNote.TabSheet1ContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
