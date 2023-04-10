@@ -9,11 +9,12 @@ uses
 Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
 StdCtrls, ExtCtrls, UTF8Process, Process, TypInfo , SynEdit, fpjson
 {$IFDEF MSWINDOWS}
-,windows, jwaWinBase, shellAPI
+,windows, jwaWinBase, shellAPI , Registry , JwaTlHelp32
 {$ENDIF}
 {$IFDEF LINUX}
 //LCLType,
 //LCLIntf
+,BaseUnix
 {$ENDIF}
 {$IFDEF DARWIN}
 
@@ -28,6 +29,14 @@ const
   SE_GROUP_USE_FOR_DENY_ONLY  = $00000010;
 {$endif}
 
+type
+  TProcessInfo = record
+    ProcessID: THandle;
+    Name: string;
+  end;
+
+  TProcessList = array of TProcessInfo;
+
 Function RetiraInfo(Value : string): string;
 function BuscaChave( lista : TStringList; Ref: String; var posicao:integer): boolean;
 function iif(condicao : boolean; verdade : variant; falso: variant):variant;
@@ -41,6 +50,7 @@ function GetGPUCount : integer;
 function GetGPUName(device : integer): string;
 procedure StringToFont(const AFontStr: string; var AFont: TFont);
 function FontToString(AFont: TFont): string;
+function IsRun(const Executavel: string): boolean;
 {$IFDEF WINDOWS}
 function RegisterFileType(ExtName: string; AppName: string): boolean;
 function  VerificaRegExt(extensao : string) : boolean;
@@ -50,6 +60,9 @@ function IsAdministrator: Boolean;
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
 procedure RemoveCtrlMFromSynEdit(SynEdit: TSynEdit);
+function ValidateJson(SynEdit: TSynEdit): Boolean;
+function KillAppByName(const ProcessName: string): boolean;
+function GetProcessList: TProcessList;
 
 {$ENDIF}
 
@@ -65,7 +78,7 @@ implementation
 
 uses main
 {$IFDEF WINDOWS}
-   ,Registry, ShlObj
+   , ShlObj
 {$ENDIF}
 {$ifdef Darwin}
 ,MacOSAll
@@ -73,14 +86,147 @@ uses main
 ;
 
 
-
-
-
 var LastTickCount     : cardinal = 0;
     LastProcessorTime : int64    = 0;
     FLastIdleTime: Int64;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
+
+
+function KillAppByName(const ProcessName: string): boolean;
+var
+      ProcessList: TProcessList;
+      I: Integer;
+      CurrentProcessID: THandle;
+      ProcessToKill: string;
+      ProcessHandle: THandle;
+begin
+      Result := False;
+      ProcessList := GetProcessList;
+      {$IFDEF WINDOWS}
+      CurrentProcessID := GetCurrentProcessId;
+      {$ENDIF}
+      {$IFDEF UNIX}
+      CurrentProcessID := fpGetPID;
+      {$ENDIF}
+
+      //ProcessToKill := ExtractFileNameOnly(ProcessName);
+      ProcessToKill := ExtractFileName(ProcessName);
+      try
+        for I := 0 to High(ProcessList) do
+        begin
+          //if (CompareText(ExtractFileNameOnly(ProcessList[I].Name), ProcessToKill) = 0) and
+          if (CompareText(ExtractFileName(ProcessList[I].Name), ProcessToKill) = 0) and
+             (ProcessList[I].ProcessID <> CurrentProcessID) then
+          begin
+            {$IFDEF UNIX}
+            if fpKill(ProcessList[I].ProcessID, SIGTERM) = 0 then
+            begin
+              Result := True;
+            end;
+            {$ENDIF}
+
+            {$IFDEF WINDOWS}
+            ProcessHandle := OpenProcess(PROCESS_TERMINATE, False, ProcessList[I].ProcessID);
+            if ProcessHandle <> 0 then
+            begin
+              if TerminateProcess(ProcessHandle, 0) then
+              begin
+                Result := True;
+              end;
+              CloseHandle(ProcessHandle);
+            end;
+            {$ENDIF}
+          end;
+        end;
+
+      finally
+        //FreeProcessList(ProcessList);
+      end;
+end;
+
+function GetProcessList: TProcessList;
+    {$IFDEF WINDOWS}
+var
+      Snapshot: THandle;
+      ProcessEntry: TProcessEntry32;
+    {$ENDIF}
+    {$IFDEF UNIX}
+    var
+      F: TextFile;
+      PID: LongInt;
+      ProcPath, ProcName: string;
+    {$ENDIF}
+begin
+      {$IFDEF WINDOWS}
+      Snapshot := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+      if Snapshot = INVALID_HANDLE_VALUE then
+        Exit;
+
+      ProcessEntry.dwSize := SizeOf(ProcessEntry);
+      if Process32First(Snapshot, ProcessEntry) then
+      begin
+        repeat
+          SetLength(Result, Length(Result) + 1);
+          Result[High(Result)].ProcessID := ProcessEntry.th32ProcessID;
+          Result[High(Result)].Name := ProcessEntry.szExeFile;
+        until not Process32Next(Snapshot, ProcessEntry);
+      end;
+
+      CloseHandle(Snapshot);
+      {$ENDIF}
+
+      {$IFDEF UNIX}
+      AssignFile(F, '/proc');
+      Reset(F);
+      try
+        while not Eof(F) do
+        begin
+          Readln(F, ProcPath);
+          if TryStrToInt(ProcPath, PID) then
+          begin
+            ProcName := '';
+            ProcPath := Format('/proc/%d/exe', [PID]);
+
+            if fpReadLink(ProcPath, ProcName) > 0 then
+            begin
+              SetLength(Result, Length(Result) + 1);
+              Result[High(Result)].ProcessID := PID;
+              Result[High(Result)].Name := ExtractFileName(ProcName);
+            end;
+          end;
+        end;
+      finally
+        CloseFile(F);
+      end;
+      {$ENDIF}
+end;
+
+function IsRun(const Executavel: string): boolean;
+    var
+      ProcessList: TProcessList;
+      I: Integer;
+      ProcessName: string;
+begin
+      Result := False;
+      ProcessList := GetProcessList;
+
+      try
+        for I := 0 to High(ProcessList) do
+        begin
+          //ProcessName := ExtractFileNameOnly(ProcessList[I].Name);
+          ProcessName := ExtractFileName(ProcessList[I].Name);
+          //if CompareText(ProcessName, ExtractFileNameOnly(Executavel)) = 0 then
+          if CompareText(ProcessName, ExtractFileName(Executavel)) = 0 then
+          begin
+            Result := True;
+            Break;
+          end;
+        end;
+      finally
+        //FreeProcessList(ProcessList);
+      end;
+mnend;
 
 
 function ValidateJson(SynEdit: TSynEdit): Boolean;
@@ -285,8 +431,8 @@ var
   end;
 
 begin
+  Result := False;
   Registro := TRegistry.Create;
-  result := false;
   try
     Registro.RootKey := HKEY_CLASSES_ROOT;
     Registro.LazyWrite := False;
@@ -302,16 +448,22 @@ begin
     EditarChave(Format('%s\shell\open', [ChaveArquivo]), Format('&Abrir com %s', [NomeAplicacao]));
 
     //Associa a extensão à aplicação
-    EditarChave(Format('%s\shell\open\command', [ChaveArquivo]), Format('”%s” “%s”', [Executavel, '%1']));
+    EditarChave(Format('%s\shell\open\command', [ChaveArquivo]), Format('"%s" "%s"', [Executavel, '%1']));
 
     //Define o ícone associado ao tipo de arquivo
     EditarChave(Format('%s\DefaultIcon', [ChaveArquivo]), Format('%s, 0', [Executavel]));
-  finally
-    Registro.Free;
+
+    //Notifica o SO da alteração na associação do tipo de arquivo
+    SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nil, nil);
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      // Se ocorrer algum erro, retorne false.
+      Result := False;
+    end;
   end;
-  //Notifica o SO da alteração na associação do tipo de arquivo
-  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nil, nil);
-  result := true;
+  Registro.Free;
 end;
 
 

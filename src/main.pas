@@ -507,10 +507,20 @@ begin
 end;
 
 procedure TfrmMNote.FormCreate(Sender: TObject);
+var
+   filename: string;
 begin
   frmSplash := TfrmSplash.Create(self);
   frmSplash.lbversao.Caption:= versao;
   frmSplash.show();
+  filename := extractfilename(application.ExeName);
+  if IsRun(filename) then
+  begin
+    if KillAppByName(filename) then
+    begin
+      MessageHint('Assumindo funções MNote anterior!');
+    end;
+  end;
   if (FSetMain = nil) then
   begin
         FsetMain := TsetMain.create();
@@ -572,40 +582,6 @@ begin
   end;
 end;
 
-(*
-procedure TfrmMNote.ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
-begin
-  // Configuração padrão para comentários
-  ACppHighlighter.CommentAttri.Foreground := clGreen;
-  ACppHighlighter.CommentAttri.Style := [fsItalic];
-
-  // Configuração padrão para palavras-chave
-  ACppHighlighter.KeyAttri.Foreground := clNavy;
-  ACppHighlighter.KeywordAttribute.Style := [fsBold];
-
-  // Configuração padrão para identificadores
-  ACppHighlighter.IdentifierAttri.Foreground := clBlack;
-
-  // Configuração padrão para números
-  ACppHighlighter.NumberAttri.Foreground := clTeal;
-
-  // Configuração padrão para strings e caracteres
-  ACppHighlighter.StringAttri.Foreground := clMaroon;
-  //ACppHighlighter.CharAttri.Foreground := clMaroon;
-
-
-  // Configuração padrão para diretivas de pré-processador
-  //ACppHighlighter.PreprocessorAttri.Foreground := clPurple;
-
-  //ACppHighlighter.PreprocessorAttri.Style := [fsBold];
-  //ACppHighlighter.GetTokenAttribute.Style := [fsBold];
-
-
-
-  // Configuração padrão para símbolos e pontuação
-  ACppHighlighter.SymbolAttri.Foreground := clBlack;
-end;
-*)
 
 procedure TfrmMNote.AssociarExtensao(item: Titem);
 var
