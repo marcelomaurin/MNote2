@@ -15,6 +15,7 @@ StdCtrls, ExtCtrls, UTF8Process, Process, TypInfo , SynEdit, fpjson
 //LCLType,
 //LCLIntf
 ,BaseUnix
+,Unix
 {$ENDIF}
 {$IFDEF DARWIN}
 
@@ -51,6 +52,10 @@ function GetGPUName(device : integer): string;
 procedure StringToFont(const AFontStr: string; var AFont: TFont);
 function FontToString(AFont: TFont): string;
 function IsRun(const Executavel: string): boolean;
+function KillAppByName(const ProcessName: string): boolean;
+procedure RemoveCtrlMFromSynEdit(SynEdit: TSynEdit);
+function ValidateJson(SynEdit: TSynEdit): Boolean;
+function GetProcessList: TProcessList;
 {$IFDEF WINDOWS}
 function RegisterFileType(ExtName: string; AppName: string): boolean;
 function  VerificaRegExt(extensao : string) : boolean;
@@ -59,10 +64,10 @@ function RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executave
 function IsAdministrator: Boolean;
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
-procedure RemoveCtrlMFromSynEdit(SynEdit: TSynEdit);
-function ValidateJson(SynEdit: TSynEdit): Boolean;
-function KillAppByName(const ProcessName: string): boolean;
-function GetProcessList: TProcessList;
+
+
+
+
 
 {$ENDIF}
 
@@ -145,6 +150,7 @@ begin
       end;
 end;
 
+(*
 function GetProcessList: TProcessList;
     {$IFDEF WINDOWS}
 var
@@ -188,7 +194,7 @@ begin
             ProcName := '';
             ProcPath := Format('/proc/%d/exe', [PID]);
 
-            if fpReadLink(ProcPath, ProcName) > 0 then
+            if fpReadLink(PCHAR(ProcPath), PCHAR(ProcName),Length(ProcName)) > 0 then
             begin
               SetLength(Result, Length(Result) + 1);
               Result[High(Result)].ProcessID := PID;
@@ -201,6 +207,7 @@ begin
       end;
       {$ENDIF}
 end;
+*
 
 function IsRun(const Executavel: string): boolean;
     var
@@ -226,7 +233,7 @@ begin
       finally
         //FreeProcessList(ProcessList);
       end;
-mnend;
+end;
 
 
 function ValidateJson(SynEdit: TSynEdit): Boolean;
@@ -357,7 +364,8 @@ begin
   *)
 end;
 
-function IsAdministrator: Boolean;
+function IsAdministrator
+: Boolean;
 var
   psidAdmin: Pointer;
   B: BOOL;
