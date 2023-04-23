@@ -228,6 +228,8 @@ begin
 end;
 
 procedure TItem.CheckTipoArquivo();
+var
+    a : integer;
 begin
    //item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
    //syn := item.syn;
@@ -300,6 +302,13 @@ begin
     end;
     Fsyn.Highlighter := FSynSQLSyn1;
     FItemType := ti_SQL;
+    if (frmMQuery <> nil) then
+    begin
+       for a := 0 to frmMQuery.Tables.Count-1 do
+       begin
+         FListaItem.Add(frmMQuery.Tables.Objects[a]);
+       end;
+    end;
   end;
   if(FileExt = '.py') then
   begin

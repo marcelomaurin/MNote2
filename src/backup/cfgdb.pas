@@ -20,6 +20,7 @@ type
     edUsername: TEdit;
     edPassword: TEdit;
     edDatabase: TEdit;
+
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -38,6 +39,7 @@ type
 
   public
     Save : boolean;
+    constructor create(Sender: TObject; LSetBanco : TSetBanco);
     property SetBanco : TSetBanco read FSetBanco write SetSetBanco;
 
   end;
@@ -51,9 +53,17 @@ implementation
 
 { Tfrmcfgdb }
 
+uses mquery;
+
 procedure Tfrmcfgdb.SetSetBanco(value : TSetBanco);
 begin
   FSetBanco := value;
+end;
+
+constructor Tfrmcfgdb.create(Sender: TObject; LSetBanco: TSetBanco);
+begin
+
+  FSetBanco  := LSetBanco;
 end;
 
 procedure Tfrmcfgdb.btsaveClick(Sender: TObject);
@@ -83,14 +93,29 @@ end;
 procedure Tfrmcfgdb.FormShow(Sender: TObject);
 begin
     Save := false;
-    cbdbtype.ItemIndex := integer(FSetBanco.TipoBanco);
-    edHostname.Text:= FSetBanco.HostName ;
-    edPort.Text:= FSetBanco.Port;
-    edUsername.text := FSetBanco.User;
-    edPassword.text := FSetBanco.Password;
-    edDatabase.Text:= FSetBanco.Databasename;
+    if (FSetBanco <> nil) then
+    begin
+        cbdbtype.ItemIndex := integer(FSetBanco.TipoBanco);
+        edHostname.Text:= FSetBanco.HostName ;
+        edPort.Text:= FSetBanco.Port;
+        edUsername.text := FSetBanco.User;
+        edPassword.text := FSetBanco.Password;
+        edDatabase.Text:= FSetBanco.Databasename;
+    end
+    else
+    begin
+      cbdbtype.ItemIndex := 0;
+      edHostname.Text:= 'hostname' ;
+      edPort.Text:= '3306';
+      edUsername.text := 'USER';
+      edPassword.text := '';
+      edDatabase.Text:= 'mysql';
+    end;
+
+
 
 end;
+
 
 end.
 

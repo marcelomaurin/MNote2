@@ -513,7 +513,7 @@ begin
   frmSplash := TfrmSplash.Create(self);
   frmSplash.lbversao.Caption:= versao;
   frmSplash.show();
-  filename := extractfilename(application.ex);
+  filename := extractfilename(application.ExeName);
   if IsRun(filename) then
   begin
     if KillAppByName(filename) then

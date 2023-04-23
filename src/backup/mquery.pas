@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, DBCtrls,
   DBGrids, PairSplitter, Menus, ComCtrls, StdCtrls, SynEdit, SynHighlighterSQL,
-  ZConnection, ZDataset, TypeDB, Tabela, setbanco, SetMQuery, cfgdb;
+  ZConnection, ZDataset, TypeDB, Tabela, SetMQuery, cfgdb, setlstbnc;
 
 type
 
@@ -45,6 +45,7 @@ type
     zpostqry: TZQuery;
     zmyqry1: TZReadOnlyQuery;
     zpostqry1: TZReadOnlyQuery;
+    FTables : TStringList;
 
     procedure ConnectClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -53,7 +54,7 @@ type
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem7Click(Sender: TObject);
     procedure mieditClick(Sender: TObject);
-    procedure mnconection1Click(Sender: TObject);
+    procedure mngenericoonclick(Sender: TObject);
     procedure mnitemNewClick(Sender: TObject);
     procedure mnStayClick(Sender: TObject);
     procedure mnFixarClick(Sender: TObject);
@@ -70,7 +71,7 @@ type
     tnposicaoViewPost : TTreeNode;
     tnposicaoSequence : TTreeNode;
     sequences : TStringList;
-    FSetBanco : TSetBanco;
+    FlstBnc : TSetLSTBNC;
     FScheme : String;
     procedure ListarTabelasMy();
     procedure ListarTabelasPost();
@@ -85,9 +86,12 @@ type
     procedure ConectarPost();
     procedure CarregaDB();
     procedure AtualizaConexoesDB();
+    procedure LimpaMenu();
+    procedure RegistraMenu();
   public
     function getdatabasetype : TypeDatabase;
     function GetTables() : TStringlist;
+    property Tables : TStringList read FTables;
   end;
 
 var
@@ -97,10 +101,11 @@ implementation
 
 {$R *.lfm}
 
-function Tfrmmquery.GetTables() : TStringlist;
+function TfrmMQuery.GetTables: TStringlist;
 var
   LLista : TStringlist;
 begin
+  (*
   LLista := TStringlist.create;
   if FSetBanco <> nil then
   begin
@@ -120,10 +125,12 @@ begin
        end;
   end;
   result:= LLista;
+  *)
 end;
 
-function Tfrmmquery.getdatabasetype : TypeDatabase;
+function TfrmMQuery.getdatabasetype: TypeDatabase;
 begin
+  (*
   if FSetBanco <> nil then
   begin
    result := FSetBanco.TipoBanco;
@@ -133,13 +140,15 @@ begin
   begin
    result := DBUndefinid;
   end;
+  *)
 end;
 
-function Tfrmmquery.TipoConv(Tabela : TTabela; Posicao: integer): String;
+function TfrmMQuery.TipoConv(Tabela: TTabela; Posicao: integer): String;
 var
   output : string;
 begin
-  (* Tipo de dados string *)
+  (*
+  //Tipo de dados string
   if Tabela.fieldtype[posicao] = 'char' then
   begin
     output := 'char('+Tabela.fieldstrtam[posicao]+')';
@@ -194,14 +203,15 @@ begin
     Output := Output + ' NOT NULL ';
   (*Saida do processamento*)
   result := output;
+  *)
 end;
 
-function Tfrmmquery.GeraSQL(Tabela: TTabela): string;
+function TfrmMQuery.GeraSQL(Tabela: TTabela): string;
 var
   Comando : string;
   a : integer;
 begin
-
+  (*
   Comando := '--Criado por MQuery em '+datetostr(now)+#13+#10;
   Comando := Comando + 'CREATE TABLE '+Fscheme+'.'+Tabela.Tablename+'('+#13+#10 ;
   for a := 0 to tabela.fieldname.count-2 do
@@ -225,7 +235,7 @@ begin
 
 
 
-  (*Definição de contraint*)
+  //Definição de contraint
   if (Tabela.chaves.coinstraintname.Count<>0) then
   begin
     for a := 0 to tabela.chaves.coinstraintname.count-2 do
@@ -254,6 +264,7 @@ begin
   end;
   //Comando := Comando+ ';'+#13+#10;
   result := Comando;
+  *)
 end;
 
 procedure TfrmMQuery.ListarTabelasMy();
@@ -262,11 +273,13 @@ var
   //tvitem : TTreeNode;
   tncolunas : TTreeNode;
   tnindice : TTreeNode;
+  tnaux : TTreeNode;
   tnFK : TTreeNode;
   TabelaNome : string;
   a : integer;
   banco : string;
 begin
+  (*
   zmyqry.close;
   banco :=  FSetBanco.Databasename;
   zmyqry.sql.text :=   'select * from information_schema.tables '+
@@ -290,7 +303,9 @@ begin
        tncolunas := tvBanco.Items.AddChildObject(tnitem,'campos', pointer(ETDBCampos));
        for a:= 0 to tabela.count-1 do
        begin
-         ttreenode(tvBanco.items.AddChildObject(tncolunas,tabela.fieldname[a],pointer(a))).ImageIndex:=18;
+         tnaux := tvBanco.items.AddChildObject(tncolunas,tabela.fieldname[a],pointer(a));
+         tnaux.ImageIndex:=18;
+         FTables.AddObject(tnaux.Text,TObject(tnaux)); //Adiciona o item de tabela
        end;
 
        (*adiciona pk da tabela*)
@@ -307,20 +322,21 @@ begin
        begin
          ttreenode(tvBanco.items.AddChildObject(tnFK,tabela.chaves.coinstraintname[a],pointer(a))).ImageIndex:=21;
        end;
-
-
      end;
      zmyqry.next;
   end;
+
   tvBanco.refresh;
   Application.ProcessMessages;
   tvBanco.FullExpand;
+  *)
 end;
 
 procedure TfrmMQuery.CarregaDB();
 var
    tnltvitem : TTreeNode;
 begin
+  (*
   if (FSetMQuery = nil) then
   begin
         FsetMQuery := TsetMQuery.create();
@@ -339,22 +355,52 @@ begin
        tncon := tvBanco.Items.AddObject(tnltvitem,'Postgres', pointer(ETDBBanco));
        tncon.ImageIndex:= 1;
   end;
-
+  *)
 end;
 
 procedure TfrmMQuery.FormCreate(Sender: TObject);
 begin
-
+  (*
   FSetBanco := TSetBanco.create(0);
   FSetBanco.CarregaContexto();
   Fscheme := FsetBanco.scheme;
+  FTables := TStringlist.Create();
   AtualizaConexoesDB();
+  *)
 
 
+  FSetMQuery := TSetMQuery.create(); //Carrega contexto de informações de tela
+  //Cria lista de conexoes
+  FSetLSTBNC := TSetLSTBNC.create();
+  //FSetLSTBNC.CarregaContexto(); //Carrega a lista , gerando os menus
+  AtualizaConexoesDB();
 end;
+
+procedure TfrmMQuery.FormDestroy(Sender: TObject);
+begin
+  (*
+  if (Fsetmquery<> nil) then
+  begin
+
+       Fsetmquery.SalvaContexto(false);
+
+  end;
+  *)
+  if (FSetLSTBNC<> nil) then
+  begin
+    Fsetmquery.posx := Left;
+    Fsetmquery.posy := top;
+    FSetLSTBNC.SalvaContexto(false);
+    FSetLSTBNC.Free;
+    FSetLSTBNC := nil;
+  end;
+end;
+
 
 procedure TfrmMQuery.ConnectClick(Sender: TObject);
 begin
+  (*
+  FTables.Clear;
   if (FSetBanco <> nil) then
   begin
     if (FSetBanco.nrocfg <> self.tag) then
@@ -376,27 +422,18 @@ begin
   begin
     ConectarPost();
   end;
-
+  *)
 
 
 end;
 
-procedure TfrmMQuery.FormDestroy(Sender: TObject);
-begin
-  if (Fsetmquery<> nil) then
-  begin
-       Fsetmquery.posx := Left;
-       Fsetmquery.posy := top;
-       Fsetmquery.SalvaContexto(false);
-
-  end;
-
-end;
 
 procedure TfrmMQuery.MenuItem11Click(Sender: TObject);
 begin
+  (*
   Top := (Screen.DesktopHeight - Height) DIV 2;
   Left := (Screen.DesktopWidth - Width) DIV 2;
+  *)
 end;
 
 procedure TfrmMQuery.MenuItem2Click(Sender: TObject);
@@ -411,42 +448,7 @@ end;
 
 procedure TfrmMQuery.mieditClick(Sender: TObject);
 begin
-    tvBanco.items.clear;
-  zmycon.Connected:=false;
-  zpostcon.connected := false;
-  if FSetBanco = nil then
-  begin
-     FSetBanco := TSetBanco.create(0);
-  end;
-  if frmcfgdb = nil then
-  begin
-       frmcfgdb := Tfrmcfgdb.Create(self);
-  end;
-  frmcfgdb.setbanco := FSetBanco;
-  frmcfgdb.ShowModal;
-  if (frmcfgdb.Save = true) then
-  begin
-    (*Salva o contexto*)
-
-    FSetBanco.HostName:=frmcfgdb.edHostname.text;
-    FSetBanco.Password:=frmcfgdb.edPassword.text;
-    FSetBanco.User:=frmcfgdb.edUsername.text;
-    FSetBanco.TipoBanco:=TypeDatabase(frmcfgdb.cbdbtype.ItemIndex);
-    FSetBanco.Port := frmcfgdb.edPort.text;
-    FSetBanco.Databasename:=frmcfgdb.edDatabase.text;
-
-    FSetBanco.SalvaContexto(false);
-  end;
-  AtualizaConexoesDB();
-end;
-
-procedure TfrmMQuery.mnconection1Click(Sender: TObject);
-begin
-
-end;
-
-procedure TfrmMQuery.mnitemNewClick(Sender: TObject);
-begin
+  (*
   tvBanco.items.clear;
   zmycon.Connected:=false;
   zpostcon.connected := false;
@@ -474,25 +476,153 @@ begin
     FSetBanco.SalvaContexto(false);
   end;
   AtualizaConexoesDB();
+  *)
+end;
+
+
+
+procedure TfrmMQuery.mnitemNewClick(Sender: TObject);
+begin
+  (*
+  tvBanco.items.clear;
+  zmycon.Connected:=false;
+  zpostcon.connected := false;
+  if FSetBanco = nil then
+  begin
+     FSetBanco := TSetBanco.create(0);
+  end;
+  if frmcfgdb = nil then
+  begin
+       frmcfgdb := Tfrmcfgdb.Create(self);
+  end;
+  frmcfgdb.setbanco := FSetBanco;
+  frmcfgdb.ShowModal;
+  if (frmcfgdb.Save = true) then
+  begin
+    (*Salva o contexto*)
+
+    FSetBanco.HostName:=frmcfgdb.edHostname.text;
+    FSetBanco.Password:=frmcfgdb.edPassword.text;
+    FSetBanco.User:=frmcfgdb.edUsername.text;
+    FSetBanco.TipoBanco:=TypeDatabase(frmcfgdb.cbdbtype.ItemIndex);
+    FSetBanco.Port := frmcfgdb.edPort.text;
+    FSetBanco.Databasename:=frmcfgdb.edDatabase.text;
+
+    FSetBanco.SalvaContexto(false);
+  end;
+  AtualizaConexoesDB();
+  *)
+  if(frmcfgdb = nil) then
+  begin
+       frmcfgdb := Tfrmcfgdb.Create(self, nil);
+       frmcfgdb.Parent := self;
+  end;
+  //frmcfgdb.setbanco := FSetBanco;
+  frmcfgdb.FormShow(self);
+  frmcfgdb.ShowModal;
+  if (frmcfgdb.Save = true) then
+  begin
+    (*Salva o contexto*)
+
+    //FSetBanco.HostName:=frmcfgdb.edHostname.text;
+    //FSetBanco.Password:=frmcfgdb.edPassword.text;
+    //FSetBanco.User:=frmcfgdb.edUsername.text;
+    //FSetBanco.TipoBanco:=TypeDatabase(frmcfgdb.cbdbtype.ItemIndex);
+    //FSetBanco.Port := frmcfgdb.edPort.text;
+    //FSetBanco.Databasename:= frmcfgdb.edDatabase.text;
+    FSetlstbnc.NovaConexao(
+        frmcfgdb.edHostname.text,
+        frmcfgdb.edPassword.text,
+        frmcfgdb.edUsername.text,
+        TypeDatabase(frmcfgdb.cbdbtype.ItemIndex),
+        frmcfgdb.edPort.text,
+        frmcfgdb.edDatabase.text );
+
+    //FSetBanco.SalvaContexto(false);
+  end;
+  AtualizaConexoesDB();
+  frmcfgdb.free;
+  frmcfgdb := nil;
+
+end;
+
+procedure TfrmMQuery.LimpaMenu;
+var
+   item : TMenuItem;
+   children : TMenuItem;
+   a : integer;
+begin
+   item := mnitemNew; //Pega o pai
+
+   for a := 0 to item.Parent.Count-1 do
+   begin
+       children := item.Parent.Items[a]; //Pega o filho
+       if (children.Tag <> 0) then //Verifica se é um objeto de menu
+       begin
+            //children.Delete;
+            children.Delete(a);
+       end;
+
+   end;
+end;
+
+procedure TfrmMQuery.RegistraMenu;
+var
+   item : TMenuItem;
+   children : TMenuItem;
+   a : integer;
+begin
+  item := mnitemNew; //Pega o pai
+  for a := 0 to FSetLSTBNC.LSTBNC.Count-1 do
+  begin
+      children := TMenuItem.Create(item);
+      children.Caption:= FSetLSTBNC.LSTBNC.Strings[a];
+      children.Tag:= ptrint( FSetLSTBNC.LSTBNC.Objects[a]);
+      children.ONClick := @mngenericoonclick;
+  end;
+end;
+
+procedure TfrmMQuery.mngenericoonclick(Sender: TObject);
+begin
+  //Cria um menu generico on click
+
 end;
 
 procedure TfrmMQuery.AtualizaConexoesDB();
+var
+   a: integer;
 begin
+
   //Atualiza conexoes
-  if FSetBanco <> nil then
+  //if FSetBanco <> nil then
+  if (FSetLSTBNC <> nil) then
   begin
-    mnconection1.Visible:=true;
-    miedit.Visible:=true;
-    miDelete.Visible:=true;
-    mnconection1.Caption:= fsetbanco.Databasename;
+    //Fcfgdb.CarregaConexoes(mnconection1,)
+    if (FSetLSTBNC.LSTBNC.Count>0) then //Verifica se existem conexoes a serem criadas
+    begin
+      //Cria referencia de menu
+      for a := 0 to FSetLSTBNC.LSTBNC.Count-1 do
+      begin
+          //Limpa menu
+          LimpaMenu();
+          //Registra o item
+          RegistraMenu();
+
+      end;
+    end;
   end;
+
+
 end;
+
+
 
 procedure TfrmMQuery.ConectarMy();
 var
   tnltvitem : TTreeNode;
   location : string;
 begin
+  (*
    try
         //tvBanco.items.clear;
 
@@ -576,12 +706,14 @@ begin
     except
       showmessage('Erro ao tentar conectar no banco de dados!');
     end;
+    *)
 end;
 
 procedure TfrmMQuery.ConectarPost();
 var
   tnltvitem : TTreeNode;
 begin
+  (*
    try
         tvBanco.items.clear;
 
@@ -624,11 +756,13 @@ begin
         end;
     finally
     end;
+    *)
 end;
 
 
 procedure TfrmMQuery.mnStayClick(Sender: TObject);
 begin
+  (*
   if FormStyle = fsNormal then
   begin
     //FormStyle:= fsStayOnTop;
@@ -643,10 +777,12 @@ begin
   end;
   refresh;
   Fsetmquery.SalvaContexto(false);
+  *)
 end;
 
 procedure TfrmMQuery.mnFixarClick(Sender: TObject);
 begin
+  (*
     if (BorderStyle = bsNone) then
     begin
       //BorderStyle:=bsSingle;
@@ -665,7 +801,7 @@ begin
       self.refresh;
     end;
     Fsetmquery.SalvaContexto(false);
-
+    *)
 end;
 
 procedure TfrmMQuery.Panel8Click(Sender: TObject);
@@ -673,8 +809,9 @@ begin
 
 end;
 
-procedure TfrmMquery.CarregaContexto();
+procedure TfrmMQuery.CarregaContexto;
 begin
+  (*
   if (FSetBanco <> nil) then
   begin
        FSetBanco.CarregaContexto();
@@ -700,10 +837,10 @@ begin
     //mnFixW.caption := 'Move' ;
   end;
   end;
-
+ *)
 end;
 
-procedure Tfrmmquery.ListarTabelasPost();
+procedure TfrmMQuery.ListarTabelasPost;
 var
   Tabela : TTabela;
   tnltvitem : TTreeNode;
@@ -713,6 +850,7 @@ var
   TabelaNome : string;
   a : integer;
 begin
+  (*
   try
     zpostqry.close;
     //pnlProgresso1.Visible:= true;
@@ -772,6 +910,7 @@ begin
     tvBanco.FullExpand;
 
   end;
+  *)
 end;
 
 procedure TfrmMQuery.ProcuraTVMysql(Nome: String);
@@ -789,10 +928,11 @@ begin
 
 end;
 
-procedure Tfrmmquery.RefreshPost();
+procedure TfrmMQuery.RefreshPost;
 var
   tnltvitem : TTreeNode;
 begin
+  (*
      tnitem.DeleteChildren;
      //ShapeCon.brush.color := clWhite;
      try
@@ -815,6 +955,7 @@ begin
         end;
     finally
     end;
+    *)
 end;
 
 

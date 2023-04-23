@@ -11,7 +11,7 @@ object frmMQuery: TfrmMQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poMainFormCenter
-  LCLVersion = '2.2.6.0'
+  LCLVersion = '2.2.0.4'
   object Panel1: TPanel
     Left = 0
     Height = 56
@@ -116,7 +116,6 @@ object frmMQuery: TfrmMQuery
           Caption = 'itemconection'
           ImageIndex = 1
           Visible = False
-          OnClick = mnconection1Click
           object miedit: TMenuItem
             Caption = 'edit'
             Visible = False
@@ -171,7 +170,6 @@ object frmMQuery: TfrmMQuery
       'controls_cp=CP_UTF8'
     )
     UseMetadata = False
-    LoginPrompt = True
     DesignConnection = True
     SQLHourGlass = True
     HostName = '127.0.0.1'
@@ -179,8 +177,8 @@ object frmMQuery: TfrmMQuery
     Database = 'mysql'
     User = 'root'
     Password = '226468'
-    Protocol = 'mysql-5'
-    LibraryLocation = 'D:\projetos\maurinsoft\MNote2\src\libmysql32.dll'
+    Protocol = 'mysql'
+    LibraryLocation = 'D:\projetos\maurinsoft\MNote2\src\libs\win64\libmysql64.dll'
     Left = 232
     Top = 32
   end

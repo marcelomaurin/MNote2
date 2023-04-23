@@ -56,7 +56,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="24">
+    <Units Count="25">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -188,6 +188,11 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit23>
+      <Unit24>
+        <Filename Value="setlstbnc.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Setlstbnc"/>
+      </Unit24>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -201,6 +206,7 @@
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
+      <TargetOS Value="win64"/>
       <Optimizations>
         <OptimizationLevel Value="0"/>
       </Optimizations>

@@ -11,7 +11,7 @@ uses
   LCLType, chgtext, hint, registro, splash, setFolders, config, SynEditKeyCmds;
 
 
-const versao = '2.25';
+const versao = '2.26';
 
 type
 

@@ -11,7 +11,7 @@ interface
 uses
   Classes, SysUtils, funcoes, TypeDB;
 
-const mfilename = 'Setbanco%d.cfg';
+
 
 
 type
@@ -20,9 +20,10 @@ type
   { TSetBanco }
 
   TSetBanco = class(TObject)
-    constructor create(pnrocfg: integer);
+    constructor create(Lfilename : string);
     destructor destroy();
   private
+
         arquivo :Tstringlist;
         FHostName : String;
         FTipoBanco : TypeDatabase;
@@ -58,8 +59,8 @@ type
         property Port : string read FPort write SetPort;
   end;
 
-  var
-    FSetBanco : TSetBanco;
+
+
 
 
 implementation
@@ -176,7 +177,7 @@ begin
       end;
   {$ENDIF}
 
-  filename := format(mfilename,[Fnrocfg]);
+  //filename := format(mfilename,[Fnrocfg]);
 
   if (FileExists(Fpath+filename)) then
   begin
@@ -186,16 +187,16 @@ begin
   else
   begin
     default();
-    SalvaContexto(false);
+    //SalvaContexto(false);
   end;
 
 end;
 
 //Metodo construtor
-constructor TSetBanco.create(pnrocfg: integer);
+constructor TSetBanco.create(Lfilename: string);
 begin
-    FNroCfg := pnrocfg;
-    filename := format(mfilename,[Fnrocfg]);
+    //FNroCfg := pnrocfg;
+    filename :=Lfilename;
     arquivo := TStringList.create();
     IdentificaArquivo(true);
 
@@ -213,7 +214,7 @@ begin
   arquivo.Append('TIPOBANCO:'+inttostr(integer(FTipoBanco)));
   arquivo.Append('HOSTNAME:'+FHostName);
   arquivo.Append('DATABASENAME:'+FDatabasename);
-  arquivo.Append('NROCFG:'+inttostr(FNroCfg));
+  //arquivo.Append('NROCFG:'+inttostr(FNroCfg));
   arquivo.Append('SCHEME:'+FScheme);
   arquivo.Append('USER:'+FUser);
   arquivo.Append('PASSWORD:'+FPassword);

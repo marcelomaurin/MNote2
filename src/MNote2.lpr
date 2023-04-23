@@ -12,7 +12,8 @@ uses
   folders,
   {$ENDIF}
   chgtext, setchgtext, hint, registro, splash, config
-  { you can add units after this };
+  { you can add units after this }
+  ;
 
 
 {$R *.res}

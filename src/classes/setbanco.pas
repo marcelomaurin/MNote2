@@ -11,7 +11,7 @@ interface
 uses
   Classes, SysUtils, funcoes, TypeDB;
 
-const mfilename = 'Setbanco%d.cfg';
+
 
 
 type
@@ -20,9 +20,10 @@ type
   { TSetBanco }
 
   TSetBanco = class(TObject)
-    constructor create(pnrocfg: integer);
+    constructor create(Lfilename : string);
     destructor destroy();
   private
+
         arquivo :Tstringlist;
         FHostName : String;
         FTipoBanco : TypeDatabase;
@@ -53,13 +54,13 @@ type
         property Password: string read FPassword write SetPassword;
         property TipoBanco: TypeDatabase read FTipoBanco write SetTipoBanco;
         property Databasename: String read FDatabasename write SetDatabaseName;
-        property nrocfg : integer read FNrocfg;
+        property nrocfg : integer read FNrocfg write FNrocfg;
         property Scheme : String read FScheme write SetScheme;
         property Port : string read FPort write SetPort;
   end;
 
-  var
-    FSetBanco : TSetBanco;
+
+
 
 
 implementation
@@ -176,7 +177,7 @@ begin
       end;
   {$ENDIF}
 
-  filename := format(mfilename,[Fnrocfg]);
+  //filename := format(mfilename,[Fnrocfg]);
 
   if (FileExists(Fpath+filename)) then
   begin
@@ -192,10 +193,10 @@ begin
 end;
 
 //Metodo construtor
-constructor TSetBanco.create(pnrocfg: integer);
+constructor TSetBanco.create(Lfilename: string);
 begin
-    FNroCfg := pnrocfg;
-    filename := format(mfilename,[Fnrocfg]);
+    //FNroCfg := pnrocfg;
+    filename :=Lfilename;
     arquivo := TStringList.create();
     IdentificaArquivo(true);
 

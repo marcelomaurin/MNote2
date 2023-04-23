@@ -7,8 +7,11 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, lnetvisual, main, Item, sobre, funcoes, zcomponent, finds, folders,
-  chgtext, setchgtext, hint, registro, splash, config
+  Forms, lnetvisual, main, Item, sobre, funcoes, zcomponent, finds,
+  {$ifndef Darwin}
+  folders,
+  {$ENDIF}
+  chgtext, setchgtext, hint, registro, splash, config, unit1
   { you can add units after this };
 
 
@@ -19,7 +22,9 @@ begin
   Application.Initialize;
   Application.CreateForm(TfrmMNote, frmMNote);
   Application.CreateForm(Tfrmchgtext, frmchgtext);
+  {$ifndef Darwin}
   Application.CreateForm(TfrmFolders, frmFolders);
+  {$ENDIF}
   Application.Run;
 end.
 
