@@ -11,7 +11,7 @@ uses
   LCLType, chgtext, hint, registro, splash, setFolders, config, SynEditKeyCmds;
 
 
-const versao = '2.25';
+const versao = '2.26';
 
 type
 
@@ -749,6 +749,13 @@ begin
     frmmquery := nil;
   end;
 
+    if (frmFolders <> nil) then
+  begin
+      frmFolders.destroy;
+      frmFolders := nil;
+
+  end;
+
   //Salva arquivos abertos
   info := '';
   for a:= 0 to pgMain.PageCount-1 do
@@ -1061,6 +1068,10 @@ end;
 
 procedure TfrmMNote.MenuItem15Click(Sender: TObject);
 begin
+  if (frmFolders = nil) then
+  begin
+       frmFolders := TfrmFolders.Create(self);
+  end;
   {$ifndef Darwin}
   if frmFolders.Showing then
   begin

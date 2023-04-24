@@ -11,8 +11,9 @@ uses
   {$ifndef Darwin}
   folders,
   {$ENDIF}
-  chgtext, setchgtext, hint, registro, splash, config, unit1
-  { you can add units after this };
+  chgtext, setchgtext, hint, registro, splash, config
+  { you can add units after this }
+  ;
 
 
 {$R *.res}

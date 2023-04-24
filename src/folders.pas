@@ -190,13 +190,18 @@ begin
   CarregaContexto();
   edFolder.text := FSetFolders.DefaultFolder;
 
-  if (edFolder.text = '') then
+  if ((edFolder.text = '') or (not ValidateDirectory(edFolder.text))) then
   begin
     {$IFDEF LINUX}
     edFolder.text := ExtractFilePath(application.ExeName);
+    FSetFolders.DefaultFolder := ExtractFilePath(application.ExeName);
+    FSetFolders.SalvaContexto(false);
     {$ENDIF}
     {$IFDEF WINDOWS}
-    ShellTreeView1.Path:=ExtractFilePath(application.ExeName);
+    //ShellTreeView1.Path:=ExtractFilePath(application.ExeName);
+    edFolder.text := ExtractFilePath(application.ExeName);
+    FSetFolders.DefaultFolder := ExtractFilePath(application.ExeName);
+    FSetFolders.SalvaContexto(false);
     {$ENDIF}
   end;
 
@@ -231,10 +236,14 @@ end;
 
 procedure TfrmFolders.FormShow(Sender: TObject);
 begin
-  frmfolders.Left:= FsetFolders.posx;
-  frmfolders.top:= FSetFolders.posy;
-  frmfolders.Width:=   Fsetfolders.width;
-  frmfolders.Height:= Fsetfolders.Height;
+  if VerificaArea(FsetFolders.posx, FSetFolders.posy) then
+  begin
+    self.Left:= FsetFolders.posx;
+    self.top:= FSetFolders.posy;
+    self.Width:=   Fsetfolders.width;
+    self.Height:= Fsetfolders.Height;
+
+  end;
 
 end;
 

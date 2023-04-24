@@ -54,6 +54,7 @@ function FontToString(AFont: TFont): string;
 function IsRun(const Executavel: string): boolean;
 function KillAppByName(const ProcessName: string): boolean;
 procedure RemoveCtrlMFromSynEdit(SynEdit: TSynEdit);
+function ValidateDirectory(const DirectoryPath: string): Boolean;
 function ValidateJson(SynEdit: TSynEdit): Boolean;
 function GetProcessList: TProcessList;
 {$IFDEF WINDOWS}
@@ -64,7 +65,7 @@ function RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executave
 function IsAdministrator: Boolean;
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
-
+function VerificaArea(X, Y: longint): Boolean;
 
 
 
@@ -97,6 +98,17 @@ var LastTickCount     : cardinal = 0;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
 
+function VerificaArea(X, Y: longint): Boolean;
+var
+  ScreenWidth, ScreenHeight: Integer;
+begin
+   // Obter as dimensões da área de trabalho
+   ScreenWidth := Screen.Width;
+   ScreenHeight := Screen.Height;
+
+   // Verificar se a área de trabalho é maior que as posições X e Y passadas nos parâmetros
+   Result := (ScreenWidth > X) and (ScreenHeight > Y) and (x > 0) and (y > 0);
+end;
 
 function KillAppByName(const ProcessName: string): boolean;
 var
@@ -296,6 +308,10 @@ begin
       end;
 end;
 
+function ValidateDirectory(const DirectoryPath: string): Boolean;
+begin
+  Result := DirectoryExists(DirectoryPath);
+end;
 
 function ValidateJson(SynEdit: TSynEdit): Boolean;
 var

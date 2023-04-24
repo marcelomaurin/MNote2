@@ -1,33 +1,34 @@
 object frmMNote: TfrmMNote
   Left = 292
-  Height = 438
+  Height = 548
   Top = 190
-  Width = 630
+  Width = 788
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 418
-  ClientWidth = 630
+  ClientHeight = 523
+  ClientWidth = 788
+  DesignTimePPI = 120
   Menu = MainMenu1
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '2.2.6.0'
+  LCLVersion = '2.2.4.0'
   object Panel1: TPanel
     Left = 0
-    Height = 50
+    Height = 62
     Top = 0
-    Width = 630
+    Width = 788
     Align = alTop
     TabOrder = 0
     OnClick = Panel1Click
   end
   object pgMain: TPageControl
     Left = 0
-    Height = 263
-    Top = 50
-    Width = 630
+    Height = 330
+    Top = 62
+    Width = 788
     Align = alClient
     Images = ImageList1
     TabOrder = 1
@@ -35,21 +36,21 @@ object frmMNote: TfrmMNote
   end
   object pnResult: TPanel
     Left = 0
-    Height = 105
-    Top = 313
-    Width = 630
+    Height = 131
+    Top = 392
+    Width = 788
     Align = alBottom
     Caption = 'pnResult'
-    ClientHeight = 105
-    ClientWidth = 630
+    ClientHeight = 131
+    ClientWidth = 788
     PopupMenu = pmResult
     TabOrder = 2
     Visible = False
     object meResult: TMemo
       Left = 1
-      Height = 103
+      Height = 129
       Top = 1
-      Width = 628
+      Width = 786
       Align = alClient
       PopupMenu = pmResult
       ReadOnly = True
@@ -58,8 +59,8 @@ object frmMNote: TfrmMNote
   end
   object MainMenu1: TMainMenu
     Images = ImageList1
-    Left = 32
-    Top = 8
+    Left = 40
+    Top = 10
     object MenuItem1: TMenuItem
       Caption = 'File'
       ImageIndex = 5
@@ -261,17 +262,17 @@ object frmMNote: TfrmMNote
     end
   end
   object OpenDialog1: TOpenDialog
-    Left = 160
-    Top = 8
+    Left = 200
+    Top = 10
   end
   object SaveDialog1: TSaveDialog
-    Left = 255
-    Top = 11
+    Left = 319
+    Top = 14
   end
   object popFechar: TPopupMenu
     Images = ImageList1
-    Left = 157
-    Top = 133
+    Left = 196
+    Top = 166
     object mnFechar: TMenuItem
       Caption = 'Fechar'
       ImageIndex = 0
@@ -279,8 +280,8 @@ object frmMNote: TfrmMNote
     end
   end
   object ImageList1: TImageList
-    Left = 216
-    Top = 176
+    Left = 270
+    Top = 220
     Bitmap = {
       4C7A1000000010000000100000002D0A00000000000078DAED9B0B7017C51DC7
       0F2484405089484C4102010D45C5E0D0C4060208D51290501095024DA350B448
@@ -371,19 +372,19 @@ object frmMNote: TfrmMNote
     Options = [frDown, frReplace, frReplaceAll, frHidePromptOnReplace]
     OnFind = FindDialog1Find
     OnReplace = ReplaceDialog1Replace
-    Left = 379
-    Top = 25
+    Left = 474
+    Top = 31
   end
   object FontDialog1: TFontDialog
     MinFontSize = 0
     MaxFontSize = 0
-    Left = 255
-    Top = 121
+    Left = 319
+    Top = 151
   end
   object popSysEdit: TPopupMenu
     Images = ImageList1
-    Left = 352
-    Top = 216
+    Left = 440
+    Top = 270
     object mnAssociar: TMenuItem
       Caption = 'Associar'
       ImageIndex = 14
@@ -1020,13 +1021,13 @@ object frmMNote: TfrmMNote
     }
     Hint = 'MNote2 Little Editor'
     Visible = True
-    Left = 483
-    Top = 151
+    Left = 604
+    Top = 189
   end
   object PopupMenu1: TPopupMenu
     Images = ImageList1
-    Left = 424
-    Top = 152
+    Left = 530
+    Top = 190
     object mnFixar: TMenuItem
       Caption = 'Fix'
       OnClick = mnFixarClick
@@ -1041,16 +1042,16 @@ object frmMNote: TfrmMNote
     end
   end
   object popFind: TPopupMenu
-    Left = 128
-    Top = 288
+    Left = 160
+    Top = 360
     object MenuItem2: TMenuItem
       Caption = 'Esconder'
       OnClick = MenuItem2Click
     end
   end
   object pmResult: TPopupMenu
-    Left = 72
-    Top = 296
+    Left = 90
+    Top = 370
     object mnHideResult: TMenuItem
       Caption = 'Hide'
       OnClick = mnHideResultClick
