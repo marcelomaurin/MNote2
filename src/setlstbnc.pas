@@ -35,13 +35,13 @@ type
   public
         constructor create();
         destructor destroy();
-        procedure NovaConexao(
+        function NovaConexao(
                 LHostname  : string;
                 LPassword  : string;
                 LUsername  : string;
                 Ldbtype    : TypeDatabase;
                 LPort      : string;
-                LDatabase  : string );
+                LDatabase  : string ): TSetBanco;
 
         procedure SalvaContexto(flag : boolean);
         Procedure CarregaContexto();
@@ -88,14 +88,14 @@ begin
 end;
 
 //Registra uma nova conexao
-procedure TSetLSTBNC.NovaConexao(
+function TSetLSTBNC.NovaConexao(
         LHostname: string;
         LPassword: string;
         LUsername: string;
         Ldbtype: TypeDatabase;
         LPort: string;
         LDatabase: string
-        );
+        ):TSetBanco;
 var
   FSetBanco : TSetBanco;
 begin
@@ -109,6 +109,7 @@ begin
   FSetBanco.nrocfg := FLstBNC.Count;
   FSetBanco.SalvaContexto(false);
   FLSTBNC.AddObject(LHostname+'_'+Ldatabase,TObject(FSetBanco));
+  result :=  FSetBanco;
 
 end;
 

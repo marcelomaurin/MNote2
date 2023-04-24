@@ -5,7 +5,8 @@ unit cfgdb;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, setbanco;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, setbanco,
+  setlstbnc, typedb;
 
 type
 
@@ -44,8 +45,7 @@ type
 
   end;
 
-var
-  frmcfgdb: Tfrmcfgdb;
+
 
 implementation
 
@@ -62,8 +62,21 @@ end;
 
 constructor Tfrmcfgdb.create(Sender: TObject; LSetBanco: TSetBanco);
 begin
+  IF(FSetBanco = NIL) THEN
+  BEGIN
+     FSetBanco := FSetlstbnc.NovaConexao(
+        '127.0.0.1', //LHostname: string;
+        '',          //LPassword: string;
+        '',          //LUsername: string;
+        TypeDatabase(0),          //Ldbtype: TypeDatabase;
+        '3306',         //LPort: string;
+        'mysql'         //LDatabase: string
+     );
 
-  FSetBanco  := LSetBanco;
+  end else
+  begin
+      FSetBanco  := LSetBanco;
+  end;
 end;
 
 procedure Tfrmcfgdb.btsaveClick(Sender: TObject);

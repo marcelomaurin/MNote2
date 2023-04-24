@@ -484,6 +484,7 @@ end;
 procedure TfrmMQuery.mnitemNewClick(Sender: TObject);
 var
   frmcfgdb: Tfrmcfgdb;
+  LArquivo : string;
 begin
   (*
   tvBanco.items.clear;
@@ -520,11 +521,12 @@ begin
        frmcfgdb.Parent := self;
   end;
   //frmcfgdb.setbanco := FSetBanco;
-  frmcfgdb.FormShow(self);
-  frmcfgdb.ShowModal;
+  //frmcfgdb.FormShow(self);
+  frmcfgdb.Show;
+  (*
   if (frmcfgdb.Save = true) then
   begin
-    (*Salva o contexto*)
+    //Salva o contexto
 
     //FSetBanco.HostName:=frmcfgdb.edHostname.text;
     //FSetBanco.Password:=frmcfgdb.edPassword.text;
@@ -545,6 +547,7 @@ begin
   AtualizaConexoesDB();
   frmcfgdb.free;
   frmcfgdb := nil;
+  *)
 
 end;
 
