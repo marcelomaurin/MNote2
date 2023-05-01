@@ -31,6 +31,9 @@ const
 {$endif}
 
 type
+  TSystemType = (stWin32, stWin64, stLinux32, stLinux64);
+
+type
   TProcessInfo = record
     ProcessID: THandle;
     Name: string;
@@ -57,6 +60,9 @@ procedure RemoveCtrlMFromSynEdit(SynEdit: TSynEdit);
 function ValidateDirectory(const DirectoryPath: string): Boolean;
 function ValidateJson(SynEdit: TSynEdit): Boolean;
 function GetProcessList: TProcessList;
+function getSystemType: TSystemType;
+function getSystemLabel(tipo : TSystemType) : string;
+
 {$IFDEF WINDOWS}
 function RegisterFileType(ExtName: string; AppName: string): boolean;
 function  VerificaRegExt(extensao : string) : boolean;
@@ -66,6 +72,8 @@ function IsAdministrator: Boolean;
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
 function VerificaArea(X, Y: longint): Boolean;
+
+
 
 
 
@@ -97,6 +105,55 @@ var LastTickCount     : cardinal = 0;
     FLastIdleTime: Int64;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
+
+function getSystemLabel(tipo : TSystemType) : string;
+begin
+  if (tipo =  stWin32) then
+  begin
+    result := 'Windows32';
+  end
+  else
+  begin
+    if(tipo = stWin64) then
+    begin
+      result := 'Windows64';
+    end
+    else
+    begin
+      if(tipo = stLinux32) then
+      begin
+        result := 'Linux32';
+      end
+      else
+      begin
+        result := 'Linux64';
+      end;
+    end;
+  end;
+
+end;
+
+function getSystemType: TSystemType;
+begin
+      {$IFDEF WINDOWS}
+        {$IFDEF CPU32}
+          Result := stWin32;
+        {$ENDIF}
+        {$IFDEF CPU64}
+          Result := stWin64;
+        {$ENDIF}
+      {$ENDIF}
+
+      {$IFDEF LINUX}
+        {$IFDEF CPU32}
+          Result := stLinux32;
+        {$ENDIF}
+        {$IFDEF CPU64}
+          Result := stLinux64;
+        {$ENDIF}
+      {$ENDIF}
+end;
+
 
 function VerificaArea(X, Y: longint): Boolean;
 var
@@ -162,64 +219,7 @@ begin
       end;
 end;
 
-(*
-function GetProcessList: TProcessList;
-    {$IFDEF WINDOWS}
-var
-      Snapshot: THandle;
-      ProcessEntry: TProcessEntry32;
-    {$ENDIF}
-    {$IFDEF UNIX}
-    var
-      F: TextFile;
-      PID: LongInt;
-      ProcPath, ProcName: string;
-    {$ENDIF}
-begin
-      {$IFDEF WINDOWS}
-      Snapshot := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-      if Snapshot = INVALID_HANDLE_VALUE then
-        Exit;
 
-      ProcessEntry.dwSize := SizeOf(ProcessEntry);
-      if Process32First(Snapshot, ProcessEntry) then
-      begin
-        repeat
-          SetLength(Result, Length(Result) + 1);
-          Result[High(Result)].ProcessID := ProcessEntry.th32ProcessID;
-          Result[High(Result)].Name := ProcessEntry.szExeFile;
-        until not Process32Next(Snapshot, ProcessEntry);
-      end;
-
-      CloseHandle(Snapshot);
-      {$ENDIF}
-
-      {$IFDEF UNIX}
-      AssignFile(F, '/proc');
-      Reset(F);
-      try
-        while not Eof(F) do
-        begin
-          Readln(F, ProcPath);
-          if TryStrToInt(ProcPath, PID) then
-          begin
-            ProcName := '';
-            ProcPath := Format('/proc/%d/exe', [PID]);
-
-            if fpReadLink(PCHAR(ProcPath), PCHAR(ProcName),Length(ProcName)) > 0 then
-            begin
-              SetLength(Result, Length(Result) + 1);
-              Result[High(Result)].ProcessID := PID;
-              Result[High(Result)].Name := ExtractFileName(ProcName);
-            end;
-          end;
-        end;
-      finally
-        CloseFile(F);
-      end;
-      {$ENDIF}
-end;
-*)
 
 function GetProcessList: TProcessList;
   {$IFDEF WINDOWS}

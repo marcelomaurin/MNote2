@@ -8,44 +8,48 @@ object frmSobre: TfrmSobre
   ClientHeight = 200
   ClientWidth = 320
   OnCreate = FormCreate
-  LCLVersion = '2.2.0.4'
+  LCLVersion = '2.2.6.0'
   object Label2: TLabel
     Left = 40
-    Height = 17
+    Height = 15
     Top = 200
-    Width = 235
+    Width = 186
     Caption = 'Criado por Marcelo Maurin Martins'
+    ParentColor = False
   end
   object ToggleBox1: TToggleBox
     Left = 120
-    Height = 23
-    Top = 160
+    Height = 31
+    Top = 152
     Width = 90
     Caption = 'Close'
     OnChange = ToggleBox1Change
     TabOrder = 0
   end
   object Label3: TLabel
-    Left = 96
-    Height = 17
+    Left = 104
+    Height = 15
     Top = 32
-    Width = 146
+    Width = 119
     Caption = 'MNote2 - Maurin note'
+    ParentColor = False
   end
   object Label4: TLabel
     Left = 120
-    Height = 17
+    Height = 15
     Top = 67
-    Width = 51
+    Width = 38
     Caption = 'Version'
+    ParentColor = False
     OnClick = Label4Click
   end
   object lbversao: TLabel
-    Left = 168
-    Height = 17
+    Left = 184
+    Height = 15
     Top = 67
-    Width = 20
+    Width = 15
     Caption = '0.1'
+    ParentColor = False
   end
   object Image1: TImage
     Left = 16
@@ -5693,5 +5697,13 @@ object frmSobre: TfrmSobre
       010000C0030000E0070000
     }
     Stretch = True
+  end
+  object Label1: TLabel
+    Left = 143
+    Height = 15
+    Top = 100
+    Width = 34
+    Caption = 'Label1'
+    ParentColor = False
   end
 end
