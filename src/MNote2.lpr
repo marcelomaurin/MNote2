@@ -19,9 +19,11 @@ uses
 {$R *.res}
 
 begin
-  RequireDerivedFormResource := True;
+  //RequireDerivedFormResource := True;
   Application.Initialize;
   Application.CreateForm(TfrmMNote, frmMNote);
+  {$ifndef Darwin}
+  {$ENDIF}
   Application.Run;
 end.
 
