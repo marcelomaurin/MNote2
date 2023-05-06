@@ -5,9 +5,9 @@ unit main;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, SynEdit,  Forms,  funcoes,
+  Classes, SysUtils, FileUtil, SynEdit,  Forms,
   Controls, Graphics, Dialogs, Menus, ExtCtrls, ComCtrls, StdCtrls, Grids,
-  PopupNotifier, item, types, finds, setmain, mquery, TypeDB, folders,
+  PopupNotifier, item, types, finds, setmain, mquery, TypeDB, folders, funcoes,
   LCLType, chgtext, hint, registro, splash, setFolders, config, SynEditKeyCmds;
 
 
@@ -749,7 +749,7 @@ begin
     frmmquery := nil;
   end;
 
-  if (frmFolders <> nil) then
+    if (frmFolders <> nil) then
   begin
       frmFolders.destroy;
       frmFolders := nil;
@@ -814,12 +814,9 @@ begin
 end;
 
 procedure TfrmMNote.MenuItem10Click(Sender: TObject);
-var
-   systemtype : string;
 begin
   frmSobre := TFrmsobre.create(self);
   frmSobre.lbversao.Caption := versao;
-  frmSobre.lbplataforma.Caption:= getSystemLabel(getSystemType);
   frmSobre.showmodal();
   frmSobre.destroy();
   frmSobre := nil;

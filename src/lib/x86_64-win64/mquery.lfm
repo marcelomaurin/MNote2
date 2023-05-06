@@ -1,98 +1,98 @@
 object frmMQuery: TfrmMQuery
   Left = 332
-  Height = 609
+  Height = 487
   Top = 256
-  Width = 391
+  Width = 313
   Align = alRight
   Caption = 'MQuery'
-  ClientHeight = 584
-  ClientWidth = 391
-  DesignTimePPI = 120
+  ClientHeight = 467
+  ClientWidth = 313
   Menu = MainMenu1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '2.2.0.4'
   object Panel1: TPanel
     Left = 0
-    Height = 70
+    Height = 56
     Top = 0
-    Width = 391
+    Width = 313
     Align = alTop
     TabOrder = 0
   end
   object Panel2: TPanel
     Left = 0
-    Height = 62
-    Top = 522
-    Width = 391
+    Height = 50
+    Top = 417
+    Width = 313
     Align = alBottom
     TabOrder = 1
   end
   object Splitter1: TSplitter
     Cursor = crVSplit
     Left = 0
-    Height = 6
-    Top = 516
-    Width = 391
+    Height = 5
+    Top = 412
+    Width = 313
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object Splitter2: TSplitter
     Left = 0
-    Height = 446
-    Top = 70
-    Width = 6
+    Height = 356
+    Top = 56
+    Width = 5
   end
   object Panel3: TPanel
-    Left = 6
-    Height = 446
-    Top = 70
-    Width = 385
+    Left = 5
+    Height = 356
+    Top = 56
+    Width = 308
     Align = alClient
-    ClientHeight = 446
-    ClientWidth = 385
+    ClientHeight = 356
+    ClientWidth = 308
     TabOrder = 4
     object Panel4: TPanel
       Left = 1
-      Height = 444
+      Height = 354
       Top = 1
-      Width = 383
+      Width = 306
       Align = alClient
-      ClientHeight = 444
-      ClientWidth = 383
+      ClientHeight = 354
+      ClientWidth = 306
       TabOrder = 0
       object Panel5: TPanel
         Left = 1
-        Height = 39
+        Height = 31
         Top = 1
-        Width = 381
+        Width = 304
         Align = alTop
-        ClientHeight = 39
-        ClientWidth = 381
+        ClientHeight = 31
+        ClientWidth = 304
         TabOrder = 0
         object edSearch: TEdit
           Left = 2
-          Height = 28
-          Top = 5
-          Width = 200
+          Height = 23
+          Top = 4
+          Width = 160
           TabOrder = 0
         end
       end
       object Panel6: TPanel
         Left = 1
-        Height = 403
-        Top = 40
-        Width = 381
+        Height = 321
+        Top = 32
+        Width = 304
         Align = alClient
-        ClientHeight = 403
-        ClientWidth = 381
+        ClientHeight = 321
+        ClientWidth = 304
         TabOrder = 1
         object tvBanco: TTreeView
           Left = 1
-          Height = 401
+          Height = 319
           Top = 1
-          Width = 379
+          Width = 302
           Align = alClient
           Images = ImageList2
           ReadOnly = True
@@ -104,31 +104,33 @@ object frmMQuery: TfrmMQuery
   end
   object MainMenu1: TMainMenu
     Images = ImageList2
-    Left = 19
-    Top = 29
+    Left = 15
+    Top = 23
     object MenuItem1: TMenuItem
       Caption = 'Database'
       ImageIndex = 0
-      object MenuItem2: TMenuItem
+      object Conection: TMenuItem
         Caption = 'Conection'
         ImageIndex = 0
-        OnClick = MenuItem2Click
+        OnClick = ConectionClick
         object mnconection1: TMenuItem
           Caption = 'itemconection'
           ImageIndex = 1
           Visible = False
           object miedit: TMenuItem
             Caption = 'edit'
-            Visible = False
+            ImageIndex = 4
             OnClick = mieditClick
           end
           object miDelete: TMenuItem
             Caption = 'delete'
-            Visible = False
+            ImageIndex = 21
+            OnClick = miDeleteClick
           end
-          object Connect: TMenuItem
+          object miConnect: TMenuItem
             Caption = 'Connect'
-            OnClick = ConnectClick
+            ImageIndex = 1
+            OnClick = miConnectClick
           end
         end
         object mnitemNew: TMenuItem
@@ -180,8 +182,8 @@ object frmMQuery: TfrmMQuery
     Password = '226468'
     Protocol = 'mysql'
     LibraryLocation = 'D:\projetos\maurinsoft\MNote2\src\libs\win64\libmysql64.dll'
-    Left = 290
-    Top = 40
+    Left = 232
+    Top = 32
   end
   object zpostcon: TZConnection
     ControlsCodePage = cCP_UTF8
@@ -191,36 +193,36 @@ object frmMQuery: TfrmMQuery
     )
     Port = 0
     Protocol = 'postgresql'
-    Left = 396
-    Top = 41
+    Left = 317
+    Top = 33
   end
   object zmyqry: TZQuery
     Connection = zmycon
     Params = <>
-    Left = 290
-    Top = 110
+    Left = 232
+    Top = 88
   end
   object zpostqry: TZQuery
     Connection = zpostcon
     Params = <>
-    Left = 400
-    Top = 113
+    Left = 320
+    Top = 90
   end
   object zmyqry1: TZReadOnlyQuery
     Connection = zmycon
     Params = <>
-    Left = 300
-    Top = 190
+    Left = 240
+    Top = 152
   end
   object zpostqry1: TZReadOnlyQuery
     Connection = zpostcon
     Params = <>
-    Left = 396
-    Top = 221
+    Left = 317
+    Top = 177
   end
   object ImageList2: TImageList
-    Left = 85
-    Top = 176
+    Left = 68
+    Top = 141
     Bitmap = {
       4C7A160000001000000010000000890B00000000000078DAED9C0B9015C51586
       5B4016440494ACC22E2048E461CA0851C21B0C0B88F29210B44A59D720181EAB
@@ -318,7 +320,7 @@ object frmMQuery: TfrmMQuery
     }
   end
   object PopupMenu1: TPopupMenu
-    Left = 105
-    Top = 290
+    Left = 84
+    Top = 232
   end
 end

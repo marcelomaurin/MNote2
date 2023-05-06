@@ -22,6 +22,8 @@ begin
   RequireDerivedFormResource := True;
   Application.Initialize;
   Application.CreateForm(TfrmMNote, frmMNote);
+  {$ifndef Darwin}
+  {$ENDIF}
   Application.Run;
 end.
 

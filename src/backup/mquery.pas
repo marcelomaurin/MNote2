@@ -18,11 +18,11 @@ type
     ImageList2: TImageList;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
-    Connect: TMenuItem;
+    miConnect: TMenuItem;
     mnitemNew: TMenuItem;
     mnStay: TMenuItem;
     MenuItem11: TMenuItem;
-    MenuItem2: TMenuItem;
+    Conection: TMenuItem;
     mnconection1: TMenuItem;
     miedit: TMenuItem;
     miDelete: TMenuItem;
@@ -47,11 +47,12 @@ type
     zpostqry1: TZReadOnlyQuery;
     FTables : TStringList;
 
-    procedure ConnectClick(Sender: TObject);
+    procedure miConnectClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure MenuItem11Click(Sender: TObject);
-    procedure MenuItem2Click(Sender: TObject);
+    procedure ConectionClick(Sender: TObject);
     procedure MenuItem7Click(Sender: TObject);
     procedure mieditClick(Sender: TObject);
     procedure mngenericoonclick(Sender: TObject);
@@ -360,20 +361,13 @@ end;
 
 procedure TfrmMQuery.FormCreate(Sender: TObject);
 begin
-  (*
-  FSetBanco := TSetBanco.create(0);
-  FSetBanco.CarregaContexto();
-  Fscheme := FsetBanco.scheme;
-  FTables := TStringlist.Create();
-  AtualizaConexoesDB();
-  *)
+
 
 
   FSetMQuery := TSetMQuery.create(); //Carrega contexto de informações de tela
   //Cria lista de conexoes
   FSetLSTBNC := TSetLSTBNC.create();
-  //FSetLSTBNC.CarregaContexto(); //Carrega a lista , gerando os menus
-  AtualizaConexoesDB();
+
 end;
 
 procedure TfrmMQuery.FormDestroy(Sender: TObject);
@@ -396,8 +390,13 @@ begin
   end;
 end;
 
+procedure TfrmMQuery.FormShow(Sender: TObject);
+begin
+  AtualizaConexoesDB();
+end;
 
-procedure TfrmMQuery.ConnectClick(Sender: TObject);
+
+procedure TfrmMQuery.miConnectClick(Sender: TObject);
 begin
   (*
   FTables.Clear;
@@ -436,7 +435,7 @@ begin
   *)
 end;
 
-procedure TfrmMQuery.MenuItem2Click(Sender: TObject);
+procedure TfrmMQuery.ConectionClick(Sender: TObject);
 begin
 
 end;
@@ -486,54 +485,12 @@ var
   frmcfgdb: Tfrmcfgdb;
   LArquivo : string;
 begin
-  (*
-  tvBanco.items.clear;
-  zmycon.Connected:=false;
-  zpostcon.connected := false;
-  if FSetBanco = nil then
-  begin
-     FSetBanco := TSetBanco.create(0);
-  end;
-  if frmcfgdb = nil then
-  begin
-       frmcfgdb := Tfrmcfgdb.Create(self);
-  end;
-  frmcfgdb.setbanco := FSetBanco;
-  frmcfgdb.ShowModal;
+  frmcfgdb := Tfrmcfgdb.Create(self);
+  frmcfgdb.SetBanco := nil;
+  frmcfgdb.Showmodal;
+
   if (frmcfgdb.Save = true) then
   begin
-    (*Salva o contexto*)
-
-    FSetBanco.HostName:=frmcfgdb.edHostname.text;
-    FSetBanco.Password:=frmcfgdb.edPassword.text;
-    FSetBanco.User:=frmcfgdb.edUsername.text;
-    FSetBanco.TipoBanco:=TypeDatabase(frmcfgdb.cbdbtype.ItemIndex);
-    FSetBanco.Port := frmcfgdb.edPort.text;
-    FSetBanco.Databasename:=frmcfgdb.edDatabase.text;
-
-    FSetBanco.SalvaContexto(false);
-  end;
-  AtualizaConexoesDB();
-  *)
-  if(frmcfgdb = nil) then
-  begin
-       frmcfgdb := Tfrmcfgdb.Create(self, nil);
-       frmcfgdb.Parent := self;
-  end;
-  //frmcfgdb.setbanco := FSetBanco;
-  //frmcfgdb.FormShow(self);
-  frmcfgdb.Show;
-  (*
-  if (frmcfgdb.Save = true) then
-  begin
-    //Salva o contexto
-
-    //FSetBanco.HostName:=frmcfgdb.edHostname.text;
-    //FSetBanco.Password:=frmcfgdb.edPassword.text;
-    //FSetBanco.User:=frmcfgdb.edUsername.text;
-    //FSetBanco.TipoBanco:=TypeDatabase(frmcfgdb.cbdbtype.ItemIndex);
-    //FSetBanco.Port := frmcfgdb.edPort.text;
-    //FSetBanco.Databasename:= frmcfgdb.edDatabase.text;
     FSetlstbnc.NovaConexao(
         frmcfgdb.edHostname.text,
         frmcfgdb.edPassword.text,
@@ -547,6 +504,7 @@ begin
   AtualizaConexoesDB();
   frmcfgdb.free;
   frmcfgdb := nil;
+
 
 end;
 
@@ -576,13 +534,29 @@ var
    children : TMenuItem;
    a : integer;
 begin
-  item := mnitemNew; //Pega o pai
+  item := Conection; //Pega o pai
   for a := 0 to FSetLSTBNC.LSTBNC.Count-1 do
   begin
       children := TMenuItem.Create(item);
       children.Caption:= FSetLSTBNC.LSTBNC.Strings[a];
       children.Tag:= ptrint( FSetLSTBNC.LSTBNC.Objects[a]);
       children.ONClick := @mngenericoonclick;
+      miedit := TMenuItem.create(children);
+      miedit.Caption:= 'Edit';
+      miedit.Tag:=ptrint( FSetLSTBNC.LSTBNC.Objects[a]);
+      miedit.OnClick:= @mieditClick;
+      children.Add(miedit);
+      miDelete := TMenuItem.create(children);
+      miDelete.Caption:= 'Delete';
+      miDelete.Tag:=ptrint( FSetLSTBNC.LSTBNC.Objects[a]);
+      miDelete.OnClick:= @miDeleteClick;
+      children.Add(miDelete);
+      miConnect := TMenuItem.create(children);
+      miConnect.Tag:= ptrint( FSetLSTBNC.LSTBNC.Objects[a]);
+      miConnect.Caption:= 'Connect';
+      miConnect.OnClick:= @miConnectClick;
+      children.add(miConnect);
+      item.Add(children);
   end;
 end;
 
@@ -593,26 +567,17 @@ begin
 end;
 
 procedure TfrmMQuery.AtualizaConexoesDB();
-var
-   a: integer;
 begin
-
+  //Limpa menu
+  LimpaMenu();
   //Atualiza conexoes
-  //if FSetBanco <> nil then
   if (FSetLSTBNC <> nil) then
   begin
     //Fcfgdb.CarregaConexoes(mnconection1,)
     if (FSetLSTBNC.LSTBNC.Count>0) then //Verifica se existem conexoes a serem criadas
     begin
-      //Cria referencia de menu
-      for a := 0 to FSetLSTBNC.LSTBNC.Count-1 do
-      begin
-          //Limpa menu
-          LimpaMenu();
-          //Registra o item
-          RegistraMenu();
-
-      end;
+       //Registra o item
+       RegistraMenu();
     end;
   end;
 
@@ -815,33 +780,12 @@ end;
 
 procedure TfrmMQuery.CarregaContexto;
 begin
-  (*
-  if (FSetBanco <> nil) then
+  if(FSetLSTBNC<> nil) then
   begin
-       FSetBanco.CarregaContexto();
-       FsetMQuery.CarregaContexto();
-       Left:= FsetMQuery.posx;
-       top:= FsetMQuery.posy;
-       if FsetMQuery.stay then
-       begin
-            FormStyle:= fsStayOnTop;
-       end
-       else
-       begin
-            FormStyle:= fsNormal;
-       end;
-       if FSetMQuery.fixar then
-       begin
-            //BorderStyle:=bsSingle;
-       end
-  else
+    AtualizaConexoesDB();
+  end else
   begin
-    //BorderStyle:=bsNone;
-    //mnFixar.Caption:= 'Move';
-    //mnFixW.caption := 'Move' ;
   end;
-  end;
- *)
 end;
 
 procedure TfrmMQuery.ListarTabelasPost;
