@@ -15,7 +15,8 @@ Nota: O MAC deixa de ser compatível com o MNote devido aos custos do equipament
 
 Ele é bem simples, porem foi desenvolvido para demonstrar a capacidade de desenvolvimento de projetos multi plataforma do lazarus.
 
-[![MNote2]([IMAGE_URL](https://img.youtube.com/vi/3GepM6Q5Y1o/maxresdefault.jpg))](https://www.youtube.com/embed/3GepM6Q5Y1o)
+Vídeo:
+https://www.youtube.com/embed/3GepM6Q5Y1o
 
 Site do Projeto:
 https://maurinsoft.com.br/?page_id=63
