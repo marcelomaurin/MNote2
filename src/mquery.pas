@@ -399,7 +399,30 @@ end;
 
 
 procedure TfrmMQuery.miConnectClick(Sender: TObject);
+var
+   item : integer;
+   FSetBanco : TSetBanco;
+
 begin
+  item := TMenuItem(Sender).tag;
+  FSetBanco := TSetBanco(FSetLSTBNC.LSTBNC.Objects[item]);
+  if (FSetBanco = nil) then
+  begin
+    //FsetBanco := TsetBanco.create(self).tag;
+    ShowMessage('Erro ao conectar');
+  end
+  else
+  begin
+    CarregaDB();
+    if (FSetBanco.TipoBanco = DBMysql) then
+    begin
+       ConectarMy();
+    end;
+    if (FSetBanco.TipoBanco = DBPostgres) then
+    begin
+      ConectarPost();
+    end;
+  end;
   (*
   FTables.Clear;
   if (FSetBanco <> nil) then
@@ -410,19 +433,7 @@ begin
          FSetBanco := nil;
     end;
   end;
-  if (FSetBanco = nil) then
-  begin
-        FsetBanco := TsetBanco.create(self.tag);
-  end;
-  CarregaDB();
-  if (FSetBanco.TipoBanco = DBMysql) then
-  begin
-    ConectarMy();
-  end;
-  if (FSetBanco.TipoBanco = DBPostgres) then
-  begin
-    ConectarPost();
-  end;
+
   *)
 
 
@@ -448,15 +459,19 @@ begin
 end;
 
 procedure TfrmMQuery.miDeleteClick(Sender: TObject);
+var
+   item : integer;
 begin
+  item := integer(TMenuItem(sender).tag);
   //Inclua aqui o codigo de delecao
+  FSetLSTBNC.DeleteItem(item);
+  AtualizaConexoesDB();
 end;
 
 procedure TfrmMQuery.mieditClick(Sender: TObject);
 var
   posicao : integer;
   banco : TSetBanco;
-  objeto : TObject;
   frmcfgdb : Tfrmcfgdb;
 begin
 
@@ -466,8 +481,8 @@ begin
   //Pega dados da conexao
   //LSTBNC
   posicao := integer(TMenuItem(sender).tag);     //FLSTBNC
-  objeto := TObject(FlstBnc.LSTBNC.Objects[posicao]);
-  banco := TSetBanco(objeto);
+
+  banco := TSetBanco(FlstBnc.LSTBNC.Objects[posicao]);
   if banco = nil then
   begin
      ShowMessage('Erro');

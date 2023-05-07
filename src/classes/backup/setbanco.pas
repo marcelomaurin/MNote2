@@ -54,7 +54,7 @@ type
         property Password: string read FPassword write SetPassword;
         property TipoBanco: TypeDatabase read FTipoBanco write SetTipoBanco;
         property Databasename: String read FDatabasename write SetDatabaseName;
-        property nrocfg : integer read FNrocfg;
+        property nrocfg : integer read FNrocfg write FNrocfg;
         property Scheme : String read FScheme write SetScheme;
         property Port : string read FPort write SetPort;
   end;
@@ -214,7 +214,7 @@ begin
   arquivo.Append('TIPOBANCO:'+inttostr(integer(FTipoBanco)));
   arquivo.Append('HOSTNAME:'+FHostName);
   arquivo.Append('DATABASENAME:'+FDatabasename);
-  //arquivo.Append('NROCFG:'+inttostr(FNroCfg));
+  arquivo.Append('NROCFG:'+inttostr(FNroCfg));
   arquivo.Append('SCHEME:'+FScheme);
   arquivo.Append('USER:'+FUser);
   arquivo.Append('PASSWORD:'+FPassword);

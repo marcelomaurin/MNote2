@@ -196,7 +196,7 @@ end;
 constructor TSetBanco.create(Lfilename: string);
 begin
     //FNroCfg := pnrocfg;
-    filename :=Lfilename;
+    filename :=Lfilename+'.cfg';
     arquivo := TStringList.create();
     IdentificaArquivo(true);
 

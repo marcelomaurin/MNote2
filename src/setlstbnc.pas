@@ -12,25 +12,15 @@ uses
   Classes, SysUtils, funcoes, TypeDB, setbanco;
 
 const mfilename = 'Setlstbnc.cfg';
-const MAXCON = 200;
-
 
 type
-
-
-
-  { TSetBanco }
-
   { TSetLSTBNC }
 
   TSetLSTBNC = class(TObject)
   private
         Farquivo :Tstringlist;
-        FBANCOCFG : String;
         FLSTBNC : TStringList;
-        FConexoes : TStringlist;
         Fpath : String;
-        //procedure SetBancoCFG(value: string);
         procedure Default();
   public
         constructor create();
@@ -42,12 +32,12 @@ type
                 Ldbtype    : TypeDatabase;
                 LPort      : string;
                 LDatabase  : string ): TSetBanco;
+        function DeleteItem(item : integer) : boolean;
 
         procedure SalvaContexto(flag : boolean);
         Procedure CarregaContexto();
         procedure IdentificaArquivo(flag : boolean);
-        property LSTBNC : TStringList read FLSTBNC;
-        property conexoes :  TStringList read FConexoes;
+        property LSTBNC: TStringlist read FLSTBNC;
   end;
 
   var
@@ -63,8 +53,32 @@ implementation
 //Valores default do codigo
 procedure TSetLSTBNC.Default();
 begin
-    FLSTBNC := TStringlist.Create;
-    Fpath:= '';;
+  Fpath:= '';
+  {$ifdef Darwin}
+    //Nao testado ainda
+    Fpath :=GetAppConfigDir(false);
+    if not(FileExists(FPATH)) then
+    begin
+      createdir(fpath);
+    end;
+  {$ENDIF}
+  {$IFDEF LINUX}
+      //Fpath :='/home/';
+      //Fpath := GetUserDir()
+      Fpath :=GetAppConfigDir(false);
+      if not(FileExists(FPATH)) then
+      begin
+         createdir(fpath);
+      end;
+  {$ENDIF}
+  {$IFDEF WINDOWS}
+      Fpath :=GetAppConfigDir(false);
+      if not(FileExists(FPATH)) then
+      begin
+         createdir(fpath);
+      end;
+  {$ENDIF}
+
 end;
 
 
@@ -73,6 +87,8 @@ end;
 constructor TSetLSTBNC.create();
 begin
     farquivo := TStringList.create(); //Cria lista do arquivo
+    FLSTBNC := TStringlist.Create;
+
     IdentificaArquivo(true); //Pega referencia e carrega em memoria
 
 end;
@@ -114,6 +130,12 @@ begin
 
 end;
 
+function TSetLSTBNC.DeleteItem(item: integer): boolean;
+begin
+  FLSTBNC.Delete(item);
+  result := true;
+end;
+
 
 procedure TSetLSTBNC.CarregaContexto();
 var
@@ -134,7 +156,10 @@ begin
            //FLSTBNC
            auxiliar :=  RetiraInfo(info.Strings[posicao]);
            FSetBanco := TSetBanco.create(auxiliar);
-           FSetBanco.nrocfg := FLstBNC.Count;
+           if (FLstBNC <> nil) then
+           begin
+              FSetBanco.nrocfg := FLstBNC.Count;
+           end;
            FSetBanco.SalvaContexto(false);
 
            FLSTBNC.AddObject(auxiliar,TObject(FSetBanco));
