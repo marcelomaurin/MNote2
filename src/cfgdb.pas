@@ -85,6 +85,7 @@ procedure Tfrmcfgdb.FormCreate(Sender: TObject);
 begin
   IF(FSetBanco = NIL) THEN
   BEGIN
+    (*
      FSetBanco := FSetlstbnc.NovaConexao(
         '127.0.0.1', //LHostname: string;
         '',          //LPassword: string;
@@ -93,7 +94,7 @@ begin
         '3306',         //LPort: string;
         'mysql'         //LDatabase: string
      );
-
+    *)
   end;
 
 end;

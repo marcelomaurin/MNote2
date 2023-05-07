@@ -109,7 +109,8 @@ begin
   FSetBanco.nrocfg := FLstBNC.Count;
   FSetBanco.SalvaContexto(false);
   FLSTBNC.AddObject(LHostname+'_'+Ldatabase,TObject(FSetBanco));
-  return :=  FSetBanco;
+  SalvaContexto;
+  result :=  FSetBanco;
 
 end;
 
@@ -127,9 +128,10 @@ begin
     for a := 0 to Farquivo.Count-1 do
     begin
          info.clear;
-         info.add(farquivo.Strings[a]);
+         info.text := farquivo.Strings[a];
          if  BuscaChave(info,'BANCO:',posicao) then
          begin
+           //FLSTBNC
            auxiliar :=  RetiraInfo(info.Strings[posicao]);
            FSetBanco := TSetBanco.create(auxiliar);
            FSetBanco.nrocfg := FLstBNC.Count;

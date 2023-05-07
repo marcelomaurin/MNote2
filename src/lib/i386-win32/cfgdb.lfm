@@ -13,13 +13,14 @@ object frmcfgdb: Tfrmcfgdb
   ParentFont = True
   Position = poMainFormCenter
   ShowHint = True
-  LCLVersion = '2.2.0.4'
+  LCLVersion = '2.2.6.0'
   object Label1: TLabel
     Left = 23
     Height = 15
     Top = 14
     Width = 78
     Caption = 'Database Type:'
+    ParentColor = False
   end
   object cbdbtype: TComboBox
     Left = 24
@@ -40,6 +41,7 @@ object frmcfgdb: Tfrmcfgdb
     Top = 64
     Width = 58
     Caption = 'Hostname:'
+    ParentColor = False
   end
   object Label3: TLabel
     Left = 23
@@ -47,6 +49,7 @@ object frmcfgdb: Tfrmcfgdb
     Top = 112
     Width = 25
     Caption = 'Port:'
+    ParentColor = False
   end
   object edPort: TEdit
     Left = 23
@@ -61,6 +64,7 @@ object frmcfgdb: Tfrmcfgdb
     Top = 160
     Width = 56
     Caption = 'Username:'
+    ParentColor = False
   end
   object edUsername: TEdit
     Left = 23
@@ -75,6 +79,7 @@ object frmcfgdb: Tfrmcfgdb
     Top = 208
     Width = 53
     Caption = 'Password:'
+    ParentColor = False
   end
   object edPassword: TEdit
     Left = 24
@@ -91,6 +96,7 @@ object frmcfgdb: Tfrmcfgdb
     Top = 264
     Width = 86
     Caption = 'Database Name:'
+    ParentColor = False
   end
   object edDatabase: TEdit
     Left = 23

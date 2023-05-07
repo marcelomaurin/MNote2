@@ -206,7 +206,6 @@
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
-      <TargetOS Value="win64"/>
       <Optimizations>
         <OptimizationLevel Value="0"/>
       </Optimizations>

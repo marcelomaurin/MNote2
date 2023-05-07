@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, DBCtrls,
   DBGrids, PairSplitter, Menus, ComCtrls, StdCtrls, SynEdit, SynHighlighterSQL,
-  ZConnection, ZDataset, TypeDB, Tabela, SetMQuery, cfgdb, setlstbnc;
+  ZConnection, ZDataset, TypeDB, Tabela, SetMQuery, cfgdb, setlstbnc, setbanco;
 
 type
 
@@ -338,6 +338,7 @@ procedure TfrmMQuery.CarregaDB();
 var
    tnltvitem : TTreeNode;
 begin
+
   (*
   if (FSetMQuery = nil) then
   begin
@@ -368,7 +369,7 @@ begin
   FSetMQuery := TSetMQuery.create(); //Carrega contexto de informações de tela
   //Cria lista de conexoes
   FSetLSTBNC := TSetLSTBNC.create();
-
+  CarregaContexto();
 end;
 
 procedure TfrmMQuery.FormDestroy(Sender: TObject);
@@ -452,36 +453,45 @@ begin
 end;
 
 procedure TfrmMQuery.mieditClick(Sender: TObject);
+var
+  posicao : integer;
+  banco : TSetBanco;
+  objeto : TObject;
+  frmcfgdb : Tfrmcfgdb;
 begin
-  (*
+
   tvBanco.items.clear;
   zmycon.Connected:=false;
   zpostcon.connected := false;
-  if FSetBanco = nil then
+  //Pega dados da conexao
+  //LSTBNC
+  posicao := integer(TMenuItem(sender).tag);     //FLSTBNC
+  objeto := TObject(FlstBnc.LSTBNC.Objects[posicao]);
+  banco := TSetBanco(objeto);
+  if banco = nil then
   begin
-     FSetBanco := TSetBanco.create(0);
+     ShowMessage('Erro');
+     //Exit(1);
   end;
-  if frmcfgdb = nil then
-  begin
-       frmcfgdb := Tfrmcfgdb.Create(self);
-  end;
-  frmcfgdb.setbanco := FSetBanco;
+  frmcfgdb := Tfrmcfgdb.Create(self);
+
+  frmcfgdb.SetBanco := banco; //Aponta o banco que esta usando
   frmcfgdb.ShowModal;
   if (frmcfgdb.Save = true) then
   begin
     (*Salva o contexto*)
 
-    FSetBanco.HostName:=frmcfgdb.edHostname.text;
-    FSetBanco.Password:=frmcfgdb.edPassword.text;
-    FSetBanco.User:=frmcfgdb.edUsername.text;
-    FSetBanco.TipoBanco:=TypeDatabase(frmcfgdb.cbdbtype.ItemIndex);
-    FSetBanco.Port := frmcfgdb.edPort.text;
-    FSetBanco.Databasename:=frmcfgdb.edDatabase.text;
+    banco.HostName:=frmcfgdb.edHostname.text;
+    banco.Password:=frmcfgdb.edPassword.text;
+    banco.User:=frmcfgdb.edUsername.text;
+    banco.TipoBanco:=TypeDatabase(frmcfgdb.cbdbtype.ItemIndex);
+    banco.Port := frmcfgdb.edPort.text;
+    banco.Databasename:=frmcfgdb.edDatabase.text;
 
-    FSetBanco.SalvaContexto(false);
+    banco.SalvaContexto(false);
   end;
   AtualizaConexoesDB();
-  *)
+
 end;
 
 
@@ -505,7 +515,7 @@ begin
         frmcfgdb.edPort.text,
         frmcfgdb.edDatabase.text );
 
-    //FSetBanco.SalvaContexto(false);
+    FSetlstbnc.SalvaContexto(false);
   end;
   AtualizaConexoesDB();
   frmcfgdb.free;
@@ -545,20 +555,20 @@ begin
   begin
       children := TMenuItem.Create(item);
       children.Caption:= FSetLSTBNC.LSTBNC.Strings[a];
-      children.Tag:= ptrint( FSetLSTBNC.LSTBNC.Objects[a]);
+      children.Tag:= ptrint(a);
       children.ONClick := @mngenericoonclick;
       miedit := TMenuItem.create(children);
       miedit.Caption:= 'Edit';
-      miedit.Tag:=ptrint( FSetLSTBNC.LSTBNC.Objects[a]);
+      miedit.Tag:=ptrint(a);
       miedit.OnClick:= @mieditClick;
       children.Add(miedit);
       miDelete := TMenuItem.create(children);
       miDelete.Caption:= 'Delete';
-      miDelete.Tag:=ptrint( FSetLSTBNC.LSTBNC.Objects[a]);
+      miDelete.Tag:=ptrint(a);
       miDelete.OnClick:= @miDeleteClick;
       children.Add(miDelete);
       miConnect := TMenuItem.create(children);
-      miConnect.Tag:= ptrint( FSetLSTBNC.LSTBNC.Objects[a]);
+      miConnect.Tag:= ptrint(a);
       miConnect.Caption:= 'Connect';
       miConnect.OnClick:= @miConnectClick;
       children.add(miConnect);
@@ -576,18 +586,8 @@ procedure TfrmMQuery.AtualizaConexoesDB();
 begin
   //Limpa menu
   LimpaMenu();
-  //Atualiza conexoes
-  if (FSetLSTBNC <> nil) then
-  begin
-    //Fcfgdb.CarregaConexoes(mnconection1,)
-    if (FSetLSTBNC.LSTBNC.Count>0) then //Verifica se existem conexoes a serem criadas
-    begin
-       //Registra o item
-       RegistraMenu();
-    end;
-  end;
-
-
+  //Registra o item
+  RegistraMenu();
 end;
 
 
@@ -786,12 +786,15 @@ end;
 
 procedure TfrmMQuery.CarregaContexto;
 begin
-  if(FSetLSTBNC<> nil) then
+  (*
+  if(FSetLSTBNC= nil) then
   begin
-    AtualizaConexoesDB();
-  end else
-  begin
+    FSetLSTBNC := TSetLSTBNC.create();
   end;
+  *)
+  FSetLSTBNC.CarregaContexto();
+  AtualizaConexoesDB();
+
 end;
 
 procedure TfrmMQuery.ListarTabelasPost;
