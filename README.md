@@ -17,6 +17,8 @@ Ele é bem simples, porem foi desenvolvido para demonstrar a capacidade de desen
 
 [![MNote2]([IMAGE_URL](https://img.youtube.com/vi/3GepM6Q5Y1o/maxresdefault.jpg))](https://www.youtube.com/embed/3GepM6Q5Y1o)
 
+Site do Projeto:
+https://maurinsoft.com.br/?page_id=63
 
 English
 =======
@@ -25,7 +27,7 @@ MNote2 was created to be cross-platform.
 Running on windows, linux, mac, arm platforms.
 
 Project website:
-http://maurinsoft.com.br/index.php/projeto-mnote2/
+https://maurinsoft.com.br/?page_id=63
 
 Spanish
 =======
@@ -34,3 +36,4 @@ MNote2 fue creado para ser multiplataforma.
 Se ejecuta en plataformas windows, linux, mac, arm.
 
 Sitio web del proyecto:
+https://maurinsoft.com.br/?page_id=63
