@@ -461,10 +461,14 @@ end;
 procedure TfrmMQuery.miDeleteClick(Sender: TObject);
 var
    item : integer;
+   parente : TMenuItem;
 begin
-  item := integer(TMenuItem(sender).tag);
+  Parente := TMenuItem(sender).Parent;
+  item := integer(parente.tag);
+  //parente.Clear;
   //Inclua aqui o codigo de delecao
   FSetLSTBNC.DeleteItem(item);
+  LimpaMenu();
   AtualizaConexoesDB();
 end;
 
@@ -473,6 +477,7 @@ var
   posicao : integer;
   banco : TSetBanco;
   frmcfgdb : Tfrmcfgdb;
+  parente : TMenuItem;
 begin
 
   tvBanco.items.clear;
@@ -480,8 +485,9 @@ begin
   zpostcon.connected := false;
   //Pega dados da conexao
   //LSTBNC
-  posicao := integer(TMenuItem(sender).tag);     //FLSTBNC
-
+  parente := TMenuItem(sender).Parent;
+  posicao := integer(parente.tag);     //FLSTBNC
+  ShowMessage(parente.Caption);
   banco := TSetBanco(FlstBnc.LSTBNC.Objects[posicao]);
   if banco = nil then
   begin
@@ -545,15 +551,17 @@ var
    children : TMenuItem;
    a : integer;
 begin
-   item := mnitemNew; //Pega o pai
+   item := Conection; //Pega o pai
 
-   for a := 0 to item.Parent.Count-1 do
+   for a := 0 to item.Count-1 do
    begin
-       children := item.Parent.Items[a]; //Pega o filho
-       if (children.Tag <> 0) then //Verifica se é um objeto de menu
+       children := item.Items[a]; //Pega o filho
+       //if (children.tag <> 0) then //Verifica se é um objeto de menu
+       if (children.HasParent) then //Verifica se é um objeto de menu
        begin
-            //children.Delete;
-            children.Delete(a);
+            children.Destroy;
+            //children.Clear;
+            //children.Delete(a);
        end;
 
    end;
