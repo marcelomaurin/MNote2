@@ -179,7 +179,7 @@ begin
 
   //filename := format(mfilename,[Fnrocfg]);
 
-  if (FileExists(Fpath+filename)) then
+  if (DirectoryExists(fpath) and FileExists(Fpath+filename)) then
   begin
     arquivo.LoadFromFile(Fpath+filename);
     CarregaContexto();
@@ -196,7 +196,7 @@ end;
 constructor TSetBanco.create(Lfilename: string);
 begin
     //FNroCfg := pnrocfg;
-    filename :=Lfilename;
+    filename :=Lfilename+'.cfg';
     arquivo := TStringList.create();
     IdentificaArquivo(true);
 
@@ -219,6 +219,8 @@ begin
   arquivo.Append('USER:'+FUser);
   arquivo.Append('PASSWORD:'+FPassword);
   arquivo.Append('PORT:'+FPORT);
+  if DirectoryExists(fpath) then
+  begin
   arquivo.SaveToFile(Fpath+filename);
 end;
 

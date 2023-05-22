@@ -168,7 +168,7 @@ begin
       end;
   {$ENDIF}
 
-  if (FileExists(fpath+filename)) then
+  if (DirectoryExists(fpath) and FileExists(fpath+filename)) then
   begin
     arquivo.LoadFromFile(fpath+filename);
     CarregaContexto();
@@ -205,8 +205,10 @@ begin
   arquivo.Append('STAY:'+booltostr(FStay));
   arquivo.Append('LASTFILES:'+FLastFiles);
   arquivo.Append('IDIOMA:'+FIDIOMA);
-
-  arquivo.SaveToFile(fpath+filename);
+  if (DirectoryExists(fpath)) then
+  begin
+       arquivo.SaveToFile(fpath+filename);
+  end;
 end;
 
 destructor TSetMQuery.destroy();

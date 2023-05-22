@@ -363,9 +363,6 @@ end;
 
 procedure TfrmMQuery.FormCreate(Sender: TObject);
 begin
-
-
-
   FSetMQuery := TSetMQuery.create(); //Carrega contexto de informações de tela
   //Cria lista de conexoes
   FSetLSTBNC := TSetLSTBNC.create();
@@ -488,7 +485,8 @@ begin
   parente := TMenuItem(sender).Parent;
   posicao := integer(parente.tag);     //FLSTBNC
   ShowMessage(parente.Caption);
-  banco := TSetBanco(FlstBnc.LSTBNC.Objects[posicao]);
+  //banco := TSetBanco(FlstBnc.LSTBNC.Objects[posicao]);
+  banco := FSetLSTBNC.GetSetBanco(posicao);
   if banco = nil then
   begin
      ShowMessage('Erro');
@@ -574,24 +572,24 @@ var
    a : integer;
 begin
   item := Conection; //Pega o pai
-  for a := 0 to FSetLSTBNC.LSTBNC.Count-1 do
+  for a := 0 to FSetLSTBNC.count-1 do
   begin
       children := TMenuItem.Create(item);
       children.Caption:= FSetLSTBNC.LSTBNC.Strings[a];
-      children.Tag:= ptrint(a);
+      children.Tag:= PtrInt(a);
       children.ONClick := @mngenericoonclick;
       miedit := TMenuItem.create(children);
       miedit.Caption:= 'Edit';
-      miedit.Tag:=ptrint(a);
+      miedit.Tag:=PtrInt(a);
       miedit.OnClick:= @mieditClick;
       children.Add(miedit);
       miDelete := TMenuItem.create(children);
       miDelete.Caption:= 'Delete';
-      miDelete.Tag:=ptrint(a);
+      miDelete.Tag:=PtrInt(a);
       miDelete.OnClick:= @miDeleteClick;
       children.Add(miDelete);
       miConnect := TMenuItem.create(children);
-      miConnect.Tag:= ptrint(a);
+      miConnect.Tag:= PtrInt(a);
       miConnect.Caption:= 'Connect';
       miConnect.OnClick:= @miConnectClick;
       children.add(miConnect);

@@ -179,7 +179,7 @@ begin
 
   //filename := format(mfilename,[Fnrocfg]);
 
-  if (FileExists(Fpath+filename)) then
+  if (DirectoryExists(fpath) and FileExists(Fpath+filename)) then
   begin
     arquivo.LoadFromFile(Fpath+filename);
     CarregaContexto();
@@ -219,7 +219,10 @@ begin
   arquivo.Append('USER:'+FUser);
   arquivo.Append('PASSWORD:'+FPassword);
   arquivo.Append('PORT:'+FPORT);
-  arquivo.SaveToFile(Fpath+filename);
+  if DirectoryExists(fpath) then
+  begin
+    arquivo.SaveToFile(Fpath+filename);
+  end;
 end;
 
 destructor TSetBanco.destroy();

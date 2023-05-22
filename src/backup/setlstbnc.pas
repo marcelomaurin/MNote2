@@ -20,8 +20,11 @@ type
   private
         Farquivo :Tstringlist;
         FLSTBNC : TStringList;
+        FSetBanco : TSetBanco;
         Fpath : String;
+        FCount : integer;
         procedure Default();
+        function GetCount(): integer;
   public
         constructor create();
         destructor destroy();
@@ -37,16 +40,21 @@ type
         procedure SalvaContexto(flag : boolean);
         Procedure CarregaContexto();
         procedure IdentificaArquivo(flag : boolean);
+        function GetSetBanco(indice : integer) :  TSetBanco;
+
         property LSTBNC: TStringlist read FLSTBNC;
+        property Count : integer read GetCount;
   end;
 
-  var
-    FSetLSTBNC : TSetLSTBNC;
+var
+  FSetLSTBNC :  TSetLSTBNC;
+
 
 
 implementation
 
-
+var
+  FSetBanco : TSetBanco;
 
 
 
@@ -81,6 +89,11 @@ begin
 
 end;
 
+function TSetLSTBNC.GetCount: integer;
+begin
+   result := FLSTBNC.Count;
+end;
+
 
 
 //Metodo construtor
@@ -90,17 +103,22 @@ begin
     FLSTBNC := TStringlist.Create;
 
     IdentificaArquivo(true); //Pega referencia e carrega em memoria
+    CarregaContexto();
 
 end;
 
 destructor TSetLSTBNC.destroy();
-//var
-  //FSetBanco : TSetBanco;
 begin
   SalvaContexto(true);
   farquivo.free;
   farquivo := nil;
   //FSetBanco : TSetBanco;
+end;
+
+function TSetLSTBNC.GetSetBanco(indice: integer): TSetBanco;
+begin
+  result :=  TSetBanco(FLSTBNC.Objects[indice]);
+
 end;
 
 //Registra uma nova conexao
@@ -112,8 +130,7 @@ function TSetLSTBNC.NovaConexao(
         LPort: string;
         LDatabase: string
         ):TSetBanco;
-var
-  FSetBanco : TSetBanco;
+
 begin
   FSetBanco := TSetBanco.create(LHostname+'_'+Ldatabase);
   FSetBanco.Hostname := LHostName;
@@ -133,7 +150,7 @@ end;
 function TSetLSTBNC.DeleteItem(item: integer): boolean;
 begin
   FLSTBNC.Delete(item);
-  result  true;
+  result := true;
 end;
 
 
@@ -142,10 +159,21 @@ var
   posicao: integer;
   info : TStringlist;
   a: integer;
-  FSetBanco : TSetBanco;
+  //FSetBanco : TSetBanco;
   auxiliar : string;
 begin
     info := TStringlist.create();
+    if (FileExists(Fpath+mfilename)) then
+    begin
+      farquivo.LoadFromFile(Fpath+mfilename);
+      //CarregaContexto();
+    end
+    else
+    begin
+      default();
+      //SalvaContexto(false);
+    end;
+
     //Varre arquivo e busca por banco
     for a := 0 to Farquivo.Count-1 do
     begin
@@ -160,7 +188,7 @@ begin
            begin
               FSetBanco.nrocfg := FLstBNC.Count;
            end;
-           FSetBanco.SalvaContexto(false);
+           //FSetBanco.SalvaContexto(false);
 
            FLSTBNC.AddObject(auxiliar,TObject(FSetBanco));
          end;
@@ -198,18 +226,10 @@ begin
   //filename := format(mfilename,[Fnrocfg]);
   //filename := mfilename;
 
-  if (FileExists(Fpath+mfilename)) then
-  begin
-    farquivo.LoadFromFile(Fpath+mfilename);
-    CarregaContexto();
-  end
-  else
-  begin
-    default();
-    //SalvaContexto(false);
-  end;
 
 end;
+
+
 
 
 

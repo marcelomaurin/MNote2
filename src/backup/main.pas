@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, SynEdit,  Forms,
   Controls, Graphics, Dialogs, Menus, ExtCtrls, ComCtrls, StdCtrls, Grids,
-  PopupNotifier, item, types, finds, setmain, mquery, TypeDB, folders, funcoes,
+  PopupNotifier, item, types, finds, setmain,  TypeDB, folders, funcoes,
   LCLType, chgtext, hint, registro, splash, setFolders, config, SynEditKeyCmds;
 
 
@@ -749,7 +749,7 @@ begin
     frmmquery := nil;
   end;
 
-    if (frmFolders <> nil) then
+  if (frmFolders <> nil) then
   begin
       frmFolders.destroy;
       frmFolders := nil;
@@ -1156,6 +1156,7 @@ end;
 
 procedure TfrmMNote.MenuItem4Click(Sender: TObject);
 begin
+  (*
   if frmmquery = nil then
   begin
     frmmquery := TFrmMQuery.create(self);
@@ -1168,6 +1169,7 @@ begin
   begin
     frmmquery.show();
   end;
+  *)
 end;
 
 procedure TfrmMNote.miConfigClick(Sender: TObject);
