@@ -14,7 +14,7 @@ object frmMNote: TfrmMNote
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '2.2.6.0'
   object Panel1: TPanel
     Left = 0
     Height = 62
@@ -189,6 +189,7 @@ object frmMNote: TfrmMNote
       OnClick = MenuItem12Click
       object MenuItem4: TMenuItem
         Caption = 'MQuery'
+        Enabled = False
         ImageIndex = 8
         ShortCut = 115
         OnClick = MenuItem4Click
