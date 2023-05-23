@@ -39,22 +39,28 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="5">
+    <RequiredPackages Count="7">
       <Item1>
-        <PackageName Value="lr_zeosdb"/>
+        <PackageName Value="ExtraHighlighters"/>
       </Item1>
       <Item2>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="python4lazarus_package"/>
       </Item2>
       <Item3>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="lr_zeosdb"/>
       </Item3>
       <Item4>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="lnetvisual"/>
       </Item4>
       <Item5>
-        <PackageName Value="LCL"/>
+        <PackageName Value="zcomponent"/>
       </Item5>
+      <Item6>
+        <PackageName Value="SynEdit"/>
+      </Item6>
+      <Item7>
+        <PackageName Value="LCL"/>
+      </Item7>
     </RequiredPackages>
     <Units Count="25">
       <Unit0>

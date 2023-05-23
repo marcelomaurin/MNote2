@@ -34,6 +34,7 @@ type
         FWidth : integer;
         FFONT : TFont;
         FCHATGPT : string;
+        FDllPath : string;
 
         FRunScript : string;    //Script de Compilação
         FDebugScript : string;  //Script de Debug
@@ -49,6 +50,7 @@ type
         procedure SetLastFiles(value : string);
         procedure SetFont(value : TFont);
         procedure SetCHATGPT(value : String);
+        procedure SetDllPath( value : string);
         procedure Default();
   public
         constructor create();
@@ -70,6 +72,7 @@ type
         property Install : string read FInstall write FInstall;
         property Font : TFont read FFont write SetFont;
         property CHATGPT: String read FCHATGPT write SetCHATGPT;
+        property DLLPath : String read FDllPath write SetDllPath;
   end;
 
   var
@@ -94,6 +97,7 @@ begin
     FPosY := 100;
     FFixar :=false;
     FStay := false;
+    FDllPath:= ExtractFilePath(ApplicationName);
     //FLastFiles :="";
     //    FPATH : string;
     FHeight :=400;
@@ -146,6 +150,11 @@ end;
 procedure TSetMain.SetCHATGPT(value: String);
 begin
   FCHATGPT:= value;
+end;
+
+procedure TSetMain.SetDllPath(value: string);
+begin
+  FDllPath:= value;
 end;
 
 procedure TSetMain.CarregaContexto();
@@ -208,6 +217,10 @@ begin
     begin
       FCHATGPT := RetiraInfo(arquivo.Strings[posicao]);
     end;
+    if  BuscaChave(arquivo,'DLLPATH:',posicao) then
+    begin
+      FDLLPATH := RetiraInfo(arquivo.Strings[posicao]);
+    end;
 
 end;
 
@@ -258,8 +271,6 @@ begin
     arquivo := TStringList.create();
     FFONT := TFont.create();
     IdentificaArquivo(true);
-
-
 end;
 
 
@@ -285,6 +296,7 @@ begin
   arquivo.Append('INSTALLSCRIPT:'+FInstall);
   arquivo.Append('FONT:'+FontToString(FFONT));
   arquivo.Append('CHATGPT:'+FCHATGPT);
+  arquivo.Append('DLLPATH:'+FDLLPA);
 
   arquivo.SaveToFile(fpath+filename);
 end;

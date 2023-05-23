@@ -5,10 +5,10 @@ unit main;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, SynEdit,  Forms,
-  Controls, Graphics, Dialogs, Menus, ExtCtrls, ComCtrls, StdCtrls, Grids,
-  PopupNotifier, item, types, finds, setmain,  TypeDB, folders, funcoes,
-  LCLType, chgtext, hint, registro, splash, setFolders, config, SynEditKeyCmds;
+  Classes, SysUtils, FileUtil, SynEdit, Forms, Controls, Graphics, Dialogs,
+  Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
+  setmain, TypeDB, folders, funcoes, LCLType, chgtext, hint, registro, splash,
+  setFolders, config,  SynEditKeyCmds;
 
 
 const versao = '2.26';
@@ -165,7 +165,7 @@ type
       var Handled: Boolean);
     procedure TabSheet2ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
-    function Callprg(filename: string; var Output : string): boolean;
+
     procedure MudaTodasaFontes();
   private
     { private declarations }
@@ -742,13 +742,13 @@ begin
   Fsetmain.posy := top;
   Fsetmain.width := Width;
   Fsetmain.Height:= Height;
-
+  (*
   if (frmMQuery <> nil) then
   begin
     frmMQuery.Destroy;
     frmmquery := nil;
   end;
-
+  *)
   if (frmFolders <> nil) then
   begin
       frmFolders.destroy;
@@ -886,7 +886,7 @@ begin
      filename := FSetMain.CleanScript;
      if (filename <> '') then
      begin
-          if(Callprg(filename, Output)=true) then
+          if(Callprg(filename, '', Output)=true) then
           begin
                //showmessage('Run program!!');
                MessageHint('Clean script'+ filename);
@@ -917,7 +917,7 @@ var
      filename := FSetMain.DebugScript;
      if (filename <> '') then
      begin
-          if(Callprg(filename, Output)=true) then
+          if(Callprg(filename,'', Output)=true) then
           begin
                //showmessage('Run program!!');
                MessageHint('Debug script'+ filename);
@@ -990,7 +990,7 @@ var
      filename := FSetMain.Install;
      if (filename <> '') then
      begin
-          if(Callprg(filename, Output)=true) then
+          if(Callprg(filename, '', Output)=true) then
           begin
                //showmessage('Run program!!');
                MessageHint('Install script'+ filename);
@@ -1093,64 +1093,19 @@ begin
 
 end;
 
-function TfrmMNote.Callprg(filename: string; var Output: string): boolean;
-var
-   source : string;
-   resultado : boolean;
-   tb : TTabSheet;
-   syn : TSynEdit;
-   item : TItem;
-   //output : String;
-
-begin
-   resultado := false;
-   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-
-   {$IFDEF WINDOWS}
-   source := item.DirName+'\'+item.Name;
-   resultado :=RunBatch(self.Handle,filename, source);
-   {$ENDIF}
-
-   {$IFDEF LINUX}
-   source := item.DirName+'/'+item.Name;
-   resultado :=RunBatch(filename, source, Output);
-   {$ENDIF}
-
-   {$ifdef Darwin}
-   source := item.DirName+'/'+item.Name;
-   {$ENDIF}
-    result := resultado;
-
-end;
 
 procedure TfrmMNote.mnrunClick(Sender: TObject);
 var
-   Output : string;
-   filename : string;
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
 begin
    mnSalvarClick(self); (*Salva antes de rodar*)
-   filename := FSetMain.RunScript;
-   if (filename <> '') then
-   begin
-        if(Callprg(filename, Output)=true) then
-        begin
-             //showmessage('Run program!!');
-             MessageHint('Run script'+ filename);
-             meResult.Lines.Text:= Output;
-             pnResult.Visible:= true;
-        end
-        else
-        begin
-             //showmessage('Fail run!!');
-             MessageHint('fail run script'+ filename);
-             pnResult.Visible:= false;
-        end;
-   end
-   else
-   begin
-       MessageHint('Config RUN need!'+ filename);
-       pnResult.Visible:= false;
-   end;
+   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+   item.Resultado := meResult;
+   pnResult.Visible:=;
+   item.Run();
+   syn := item.syn;
 
 end;
 

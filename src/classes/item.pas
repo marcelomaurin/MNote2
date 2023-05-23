@@ -8,7 +8,9 @@ uses
   Classes, SysUtils, contnrs, SynCompletion, ExtCtrls, SynEdit, SynHighlighterPas,
   SynHighlighterAny,SynHighlighterPo,SynHighlighterCpp,SynHighlighterSQL,SynHighlighterPython,
   SynHighlighterPHP,synhighlighterunixshellscript,SynHighlighterJava,SynHighlighterBat,
-  SynHighlighterJScript,SynHighlighterCss, Graphics, SynEditKeyCmds, LCLType, mquery;
+  SynHighlighterJScript,SynHighlighterCss, SynHighlighterJSON,
+  Graphics, SynEditKeyCmds, LCLType, mquery,
+  PythonEngine, PythonGUIInputOutput, setmain, funcoes, hint, Dialogs, StdCtrls;
 
 type
 TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BAT,
@@ -19,15 +21,18 @@ TTipoInfo = (Name, Path);
 
 { TItem }
 
-TItem = class
+TItem = class(TComponent)
       private
          FListaItem: TObjectList;
          FPalavrasReservadas : TStringList;
          FItemType : TTypeItem; (*Nao esta sendo usado p nada*)
          Fsyn : TSynEdit;
+         FResultado : TCustomMemo;
          FSynAutoComplete: TSynAutoComplete;
          Ftimer : TTimer;
-         FSender: TObject;
+         FSender: TComponent;
+         FPythonEngine: TPythonEngine;
+         FPythonGUIInputOutput1: TPythonGUIInputOutput;
 
          (*Decoration*)
          FSynPasSyn1: TSynPasSyn;
@@ -57,8 +62,9 @@ TItem = class
                      SourceValue: string; var SourceStart, SourceEnd: TPoint; KeyChar: TUTF8Char;
                      Shift: TShiftState);
          procedure SynCompletion1SearchPosition(var APosition: integer);
+         procedure MessageHint(sender : TComponent; info: string);
       public
-         Name: String;
+         Nome: String;
          FileName : String;
          DirName : String;
          FileExt : string;
@@ -78,11 +84,14 @@ TItem = class
          procedure AtribuiNovoNome();
          procedure Savefile(arquivo: string);
          procedure Loadfile(arquivo: string);
+         procedure SetResultado( value : TCustomMemo);
+         procedure Run();
          //function classificaTipo(arquivo : string): TTypeItem;
          property ItemType : TTypeItem read FItemType write setItemType;
          property syn :TSynEdit read Fsyn write setSyn;
          property PalavrasReservadas : TStringlist read FPalavrasReservadas write FPalavrasReservadas;
          property SynAutoComplete: TSynAutoComplete read FSynAutoComplete write FSynAutoComplete;
+         property Resultado : TCustomMemo read FResultado  write SetResultado;
 end;
 
 implementation
@@ -205,7 +214,7 @@ begin
   Ftimer.OnTimer:= @TimerEvento;
   FPalavrasReservadas.clear;
   if (FSynCompletion = nil) then
-     FSynCompletion := TSynCompletion.Create(TComponent(Fsender));
+     FSynCompletion := TSynCompletion.Create(Fsender);
   FSynCompletion.Editor := Fsyn;
   FSynCompletion.OnCodeCompletion:=@SynCompletion1CodeCompletion;
   FSynCompletion.OnExecute:=@SynCompletion1Execute;
@@ -217,7 +226,7 @@ begin
 
   ItemType :=  ti_NODEFINE;
   ProjetoTipo := pt_NODEFINE;
-  Name := 'Novo';
+  Nome := 'Novo';
   DirName := '';
   FileName := '';
   FileExt := '';
@@ -239,7 +248,7 @@ begin
   begin
     if (FSynPasSyn1 = nil) then
     begin
-      FSynPasSyn1 := TSynPasSyn.Create(TComponent(FSender));
+      FSynPasSyn1 := TSynPasSyn.Create(FSender);
     end;
     Fsyn.Highlighter := FSynPasSyn1;
     FItemType := ti_PAS;
@@ -248,7 +257,7 @@ begin
   begin
     if(FSynUNIXShellScriptSyn1 = nil) then
     begin
-      FSynUNIXShellScriptSyn1 := TSynUNIXShellScriptSyn.create(TComponent(FSender));
+      FSynUNIXShellScriptSyn1 := TSynUNIXShellScriptSyn.create(FSender);
     end;
     Fsyn.Highlighter := FSynUNIXShellScriptSyn1;
     FItemType := ti_SHELL;
@@ -257,7 +266,7 @@ begin
   begin
     if(FSynPHPSyn1 = nil) then
     begin
-      FSynPHPSyn1 := TSynPHPSyn.create(TComponent(FSender));
+      FSynPHPSyn1 := TSynPHPSyn.create(FSender);
     end;
 
     Fsyn.Highlighter := FSynPHPSyn1;
@@ -267,7 +276,7 @@ begin
   begin
     if(FSynCppSyn1 = nil) then
     begin
-      FSynCppSyn1 := TSynCppSyn.create(TComponent(FSender));
+      FSynCppSyn1 := TSynCppSyn.create(FSender);
     end;
     Fsyn.Highlighter := FSynCppSyn1;
     FItemType := ti_CCP;
@@ -277,7 +286,7 @@ begin
   begin
     if(FSynCppSyn1 = nil) then
     begin
-      FSynCppSyn1 := TSynCppSyn.create(TComponent(FSender));
+      FSynCppSyn1 := TSynCppSyn.create(FSender);
     end;
     Fsyn.Highlighter := FSynCppSyn1;
     FItemType := ti_CCP;
@@ -288,7 +297,7 @@ begin
   begin
     if(FSynCppSyn1 = nil) then
     begin
-      FSynCppSyn1 := TSynCppSyn.create(TComponent(FSender));
+      FSynCppSyn1 := TSynCppSyn.create(FSender);
     end;
     Fsyn.Highlighter := FSynCppSyn1;
     FItemType := ti_CCP;
@@ -298,7 +307,7 @@ begin
   begin
     if(FSynSQLSyn1 = nil) then
     begin
-      FSynSQLSyn1 := TSynSQLSyn.create(TComponent(FSender));
+      FSynSQLSyn1 := TSynSQLSyn.create(FSender);
     end;
     Fsyn.Highlighter := FSynSQLSyn1;
     FItemType := ti_SQL;
@@ -314,16 +323,17 @@ begin
   begin
     if(FSynPythonSyn1 = nil) then
     begin
-      FSynPythonSyn1 := TSynPythonSyn.create(TComponent(FSender));
+      FSynPythonSyn1 := TSynPythonSyn.create(FSender);
     end;
     Fsyn.Highlighter := FSynPythonSyn1;
+    //Fsyn.Highlighter := FSynUNIXShellScriptSyn1;
     FItemType := ti_PY;
   end;
   if(FileExt='.java') then
   begin
     if(FSynJavaSyn1 = nil) then
     begin
-      FSynJavaSyn1 := TSynJavaSyn.create(TComponent(FSender));
+      FSynJavaSyn1 := TSynJavaSyn.create(FSender);
     end;
     Fsyn.Highlighter := FSynJavaSyn1;
     FItemType := ti_JAVA;
@@ -332,7 +342,7 @@ begin
   begin
     if(FSynCssSyn1 = nil) then
     begin
-      FSynCssSyn1 := TSynCssSyn.create(TComponent(FSender));
+      FSynCssSyn1 := TSynCssSyn.create(FSender);
     end;
     Fsyn.Highlighter := FSynCssSyn1;
     FItemType := ti_CSS;
@@ -341,7 +351,7 @@ begin
   begin
     if(FSynJScriptSyn1 = nil) then
     begin
-      FSynJScriptSyn1 := TSynJScriptSyn.create(TComponent(FSender));
+      FSynJScriptSyn1 := TSynJScriptSyn.create(FSender);
     end;
     Fsyn.Highlighter := FSynJScriptSyn1;
     FItemType := ti_js;
@@ -456,9 +466,9 @@ end;
 constructor TItem.Create(Sender: TComponent);
 begin
   FSender := Sender;
-  Ftimer := TTimer.create(TComponent(FSender));
+  Ftimer := TTimer.create(FSender);
   FPalavrasReservadas := TStringlist.create();
-  FSynCompletion := TSynCompletion.create(TComponent(Fsender));
+  FSynCompletion := TSynCompletion.create(Fsender);
   FSynAutoComplete:= TSynAutoComplete.Create(FSynCompletion);
 
   FSynAutoComplete.ExecCommandID:= ecSynAutoCompletionExecute;
@@ -485,7 +495,7 @@ begin
   //Atribui parametros de Arquivo
   if (Arquivo <> '') then
   begin
-       Name := ExtractFileName(Arquivo);
+       Nome := ExtractFileName(Arquivo);
        DirName := ExtractFileDir(Arquivo);
        FileName := Arquivo;
        FileExt:= ExtractFileExt(Arquivo);
@@ -508,18 +518,18 @@ end;
 function TItem.PesquisaPar(param: string; lst: TStringlist): string;
 var
   a: integer;
-  resultado : string;
+  resultado1 : string;
 begin
-  resultado := '';
+  resultado1 := '';
   for a:= 0 to lst.Count-1 do
   begin
     if (pos(param,lst.Strings[a])>=0) then
     begin
-       resultado := copy( lst.Strings[a], length(param),length(lst.Strings[a]));
+       resultado1 := copy( lst.Strings[a], length(param),length(lst.Strings[a]));
 
     end;
   end;
-  result := resultado;
+  result := resultado1;
 
 end;
 
@@ -528,6 +538,121 @@ begin
   AtribuiNome(arquivo);
   //FItemType := classificaTipo(arquivo);
   CheckTipoArquivo();
+
+end;
+
+procedure TItem.SetResultado(value: TCustomMemo);
+begin
+  FResultado := value;
+end;
+
+procedure TItem.MessageHint(sender : TComponent; info: string);
+var
+  frmHint : TfrmHint;
+begin
+  frmHint := TfrmHint.create(sender);
+  frmHint.messagehint(info);
+end;
+
+procedure TItem.Run();
+var
+
+   Output : string;
+   filenamerun : string;
+   //codigo : UnicodeString;
+
+begin
+   //FItemType:= value;
+  case FItemType of
+    ti_PY :
+    begin
+       if (FPythonEngine = nil) then
+       begin
+          FPythonEngine := TPythonEngine.Create(FSender);
+       end;
+       if(FResultado = nil) then
+       begin
+          FResultado.Lines.clear;
+       end;
+       if (FPythonGUIInputOutput1 = nil) then
+       begin
+            FPythonGUIInputOutput1 := TPythonGUIInputOutput.create(FSender);
+       end;
+       FPythonEngine.Name := 'PythonEngine';
+       FPythonEngine.AutoLoad := true;
+       FPythonEngine.FatalAbort := True;
+       FPythonEngine.FatalMsgDlg := True;
+       FPythonEngine.UseLastKnownVersion := True;
+       FPythonEngine.AutoLoad:= true;
+       //FPythonEngine.PythonPath:='C:\Users\marcelo.maurin\AppData\Local\Programs\Python\Python311\';
+       //FPythonEngine.DllPath:='C:\Users\marcelo.maurin\AppData\Local\Programs\Python\Python311\';
+       FPythonEngine.DllPath:= FSetMain.DLLPath;
+       //PythonEngine.RegVersion :=  '3.11';
+
+       //  PythonEngine.DllName := 'libpython3.7.dylib';
+       //  PythonEngine.DllPath :=
+       //    '/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/lib/';
+       //  PythonEngine.RegVersion := '3.7';
+       //  PythonEngine.UseLastKnownVersion := False;
+
+       FPythonEngine.AutoFinalize := True;
+       FPythonEngine.InitThreads := True;
+       FPythonEngine.PyFlags := [pfInteractive];
+       FPythonEngine.IO := FPythonGUIInputOutput1;
+       if( FResultado <> nil) then
+       begin
+          FPythonGUIInputOutput1.Output :=FResultado;
+       end;
+       if not FPythonEngine.Initialized then
+       begin
+          FPythonEngine.LoadDll;
+
+       //PythonEngine.Py_Initialize;
+       end;
+
+       filenamerun:= FileName;
+
+
+       //showmessage(filenamerun);
+       FPythonEngine.ExecFile(filenamerun);
+
+       //codigo := UTF8Encode(Fsyn.text);
+       //PythonEngine.ExecStrings(Fsyn.Lines);
+
+       //FResultado.Lines := PythonGUIInputOutput1.Output.Lines;
+
+       //PythonEngine.;
+       //PythonGUIInputOutput1.free;
+       //PythonEngine.Free;
+    end;
+    else
+    begin
+
+       filenamerun := FSetMain.RunScript;
+       if (filenamerun <> '') then
+       begin
+            if(Callprg(filenamerun, '', Output)=true) then
+            begin
+                 //showmessage('Run program!!');
+                 MessageHint(Fsender,'Run script'+ filenamerun);
+                 //meResult.Lines.Text:= Output;
+                 //pnResult.Visible:= true;
+            end
+            else
+            begin
+                 //showmessage('Fail run!!');
+                 MessageHint(Fsender,'fail run script'+ filenamerun);
+                 //pnResult.Visible:= false;
+            end;
+       end
+       else
+       begin
+           MessageHint(Fsender,'Config RUN need!'+ filenamerun);
+           //pnResult.Visible:= false;
+       end;
+    end;
+
+  end;
 
 end;
 

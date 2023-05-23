@@ -1,18 +1,18 @@
 object frmconfig: Tfrmconfig
   Left = 579
-  Height = 433
+  Height = 481
   Top = 299
   Width = 554
   Caption = 'Config'
-  ClientHeight = 433
+  ClientHeight = 481
   ClientWidth = 554
   DesignTimePPI = 120
   OnCreate = FormCreate
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '2.2.6.0'
   object btSave: TButton
     Left = 432
     Height = 31
-    Top = 392
+    Top = 432
     Width = 94
     Caption = 'Save'
     OnClick = btSaveClick
@@ -21,7 +21,7 @@ object frmconfig: Tfrmconfig
   object btCancel: TButton
     Left = 312
     Height = 31
-    Top = 392
+    Top = 432
     Width = 94
     Caption = 'Cancel'
     OnClick = btCancelClick
@@ -111,5 +111,22 @@ object frmconfig: Tfrmconfig
     Width = 420
     TabOrder = 6
     TextHint = 'CHATGPT TOKEN'
+  end
+  object Label6: TLabel
+    Left = 19
+    Height = 20
+    Top = 352
+    Width = 77
+    Caption = 'DLL Python:'
+    ParentColor = False
+  end
+  object edDLLPATH: TEdit
+    Left = 19
+    Height = 28
+    Hint = 'DLL PATH Python'
+    Top = 376
+    Width = 420
+    TabOrder = 7
+    TextHint = 'DLL PATH Python'
   end
 end

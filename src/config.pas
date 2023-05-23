@@ -15,6 +15,7 @@ type
     btSave: TButton;
     btCancel: TButton;
     edCHATGPT: TEdit;
+    edDLLPATH: TEdit;
     edRun: TEdit;
     edInstall: TEdit;
     edClean: TEdit;
@@ -24,6 +25,7 @@ type
     Label3: TLabel;
     Label4: TLabel;
     Label5: TLabel;
+    Label6: TLabel;
     procedure btCancelClick(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -48,6 +50,8 @@ begin
   FSetMain.CleanScript:= edClean.text;
   FSetMain.RunScript:=edRun.text;
   FSetMain.DebugScript:=edDebug.text;
+  FSetMain.DLLPath:= edDLLPATH.text;
+  FSetMain.CHATGPT:= edCHATGPT.text;
   FSetMain.SalvaContexto(false);
   close;
 end;
@@ -58,7 +62,8 @@ begin
   edclean.text := FSetMain.CleanScript;
   edRun.text := FSetMain.RunScript;
   edDebug.text := FSetMain.DebugScript;
-
+  edCHATGPT.Text := FSetMain.CHATGPT;
+  edDLLPATH.text := FSetMain.DLLPath;
 end;
 
 procedure Tfrmconfig.btCancelClick(Sender: TObject);
