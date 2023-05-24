@@ -19,6 +19,32 @@ TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BAT,
 TProjetoTipo = (pt_NODEFINE, pt_TEXT, pt_ProjetoRoot, pt_ProjetoSetup, pt_ProjetoSetupItem, pt_ProjetoFiles, pt_ProjetoDirFiles, pt_ProjetoFilesItem);
 TTipoInfo = (Name, Path);
 
+TPythonCtrl = class(TComponent)
+   private
+         FPythonEngine: TPythonEngine;
+         FPythonGUIInputOutput1: TPythonGUIInputOutput;
+         //FVarsList: PPyObject;
+         FVarsDict: PPyObject;
+         FVarsGlobal: PPyObject;
+         FVarsGlobalKeys : PPyObject;
+         FVarsLocal: PPyObject;
+         FVarsLocalKeys : PPyObject;
+         //FVarsLocal: PPyObject;
+         FVarListGlobal_Size: NativeInt;
+         FVarListLocal_Size: NativeInt;
+   public
+         property VarsDict: PPyObject read FVarsDict write FVarsDict;
+         property PythonGUIInputOutput1: TPythonGUIInputOutput read FPythonGUIInputOutput1  write FPythonGUIInputOutput1;
+         property VarsGlobal: PPyObject read FVarsGlobal write FVarsGlobal;
+         property VarsLocal: PPyObject read FVarsLocal write FVarsLocal;
+         property VarsGlobalKeys : PPyObject read  FVarsGlobalKeys write FVarsGlobalKeys;
+         property VarsLocalKeys : PPyObject read  FVarsLocalKeys write FVarsLocalKeys;
+         property PythonEngine: TPythonEngine read FPythonEngine write FPythonEngine;
+         property VarListGlobal_Size : NativeInt read FVarListGlobal_Size write FVarListGlobal_Size;
+         property VarListLocal_Size : NativeInt read FVarListLocal_Size write FVarListLocal_Size;
+
+end;
+
 { TItem }
 
 TItem = class(TComponent)
@@ -31,22 +57,13 @@ TItem = class(TComponent)
          FSynAutoComplete: TSynAutoComplete;
          Ftimer : TTimer;
          FSender: TComponent;
-         FPythonEngine: TPythonEngine;
-         FPythonGUIInputOutput1: TPythonGUIInputOutput;
+         FPythonCtrl : TPythonCtrl; //Python controle
          FError : Boolean;
          FLinhaError : integer;
          FColumError : integer;
          FFileError : String; //Erro no arquivo
 
-         //FVarsList: PPyObject;
-         FVarsDict: PPyObject;
-         FVarsGlobal: PPyObject;
-         FVarsGlobalKeys : PPyObject;
-         FVarsLocal: PPyObject;
-         FVarsLocalKeys : PPyObject;
-         //FVarsLocal: PPyObject;
-         FVarListGlobal_Size: NativeInt;
-         FVarListLocal_Size: NativeInt;
+
 
          FMainModule : PPyObject;
          (*Decoration*)
@@ -110,16 +127,8 @@ TItem = class(TComponent)
          property LinhaError : integer read FLinhaError;
          property Error : boolean read FError;
          property FileError : String read FFileError;
-         property VarsDict: PPyObject read FVarsDict;
-         property VarsGlobal: PPyObject read FVarsGlobal;
-         property VarsLocal: PPyObject read FVarsLocal;
-         property VarsGlobalKeys : PPyObject read  FVarsGlobalKeys;
-         property VarsLocalKeys : PPyObject read  FVarsLocalKeys;
-         property PythonEngine: TPythonEngine read FPythonEngine;
+         property PythonCtrl : TPythonCtrl read FPythonCtrl;
 
-
-         property VarListGlobal_Size : NativeInt read FVarListGlobal_Size;
-         property VarListLocal_Size : NativeInt read FVarListLocal_Size;
 end;
 
 implementation
@@ -504,7 +513,7 @@ begin
   FSynAutoComplete:= TSynAutoComplete.Create(FSynCompletion);
 
   FSynAutoComplete.ExecCommandID:= ecSynAutoCompletionExecute;
-
+  FPythonCtrl := TPythonCtrl.Create(sender); //Python controle
   //FVarsList := TStringList.Create;
 
   default();
@@ -604,29 +613,29 @@ begin
   case FItemType of
     ti_PY :
     begin
-       if (FPythonEngine = nil) then
+       if (FPythonCtrl.PythonEngine = nil) then
        begin
-          FPythonEngine := TPythonEngine.Create(FSender);
+          FPythonCtrl.PythonEngine := TPythonEngine.Create(FSender);
        end;
        if(FResultado = nil) then
        begin
           FResultado.Lines.clear;
        end;
-       if (FPythonGUIInputOutput1 = nil) then
+       if (FPythonCtrl.PythonGUIInputOutput1 = nil) then
        begin
-            FPythonGUIInputOutput1 := TPythonGUIInputOutput.create(FSender);
+            FPythonCtrl.PythonGUIInputOutput1 := TPythonGUIInputOutput.create(FSender);
        end;
        //FVarsList.Clear;
-       FPythonEngine.Name := 'PythonEngine';
-       FPythonEngine.AutoLoad := true;
-       FPythonEngine.FatalAbort := True;
-       FPythonEngine.FatalMsgDlg := True;
-       FPythonEngine.UseLastKnownVersion := True;
-       FPythonEngine.AutoLoad:= true;
+       FPythonCtrl.PythonEngine.Name := 'PythonEngine';
+       FPythonCtrl.PythonEngine.AutoLoad := true;
+       FPythonCtrl.PythonEngine.FatalAbort := True;
+       FPythonCtrl.PythonEngine.FatalMsgDlg := True;
+       FPythonCtrl.PythonEngine.UseLastKnownVersion := True;
+       FPythonCtrl.PythonEngine.AutoLoad:= true;
        FFileError := ''; //Zera o erro
        //FPythonEngine.PythonPath:='C:\Users\marcelo.maurin\AppData\Local\Programs\Python\Python311\';
        //FPythonEngine.DllPath:='C:\Users\marcelo.maurin\AppData\Local\Programs\Python\Python311\';
-       FPythonEngine.DllPath:= FSetMain.DLLPath;
+       FPythonCtrl.FPythonEngine.DllPath:= FSetMain.DLLPath;
        //PythonEngine.RegVersion :=  '3.11';
 
        //  PythonEngine.DllName := 'libpython3.7.dylib';
@@ -636,19 +645,19 @@ begin
        //  PythonEngine.UseLastKnownVersion := False;
 
 
-       FPythonEngine.AutoFinalize := True;
-       FPythonEngine.InitThreads := True;
-       FPythonEngine.PyFlags := [pfInteractive];
-       FPythonEngine.IO := FPythonGUIInputOutput1;
+       FPythonCtrl.PythonEngine.AutoFinalize := True;
+       FPythonCtrl.PythonEngine.InitThreads := True;
+       FPythonCtrl.PythonEngine.PyFlags := [pfInteractive];
+       FPythonCtrl.PythonEngine.IO := FPythonCtrl.FPythonGUIInputOutput1;
        if( FResultado <> nil) then
        begin
-          FPythonGUIInputOutput1.Output :=FResultado;
+          FPythonCtrl.PythonGUIInputOutput1.Output :=FResultado;
        end;
-       if not FPythonEngine.Initialized then
+       if not FPythonCtrl.PythonEngine.Initialized then
        begin
-          FPythonEngine.LoadDll;
+          FPythonCtrl.PythonEngine.LoadDll;
 
-       //PythonEngine.Py_Initialize;
+       //FPythonCtrl.PythonEngine.Py_Initialize;
        end;
 
        filenamerun:= FileName;
@@ -656,34 +665,34 @@ begin
 
        //showmessage(filenamerun);
        try
-          //FPythonEngine.ExecFile(filenamerun);
-          FPythonEngine.ExecStrings(Fsyn.Lines);
-          //FMainModule := FPythonEngine.ImportModule('__main__');
-          FMainModule:= FPythonEngine.PyImport_ImportModule('__main__');
+          //FPythonCtrl.FPythonEngine.ExecFile(filenamerun);
+          FPythonCtrl.PythonEngine.ExecStrings(Fsyn.Lines);
+          //FMainModule := FPythonCtrl.FPythonEngine.ImportModule('__main__');
+          FMainModule:= PythonCtrl.FPythonEngine.PyImport_ImportModule('__main__');
           //FVarsDict := FMainModule.__dict__;
-          //PyEngine := Import('FPythonEngine');
-          FVarsDict := FPythonEngine.PyModule_GetDict(FMainModule);
+          //FPythonCtrl.PyEngine := Import('FPythonEngine');
+          FPythonCtrl.FVarsDict := FPythonCtrl.PythonEngine.PyModule_GetDict(FMainModule);
 
           //FVarsDict:= FMainModule.;
           //FVarsList := FPythonEngine.PyDict_GetStringList(FVarsDict);
-          PyMainModule := FPythonEngine.PyImport_AddModule('__main__');
-          FVarsDict:= FPythonEngine.PyModule_GetDict(PyMainModule);
+          PyMainModule := FPythonCtrl.PythonEngine.PyImport_AddModule('__main__');
+          FPythonCtrl.VarsDict:= FPythonCtrl.PythonEngine.PyModule_GetDict(PyMainModule);
 
           //FPythonEngine.PyDict_GetStringList(FVarsDict, FVarsList);
           //FVarsList := FPythonEngine.GlobalVars;
-          FVarsGlobal:= FPythonEngine.GlobalVars;;
-          FVarsGlobalKeys:= FPythonEngine.PyDict_Keys(FVarsGlobal);
-          if (FVarsGlobalKeys <> nil) then
+          FPythonCtrl.VarsGlobal:= FPythonCtrl.PythonEngine.GlobalVars;;
+          FPythonCtrl.VarsGlobalKeys:= FPythonCtrl.PythonEngine.PyDict_Keys(FPythonCtrl.VarsGlobal);
+          if (FPythonCtrl.VarsGlobalKeys <> nil) then
           begin
-              FVarListGlobal_Size := FPythonEngine.PyList_Size(FVarsGlobalKeys);
+              FPythonCtrl.VarListGlobal_Size := FPythonCtrl.PythonEngine.PyList_Size(FPythonCtrl.FVarsGlobalKeys);
 
           end;
 
-          FVarsLocal := FPythonEngine.LocalVars;
-          FVarsLocalKeys:= FPythonEngine.PyDict_Keys(FVarsLocal);
-          if (FVarsLocalKeys <> nil) then
+          FPythonCtrl.VarsLocal := FPythonCtrl.PythonEngine.LocalVars;
+          FPythonCtrl.VarsLocalKeys:= FPythonCtrl.PythonEngine.PyDict_Keys(FPythonCtrl.VarsLocal);
+          if (FPythonCtrl.VarsLocalKeys <> nil) then
           begin
-             FVarListLocal_Size := FPythonEngine.PyList_Size(FVarsLocalKeys);
+             FPythonCtrl.VarListLocal_Size := FPythonCtrl.PythonEngine.PyList_Size(FPythonCtrl.VarsLocalKeys);
           end;
 
           FError := false;

@@ -11,7 +11,7 @@ uses
   splash, setFolders, config, SynEditKeyCmds, PythonEngine;
 
 
-const versao = '2.26';
+const versao = '2.27';
 
 type
 
@@ -25,6 +25,7 @@ type
     MenuItem17: TMenuItem;
     mniJSONVALID: TMenuItem;
     mnidos2unix: TMenuItem;
+    pcInspector: TPageControl;
     pnclient: TPanel;
     pnInspector: TPanel;
     Separator4: TMenuItem;
@@ -97,8 +98,11 @@ type
     SaveDialog1: TSaveDialog;
     Splitter1: TSplitter;
     Splitter2: TSplitter;
+    tsLocal: TTabSheet;
+    tsGlobal: TTabSheet;
     TrayIcon1: TTrayIcon;
-    vlEditor: TValueListEditor;
+    vlGlobal: TValueListEditor;
+    vlLocal: TValueListEditor;
     procedure FindDialog1Find(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -1117,6 +1121,7 @@ begin
    item.Run();
    syn := item.syn;
    pnResult.Visible:=true;
+   pnInspector.vi;
    if item.Error then
    begin
       syn.CaretY:= item.LinhaError;
@@ -1124,14 +1129,23 @@ begin
    end
    else
    begin
-     for I := 0 to item.VarListGlocal_Size -1  do
+     for I := 0 to item.PythonCtrl.VarListGlobal_Size -1  do
      begin
            //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
            //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
-           //vlEditor.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
-           variavel := item.PythonEngine.PyList_GetItem(item.VarsGlobalKeys,I);
-           variavelname := item.PythonEngine.PyUnicodeAsString(variavel);
-           vlEditor.InsertRow(variavelname,'',true);
+           //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
+           variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsGlobalKeys,I);
+           variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
+           vlGlobal.InsertRow(variavelname,'',true);
+     end;
+     for I := 0 to item.PythonCtrl.VarListLocal_Size -1  do
+     begin
+           //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
+           //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
+           //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
+           variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsLocalKeys,I);
+           variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
+           vlLocal.InsertRow(variavelname,'',true);
      end;
 
 
