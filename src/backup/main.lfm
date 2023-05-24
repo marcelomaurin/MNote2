@@ -24,16 +24,6 @@ object frmMNote: TfrmMNote
     TabOrder = 0
     OnClick = Panel1Click
   end
-  object pgMain: TPageControl
-    Left = 0
-    Height = 330
-    Top = 62
-    Width = 788
-    Align = alClient
-    Images = ImageList1
-    TabOrder = 1
-    OnChange = pgMainChange
-  end
   object pnResult: TPanel
     Left = 0
     Height = 131
@@ -44,17 +34,76 @@ object frmMNote: TfrmMNote
     ClientHeight = 131
     ClientWidth = 788
     PopupMenu = pmResult
-    TabOrder = 2
+    TabOrder = 1
     Visible = False
     object meResult: TMemo
-      Left = 1
+      Left = 236
       Height = 129
       Top = 1
-      Width = 786
+      Width = 551
       Align = alClient
       PopupMenu = pmResult
       ReadOnly = True
       TabOrder = 0
+    end
+    object pnInspector: TPanel
+      Left = 1
+      Height = 129
+      Top = 1
+      Width = 229
+      Align = alLeft
+      ClientHeight = 129
+      ClientWidth = 229
+      TabOrder = 1
+      object vlEditor: TValueListEditor
+        Left = 1
+        Height = 127
+        Top = 1
+        Width = 227
+        Align = alClient
+        FixedCols = 0
+        RowCount = 2
+        TabOrder = 0
+        ColWidths = (
+          80
+          143
+        )
+      end
+    end
+    object Splitter1: TSplitter
+      Left = 230
+      Height = 129
+      Top = 1
+      Width = 6
+    end
+  end
+  object pnclient: TPanel
+    Left = 0
+    Height = 330
+    Top = 62
+    Width = 788
+    Align = alClient
+    ClientHeight = 330
+    ClientWidth = 788
+    TabOrder = 2
+    object pgMain: TPageControl
+      Left = 1
+      Height = 322
+      Top = 1
+      Width = 786
+      Align = alClient
+      Images = ImageList1
+      TabOrder = 0
+      OnChange = pgMainChange
+    end
+    object Splitter2: TSplitter
+      Cursor = crVSplit
+      Left = 1
+      Height = 6
+      Top = 323
+      Width = 786
+      Align = alBottom
+      ResizeAnchor = akBottom
     end
   end
   object MainMenu1: TMainMenu

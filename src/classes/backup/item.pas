@@ -9,7 +9,7 @@ uses
   SynHighlighterAny,SynHighlighterPo,SynHighlighterCpp,SynHighlighterSQL,SynHighlighterPython,
   SynHighlighterPHP,synhighlighterunixshellscript,SynHighlighterJava,SynHighlighterBat,
   SynHighlighterJScript,SynHighlighterCss, SynHighlighterJSON,
-  Graphics, SynEditKeyCmds, LCLType, mquery,
+  Graphics, SynEditKeyCmds, LCLType, mquery, Variants,
   PythonEngine, PythonGUIInputOutput, setmain, funcoes, hint, Dialogs, StdCtrls;
 
 type
@@ -33,7 +33,22 @@ TItem = class(TComponent)
          FSender: TComponent;
          FPythonEngine: TPythonEngine;
          FPythonGUIInputOutput1: TPythonGUIInputOutput;
+         FError : Boolean;
+         FLinhaError : integer;
+         FColumError : integer;
+         FFileError : String; //Erro no arquivo
 
+         //FVarsList: PPyObject;
+         FVarsDict: PPyObject;
+         FVarsGlobal: PPyObject;
+         FVarsGlobalKeys : PPyObject;
+         FVarsLocal: PPyObject;
+         FVarsLocalKeys : PPyObject;
+         //FVarsLocal: PPyObject;
+         FVarListGlobal_Size: NativeInt;
+         FVarListLocal_Size: NativeInt;
+
+         FMainModule : PPyObject;
          (*Decoration*)
          FSynPasSyn1: TSynPasSyn;
          FSynBatSyn1: TSynBatSyn;
@@ -92,6 +107,19 @@ TItem = class(TComponent)
          property PalavrasReservadas : TStringlist read FPalavrasReservadas write FPalavrasReservadas;
          property SynAutoComplete: TSynAutoComplete read FSynAutoComplete write FSynAutoComplete;
          property Resultado : TCustomMemo read FResultado  write SetResultado;
+         property LinhaError : integer read FLinhaError;
+         property Error : boolean read FError;
+         property FileError : String read FFileError;
+         property VarsDict: PPyObject read FVarsDict;
+         property VarsGlobal: PPyObject read FVarsGlobal;
+         property VarsLocal: PPyObject read FVarsLocal;
+         property VarsGlobalKeys : PPyObject read  FVarsGlobalKeys;
+         property VarsLocalKeys : PPyObject read  FVarsLocalKeys;
+         property PythonEngine: TPythonEngine read FPythonEngine;
+
+
+         property VarListGlobal_Size : NativeInt read FVarListGlobal_Size;
+         property VarListLocal_Size : NativeInt read FVarListLocal_Size;
 end;
 
 implementation
@@ -211,6 +239,10 @@ begin
 
   Ftimer.Enabled := false;
   Ftimer.Interval:= 1000;
+  FError := false;
+  FLinhaError:= 0;
+  FColumError:= 0;
+  FFileError := '';
   Ftimer.OnTimer:= @TimerEvento;
   FPalavrasReservadas.clear;
   if (FSynCompletion = nil) then
@@ -473,6 +505,8 @@ begin
 
   FSynAutoComplete.ExecCommandID:= ecSynAutoCompletionExecute;
 
+  //FVarsList := TStringList.Create;
+
   default();
   Salvo := false;
 end;
@@ -480,6 +514,7 @@ end;
 destructor TItem.destroy();
 begin
   Ftimer.free;
+  //FVarsList.Free;
   FPalavrasReservadas.free;
   PalavrasReservadas:= nil;
 end;
@@ -560,7 +595,10 @@ var
    Output : string;
    filenamerun : string;
    //codigo : UnicodeString;
+   // PyExcType, PyExcValue, PyExcTraceback: Variant;
+    //PyEngine: Variant;
 
+    PyMainModule: PPyObject;
 begin
    //FItemType:= value;
   case FItemType of
@@ -578,12 +616,14 @@ begin
        begin
             FPythonGUIInputOutput1 := TPythonGUIInputOutput.create(FSender);
        end;
+       //FVarsList.Clear;
        FPythonEngine.Name := 'PythonEngine';
        FPythonEngine.AutoLoad := true;
        FPythonEngine.FatalAbort := True;
        FPythonEngine.FatalMsgDlg := True;
        FPythonEngine.UseLastKnownVersion := True;
        FPythonEngine.AutoLoad:= true;
+       FFileError := ''; //Zera o erro
        //FPythonEngine.PythonPath:='C:\Users\marcelo.maurin\AppData\Local\Programs\Python\Python311\';
        //FPythonEngine.DllPath:='C:\Users\marcelo.maurin\AppData\Local\Programs\Python\Python311\';
        FPythonEngine.DllPath:= FSetMain.DLLPath;
@@ -595,6 +635,7 @@ begin
        //  PythonEngine.RegVersion := '3.7';
        //  PythonEngine.UseLastKnownVersion := False;
 
+
        FPythonEngine.AutoFinalize := True;
        FPythonEngine.InitThreads := True;
        FPythonEngine.PyFlags := [pfInteractive];
@@ -604,19 +645,72 @@ begin
           FPythonGUIInputOutput1.Output :=FResultado;
        end;
        if not FPythonEngine.Initialized then
-       FPythonEngine.LoadDll;
+       begin
+          FPythonEngine.LoadDll;
+
        //PythonEngine.Py_Initialize;
+       end;
 
        filenamerun:= FileName;
 
 
        //showmessage(filenamerun);
-       FPythonEngine.ExecFile(filenamerun);
+       try
+          //FPythonEngine.ExecFile(filenamerun);
+          FPythonEngine.ExecStrings(Fsyn.Lines);
+          //FMainModule := FPythonEngine.ImportModule('__main__');
+          FMainModule:= FPythonEngine.PyImport_ImportModule('__main__');
+          //FVarsDict := FMainModule.__dict__;
+          //PyEngine := Import('FPythonEngine');
+          FVarsDict := FPythonEngine.PyModule_GetDict(FMainModule);
 
-       //codigo := UTF8Encode(Fsyn.text);
-       //PythonEngine.ExecStrings(Fsyn.Lines);
+          //FVarsDict:= FMainModule.;
+          //FVarsList := FPythonEngine.PyDict_GetStringList(FVarsDict);
+          PyMainModule := FPythonEngine.PyImport_AddModule('__main__');
+          FVarsDict:= FPythonEngine.PyModule_GetDict(PyMainModule);
 
-       //FResultado.Lines := PythonGUIInputOutput1.Output.Lines;
+          //FPythonEngine.PyDict_GetStringList(FVarsDict, FVarsList);
+          //FVarsList := FPythonEngine.GlobalVars;
+          FVarsGlobal:= FPythonEngine.GlobalVars;;
+          FVarsGlobalKeys:= FPythonEngine.PyDict_Keys(FVarsGlobal);
+          if (FVarsGlobalKeys <> nil) then
+          begin
+              FVarListGlobal_Size := FPythonEngine.PyList_Size(FVarsGlobalKeys);
+
+          end;
+
+          FVarsLocal := FPythonEngine.LocalVars;
+          FVarsLocalKeys:= FPythonEngine.PyDict_Keys(FVarsLocal);
+          if (FVarsLocalKeys <> nil) then
+          begin
+             FVarListLocal_Size := FPythonEngine.PyList_Size(FVarsLocalKeys);
+          end;
+
+          FError := false;
+
+       //PyMainModule := PyEngine.ImportModule('__main__');
+       except
+             on E: EPythonError  do
+             begin
+               FError := true;
+
+               FResultado.Append('Erro Python: ' + E.Message);
+             end;
+             on E: EPySyntaxError do
+             begin
+               FLinhaError:= E.ELineNumber;
+               FColumError:=E.EEndOffset;
+               FFileError := E.EFileName;
+               FResultado.Append('Erro Python: ' +E.EFileName + ' ' + E.ELineStr);
+             end;
+             on E: EPyIndentationError do
+             begin
+               FLinhaError:= E.ELineNumber;
+               FColumError:=E.EEndOffset;
+               FFileError := E.EFileName;
+               FResultado.Append('Erro Python: ' +E.EFileName + ' ' + E.ELineStr);
+             end;
+       end;
 
        //PythonEngine.;
        //PythonGUIInputOutput1.free;

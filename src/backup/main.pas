@@ -7,8 +7,8 @@ interface
 uses
   Classes, SysUtils, FileUtil, SynEdit, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
-  setmain, TypeDB, folders, funcoes, LCLType, chgtext, hint, registro, splash,
-  setFolders, config,  SynEditKeyCmds;
+  setmain, TypeDB, folders, funcoes, LCLType, ValEdit, chgtext, hint, registro,
+  splash, setFolders, config, SynEditKeyCmds, PythonEngine;
 
 
 const versao = '2.26';
@@ -25,6 +25,8 @@ type
     MenuItem17: TMenuItem;
     mniJSONVALID: TMenuItem;
     mnidos2unix: TMenuItem;
+    pnclient: TPanel;
+    pnInspector: TPanel;
     Separator4: TMenuItem;
     miRedo: TMenuItem;
     miSelectAll: TMenuItem;
@@ -93,7 +95,10 @@ type
     PopupMenu1: TPopupMenu;
     ReplaceDialog1: TReplaceDialog;
     SaveDialog1: TSaveDialog;
+    Splitter1: TSplitter;
+    Splitter2: TSplitter;
     TrayIcon1: TTrayIcon;
+    vlEditor: TValueListEditor;
     procedure FindDialog1Find(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -368,11 +373,11 @@ begin
       if FileGetAttr(arquivo) = faReadOnly then
       begin
           syn.ReadOnly:=true;
-          tb.Caption:= item.Name;
+          tb.Caption:= item.Nome;
       end
       else
       begin
-           tb.Caption:= item.Name;
+           tb.Caption:= item.Nome;
       end;
       //CheckTipoArquivo(syn,arquivo, item);
       pgMain.Refresh();
@@ -442,7 +447,7 @@ begin
   tb.Tag:= PtrInt(item); //Guarda o item
   tb.ImageIndex:=0;
 
-  tb.Caption:= item.Name;
+  tb.Caption:= item.Nome;
   pgMain.Refresh();
   application.ProcessMessages;
   result := tb;
@@ -1099,13 +1104,39 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
+   I : NativeInt;
+   variavel : PPyObject;
+   variavelname : string;
+
 begin
    mnSalvarClick(self); (*Salva antes de rodar*)
    item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+   meResult.Lines.clear;
    item.Resultado := meResult;
-   pnResult.Visible:=;
+
    item.Run();
    syn := item.syn;
+   pnResult.Visible:=true;
+   if item.Error then
+   begin
+      syn.CaretY:= item.LinhaError;
+
+   end
+   else
+   begin
+     for I := 0 to item.VarListGlocal_Size -1  do
+     begin
+           //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
+           //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
+           //vlEditor.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
+           variavel := item.PythonEngine.PyList_GetItem(item.VarsGlobalKeys,I);
+           variavelname := item.PythonEngine.PyUnicodeAsString(variavel);
+           vlEditor.InsertRow(variavelname,'',true);
+     end;
+
+
+   end;
+
 
 end;
 
