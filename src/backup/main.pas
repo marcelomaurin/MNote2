@@ -1121,33 +1121,36 @@ begin
    item.Run();
    syn := item.syn;
    pnResult.Visible:=true;
-   pnInspector.vi;
+   if (item.PythonCtrl.VarsCheck) then
+   begin
+      pnInspector.Visible:=true;
    if item.Error then
    begin
       syn.CaretY:= item.LinhaError;
-
    end
    else
    begin
-     for I := 0 to item.PythonCtrl.VarListGlobal_Size -1  do
+     if (item.PythonCtrl.VarsCheck) then
      begin
-           //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
-           //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
-           //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
-           variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsGlobalKeys,I);
-           variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
-           vlGlobal.InsertRow(variavelname,'',true);
+         for I := 0 to item.PythonCtrl.VarListGlobal_Size -1  do
+         begin
+               //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
+               //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
+               //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
+               variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsGlobalKeys,I);
+               variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
+               vlGlobal.InsertRow(variavelname,'',true);
+         end;
+         for I := 0 to item.PythonCtrl.VarListLocal_Size -1  do
+         begin
+               //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
+               //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
+               //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
+               variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsLocalKeys,I);
+               variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
+               vlLocal.InsertRow(variavelname,'',true);
+         end;
      end;
-     for I := 0 to item.PythonCtrl.VarListLocal_Size -1  do
-     begin
-           //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
-           //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
-           //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
-           variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsLocalKeys,I);
-           variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
-           vlLocal.InsertRow(variavelname,'',true);
-     end;
-
 
    end;
 

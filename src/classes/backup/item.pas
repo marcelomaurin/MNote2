@@ -32,6 +32,7 @@ TPythonCtrl = class(TComponent)
          //FVarsLocal: PPyObject;
          FVarListGlobal_Size: NativeInt;
          FVarListLocal_Size: NativeInt;
+         FVarsCheck : boolean;
    public
          property VarsDict: PPyObject read FVarsDict write FVarsDict;
          property PythonGUIInputOutput1: TPythonGUIInputOutput read FPythonGUIInputOutput1  write FPythonGUIInputOutput1;
@@ -42,7 +43,7 @@ TPythonCtrl = class(TComponent)
          property PythonEngine: TPythonEngine read FPythonEngine write FPythonEngine;
          property VarListGlobal_Size : NativeInt read FVarListGlobal_Size write FVarListGlobal_Size;
          property VarListLocal_Size : NativeInt read FVarListLocal_Size write FVarListLocal_Size;
-
+         property VarsCheck : boolean read FVarsCheck write FVarsCheck;
 end;
 
 { TItem }
@@ -252,6 +253,7 @@ begin
   FLinhaError:= 0;
   FColumError:= 0;
   FFileError := '';
+  PythonCtrl.VarsCheck := fals
   Ftimer.OnTimer:= @TimerEvento;
   FPalavrasReservadas.clear;
   if (FSynCompletion = nil) then
@@ -665,39 +667,38 @@ begin
 
        //showmessage(filenamerun);
        try
-          //FPythonCtrl.FPythonEngine.ExecFile(filenamerun);
+
           FPythonCtrl.PythonEngine.ExecStrings(Fsyn.Lines);
-          //FMainModule := FPythonCtrl.FPythonEngine.ImportModule('__main__');
-          FMainModule:= PythonCtrl.FPythonEngine.PyImport_ImportModule('__main__');
-          //FVarsDict := FMainModule.__dict__;
-          //FPythonCtrl.PyEngine := Import('FPythonEngine');
-          FPythonCtrl.FVarsDict := FPythonCtrl.PythonEngine.PyModule_GetDict(FMainModule);
 
-          //FVarsDict:= FMainModule.;
-          //FVarsList := FPythonEngine.PyDict_GetStringList(FVarsDict);
-          PyMainModule := FPythonCtrl.PythonEngine.PyImport_AddModule('__main__');
-          FPythonCtrl.VarsDict:= FPythonCtrl.PythonEngine.PyModule_GetDict(PyMainModule);
-
-          //FPythonEngine.PyDict_GetStringList(FVarsDict, FVarsList);
-          //FVarsList := FPythonEngine.GlobalVars;
-          FPythonCtrl.VarsGlobal:= FPythonCtrl.PythonEngine.GlobalVars;;
-          FPythonCtrl.VarsGlobalKeys:= FPythonCtrl.PythonEngine.PyDict_Keys(FPythonCtrl.VarsGlobal);
-          if (FPythonCtrl.VarsGlobalKeys <> nil) then
+          if (PythonCtrl.VarsCheck) then
           begin
-              FPythonCtrl.VarListGlobal_Size := FPythonCtrl.PythonEngine.PyList_Size(FPythonCtrl.FVarsGlobalKeys);
+               FMainModule:= PythonCtrl.FPythonEngine.PyImport_ImportModule('__main__');
 
+               FPythonCtrl.FVarsDict := FPythonCtrl.PythonEngine.PyModule_GetDict(FMainModule);
+
+               PyMainModule := FPythonCtrl.PythonEngine.PyImport_AddModule('__main__');
+               FPythonCtrl.VarsDict:= FPythonCtrl.PythonEngine.PyModule_GetDict(PyMainModule);
+
+
+               FPythonCtrl.FVarsGlobal  :=  @FPythonCtrl.FPythonEngine.PyDict_New;
+
+               FPythonCtrl.VarsGlobalKeys:= FPythonCtrl.PythonEngine.PyDict_Keys(FPythonCtrl.VarsGlobal);
+               if (FPythonCtrl.VarsGlobalKeys <> nil) then
+               begin
+                    FPythonCtrl.VarListGlobal_Size := FPythonCtrl.PythonEngine.PyList_Size(FPythonCtrl.VarsGlobalKeys);
+
+               end;
+
+
+               FPythonCtrl.VarsLocal:=@FPythonCtrl.PythonEngine.PyDict_New;
+               FPythonCtrl.VarsLocalKeys:= FPythonCtrl.PythonEngine.PyDict_Keys(FPythonCtrl.VarsLocal);
+               if (FPythonCtrl.VarsLocalKeys <> nil) then
+               begin
+                    FPythonCtrl.VarListLocal_Size := FPythonCtrl.PythonEngine.PyList_Size(FPythonCtrl.VarsLocalKeys);
+               end;
           end;
-
-          FPythonCtrl.VarsLocal := FPythonCtrl.PythonEngine.LocalVars;
-          FPythonCtrl.VarsLocalKeys:= FPythonCtrl.PythonEngine.PyDict_Keys(FPythonCtrl.VarsLocal);
-          if (FPythonCtrl.VarsLocalKeys <> nil) then
-          begin
-             FPythonCtrl.VarListLocal_Size := FPythonCtrl.PythonEngine.PyList_Size(FPythonCtrl.VarsLocalKeys);
-          end;
-
           FError := false;
 
-       //PyMainModule := PyEngine.ImportModule('__main__');
        except
              on E: EPythonError  do
              begin
