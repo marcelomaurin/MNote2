@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, FileUtil, SynEdit, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
   setmain, TypeDB, folders, funcoes, LCLType, ValEdit, chgtext, hint, registro,
-  splash, setFolders, config, SynEditKeyCmds, PythonEngine;
+  splash, setFolders, config, SynEditKeyCmds, PythonEngine, chatgpt;
 
 
 const versao = '2.27';
@@ -18,13 +18,17 @@ type
   { TfrmMNote }
 
   TfrmMNote = class(TForm)
+    edChat: TEdit;
     FontDialog1: TFontDialog;
     ImageList1: TImageList;
     MainMenu1: TMainMenu;
+    meChatHist: TMemo;
     MenuItem14: TMenuItem;
     MenuItem17: TMenuItem;
     mniJSONVALID: TMenuItem;
     mnidos2unix: TMenuItem;
+    Panel2: TPanel;
+    pnChatGPT: TPanel;
     pcInspector: TPageControl;
     pnclient: TPanel;
     pnInspector: TPanel;
@@ -98,11 +102,13 @@ type
     SaveDialog1: TSaveDialog;
     Splitter1: TSplitter;
     Splitter2: TSplitter;
+    Splitter3: TSplitter;
     tsLocal: TTabSheet;
     tsGlobal: TTabSheet;
     TrayIcon1: TTrayIcon;
     vlGlobal: TValueListEditor;
     vlLocal: TValueListEditor;
+    procedure edChatKeyPress(Sender: TObject; var Key: char);
     procedure FindDialog1Find(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -178,7 +184,7 @@ type
     procedure MudaTodasaFontes();
   private
     { private declarations }
-
+    FCHATGPT : TCHATGPT;
 
     procedure CarregarParametros();
     procedure CarregarOld();
@@ -199,6 +205,7 @@ type
       Shift: TShiftState);
       *)
     procedure SynEditkey(Sender: TObject; var Key: char);
+    function SubmeteChatGPT( info : string) : string;
 
   public
     { public declarations }
@@ -318,6 +325,21 @@ begin
 
    end;
 
+end;
+
+function TfrmMNote.SubmeteChatGPT(info: string): string;
+var
+  resultado : string;
+begin
+  if (FSetMain.CHATGPT = '') then
+  begin
+    Resultado := 'Inclua o token do chatgpt';
+  end
+  else
+  begin
+    Resultado:= 'Not yet';
+  end;
+  result := resultado;
 end;
 
 
@@ -519,6 +541,7 @@ procedure TfrmMNote.FormCreate(Sender: TObject);
 var
    filename: string;
 begin
+
   frmSplash := TfrmSplash.Create(self);
   frmSplash.lbversao.Caption:= versao;
   frmSplash.show();
@@ -733,6 +756,19 @@ begin
 
 end;
 
+procedure TfrmMNote.edChatKeyPress(Sender: TObject; var Key: char);
+begin
+  if Key = #13 then
+  begin
+     if(FCHATGPT = nil) then
+     begin
+         FCHATGPT := TCHATGPT.create(self);
+     end;
+      FCHATGPT.SendQuestion(edChat.Text);
+     meChatHist.Append(FCHATGPT.Response);
+  end;
+end;
+
 procedure TfrmMNote.btNovoClick(Sender: TObject);
 begin
   NovoItem();
@@ -783,6 +819,12 @@ begin
     Fsetmain.Free();
     Fsetmain := nil;
   end;
+  if (FCHATGPT <> nil) then
+  begin
+    FCHATGPT.free;
+
+  end;
+
 end;
 
 procedure TfrmMNote.FormShow(Sender: TObject);

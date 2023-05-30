@@ -253,7 +253,7 @@ begin
   FLinhaError:= 0;
   FColumError:= 0;
   FFileError := '';
-  PythonCtrl.VarsCheck := fals
+  PythonCtrl.VarsCheck := false;
   Ftimer.OnTimer:= @TimerEvento;
   FPalavrasReservadas.clear;
   if (FSynCompletion = nil) then

@@ -5,16 +5,12 @@ object frmMNote: TfrmMNote
   Width = 788
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 523
+  ClientHeight = 548
   ClientWidth = 788
   DesignTimePPI = 120
   Menu = MainMenu1
-  OnClose = FormClose
-  OnCreate = FormCreate
-  OnDestroy = FormDestroy
-  OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '2.2.6.0'
+  LCLVersion = '2.3.0.0'
   object Panel1: TPanel
     Left = 0
     Height = 62
@@ -22,12 +18,11 @@ object frmMNote: TfrmMNote
     Width = 788
     Align = alTop
     TabOrder = 0
-    OnClick = Panel1Click
   end
   object pnResult: TPanel
     Left = 0
     Height = 131
-    Top = 392
+    Top = 417
     Width = 788
     Align = alBottom
     Caption = 'pnResult'
@@ -49,45 +44,44 @@ object frmMNote: TfrmMNote
   end
   object pnclient: TPanel
     Left = 0
-    Height = 330
+    Height = 355
     Top = 62
     Width = 788
     Align = alClient
-    ClientHeight = 330
+    ClientHeight = 355
     ClientWidth = 788
     TabOrder = 2
     object pgMain: TPageControl
       Left = 236
-      Height = 322
+      Height = 347
       Top = 1
-      Width = 551
+      Width = 332
       Align = alClient
       Images = ImageList1
       TabOrder = 0
-      OnChange = pgMainChange
     end
     object Splitter2: TSplitter
       Cursor = crVSplit
       Left = 1
       Height = 6
-      Top = 323
+      Top = 348
       Width = 786
       Align = alBottom
       ResizeAnchor = akBottom
     end
     object pnInspector: TPanel
       Left = 1
-      Height = 322
+      Height = 347
       Top = 1
       Width = 229
       Align = alLeft
-      ClientHeight = 322
+      ClientHeight = 347
       ClientWidth = 229
       TabOrder = 2
       Visible = False
       object pcInspector: TPageControl
         Left = 1
-        Height = 320
+        Height = 345
         Top = 1
         Width = 227
         ActivePage = tsLocal
@@ -96,11 +90,11 @@ object frmMNote: TfrmMNote
         TabOrder = 0
         object tsGlobal: TTabSheet
           Caption = 'Global'
-          ClientHeight = 287
+          ClientHeight = 312
           ClientWidth = 219
           object vlGlobal: TValueListEditor
             Left = 0
-            Height = 287
+            Height = 312
             Top = 0
             Width = 219
             Align = alClient
@@ -109,17 +103,17 @@ object frmMNote: TfrmMNote
             TabOrder = 0
             ColWidths = (
               80
-              114
+              135
             )
           end
         end
         object tsLocal: TTabSheet
           Caption = 'Local'
-          ClientHeight = 287
+          ClientHeight = 312
           ClientWidth = 219
           object vlLocal: TValueListEditor
             Left = 0
-            Height = 287
+            Height = 312
             Top = 0
             Width = 219
             Align = alClient
@@ -136,9 +130,55 @@ object frmMNote: TfrmMNote
     end
     object Splitter1: TSplitter
       Left = 230
-      Height = 322
+      Height = 347
       Top = 1
       Width = 6
+    end
+    object pnChatGPT: TPanel
+      Left = 574
+      Height = 347
+      Top = 1
+      Width = 213
+      Align = alRight
+      ClientHeight = 347
+      ClientWidth = 213
+      TabOrder = 4
+      Visible = False
+      object Panel2: TPanel
+        Left = 1
+        Height = 63
+        Top = 283
+        Width = 211
+        Align = alBottom
+        ClientHeight = 63
+        ClientWidth = 211
+        TabOrder = 0
+        object edChat: TEdit
+          Left = 1
+          Height = 61
+          Top = 1
+          Width = 209
+          Align = alClient
+          OnKeyPress = edChatKeyPress
+          TabOrder = 0
+        end
+      end
+      object meChatHist: TMemo
+        Left = 1
+        Height = 282
+        Top = 1
+        Width = 211
+        Align = alClient
+        TabOrder = 1
+      end
+    end
+    object Splitter3: TSplitter
+      Left = 568
+      Height = 347
+      Top = 1
+      Width = 6
+      Align = alRight
+      ResizeAnchor = akRight
     end
   end
   object MainMenu1: TMainMenu
@@ -148,57 +188,46 @@ object frmMNote: TfrmMNote
     object MenuItem1: TMenuItem
       Caption = 'File'
       ImageIndex = 5
-      OnClick = MenuItem1Click
       object btNovo: TMenuItem
         Caption = 'New'
         ImageIndex = 4
         ShortCut = 16462
-        OnClick = btNovoClick
       end
       object mnCarregar: TMenuItem
         Caption = 'Load'
         ImageIndex = 3
         ShortCut = 16460
-        OnClick = mnCarregarClick
       end
       object mnSalvar: TMenuItem
         Caption = 'Save'
         ImageIndex = 2
         ShortCut = 16467
-        OnClick = mnSalvarClick
       end
       object mnSalvarComo: TMenuItem
         Caption = 'Save as'
         ImageIndex = 2
-        OnClick = mnSalvarComoClick
       end
       object MenuItem9: TMenuItem
         Caption = 'Save &All'
         ShortCutKey2 = 49235
-        OnClick = MenuItem9Click
       end
       object MenuItem6: TMenuItem
         Caption = 'Exit'
         ImageIndex = 0
         ShortCut = 16472
-        OnClick = MenuItem6Click
       end
     end
     object MenuItem3: TMenuItem
       Caption = 'Edit'
       ImageIndex = 6
-      OnClick = MenuItem3Click
       object micopy: TMenuItem
         Caption = 'Copy'
-        OnClick = micopyClick
       end
       object miPaste: TMenuItem
         Caption = 'Paste'
-        OnClick = miPasteClick
       end
       object MenuItem14: TMenuItem
         Caption = 'Cut'
-        OnClick = MenuItem14Click
       end
       object Separator3: TMenuItem
         Caption = '-'
@@ -224,26 +253,21 @@ object frmMNote: TfrmMNote
         Caption = 'Find'
         ImageIndex = 6
         ShortCut = 114
-        OnClick = mnPesqItemClick
       end
       object miUndo: TMenuItem
         Caption = 'Undo'
         ShortCut = 16474
-        OnClick = miUndoClick
       end
       object miRedo: TMenuItem
         Caption = 'Redo'
         ShortCut = 49242
-        OnClick = miRedoClick
       end
     end
     object mnScript: TMenuItem
       Caption = 'Scripts'
       ImageIndex = 1
-      OnClick = mnScriptClick
       object miConfig: TMenuItem
         Caption = 'Config'
-        OnClick = miConfigClick
       end
       object Separator1: TMenuItem
         Caption = '-'
@@ -251,55 +275,48 @@ object frmMNote: TfrmMNote
       object mnrun: TMenuItem
         Caption = 'RUN'
         ShortCut = 116
-        OnClick = mnrunClick
       end
       object mndebug: TMenuItem
         Caption = 'DEBUG'
         ShortCut = 16500
-        OnClick = mndebugClick
       end
       object mnclean: TMenuItem
         Caption = 'CLEAN'
-        OnClick = mncleanClick
       end
       object mninstall: TMenuItem
         Caption = 'INSTALL'
-        OnClick = mninstallClick
       end
     end
     object MenuItem12: TMenuItem
       Caption = 'Tools'
       ImageIndex = 11
-      OnClick = MenuItem12Click
       object MenuItem4: TMenuItem
         Caption = 'MQuery'
         Enabled = False
         ImageIndex = 8
         ShortCut = 115
-        OnClick = MenuItem4Click
       end
       object MenuItem15: TMenuItem
         Caption = 'Folders'
         ImageIndex = 5
         ShortCut = 113
-        OnClick = MenuItem15Click
       end
       object MenuItem16: TMenuItem
         Caption = 'LogView'
         ImageIndex = 6
         ShortCut = 122
-        OnClick = MenuItem16Click
+      end
+      object miChatGPT: TMenuItem
+        Caption = 'ChatGPT'
       end
       object Separator4: TMenuItem
         Caption = '-'
       end
       object mnidos2unix: TMenuItem
         Caption = 'DOS2UNIX'
-        OnClick = mnidos2unixClick
       end
       object mniJSONVALID: TMenuItem
         Caption = 'JSON VALID'
-        OnClick = mniJSONVALIDClick
       end
     end
     object mnSetup: TMenuItem
@@ -308,7 +325,6 @@ object frmMNote: TfrmMNote
       object mnfont: TMenuItem
         Caption = 'Fonts'
         ImageIndex = 9
-        OnClick = mnfontClick
       end
       object MenuItem5: TMenuItem
         Caption = 'Language'
@@ -329,21 +345,17 @@ object frmMNote: TfrmMNote
       ImageIndex = 10
       object mnFixW: TMenuItem
         Caption = 'Fix'
-        OnClick = mnFixWClick
       end
       object mnOnTopW: TMenuItem
         Caption = 'On Top'
-        OnClick = mnOnTopWClick
       end
       object mnDesktopCenterW: TMenuItem
         Caption = 'Desktop Center'
-        OnClick = mnDesktopCenterWClick
       end
     end
     object MenuItem10: TMenuItem
       Caption = 'About'
       ImageIndex = 12
-      OnClick = MenuItem10Click
     end
   end
   object OpenDialog1: TOpenDialog
@@ -361,7 +373,6 @@ object frmMNote: TfrmMNote
     object mnFechar: TMenuItem
       Caption = 'Fechar'
       ImageIndex = 0
-      OnClick = mnFecharClick
     end
   end
   object ImageList1: TImageList
@@ -455,8 +466,6 @@ object frmMNote: TfrmMNote
   end
   object ReplaceDialog1: TReplaceDialog
     Options = [frDown, frReplace, frReplaceAll, frHidePromptOnReplace]
-    OnFind = FindDialog1Find
-    OnReplace = ReplaceDialog1Replace
     Left = 474
     Top = 31
   end
@@ -473,41 +482,32 @@ object frmMNote: TfrmMNote
     object mnAssociar: TMenuItem
       Caption = 'Associar'
       ImageIndex = 14
-      OnClick = mnAssociarClick
       object mnNone: TMenuItem
         Caption = 'None'
-        OnClick = mnNoneClick
       end
       object mnLazarus: TMenuItem
         Caption = 'Lazarus/Pascal'
-        OnClick = mnLazarusClick
       end
       object mnPython: TMenuItem
         Caption = 'Python'
-        OnClick = mnPythonClick
       end
       object mnC: TMenuItem
         Caption = 'C/C++'
-        OnClick = mnCClick
       end
       object mnSQL: TMenuItem
         Caption = 'SQL'
         ImageIndex = 15
-        OnClick = mnSQLClick
       end
       object mnPHP: TMenuItem
         Caption = 'PHP'
-        OnClick = mnPHPClick
       end
       object mnJava: TMenuItem
         Caption = 'Java'
-        OnClick = mnJavaClick
       end
     end
     object mnFechar2: TMenuItem
       Caption = 'Fechar'
       ImageIndex = 0
-      OnClick = mnFechar2Click
     end
   end
   object TrayIcon1: TTrayIcon
@@ -1115,15 +1115,12 @@ object frmMNote: TfrmMNote
     Top = 190
     object mnFixar: TMenuItem
       Caption = 'Fix'
-      OnClick = mnFixarClick
     end
     object mnStay: TMenuItem
       Caption = 'On Top'
-      OnClick = mnStayClick
     end
     object mnDesktopCenter: TMenuItem
       Caption = 'Desktop Center'
-      OnClick = mnDesktopCenterClick
     end
   end
   object popFind: TPopupMenu
@@ -1131,7 +1128,6 @@ object frmMNote: TfrmMNote
     Top = 360
     object MenuItem2: TMenuItem
       Caption = 'Esconder'
-      OnClick = MenuItem2Click
     end
   end
   object pmResult: TPopupMenu
@@ -1139,7 +1135,6 @@ object frmMNote: TfrmMNote
     Top = 370
     object mnHideResult: TMenuItem
       Caption = 'Hide'
-      OnClick = mnHideResultClick
     end
   end
 end
