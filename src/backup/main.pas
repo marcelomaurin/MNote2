@@ -764,6 +764,7 @@ begin
      begin
          FCHATGPT := TCHATGPT.create(self);
      end;
+      FCHATGPT.TOKEN:= FSetMain.CHATGPT;
       FCHATGPT.SendQuestion(edChat.Text);
      meChatHist.Append(FCHATGPT.Response);
   end;

@@ -2,11 +2,11 @@ object frmMNote: TfrmMNote
   Left = 292
   Height = 548
   Top = 190
-  Width = 788
+  Width = 1156
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
   ClientHeight = 548
-  ClientWidth = 788
+  ClientWidth = 1156
   DesignTimePPI = 120
   Menu = MainMenu1
   OnCreate = FormCreate
@@ -18,7 +18,7 @@ object frmMNote: TfrmMNote
     Left = 0
     Height = 62
     Top = 0
-    Width = 788
+    Width = 1156
     Align = alTop
     TabOrder = 0
   end
@@ -26,16 +26,16 @@ object frmMNote: TfrmMNote
     Left = 0
     Height = 355
     Top = 62
-    Width = 788
+    Width = 1156
     Align = alClient
     ClientHeight = 355
-    ClientWidth = 788
+    ClientWidth = 1156
     TabOrder = 1
     object pgMain: TPageControl
       Left = 236
       Height = 347
       Top = 1
-      Width = 332
+      Width = 444
       Align = alClient
       Images = ImageList1
       TabOrder = 0
@@ -45,7 +45,7 @@ object frmMNote: TfrmMNote
       Left = 1
       Height = 6
       Top = 348
-      Width = 786
+      Width = 1154
       Align = alBottom
       ResizeAnchor = akBottom
     end
@@ -83,7 +83,7 @@ object frmMNote: TfrmMNote
             TabOrder = 0
             ColWidths = (
               80
-              114
+              135
             )
           end
         end
@@ -115,29 +115,29 @@ object frmMNote: TfrmMNote
       Width = 6
     end
     object pnChatGPT: TPanel
-      Left = 574
+      Left = 686
       Height = 347
       Top = 1
-      Width = 213
+      Width = 469
       Align = alRight
       ClientHeight = 347
-      ClientWidth = 213
+      ClientWidth = 469
       TabOrder = 4
       Visible = False
       object Panel2: TPanel
         Left = 1
         Height = 63
         Top = 283
-        Width = 211
+        Width = 467
         Align = alBottom
         ClientHeight = 63
-        ClientWidth = 211
+        ClientWidth = 467
         TabOrder = 0
         object edChat: TEdit
           Left = 1
           Height = 61
           Top = 1
-          Width = 209
+          Width = 465
           Align = alClient
           OnKeyPress = edChatKeyPress
           TabOrder = 0
@@ -147,13 +147,13 @@ object frmMNote: TfrmMNote
         Left = 1
         Height = 282
         Top = 1
-        Width = 211
+        Width = 467
         Align = alClient
         TabOrder = 1
       end
     end
     object Splitter3: TSplitter
-      Left = 568
+      Left = 680
       Height = 347
       Top = 1
       Width = 6
@@ -165,11 +165,11 @@ object frmMNote: TfrmMNote
     Left = 0
     Height = 131
     Top = 417
-    Width = 788
+    Width = 1156
     Align = alBottom
     Caption = 'pnResult'
     ClientHeight = 131
-    ClientWidth = 788
+    ClientWidth = 1156
     PopupMenu = pmResult
     TabOrder = 2
     Visible = False
@@ -177,7 +177,7 @@ object frmMNote: TfrmMNote
       Left = 1
       Height = 129
       Top = 1
-      Width = 786
+      Width = 1154
       Align = alClient
       PopupMenu = pmResult
       ReadOnly = True
