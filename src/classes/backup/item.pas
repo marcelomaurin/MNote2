@@ -7,8 +7,8 @@ interface
 uses
   Classes, SysUtils, contnrs, SynCompletion, ExtCtrls, SynEdit, SynHighlighterPas,
   SynHighlighterAny,SynHighlighterPo,SynHighlighterCpp,SynHighlighterSQL,SynHighlighterPython,
-  SynHighlighterPHP,synhighlighterunixshellscript,SynHighlighterJava,SynHighlighterBat,
-  SynHighlighterJScript,
+  SynHighlighterPHP,synhighlighterunixshellscript, SynHighlighterBat,
+  SynHighlighterJava,  SynHighlighterJScript,
   SynHighlighterCss, //SynHighlighterJSON,
   Graphics, SynEditKeyCmds, LCLType, Variants,
   PythonEngine, PythonGUIInputOutput, setmain, funcoes, hint, Dialogs, StdCtrls;
@@ -92,6 +92,7 @@ TItem = class(TComponent)
          procedure SynCompletion1Execute(Sender: TObject);
          procedure CheckTipoArquivo();
          procedure ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
+         procedure ConfigureJavaHighlighter(var AJavaHighlighter: TSynJavaSyn);
          procedure SynCompletion1CodeCompletion(var Value: string;
                      SourceValue: string; var SourceStart, SourceEnd: TPoint; KeyChar: TUTF8Char;
                      Shift: TShiftState);
@@ -235,6 +236,40 @@ begin
   ACppHighlighter.SymbolAttri.Foreground := clBlack;
 end;
 
+procedure TItem.ConfigureJavaHighlighter(var AJavaHighlighter: TSynJavaSyn);
+begin
+  // Configuração padrão para comentários
+   AJavaHighlighter.CommentAttri.Foreground := clGreen;
+   AJavaHighlighter.CommentAttri.Style := [fsItalic];
+
+   // Configuração padrão para palavras-chave
+   AJavaHighlighter.KeyAttri.Foreground := clNavy;
+   AJavaHighlighter.KeywordAttribute.Style := [fsBold];
+
+   // Configuração padrão para identificadores
+   AJavaHighlighter.IdentifierAttri.Foreground := clBlack;
+
+   // Configuração padrão para números
+   AJavaHighlighter.NumberAttri.Foreground := clTeal;
+
+   // Configuração padrão para strings e caracteres
+   AJavaHighlighter.StringAttri.Foreground := clMaroon;
+   //ACppHighlighter.CharAttri.Foreground := clMaroon;
+
+
+   // Configuração padrão para diretivas de pré-processador
+   //ACppHighlighter.PreprocessorAttri.Foreground := clPurple;
+
+   //ACppHighlighter.PreprocessorAttri.Style := [fsBold];
+   //ACppHighlighter.GetTokenAttribute.Style := [fsBold];
+
+
+
+   // Configuração padrão para símbolos e pontuação
+   AJavaHighlighter.SymbolAttri.Foreground := clBlack;
+
+end;
+
 procedure TItem.AtribuiNovoNome();
 begin
      default();
@@ -355,6 +390,7 @@ begin
     end;
     Fsyn.Highlighter := FSynSQLSyn1;
     FItemType := ti_SQL;
+    (*
     if (frmMQuery <> nil) then
     begin
        for a := 0 to frmMQuery.Tables.Count-1 do
@@ -362,6 +398,7 @@ begin
          FListaItem.Add(frmMQuery.Tables.Objects[a]);
        end;
     end;
+    *)
   end;
   if(FileExt = '.py') then
   begin

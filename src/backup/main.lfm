@@ -524,6 +524,7 @@ object frmMNote: TfrmMNote
     object mnFechar2: TMenuItem
       Caption = 'Fechar'
       ImageIndex = 0
+      OnClick = mnFechar2Click
     end
   end
   object TrayIcon1: TTrayIcon

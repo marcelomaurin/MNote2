@@ -204,29 +204,35 @@ object frmMNote: TfrmMNote
         Caption = 'New'
         ImageIndex = 4
         ShortCut = 16462
+        OnClick = btNovoClick
       end
       object mnCarregar: TMenuItem
         Caption = 'Load'
         ImageIndex = 3
         ShortCut = 16460
+        OnClick = mnCarregarClick
       end
       object mnSalvar: TMenuItem
         Caption = 'Save'
         ImageIndex = 2
         ShortCut = 16467
+        OnClick = mnSalvarClick
       end
       object mnSalvarComo: TMenuItem
         Caption = 'Save as'
         ImageIndex = 2
+        OnClick = mnSalvarComoClick
       end
       object MenuItem9: TMenuItem
         Caption = 'Save &All'
         ShortCutKey2 = 49235
+        OnClick = MenuItem9Click
       end
       object MenuItem6: TMenuItem
         Caption = 'Exit'
         ImageIndex = 0
         ShortCut = 16472
+        OnClick = MenuItem6Click
       end
     end
     object MenuItem3: TMenuItem
@@ -234,12 +240,15 @@ object frmMNote: TfrmMNote
       ImageIndex = 6
       object micopy: TMenuItem
         Caption = 'Copy'
+        OnClick = micopyClick
       end
       object miPaste: TMenuItem
         Caption = 'Paste'
+        OnClick = miPasteClick
       end
       object MenuItem14: TMenuItem
         Caption = 'Cut'
+        OnClick = MenuItem14Click
       end
       object Separator3: TMenuItem
         Caption = '-'
@@ -249,6 +258,7 @@ object frmMNote: TfrmMNote
         object miSelectAll: TMenuItem
           Caption = 'Select All'
           ShortCut = 16449
+          OnClick = miSelectAllClick
         end
         object miSelectCmd: TMenuItem
           Caption = 'Select Comand'
@@ -256,6 +266,7 @@ object frmMNote: TfrmMNote
         end
         object miSelectBlock: TMenuItem
           Caption = 'Select Block'
+          OnClick = miSelectBlockClick
         end
       end
       object Separator2: TMenuItem
@@ -265,14 +276,17 @@ object frmMNote: TfrmMNote
         Caption = 'Find'
         ImageIndex = 6
         ShortCut = 114
+        OnClick = mnPesqItemClick
       end
       object miUndo: TMenuItem
         Caption = 'Undo'
         ShortCut = 16474
+        OnClick = miUndoClick
       end
       object miRedo: TMenuItem
         Caption = 'Redo'
         ShortCut = 49242
+        OnClick = miRedoClick
       end
     end
     object mnScript: TMenuItem
@@ -314,11 +328,13 @@ object frmMNote: TfrmMNote
         Caption = 'Folders'
         ImageIndex = 5
         ShortCut = 113
+        OnClick = MenuItem15Click
       end
       object MenuItem16: TMenuItem
         Caption = 'LogView'
         ImageIndex = 6
         ShortCut = 122
+        OnClick = MenuItem16Click
       end
       object miChatGPT: TMenuItem
         Caption = 'ChatGPT'
@@ -329,9 +345,11 @@ object frmMNote: TfrmMNote
       end
       object mnidos2unix: TMenuItem
         Caption = 'DOS2UNIX'
+        OnClick = mnidos2unixClick
       end
       object mniJSONVALID: TMenuItem
         Caption = 'JSON VALID'
+        OnClick = mniJSONVALIDClick
       end
     end
     object mnSetup: TMenuItem

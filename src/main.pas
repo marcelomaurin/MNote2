@@ -130,6 +130,8 @@ type
     procedure micopyClick(Sender: TObject);
     procedure miPasteClick(Sender: TObject);
     procedure miRedoClick(Sender: TObject);
+    procedure miSelectAllClick(Sender: TObject);
+    procedure miSelectBlockClick(Sender: TObject);
     procedure mncleanClick(Sender: TObject);
     procedure mndebugClick(Sender: TObject);
     procedure mnHideResultClick(Sender: TObject);
@@ -937,6 +939,16 @@ begin
 item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
 syn := item.syn;
 syn.Redo;
+end;
+
+procedure TfrmMNote.miSelectAllClick(Sender: TObject);
+begin
+
+end;
+
+procedure TfrmMNote.miSelectBlockClick(Sender: TObject);
+begin
+
 end;
 
 procedure TfrmMNote.mncleanClick(Sender: TObject);
