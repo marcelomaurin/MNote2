@@ -10,7 +10,7 @@ uses
   SynHighlighterPHP,synhighlighterunixshellscript,SynHighlighterJava,SynHighlighterBat,
   SynHighlighterJScript,
   SynHighlighterCss, //SynHighlighterJSON,
-  Graphics, SynEditKeyCmds, LCLType, mquery, Variants,
+  Graphics, SynEditKeyCmds, LCLType, Variants,
   PythonEngine, PythonGUIInputOutput, setmain, funcoes, hint, Dialogs, StdCtrls;
 
 type
@@ -355,6 +355,7 @@ begin
     end;
     Fsyn.Highlighter := FSynSQLSyn1;
     FItemType := ti_SQL;
+    (*
     if (frmMQuery <> nil) then
     begin
        for a := 0 to frmMQuery.Tables.Count-1 do
@@ -362,6 +363,7 @@ begin
          FListaItem.Add(frmMQuery.Tables.Objects[a]);
        end;
     end;
+    *)
   end;
   if(FileExt = '.py') then
   begin

@@ -7,11 +7,11 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, lnetvisual, main, Item, sobre, funcoes, zcomponent, finds,
+  Forms, main,
   {$ifndef Darwin}
-  folders,
+  folders
   {$ENDIF}
-  chgtext, setchgtext, hint, registro, splash, config;
+  ;
 
 
 {$R *.res}
@@ -20,6 +20,7 @@ begin
   //RequireDerivedFormResource := True;
   Application.Initialize;
   Application.CreateForm(TfrmMNote, frmMNote);
+  //Application.CreateForm(TfrmMQuery, frmMQuery);
   {$ifndef Darwin}
   {$ENDIF}
   Application.Run;

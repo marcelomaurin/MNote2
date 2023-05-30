@@ -8,8 +8,9 @@ uses
   Classes, SysUtils, contnrs, SynCompletion, ExtCtrls, SynEdit, SynHighlighterPas,
   SynHighlighterAny,SynHighlighterPo,SynHighlighterCpp,SynHighlighterSQL,SynHighlighterPython,
   SynHighlighterPHP,synhighlighterunixshellscript,SynHighlighterJava,SynHighlighterBat,
-  SynHighlighterJScript,SynHighlighterCss, SynHighlighterJSON,
-  Graphics, SynEditKeyCmds, LCLType, mquery, Variants,
+  SynHighlighterJScript,
+  SynHighlighterCss, //SynHighlighterJSON,
+  Graphics, SynEditKeyCmds, LCLType, Variants,
   PythonEngine, PythonGUIInputOutput, setmain, funcoes, hint, Dialogs, StdCtrls;
 
 type

@@ -124,6 +124,7 @@ type
     procedure MenuItem10Click(Sender: TObject);
     procedure MenuItem12Click(Sender: TObject);
     procedure MenuItem14Click(Sender: TObject);
+    procedure miChatGPTClick(Sender: TObject);
     procedure micopyClick(Sender: TObject);
     procedure miPasteClick(Sender: TObject);
     procedure miRedoClick(Sender: TObject);
@@ -541,7 +542,6 @@ procedure TfrmMNote.FormCreate(Sender: TObject);
 var
    filename: string;
 begin
-
   frmSplash := TfrmSplash.Create(self);
   frmSplash.lbversao.Caption:= versao;
   frmSplash.show();
@@ -764,6 +764,7 @@ begin
      begin
          FCHATGPT := TCHATGPT.create(self);
      end;
+      FCHATGPT.TOKEN:= FSetMain.CHATGPT;
       FCHATGPT.SendQuestion(edChat.Text);
      meChatHist.Append(FCHATGPT.Response);
   end;
@@ -888,6 +889,11 @@ begin
   syn := item.syn;
   //syn.CommandProcessor(TsynEditorCommand(ecCut),'',nil);
   syn.CutToClipboard;
+end;
+
+procedure TfrmMNote.miChatGPTClick(Sender: TObject);
+begin
+    pnChatGPT.Visible:= not pnChatGPT.Visible;
 end;
 
 procedure TfrmMNote.micopyClick(Sender: TObject);

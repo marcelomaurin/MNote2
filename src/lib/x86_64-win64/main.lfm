@@ -9,6 +9,9 @@ object frmMNote: TfrmMNote
   ClientWidth = 788
   DesignTimePPI = 120
   Menu = MainMenu1
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnShow = FormShow
   Position = poMainFormCenter
   LCLVersion = '2.3.0.0'
   object Panel1: TPanel
@@ -19,29 +22,6 @@ object frmMNote: TfrmMNote
     Align = alTop
     TabOrder = 0
   end
-  object pnResult: TPanel
-    Left = 0
-    Height = 131
-    Top = 417
-    Width = 788
-    Align = alBottom
-    Caption = 'pnResult'
-    ClientHeight = 131
-    ClientWidth = 788
-    PopupMenu = pmResult
-    TabOrder = 1
-    Visible = False
-    object meResult: TMemo
-      Left = 1
-      Height = 129
-      Top = 1
-      Width = 786
-      Align = alClient
-      PopupMenu = pmResult
-      ReadOnly = True
-      TabOrder = 0
-    end
-  end
   object pnclient: TPanel
     Left = 0
     Height = 355
@@ -50,7 +30,7 @@ object frmMNote: TfrmMNote
     Align = alClient
     ClientHeight = 355
     ClientWidth = 788
-    TabOrder = 2
+    TabOrder = 1
     object pgMain: TPageControl
       Left = 236
       Height = 347
@@ -103,7 +83,7 @@ object frmMNote: TfrmMNote
             TabOrder = 0
             ColWidths = (
               80
-              135
+              114
             )
           end
         end
@@ -179,6 +159,29 @@ object frmMNote: TfrmMNote
       Width = 6
       Align = alRight
       ResizeAnchor = akRight
+    end
+  end
+  object pnResult: TPanel
+    Left = 0
+    Height = 131
+    Top = 417
+    Width = 788
+    Align = alBottom
+    Caption = 'pnResult'
+    ClientHeight = 131
+    ClientWidth = 788
+    PopupMenu = pmResult
+    TabOrder = 2
+    Visible = False
+    object meResult: TMemo
+      Left = 1
+      Height = 129
+      Top = 1
+      Width = 786
+      Align = alClient
+      PopupMenu = pmResult
+      ReadOnly = True
+      TabOrder = 0
     end
   end
   object MainMenu1: TMainMenu
@@ -268,6 +271,7 @@ object frmMNote: TfrmMNote
       ImageIndex = 1
       object miConfig: TMenuItem
         Caption = 'Config'
+        OnClick = miConfigClick
       end
       object Separator1: TMenuItem
         Caption = '-'
@@ -275,6 +279,7 @@ object frmMNote: TfrmMNote
       object mnrun: TMenuItem
         Caption = 'RUN'
         ShortCut = 116
+        OnClick = mnrunClick
       end
       object mndebug: TMenuItem
         Caption = 'DEBUG'
@@ -308,6 +313,7 @@ object frmMNote: TfrmMNote
       end
       object miChatGPT: TMenuItem
         Caption = 'ChatGPT'
+        OnClick = miChatGPTClick
       end
       object Separator4: TMenuItem
         Caption = '-'

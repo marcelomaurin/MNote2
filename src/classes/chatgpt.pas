@@ -38,36 +38,6 @@ end;
 implementation
 
 { TCHATGPT }
-(*
-function TCHATGPT.RequestJson2(LURL: string; token: string; JSON: string): string;
-
-var
-  ClienteHTTP: THTTPClient;
-  Dados: TStringStream;
-  Resposta: string;
-begin
-  Resposta := '';
-  ClienteHTTP := THTTPClient.Create;
-  try
-    Dados := TStringStream.Create(JSON);
-    try
-      ClienteHTTP.RequestHeaders['Content-Type'] := 'application/json';
-      ClienteHTTP.RequestHeaders['Authorization'] := 'Bearer ' + token;
-
-      ClienteHTTP.Post(LURL, Dados);
-
-      Resposta := ClienteHTTP.ResponseText;
-    finally
-      Dados.Free;
-    end;
-  finally
-    ClienteHTTP.Free;
-  end;
-
-  Result := Resposta;
-end;
-    *)
-
 
 function TCHATGPT.PegaMensagem(const JSON: string): string;
 var
