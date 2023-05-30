@@ -18,13 +18,14 @@ type
   { TfrmMNote }
 
   TfrmMNote = class(TForm)
-    edChat: TEdit;
     FontDialog1: TFontDialog;
     ImageList1: TImageList;
     MainMenu1: TMainMenu;
     meChatHist: TMemo;
+    edChat: TMemo;
     MenuItem14: TMenuItem;
     MenuItem17: TMenuItem;
+    miChatGPT: TMenuItem;
     mniJSONVALID: TMenuItem;
     mnidos2unix: TMenuItem;
     Panel2: TPanel;
@@ -103,6 +104,7 @@ type
     Splitter1: TSplitter;
     Splitter2: TSplitter;
     Splitter3: TSplitter;
+    Splitter4: TSplitter;
     tsLocal: TTabSheet;
     tsGlobal: TTabSheet;
     TrayIcon1: TTrayIcon;
@@ -765,8 +767,10 @@ begin
          FCHATGPT := TCHATGPT.create(self);
      end;
       FCHATGPT.TOKEN:= FSetMain.CHATGPT;
+      meChatHist.Append('Question:'+edChat.Text);
       FCHATGPT.SendQuestion(edChat.Text);
-     meChatHist.Append(FCHATGPT.Response);
+      meChatHist.Append('Response:'+ FCHATGPT.Response);
+      meChatHist.Append(' ');
   end;
 end;
 

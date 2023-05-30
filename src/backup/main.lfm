@@ -35,7 +35,7 @@ object frmMNote: TfrmMNote
       Left = 236
       Height = 347
       Top = 1
-      Width = 608
+      Width = 444
       Align = alClient
       Images = ImageList1
       TabOrder = 0
@@ -83,7 +83,7 @@ object frmMNote: TfrmMNote
             TabOrder = 0
             ColWidths = (
               80
-              135
+              114
             )
           end
         end
@@ -115,29 +115,29 @@ object frmMNote: TfrmMNote
       Width = 6
     end
     object pnChatGPT: TPanel
-      Left = 850
+      Left = 686
       Height = 347
       Top = 1
-      Width = 305
+      Width = 469
       Align = alRight
       ClientHeight = 347
-      ClientWidth = 305
+      ClientWidth = 469
       TabOrder = 4
       Visible = False
       object Panel2: TPanel
         Left = 1
         Height = 63
         Top = 283
-        Width = 303
+        Width = 467
         Align = alBottom
         ClientHeight = 63
-        ClientWidth = 303
+        ClientWidth = 467
         TabOrder = 0
-        object edChat: TEdit
+        object edChat: TMemo
           Left = 1
           Height = 61
           Top = 1
-          Width = 301
+          Width = 465
           Align = alClient
           OnKeyPress = edChatKeyPress
           TabOrder = 0
@@ -145,15 +145,24 @@ object frmMNote: TfrmMNote
       end
       object meChatHist: TMemo
         Left = 1
-        Height = 282
+        Height = 276
         Top = 1
-        Width = 303
+        Width = 467
         Align = alClient
         TabOrder = 1
       end
+      object Splitter4: TSplitter
+        Cursor = crVSplit
+        Left = 1
+        Height = 6
+        Top = 277
+        Width = 467
+        Align = alBottom
+        ResizeAnchor = akBottom
+      end
     end
     object Splitter3: TSplitter
-      Left = 844
+      Left = 680
       Height = 347
       Top = 1
       Width = 6
