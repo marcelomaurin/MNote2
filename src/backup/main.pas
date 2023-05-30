@@ -771,6 +771,7 @@ begin
       FCHATGPT.SendQuestion(edChat.Text);
       meChatHist.Append('Response:'+ FCHATGPT.Response);
       meChatHist.Append(' ');
+      edChat.Text:= '';
   end;
 end;
 

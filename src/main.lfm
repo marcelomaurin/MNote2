@@ -196,7 +196,7 @@ object frmMNote: TfrmMNote
   object MainMenu1: TMainMenu
     Images = ImageList1
     Left = 40
-    Top = 10
+    Top = 8
     object MenuItem1: TMenuItem
       Caption = 'File'
       ImageIndex = 5
@@ -383,11 +383,12 @@ object frmMNote: TfrmMNote
   end
   object popFechar: TPopupMenu
     Images = ImageList1
-    Left = 196
+    Left = 200
     Top = 166
     object mnFechar: TMenuItem
       Caption = 'Fechar'
       ImageIndex = 0
+      OnClick = mnFecharClick
     end
   end
   object ImageList1: TImageList
@@ -523,6 +524,7 @@ object frmMNote: TfrmMNote
     object mnFechar2: TMenuItem
       Caption = 'Fechar'
       ImageIndex = 0
+      OnClick = mnFechar2Click
     end
   end
   object TrayIcon1: TTrayIcon
@@ -1127,15 +1129,18 @@ object frmMNote: TfrmMNote
   object PopupMenu1: TPopupMenu
     Images = ImageList1
     Left = 530
-    Top = 190
+    Top = 189
     object mnFixar: TMenuItem
       Caption = 'Fix'
+      OnClick = mnFixarClick
     end
     object mnStay: TMenuItem
       Caption = 'On Top'
+      OnClick = mnStayClick
     end
     object mnDesktopCenter: TMenuItem
       Caption = 'Desktop Center'
+      OnClick = mnDesktopCenterClick
     end
   end
   object popFind: TPopupMenu
@@ -1143,6 +1148,7 @@ object frmMNote: TfrmMNote
     Top = 360
     object MenuItem2: TMenuItem
       Caption = 'Esconder'
+      OnClick = MenuItem2Click
     end
   end
   object pmResult: TPopupMenu
