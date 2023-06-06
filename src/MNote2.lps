@@ -20,7 +20,7 @@
         <ComponentName Value="frmMNote"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <TopLine Value="1463"/>
+        <TopLine Value="1517"/>
         <CursorPos X="119" Y="1473"/>
         <UsageCount Value="134"/>
         <Loaded Value="True"/>
@@ -30,9 +30,10 @@
         <Filename Value="classes\item.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Item"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="3"/>
-        <TopLine Value="202"/>
-        <CursorPos X="5" Y="222"/>
+        <TopLine Value="454"/>
+        <CursorPos Y="471"/>
         <UsageCount Value="134"/>
         <Loaded Value="True"/>
       </Unit2>
@@ -219,9 +220,8 @@
       <Unit25>
         <Filename Value="classes\chatgpt.pas"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="5"/>
-        <TopLine Value="89"/>
+        <TopLine Value="58"/>
         <CursorPos Y="95"/>
         <UsageCount Value="24"/>
         <Loaded Value="True"/>
@@ -564,123 +564,123 @@
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="146" TopLine="123"/>
+        <Caret Line="150" TopLine="127"/>
       </Position1>
       <Position2>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="81" TopLine="64"/>
+        <Caret Line="9" Column="35"/>
       </Position2>
       <Position3>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="102" Column="50"/>
+        <Caret Line="105" Column="45" TopLine="94"/>
       </Position3>
       <Position4>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="150" TopLine="127"/>
+        <Caret Line="115" TopLine="111"/>
       </Position4>
       <Position5>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="9" Column="35"/>
+        <Caret Line="118" TopLine="111"/>
       </Position5>
       <Position6>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="105" Column="45" TopLine="94"/>
+        <Caret Line="126" TopLine="111"/>
       </Position6>
       <Position7>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="115" TopLine="111"/>
+        <Caret Line="93" TopLine="81"/>
       </Position7>
       <Position8>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="118" TopLine="111"/>
+        <Caret Line="149" TopLine="138"/>
       </Position8>
       <Position9>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="126" TopLine="111"/>
+        <Caret Line="115" TopLine="104"/>
       </Position9>
       <Position10>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="93" TopLine="81"/>
+        <Caret Line="97" TopLine="92"/>
       </Position10>
       <Position11>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="149" TopLine="138"/>
+        <Caret Line="100" TopLine="92"/>
       </Position11>
       <Position12>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="115" TopLine="104"/>
+        <Caret Line="103" TopLine="92"/>
       </Position12>
       <Position13>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="97" TopLine="92"/>
+        <Caret Line="129" TopLine="106"/>
       </Position13>
       <Position14>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="100" TopLine="92"/>
+        <Caret Line="86" Column="28" TopLine="80"/>
       </Position14>
       <Position15>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="103" TopLine="92"/>
+        <Caret Line="102" Column="54" TopLine="91"/>
       </Position15>
       <Position16>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="129" TopLine="106"/>
+        <Caret Line="97" TopLine="91"/>
       </Position16>
       <Position17>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="86" Column="28" TopLine="80"/>
+        <Caret Line="100" TopLine="91"/>
       </Position17>
       <Position18>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="102" Column="54" TopLine="91"/>
+        <Caret Line="102" TopLine="91"/>
       </Position18>
       <Position19>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="97" TopLine="91"/>
+        <Caret Line="148" TopLine="137"/>
       </Position19>
       <Position20>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="100" TopLine="91"/>
+        <Caret Line="97" TopLine="76"/>
       </Position20>
       <Position21>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="102" TopLine="91"/>
+        <Caret Line="100" TopLine="89"/>
       </Position21>
       <Position22>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="148" TopLine="137"/>
+        <Caret Line="102" Column="55" TopLine="98"/>
       </Position22>
       <Position23>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="97" TopLine="76"/>
+        <Caret Line="97" TopLine="86"/>
       </Position23>
       <Position24>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="100" TopLine="89"/>
+        <Caret Line="100" TopLine="86"/>
       </Position24>
       <Position25>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="102" Column="55" TopLine="98"/>
+        <Caret Line="102" TopLine="86"/>
       </Position25>
       <Position26>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="97" TopLine="86"/>
+        <Caret Line="82" TopLine="77"/>
       </Position26>
       <Position27>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="100" TopLine="86"/>
+        <Caret Line="113" Column="51" TopLine="101"/>
       </Position27>
       <Position28>
-        <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="102" TopLine="86"/>
+        <Filename Value="classes\item.pas"/>
+        <Caret Line="291" TopLine="276"/>
       </Position28>
       <Position29>
-        <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="82" TopLine="77"/>
+        <Filename Value="classes\item.pas"/>
+        <Caret Line="99" Column="43" TopLine="93"/>
       </Position29>
       <Position30>
-        <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="113" Column="51" TopLine="101"/>
+        <Filename Value="classes\item.pas"/>
+        <Caret Line="326" Column="40" TopLine="306"/>
       </Position30>
     </JumpHistory>
     <RunParams>
@@ -695,21 +695,21 @@
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="classes\item.pas"/>
-        <Line Value="534"/>
+        <Line Value="570"/>
       </Item>
       <Item>
         <Kind Value="bpkSource"/>
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="classes\item.pas"/>
-        <Line Value="567"/>
+        <Line Value="603"/>
       </Item>
       <Item>
         <Kind Value="bpkSource"/>
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="classes\item.pas"/>
-        <Line Value="278"/>
+        <Line Value="279"/>
       </Item>
       <Item>
         <Kind Value="bpkSource"/>
@@ -807,14 +807,14 @@
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="classes\item.pas"/>
-        <Line Value="827"/>
+        <Line Value="863"/>
       </Item>
       <Item>
         <Kind Value="bpkSource"/>
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="classes\item.pas"/>
-        <Line Value="829"/>
+        <Line Value="865"/>
       </Item>
       <Item>
         <Kind Value="bpkSource"/>

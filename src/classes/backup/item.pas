@@ -95,6 +95,7 @@ TItem = class(TComponent)
          procedure  TimerEvento(Sender: TObject);
          procedure SynCompletion1Execute(Sender: TObject);
          procedure CheckTipoArquivo();
+         procedure ConfigurePHPHighlighter(var APHPHighlighter: TSynPHPSyn);
          procedure ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
          procedure ConfigureJavaHighlighter(var AJavaHighlighter: TSynJavaSyn);
          procedure SynCompletion1CodeCompletion(var Value: string;
@@ -153,7 +154,7 @@ begin
   Result.y2 := -1;
   funcBegin := false;
   funcEnd := false;
-
+  (*
   for i := 0 to SynEdit.Lines.Count - 1 do // Percorre todas as linhas do SynEdit
   begin
     j := 1;
@@ -217,7 +218,9 @@ begin
         Break;
       end;
     end;
+
   end;
+  *)
 end;
 
 procedure TItem.SynCompletion1SearchPosition(var APosition: integer);
@@ -285,6 +288,40 @@ begin
    end;
 
 end;
+
+procedure TItem.ConfigurePHPHighlighter(var APHPHighlighter: TSynPHPSyn);
+begin
+  // Configuração padrão para comentários
+  APHPHighlighter.CommentAttri.Foreground := clGreen;
+  APHPHighlighter.CommentAttri.Style := [fsItalic];
+
+  // Configuração padrão para palavras-chave
+  APHPHighlighter.KeyAttri.Foreground := clNavy;
+  APHPHighlighter.KeywordAttribute.Style := [fsBold];
+
+  // Configuração padrão para identificadores
+  APHPHighlighter.IdentifierAttri.Foreground := clBlack;
+
+  // Configuração padrão para números
+  APHPHighlighter.NumberAttri.Foreground := clTeal;
+
+  // Configuração padrão para strings e caracteres
+  APHPHighlighter.StringAttri.Foreground := clMaroon;
+  //APHPHighlighter.CharAttri.Foreground := clMaroon;
+
+
+  // Configuração padrão para diretivas de pré-processador
+  //APHPHighlighter.PreprocessorAttri.Foreground := clPurple;
+
+  //APHPHighlighter.PreprocessorAttri.Style := [fsBold];
+  //APHPHighlighter.GetTokenAttribute.Style := [fsBold];
+
+
+
+  // Configuração padrão para símbolos e pontuação
+  APHPHighlighter.SymbolAttri.Foreground := clBlack;
+end;
+
 
 procedure TItem.ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
 begin

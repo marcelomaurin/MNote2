@@ -95,6 +95,7 @@ TItem = class(TComponent)
          procedure  TimerEvento(Sender: TObject);
          procedure SynCompletion1Execute(Sender: TObject);
          procedure CheckTipoArquivo();
+         procedure ConfigurePHPHighlighter(var APHPHighlighter: TSynPHPSyn);
          procedure ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
          procedure ConfigureJavaHighlighter(var AJavaHighlighter: TSynJavaSyn);
          procedure SynCompletion1CodeCompletion(var Value: string;
@@ -288,6 +289,40 @@ begin
 
 end;
 
+procedure TItem.ConfigurePHPHighlighter(var APHPHighlighter: TSynPHPSyn);
+begin
+  // Configuração padrão para comentários
+  APHPHighlighter.CommentAttri.Foreground := clGreen;
+  APHPHighlighter.CommentAttri.Style := [fsItalic];
+
+  // Configuração padrão para palavras-chave
+  APHPHighlighter.KeyAttri.Foreground := clNavy;
+  APHPHighlighter.KeywordAttribute.Style := [fsBold];
+
+  // Configuração padrão para identificadores
+  APHPHighlighter.IdentifierAttri.Foreground := clBlack;
+
+  // Configuração padrão para números
+  APHPHighlighter.NumberAttri.Foreground := clTeal;
+
+  // Configuração padrão para strings e caracteres
+  APHPHighlighter.StringAttri.Foreground := clMaroon;
+  //APHPHighlighter.CharAttri.Foreground := clMaroon;
+
+
+  // Configuração padrão para diretivas de pré-processador
+  //APHPHighlighter.PreprocessorAttri.Foreground := clPurple;
+
+  //APHPHighlighter.PreprocessorAttri.Style := [fsBold];
+  //APHPHighlighter.GetTokenAttribute.Style := [fsBold];
+
+
+
+  // Configuração padrão para símbolos e pontuação
+  APHPHighlighter.SymbolAttri.Foreground := clBlack;
+end;
+
+
 procedure TItem.ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
 begin
   // Configuração padrão para comentários
@@ -431,9 +466,10 @@ begin
     if(FSynPHPSyn1 = nil) then
     begin
       FSynPHPSyn1 := TSynPHPSyn.create(FSender);
-    end;
 
+    end;
     Fsyn.Highlighter := FSynPHPSyn1;
+    ConfigurePHPHighlighter(FSynPHPSyn1);
     FItemType := ti_PHP;
   end;
   if(FileExt='.c') then
