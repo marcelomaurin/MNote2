@@ -13,6 +13,10 @@ uses
   Graphics, SynEditKeyCmds, LCLType, Variants,
   PythonEngine, PythonGUIInputOutput, setmain, funcoes, hint, Dialogs, StdCtrls;
 
+type TFuncPosition = record
+  y1, y2: integer;
+end;
+
 type
 TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BAT,
            ti_CFG , ti_TXT, ti_SQL,ti_PY, ti_PHP, ti_JAVA, ti_JS, ti_HTML, ti_CSS,
@@ -98,6 +102,7 @@ TItem = class(TComponent)
                      Shift: TShiftState);
          procedure SynCompletion1SearchPosition(var APosition: integer);
          procedure MessageHint(sender : TComponent; info: string);
+         function getPascfuncs(SynEdit: TSynEdit): TFuncPosition;
       public
          Nome: String;
          FileName : String;
@@ -136,6 +141,86 @@ end;
 
 implementation
 
+
+
+
+function TItem.getPascfuncs(SynEdit: TSynEdit): TFuncPosition;
+var
+  i, j: integer;
+  funcBegin, funcEnd: boolean;
+begin
+  Result.y1 := -1; // Inicia a posição como -1 para indicar que a posição não foi encontrada
+  Result.y2 := -1;
+  funcBegin := false;
+  funcEnd := false;
+  (*
+  for i := 0 to SynEdit.Lines.Count - 1 do // Percorre todas as linhas do SynEdit
+  begin
+    j := 1;
+
+    while j <= Length(SynEdit.Lines[i]) do // Percorre cada caractere da linha
+    begin
+      if (SynEdit.Lines[i][j] = 'f') and (SynEdit.Lines[i][j+1] = 'u') and (SynEdit.Lines[i][j+2] = 'n') and
+         (SynEdit.Lines[i][j+3] = 'c') and (SynEdit.Lines[i][j+4] = 't') and (SynEdit.Lines[i][j+5] = 'i') and
+         (SynEdit.Lines[i][j+6] = 'o') and (SynEdit.Lines[i][j+7] = 'n') then // Verifica se a linha contém a palavra "function"
+      begin
+        Result.y1 := i; // Armazena a posição de início da função
+        funcBegin := true; // Marcador para indicar que a função foi encontrada
+        Break;
+      end
+      else if (SynEdit.Lines[i][j] = 'p') and (SynEdit.Lines[i][j+1] = 'r') and (SynEdit.Lines[i][j+2] = 'o') and
+              (SynEdit.Lines[i][j+3] = 'c') and (SynEdit.Lines[i][j+4] = 'e') and (SynEdit.Lines[i][j+5] = 'd') and
+              (SynEdit.Lines[i][j+6] = 'u') and (SynEdit.Lines[i][j+7] = 'r') and (SynEdit.Lines[i][j+8] = 'e') then // Verifica se a linha contém a palavra "procedure"
+      begin
+        Result.y1 := i; // Armazena a posição de início do procedimento
+        funcBegin := true; // Marcador para indicar que o procedimento foi encontrado
+        Break;
+      end;
+      inc(j);
+    end;
+
+    if funcBegin then // Se a função ou procedimento foi encontrada, encontra sua linha final
+    begin
+      while i <= SynEdit.Lines.Count - 1 do // Percorre as linhas a partir da posição onde a função ou procedimento foi iniciado
+      begin
+        j := 1;
+
+        while j <= Length(SynEdit.Lines[i]) do // Percorre cada caractere da linha
+        begin
+          if (SynEdit.Lines[i][j] = 'e') and (SynEdit.Lines[i][j+1] = 'n') and (SynEdit.Lines[i][j+2] = 'd') then // Verifica se a linha contém a palavra "end"
+          begin
+            Result.y2 := i; // Armazena a posição final da função ou procedimento
+            funcEnd := True; // Marcador para indicar que a posição final foi encontrada
+            Break;
+          end;
+          j := j +1;
+        end;
+
+        if funcEnd then // Se a posição final foi encontrada, sai do segundo loop
+        begin
+          Break
+        end
+        else // Senão, passa para a próxima linha do SynEdit
+        begin
+          i := i +1;
+        end;
+      end;
+
+      if funcEnd then // Se a posição final foi encontrada, sai do primeiro loop
+      begin
+        Break
+      end
+      else // Senão, armazena -1 nas posições de início e fim e sai do primeiro loop
+      begin
+        Result.y1 := -1;
+        Result.y2 := -1;
+        Break;
+      end;
+    end;
+
+  end;
+  *)
+end;
 
 procedure TItem.SynCompletion1SearchPosition(var APosition: integer);
 begin

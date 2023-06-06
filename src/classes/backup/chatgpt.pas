@@ -22,7 +22,7 @@ uses
     FParams: TStrings;
     function RequestJson(LURL : String; token : string ; ASK : string) : String;
     function PegaMensagem(const JSON: string): string;
-    //function RequestJson2(LURL: string; token: string; JSON: string): string;
+
   public
     property TOKEN : String read FToken write FToken; //property to access chatgpt
     property Question : String read FQuestion;
@@ -38,37 +38,9 @@ end;
 implementation
 
 { TCHATGPT }
+
+
 (*
-function TCHATGPT.RequestJson2(LURL: string; token: string; JSON: string): string;
-
-var
-  ClienteHTTP: THTTPClient;
-  Dados: TStringStream;
-  Resposta: string;
-begin
-  Resposta := '';
-  ClienteHTTP := THTTPClient.Create;
-  try
-    Dados := TStringStream.Create(JSON);
-    try
-      ClienteHTTP.RequestHeaders['Content-Type'] := 'application/json';
-      ClienteHTTP.RequestHeaders['Authorization'] := 'Bearer ' + token;
-
-      ClienteHTTP.Post(LURL, Dados);
-
-      Resposta := ClienteHTTP.ResponseText;
-    finally
-      Dados.Free;
-    end;
-  finally
-    ClienteHTTP.Free;
-  end;
-
-  Result := Resposta;
-end;
-    *)
-
-
 function TCHATGPT.PegaMensagem(const JSON: string): string;
 var
   Data: TJSONData;
@@ -83,9 +55,18 @@ begin
     begin
       // Converte o objeto para um TJSONObject
       JsonObject := TJSONObject(Data);
+      //Response:{"id":"chatcmpl-7MFxY1Qe0QYARlJPjLHqofCT0ZqkX","object":"chat.completion","created":1685538920,"model":"gpt-3.5-turbo-0301","usage":{"prompt_tokens":9,"completion_tokens":9,"total_tokens":18},"choices":[{"message":{"role":"assistant","content":"Olá! Como posso ajudar?"},"finish_reason":"stop","index":0}]}
 
       // Obtém o valor do campo "message"
-      Result := JsonObject.GetPath('choices[0].message.content').AsString;
+      if JsonObject.Booleans['choices[0].message.content'] then
+      begin
+        Result := JsonObject.GetPath('choices[0].message[0].content').AsString;
+
+      end
+      else
+      begin
+         Result :=  JsonObject.GetPath('choices[0].message').AsString;
+      end;
     end
     else
     begin
@@ -96,6 +77,91 @@ begin
     Data.Free; // Libera a memória do objeto TJSONData
   end;
 end;
+*)
+
+
+
+function TCHATGPT.PegaMensagem(const JSON: string): string;
+var
+  Data: TJSONData;
+  JsonObject, ChoicesObject, MessageObject: TJSONObject;
+  Parser: TJSONParser;
+begin
+  // Cria um objeto TJSONParser a partir da string JSON
+  Parser := TJSONParser.Create(JSON);
+
+  try
+    // Faz o parsing do JSON
+    Data := Parser.Parse;
+
+    // Verifica se o objeto é um TJSONObject
+    if Data is TJSONObject then
+    begin
+      // Converte o objeto para um TJSONObject
+      JsonObject := TJSONObject(Data);
+
+      // Verifica se o campo "choices" existe
+      if JsonObject.IndexOfName('choices') >= 0 then
+      begin
+        // Obtém o objeto de escolhas (choices)
+        ChoicesObject := JsonObject.Objects['choices'] as TJSONObject;
+
+        // Verifica se o objeto de escolhas existe e se possui elementos
+        if (ChoicesObject <> nil) and (ChoicesObject.Count > 0) then
+        begin
+          // Obtém o primeiro objeto de mensagem (message)
+          MessageObject := ChoicesObject.Objects[0].Objects['message'] as TJSONObject;
+
+          // Verifica se o objeto de mensagem existe
+          if MessageObject <> nil then
+          begin
+            // Verifica se o campo "content" existe no objeto de mensagem
+            if MessageObject.IndexOfName('content') >= 0 then
+            begin
+              // Obtém o valor do campo "content"
+              Result := MessageObject.Get('content').AsString;
+            end
+            else
+            begin
+              // O campo "content" não existe, pega o conteúdo completo do objeto de mensagem
+              Result := MessageObject.AsJSON;
+            end;
+          end
+          else
+          begin
+            // O objeto de mensagem não existe, retorna uma string vazia ou lança uma exceção, conforme necessário
+            Result := '';
+          end;
+        end
+        else
+        begin
+          // O objeto de escolhas está vazio, retorna uma string vazia ou lança uma exceção, conforme necessário
+          Result := '';
+        end;
+      end
+      else if JsonObject.IndexOfName('content') >= 0 then
+      begin
+        // O campo "choices" não existe, mas o campo "content" existe no nível superior
+        Result := JsonObject.Get('content').AsString;
+      end
+      else
+      begin
+        // Resposta inválida, retorna uma string vazia ou lança uma exceção, conforme necessário
+        Result := '';
+      end;
+    end
+    else
+    begin
+      // Objeto JSON inválido, retorna uma string vazia ou lança uma exceção, conforme necessário
+      Result := '';
+    end;
+  finally
+    Parser.Free; // Libera a memória do objeto TJSONParser
+  end;
+end;
+
+
+
 
 function TCHATGPT.RequestJson(LURL: string; token: string; ASK: string): string;
 
@@ -164,7 +230,7 @@ begin
      LURL := 'https://api.openai.com/v1/chat/completions';
      //JSON := EncodeURLElement('{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "'+ASK+'"}]}');
 
-     AUX := RequestJson(LURL, FToken, ASK);
+     AUX := RequestJson(LURL, FToken, EncodeURLElement(ASK));
      try
        FResponse := PegaMensagem(AUX);
      except

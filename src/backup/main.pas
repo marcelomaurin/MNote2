@@ -21,7 +21,6 @@ type
     FontDialog1: TFontDialog;
     ImageList1: TImageList;
     MainMenu1: TMainMenu;
-    meChatHist: TMemo;
     edChat: TMemo;
     MenuItem14: TMenuItem;
     MenuItem17: TMenuItem;
@@ -105,6 +104,7 @@ type
     Splitter2: TSplitter;
     Splitter3: TSplitter;
     Splitter4: TSplitter;
+    meChatHist: TSynEdit;
     tsLocal: TTabSheet;
     tsGlobal: TTabSheet;
     TrayIcon1: TTrayIcon;
@@ -130,6 +130,8 @@ type
     procedure micopyClick(Sender: TObject);
     procedure miPasteClick(Sender: TObject);
     procedure miRedoClick(Sender: TObject);
+    procedure miSelectAllClick(Sender: TObject);
+    procedure miSelectBlockClick(Sender: TObject);
     procedure mncleanClick(Sender: TObject);
     procedure mndebugClick(Sender: TObject);
     procedure mnHideResultClick(Sender: TObject);
@@ -418,6 +420,12 @@ procedure TfrmMNote.CarregarArquivo(arquivo : string);
 begin
   if (arquivo = '') then
   begin
+    if(FSetFolders = nil) then
+    begin
+      FSetFolders := TSetFolders.create();
+      FSetFolders.CarregaContexto;
+    end;
+
     OpenDialog1.InitialDir:= FSetFolders.DefaultFolder;
     if OpenDialog1.execute then
     begin
@@ -939,6 +947,16 @@ syn := item.syn;
 syn.Redo;
 end;
 
+procedure TfrmMNote.miSelectAllClick(Sender: TObject);
+begin
+
+end;
+
+procedure TfrmMNote.miSelectBlockClick(Sender: TObject);
+begin
+
+end;
+
 procedure TfrmMNote.mncleanClick(Sender: TObject);
 var
      Output : string;
@@ -1454,6 +1472,10 @@ end;
 
 procedure TfrmMNote.mnPesqItemClick(Sender: TObject);
 begin
+  if (frmchgtext = nil) then
+  begin
+      frmchgtext := Tfrmchgtext.create(self);
+  end;
   if frmchgtext.Showing then
   begin
     frmchgtext.hide;

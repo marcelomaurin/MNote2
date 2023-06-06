@@ -21,7 +21,6 @@ type
     FontDialog1: TFontDialog;
     ImageList1: TImageList;
     MainMenu1: TMainMenu;
-    meChatHist: TMemo;
     edChat: TMemo;
     MenuItem14: TMenuItem;
     MenuItem17: TMenuItem;
@@ -105,6 +104,7 @@ type
     Splitter2: TSplitter;
     Splitter3: TSplitter;
     Splitter4: TSplitter;
+    meChatHist: TSynEdit;
     tsLocal: TTabSheet;
     tsGlobal: TTabSheet;
     TrayIcon1: TTrayIcon;
@@ -420,6 +420,12 @@ procedure TfrmMNote.CarregarArquivo(arquivo : string);
 begin
   if (arquivo = '') then
   begin
+    if(FSetFolders = nil) then
+    begin
+      FSetFolders := TSetFolders.create();
+      FSetFolders.CarregaContexto;
+    end;
+
     OpenDialog1.InitialDir:= FSetFolders.DefaultFolder;
     if OpenDialog1.execute then
     begin
@@ -1466,6 +1472,10 @@ end;
 
 procedure TfrmMNote.mnPesqItemClick(Sender: TObject);
 begin
+  if (frmchgtext = nil) then
+  begin
+      frmchgtext := Tfrmchgtext.create(self);
+  end;
   if frmchgtext.Showing then
   begin
     frmchgtext.hide;
