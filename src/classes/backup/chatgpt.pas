@@ -80,11 +80,11 @@ end;
 *)
 
 
-
 function TCHATGPT.PegaMensagem(const JSON: string): string;
 var
   Data: TJSONData;
-  JsonObject, ChoicesObject, MessageObject: TJSONObject;
+  JsonObject, MessageObject: TJSONObject;
+  ChoicesArray: TJSONArray;
   Parser: TJSONParser;
 begin
   // Cria um objeto TJSONParser a partir da string JSON
@@ -103,19 +103,20 @@ begin
       // Verifica se o campo "choices" existe
       if JsonObject.IndexOfName('choices') >= 0 then
       begin
-        // Obtém o objeto de escolhas (choices)
-        ChoicesObject := JsonObject.Objects['choices'] as TJSONObject;
+        // Obtém o array de escolhas (choices)
+        ChoicesArray := JsonObject.Arrays['choices'];
 
-        // Verifica se o objeto de escolhas existe e se possui elementos
-        if (ChoicesObject <> nil) and (ChoicesObject.Count > 0) then
+        // Verifica se o array de escolhas existe e se possui elementos
+        if (ChoicesArray <> nil) and (ChoicesArray.Count > 0) then
         begin
           // Obtém o primeiro objeto de mensagem (message)
-          MessageObject := ChoicesObject.Objects[0].Objects['message'] as TJSONObject;
+          MessageObject := ChoicesArray.Objects[0].Objects['message'] as TJSONObject;
 
           // Verifica se o objeto de mensagem existe
           if MessageObject <> nil then
           begin
             // Verifica se o campo "content" existe no objeto de mensagem
+            //Response:{ "role" : "assistant", "content" : "Olá! Como posso ajudar?" }
             if MessageObject.IndexOfName('content') >= 0 then
             begin
               // Obtém o valor do campo "content"
@@ -135,7 +136,7 @@ begin
         end
         else
         begin
-          // O objeto de escolhas está vazio, retorna uma string vazia ou lança uma exceção, conforme necessário
+          // O array de escolhas está vazio, retorna uma string vazia ou lança uma exceção, conforme necessário
           Result := '';
         end;
       end

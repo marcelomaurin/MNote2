@@ -116,10 +116,12 @@ begin
           if MessageObject <> nil then
           begin
             // Verifica se o campo "content" existe no objeto de mensagem
+            //Response:{ "role" : "assistant", "content" : "Olá! Como posso ajudar?" }
             if MessageObject.IndexOfName('content') >= 0 then
             begin
               // Obtém o valor do campo "content"
-              Result := MessageObject.Get('content').AsString;
+              Result := MessageObject.Find('content').AsString;
+              //MessageObject.Get('content').AsString;
             end
             else
             begin

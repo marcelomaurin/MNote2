@@ -4,14 +4,14 @@
     <PathDelim Value="\"/>
     <Version Value="12"/>
     <BuildModes Active="Default"/>
-    <Units Count="70">
+    <Units Count="71">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="2"/>
         <TopLine Value="2"/>
         <CursorPos X="10" Y="10"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
@@ -21,8 +21,8 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <TopLine Value="1517"/>
-        <CursorPos X="119" Y="1473"/>
-        <UsageCount Value="134"/>
+        <CursorPos X="38" Y="1520"/>
+        <UsageCount Value="135"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -30,11 +30,10 @@
         <Filename Value="classes\item.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Item"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="3"/>
         <TopLine Value="454"/>
         <CursorPos Y="471"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
@@ -43,14 +42,14 @@
         <ComponentName Value="frmSobre"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit3>
       <Unit4>
         <Filename Value="classes\finds.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="42" Y="12"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit4>
       <Unit5>
         <Filename Value="setmain.pas"/>
@@ -58,21 +57,21 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="294"/>
         <CursorPos X="37" Y="300"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit5>
       <Unit6>
         <Filename Value="funcoes.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="6"/>
+        <EditorIndex Value="7"/>
         <TopLine Value="112"/>
         <CursorPos Y="271"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
         <Loaded Value="True"/>
       </Unit6>
       <Unit7>
         <Filename Value="classes\chaves.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit7>
       <Unit8>
         <Filename Value="classes\setbanco.pas"/>
@@ -80,7 +79,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="217"/>
         <CursorPos X="40" Y="224"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit8>
       <Unit9>
         <Filename Value="classes\setmquery.pas"/>
@@ -89,13 +88,13 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="2"/>
         <CursorPos X="15" Y="14"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit9>
       <Unit10>
         <Filename Value="classes\tabela.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Tabela"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit10>
       <Unit11>
         <Filename Value="classes\typedb.pas"/>
@@ -103,7 +102,7 @@
         <UnitName Value="TypeDB"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="11"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit11>
       <Unit12>
         <Filename Value="mquery.pas"/>
@@ -114,7 +113,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="568"/>
         <CursorPos Y="577"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit12>
       <Unit13>
         <Filename Value="cfgdb.pas"/>
@@ -125,7 +124,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="55"/>
         <CursorPos X="39" Y="55"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit13>
       <Unit14>
         <Filename Value="folders.pas"/>
@@ -136,24 +135,24 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="182"/>
         <CursorPos X="53" Y="193"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit14>
       <Unit15>
         <Filename Value="classes\setfolders.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="setFolders"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit15>
       <Unit16>
         <Filename Value="Manifest.manifest"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit16>
       <Unit17>
         <Filename Value="Manifest.rc"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit17>
       <Unit18>
@@ -165,12 +164,12 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="159"/>
         <CursorPos X="42" Y="178"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit18>
       <Unit19>
         <Filename Value="setchgtext.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit19>
       <Unit20>
         <Filename Value="hint.pas"/>
@@ -178,7 +177,7 @@
         <ComponentName Value="frmHint"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit20>
       <Unit21>
         <Filename Value="registro.pas"/>
@@ -188,7 +187,7 @@
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="40"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit21>
       <Unit22>
         <Filename Value="splash.pas"/>
@@ -196,7 +195,7 @@
         <ComponentName Value="frmSplash"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit22>
       <Unit23>
         <Filename Value="config.pas"/>
@@ -206,7 +205,7 @@
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="27" Y="14"/>
-        <UsageCount Value="134"/>
+        <UsageCount Value="135"/>
       </Unit23>
       <Unit24>
         <Filename Value="setlstbnc.pas"/>
@@ -215,15 +214,16 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="171"/>
         <CursorPos Y="182"/>
-        <UsageCount Value="84"/>
+        <UsageCount Value="85"/>
       </Unit24>
       <Unit25>
         <Filename Value="classes\chatgpt.pas"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="5"/>
-        <TopLine Value="58"/>
-        <CursorPos Y="95"/>
-        <UsageCount Value="24"/>
+        <TopLine Value="109"/>
+        <CursorPos X="63" Y="123"/>
+        <UsageCount Value="25"/>
         <Loaded Value="True"/>
       </Unit25>
       <Unit26>
@@ -560,127 +560,135 @@
         <UsageCount Value="12"/>
         <Loaded Value="True"/>
       </Unit69>
+      <Unit70>
+        <Filename Value="C:\fpcupdeluxe\fpcsrc\packages\fcl-json\src\fpjson.pp"/>
+        <EditorIndex Value="6"/>
+        <TopLine Value="684"/>
+        <CursorPos X="18" Y="695"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit70>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="150" TopLine="127"/>
+        <Caret Line="119" TopLine="103"/>
       </Position1>
       <Position2>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="9" Column="35"/>
+        <Caret Line="122" Column="71" TopLine="112"/>
       </Position2>
       <Position3>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="105" Column="45" TopLine="94"/>
+        <Caret Line="95" TopLine="83"/>
       </Position3>
       <Position4>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="115" TopLine="111"/>
+        <Caret Line="110" TopLine="99"/>
       </Position4>
       <Position5>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="118" TopLine="111"/>
+        <Caret Line="119" TopLine="100"/>
       </Position5>
       <Position6>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="126" TopLine="111"/>
+        <Caret Line="95" TopLine="83"/>
       </Position6>
       <Position7>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="93" TopLine="81"/>
+        <Caret Line="98" TopLine="83"/>
       </Position7>
       <Position8>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="149" TopLine="138"/>
+        <Caret Line="101" TopLine="99"/>
       </Position8>
       <Position9>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="115" TopLine="104"/>
+        <Caret Line="104" TopLine="99"/>
       </Position9>
       <Position10>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="97" TopLine="92"/>
+        <Caret Line="107" TopLine="99"/>
       </Position10>
       <Position11>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="100" TopLine="92"/>
+        <Caret Line="110" TopLine="99"/>
       </Position11>
       <Position12>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="103" TopLine="92"/>
+        <Caret Line="113" TopLine="105"/>
       </Position12>
       <Position13>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="129" TopLine="106"/>
+        <Caret Line="116" TopLine="105"/>
       </Position13>
       <Position14>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="86" Column="28" TopLine="80"/>
+        <Caret Line="123" Column="44" TopLine="105"/>
       </Position14>
       <Position15>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="102" Column="54" TopLine="91"/>
+        <Caret Line="95" TopLine="83"/>
       </Position15>
       <Position16>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="97" TopLine="91"/>
+        <Caret Line="98" TopLine="83"/>
       </Position16>
       <Position17>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="100" TopLine="91"/>
+        <Caret Line="101" TopLine="83"/>
       </Position17>
       <Position18>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="102" TopLine="91"/>
+        <Caret Line="104" TopLine="85"/>
       </Position18>
       <Position19>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="148" TopLine="137"/>
+        <Caret Line="107" TopLine="94"/>
       </Position19>
       <Position20>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="97" TopLine="76"/>
+        <Caret Line="110" TopLine="97"/>
       </Position20>
       <Position21>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="100" TopLine="89"/>
+        <Caret Line="113" TopLine="97"/>
       </Position21>
       <Position22>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="102" Column="55" TopLine="98"/>
+        <Caret Line="95" TopLine="111"/>
       </Position22>
       <Position23>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="97" TopLine="86"/>
+        <Caret Line="120" TopLine="112"/>
       </Position23>
       <Position24>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="100" TopLine="86"/>
+        <Caret Line="123" Column="51" TopLine="116"/>
       </Position24>
       <Position25>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="102" TopLine="86"/>
+        <Caret Line="124" Column="17" TopLine="118"/>
       </Position25>
       <Position26>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="82" TopLine="77"/>
+        <Caret Line="120" TopLine="116"/>
       </Position26>
       <Position27>
         <Filename Value="classes\chatgpt.pas"/>
-        <Caret Line="113" Column="51" TopLine="101"/>
+        <Caret Line="123" TopLine="116"/>
       </Position27>
       <Position28>
-        <Filename Value="classes\item.pas"/>
-        <Caret Line="291" TopLine="276"/>
+        <Filename Value="classes\chatgpt.pas"/>
+        <Caret Line="93" TopLine="81"/>
       </Position28>
       <Position29>
-        <Filename Value="classes\item.pas"/>
-        <Caret Line="99" Column="43" TopLine="93"/>
+        <Filename Value="classes\chatgpt.pas"/>
+        <Caret Line="120" TopLine="109"/>
       </Position29>
       <Position30>
-        <Filename Value="classes\item.pas"/>
-        <Caret Line="326" Column="40" TopLine="306"/>
+        <Filename Value="classes\chatgpt.pas"/>
+        <Caret Line="123" TopLine="109"/>
       </Position30>
     </JumpHistory>
     <RunParams>
@@ -863,14 +871,14 @@
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="classes\chatgpt.pas"/>
-        <Line Value="110"/>
+        <Line Value="124"/>
       </Item>
       <Item>
         <Kind Value="bpkSource"/>
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="classes\chatgpt.pas"/>
-        <Line Value="95"/>
+        <Line Value="120"/>
       </Item>
     </BreakPoints>
   </Debugging>
