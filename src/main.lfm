@@ -753,6 +753,7 @@ object frmMNote: TfrmMNote
         object miSelectCmd: TMenuItem
           Caption = 'Select Comand'
           ShortCut = 49217
+          OnClick = miSelectCmdClick
         end
         object miSelectBlock: TMenuItem
           Caption = 'Select Block'
@@ -797,12 +798,15 @@ object frmMNote: TfrmMNote
       object mndebug: TMenuItem
         Caption = 'DEBUG'
         ShortCut = 16500
+        OnClick = mndebugClick
       end
       object mnclean: TMenuItem
         Caption = 'CLEAN'
+        OnClick = mncleanClick
       end
       object mninstall: TMenuItem
         Caption = 'INSTALL'
+        OnClick = mninstallClick
       end
     end
     object MenuItem12: TMenuItem
@@ -848,12 +852,14 @@ object frmMNote: TfrmMNote
       object mnfont: TMenuItem
         Caption = 'Fonts'
         ImageIndex = 9
+        OnClick = mnfontClick
       end
       object MenuItem5: TMenuItem
         Caption = 'Language'
         ImageIndex = 14
         object MenuItem7: TMenuItem
           Caption = 'Portuguese'
+          OnClick = MenuItem7Click
         end
         object MenuItem8: TMenuItem
           Caption = 'English'
@@ -868,17 +874,21 @@ object frmMNote: TfrmMNote
       ImageIndex = 10
       object mnFixW: TMenuItem
         Caption = 'Fix'
+        OnClick = mnFixWClick
       end
       object mnOnTopW: TMenuItem
         Caption = 'On Top'
+        OnClick = mnOnTopWClick
       end
       object mnDesktopCenterW: TMenuItem
         Caption = 'Desktop Center'
+        OnClick = mnDesktopCenterWClick
       end
     end
     object MenuItem10: TMenuItem
       Caption = 'About'
       ImageIndex = 12
+      OnClick = MenuItem10Click
     end
   end
   object OpenDialog1: TOpenDialog
