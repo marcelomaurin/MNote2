@@ -23,9 +23,9 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\MEDIT2
 DisableProgramGroupPage=yes
-OutputDir=D:\projetos\maurinsoft\MNote2\bin
-OutputBaseFilename=win_MNote2_26
-SetupIconFile=D:\projetos\maurinsoft\MNote2\src\MNote2.ico
+OutputDir=C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\bin
+OutputBaseFilename=win_MNote2_27
+SetupIconFile=C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\src\MNote2.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -37,22 +37,22 @@ Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortugue
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "D:\projetos\maurinsoft\MNote2\src\MNote2.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\src\*.dci"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\src\*.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\src\*.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\src\*.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\sample\gcc\hello.c"; DestDir: "{app}\sample\gcc\"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\sample\python\hello\hello.py"; DestDir: "{app}\sample\python\hello\"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\tools\windows\mingw-get-setup.exe"; DestDir: "{app}\tools\"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\libs\sqlite\win32\*.*"; DestDir: "{app}\libs\sqlite\win32\"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\libs\sqlite\win64\*.*"; DestDir: "{app}\libs\sqlite\win64\"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\libs\postgres\win32\*.*"; DestDir: "{app}\libs\postgres\win32\"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\libs\postgres\win64\*.*"; DestDir: "{app}\libs\postgres\win64\"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\libs\mysql\win32\*.*"; DestDir: "{app}\libs\mysql\win32\"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\libs\mysql\win64\*.*"; DestDir: "{app}\libs\mysql\win64\"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\src\MNote2.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\src\*.dci"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\src\*.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\src\*.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\src\*.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\sample\gcc\hello.c"; DestDir: "{app}\sample\gcc\"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\sample\python\hello\hello.py"; DestDir: "{app}\sample\python\hello\"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\tools\windows\mingw-get-setup.exe"; DestDir: "{app}\tools\"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\libs\sqlite\win32\*.*"; DestDir: "{app}\libs\sqlite\win32\"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\libs\sqlite\win64\*.*"; DestDir: "{app}\libs\sqlite\win64\"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\libs\postgres\win32\*.*"; DestDir: "{app}\libs\postgres\win32\"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\libs\postgres\win64\*.*"; DestDir: "{app}\libs\postgres\win64\"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\libs\mysql\win32\*.*"; DestDir: "{app}\libs\mysql\win32\"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\libs\mysql\win64\*.*"; DestDir: "{app}\libs\mysql\win64\"; Flags: ignoreversion
 
-Source: "D:\projetos\maurinsoft\MNote2\src\libs\win64\libmysql64.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\marcelo.maurin\Documents\maurinsoft\MNote2\src\libs\win64\libmysql64.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
