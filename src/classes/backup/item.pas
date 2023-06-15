@@ -466,9 +466,10 @@ begin
     if(FSynPHPSyn1 = nil) then
     begin
       FSynPHPSyn1 := TSynPHPSyn.create(FSender);
-    end;
 
+    end;
     Fsyn.Highlighter := FSynPHPSyn1;
+    ConfigurePHPHighlighter(FSynPHPSyn1);
     FItemType := ti_PHP;
   end;
   if(FileExt='.c') then
