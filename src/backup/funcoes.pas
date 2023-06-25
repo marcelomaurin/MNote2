@@ -66,7 +66,7 @@ function IsAdministrator: Boolean;
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
 function VerificaArea(X, Y: longint): Boolean;
-function Callprg(filename: string; var Output: string): boolean;
+function Callprg(filename: string; source: String; var Output: string): boolean;
 
 
 

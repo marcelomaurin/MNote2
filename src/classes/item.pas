@@ -929,6 +929,7 @@ begin
        filenamerun := FSetMain.RunScript;
        if (filenamerun <> '') then
        begin
+            {$IFDEF WINDOWS}
             if(Callprg(filenamerun, '', Output)=true) then
             begin
                  //showmessage('Run program!!');
@@ -942,6 +943,7 @@ begin
                  MessageHint(Fsender,'fail run script'+ filenamerun);
                  //pnResult.Visible:= false;
             end;
+            {$ENDIF}
        end
        else
        begin

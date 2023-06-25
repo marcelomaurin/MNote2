@@ -65,13 +65,13 @@ function RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executave
 function IsAdministrator: Boolean;
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
-function VerificaArea(X, Y: longint): Boolean;
+
 function Callprg(filename: string; source: String; var Output: string): boolean;
 
 
 
 {$ENDIF}
-
+function VerificaArea(X, Y: longint): Boolean;
 {$IFDEF LINUX}
 function RunBatch(const batch, Params: string; var Output : string): boolean;
 {$ENDIF}

@@ -126,12 +126,14 @@ type
     procedure MenuItem10Click(Sender: TObject);
     procedure MenuItem12Click(Sender: TObject);
     procedure MenuItem14Click(Sender: TObject);
+    procedure MenuItem7Click(Sender: TObject);
     procedure miChatGPTClick(Sender: TObject);
     procedure micopyClick(Sender: TObject);
     procedure miPasteClick(Sender: TObject);
     procedure miRedoClick(Sender: TObject);
     procedure miSelectAllClick(Sender: TObject);
     procedure miSelectBlockClick(Sender: TObject);
+    procedure miSelectCmdClick(Sender: TObject);
     procedure mncleanClick(Sender: TObject);
     procedure mndebugClick(Sender: TObject);
     procedure mnHideResultClick(Sender: TObject);
@@ -904,6 +906,11 @@ begin
   syn.CutToClipboard;
 end;
 
+procedure TfrmMNote.MenuItem7Click(Sender: TObject);
+begin
+
+end;
+
 procedure TfrmMNote.miChatGPTClick(Sender: TObject);
 begin
     pnChatGPT.Visible:= not pnChatGPT.Visible;
@@ -957,6 +964,11 @@ begin
 
 end;
 
+procedure TfrmMNote.miSelectCmdClick(Sender: TObject);
+begin
+
+end;
+
 procedure TfrmMNote.mncleanClick(Sender: TObject);
 var
      Output : string;
@@ -966,6 +978,7 @@ begin
      filename := FSetMain.CleanScript;
      if (filename <> '') then
      begin
+       {$IFDEF WINDOWS}
           if(Callprg(filename, '', Output)=true) then
           begin
                //showmessage('Run program!!');
@@ -979,6 +992,7 @@ begin
                MessageHint('fail clean script'+ filename);
                pnResult.Visible:= false;
           end;
+          {$ENDIF}
      end
      else
      begin
@@ -997,6 +1011,7 @@ var
      filename := FSetMain.DebugScript;
      if (filename <> '') then
      begin
+        {$IFDEF WINDOWS}
           if(Callprg(filename,'', Output)=true) then
           begin
                //showmessage('Run program!!');
@@ -1010,6 +1025,7 @@ var
                MessageHint('fail debug script'+ filename);
                pnResult.Visible:= false;
           end;
+          {$ENDIF}
      end
      else
      begin
@@ -1070,6 +1086,7 @@ var
      filename := FSetMain.Install;
      if (filename <> '') then
      begin
+       {$IFDEF WINDOWS}
           if(Callprg(filename, '', Output)=true) then
           begin
                //showmessage('Run program!!');
@@ -1083,6 +1100,7 @@ var
                MessageHint('fail Install script'+ filename);
                pnResult.Visible:= false;
           end;
+
      end
      else
      begin

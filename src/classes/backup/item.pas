@@ -97,6 +97,7 @@ TItem = class(TComponent)
          procedure CheckTipoArquivo();
          procedure ConfigurePHPHighlighter(var APHPHighlighter: TSynPHPSyn);
          procedure ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
+         procedure ConfigureJScriptHighlighter(var AJScriptHighlighter: TSynJScriptSyn);
          procedure ConfigureJavaHighlighter(var AJavaHighlighter: TSynJavaSyn);
          procedure SynCompletion1CodeCompletion(var Value: string;
                      SourceValue: string; var SourceStart, SourceEnd: TPoint; KeyChar: TUTF8Char;
@@ -356,6 +357,41 @@ begin
   ACppHighlighter.SymbolAttri.Foreground := clBlack;
 end;
 
+procedure TItem.ConfigureJScriptHighlighter(
+  var AJScriptHighlighter: TSynJScriptSyn);
+begin
+  // Configuração padrão para comentários
+  AJScriptHighlighter.CommentAttri.Foreground := clGreen;
+  AJScriptHighlighter.CommentAttri.Style := [fsItalic];
+
+  // Configuração padrão para palavras-chave
+  AJScriptHighlighter.KeyAttri.Foreground := clNavy;
+  AJScriptHighlighter.KeywordAttribute.Style := [fsBold];
+
+  // Configuração padrão para identificadores
+  AJScriptHighlighter.IdentifierAttri.Foreground := clBlack;
+
+  // Configuração padrão para números
+  AJScriptHighlighter.NumberAttri.Foreground := clTeal;
+
+  // Configuração padrão para strings e caracteres
+  AJScriptHighlighter.StringAttri.Foreground := clMaroon;
+  //AJScriptHighlighter.CharAttri.Foreground := clMaroon;
+
+
+  // Configuração padrão para diretivas de pré-processador
+  //AJScriptHighlighter.PreprocessorAttri.Foreground := clPurple;
+
+  //AJScriptHighlighter.PreprocessorAttri.Style := [fsBold];
+  //AJScriptHighlighter.GetTokenAttribute.Style := [fsBold];
+
+
+
+  // Configuração padrão para símbolos e pontuação
+  AJScriptHighlighter.SymbolAttri.Foreground := clBlack;
+
+end;
+
 procedure TItem.ConfigureJavaHighlighter(var AJavaHighlighter: TSynJavaSyn);
 begin
   // Configuração padrão para comentários
@@ -558,6 +594,7 @@ begin
     end;
     Fsyn.Highlighter := FSynJScriptSyn1;
     FItemType := ti_js;
+    ConfigureJScriptHighlighter(FSynJScriptSyn1);
   end;
 end;
 
@@ -892,6 +929,7 @@ begin
        filenamerun := FSetMain.RunScript;
        if (filenamerun <> '') then
        begin
+            {$IFDEF WINDOWS}
             if(Callprg(filenamerun, '', Output)=true) then
             begin
                  //showmessage('Run program!!');
@@ -905,6 +943,7 @@ begin
                  MessageHint(Fsender,'fail run script'+ filenamerun);
                  //pnResult.Visible:= false;
             end;
+            {$ENDIF
        end
        else
        begin

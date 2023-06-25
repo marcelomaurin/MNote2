@@ -978,6 +978,7 @@ begin
      filename := FSetMain.CleanScript;
      if (filename <> '') then
      begin
+       {$IFDEF WINDOWS}
           if(Callprg(filename, '', Output)=true) then
           begin
                //showmessage('Run program!!');
@@ -991,6 +992,7 @@ begin
                MessageHint('fail clean script'+ filename);
                pnResult.Visible:= false;
           end;
+          {$ENDIF}
      end
      else
      begin
@@ -1009,6 +1011,7 @@ var
      filename := FSetMain.DebugScript;
      if (filename <> '') then
      begin
+        {$IFDEF WINDOWS}
           if(Callprg(filename,'', Output)=true) then
           begin
                //showmessage('Run program!!');
@@ -1022,6 +1025,7 @@ var
                MessageHint('fail debug script'+ filename);
                pnResult.Visible:= false;
           end;
+          {$ENDIF}
      end
      else
      begin
@@ -1082,6 +1086,7 @@ var
      filename := FSetMain.Install;
      if (filename <> '') then
      begin
+       {$IFDEF WINDOWS}
           if(Callprg(filename, '', Output)=true) then
           begin
                //showmessage('Run program!!');
@@ -1095,6 +1100,7 @@ var
                MessageHint('fail Install script'+ filename);
                pnResult.Visible:= false;
           end;
+          {$ENDIF}
      end
      else
      begin
