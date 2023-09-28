@@ -11,15 +11,17 @@ uses
   splash, setFolders, config, SynEditKeyCmds, PythonEngine, chatgpt;
 
 
-const versao = '2.27';
+const versao = '2.28';
 
 type
 
   { TfrmMNote }
 
   TfrmMNote = class(TForm)
+    FindDialog1: TFindDialog;
     FontDialog1: TFontDialog;
     ImageList1: TImageList;
+    lstFind: TListBox;
     MainMenu1: TMainMenu;
     edChat: TMemo;
     MenuItem14: TMenuItem;
@@ -192,6 +194,8 @@ type
   private
     { private declarations }
     FCHATGPT : TCHATGPT;
+    strFind : String;
+    FPos : integer;
 
     procedure CarregarParametros();
     procedure CarregarOld();
@@ -764,9 +768,69 @@ begin
 end;
 
 procedure TfrmMNote.FindDialog1Find(Sender: TObject);
-begin
+var
+   FindS: String;
+   Found : boolean;
+   IPos, FLen, SLen: Integer; {Internpos, Lengde søkestreng, lengde memotekst}
+   Res : integer;
+    item: TItem;
+    syn: TSynEdit;
+    find : TFind;
 
+begin
+  pnResult.Visible:= true;
+
+  strFind:= FindDialog1.FindText;
+  item := TItem(frmMNote.pgMain.ActivePage.Tag);
+  syn := item.syn;
+  IPOS := 0;
+  FPOS := 0;
+  //syn := TSynEdit(pgMain.ActivePage.Tag);
+  //item := TItem(syn.tag);
+  item := TItem(frmMNote.pgMain.ActivePage.Tag);
+  syn := item.syn;
+  {FPos is global}
+  Found:= False;
+  FLen := Length(strFind);
+  SLen := Length(syn.Text);
+
+  FindS := FindDialog1.FindText;
+  lstFind.Items.clear;
+
+  repeat
+    if(frMatchCase in FindDialog1.Options ) then // ckMatchcase.Checked then
+          IPos := Pos(strFind, Copy(syn.Text,FPos+1,SLen-FPos))
+    else
+          IPos := Pos(AnsiUpperCase(strFind),AnsiUpperCase( Copy(syn.Text,FPos+1,SLen-FPos)));
+
+    if (IPOS>0) then
+    begin
+         FPos := FPos + IPos;
+         find := TFind.create(syn ,frmMNote.pgMain.ActivePage , item, FPOS, strFind);
+         lstFind.Visible := true;
+         lstFind.Items.AddObject('Pos:'+inttostr(FPOS),tobject(find));
+
+    end
+     else
+    begin
+         FPOS := 0;
+         break;
+    end;
+  until (IPOS <=0);
+
+  If lstFind.Count > 0 then
+  begin
+      //pnBotton.Visible:= true;
+  end
+   Else
+  begin
+      //pnBotton.Visible:= false;
+      Res := Application.MessageBox('Text was not found!',
+             'Find',  mb_OK + mb_ICONWARNING);
+      FPos := 0;
+  end;
 end;
+
 
 procedure TfrmMNote.edChatKeyPress(Sender: TObject; var Key: char);
 begin
@@ -860,8 +924,32 @@ begin
 end;
 
 procedure TfrmMNote.lstFindClick(Sender: TObject);
+var
+   find : TFind;
+   res : boolean;
+procedure setSelLength(var textComponent:TSynEdit; newValue:integer);
 begin
+     textComponent.SelEnd:=textComponent.SelStart+newValue ;
+end;
 
+begin
+    If lstFind.SelCount > 0 then
+    begin
+        find := TFIND(lstFind.items.objects[lstFind.ItemIndex]);
+        frmMNote.pgMain.ActivePage := find.tb;
+        FPOS := find.IPOS;
+
+
+        FPos := find.IPos + length(find.strFind);
+        //   Hoved.BringToFront;       {Edit control must have focus in }
+        find.syn.SetFocus;
+        frmMnote.ActiveControl := find.syn;
+        find.syn.SelStart:= find.IPos;  // -1;   mike   {Select the string found by POS}
+        setSelLength(find.syn, find.FLen);     //Memo1.SelLength := FLen;
+        //Found := True;
+        FPos:=FPos+find.FLen-1;   //mike - move just past end of found item
+
+    end;
 end;
 
 procedure TfrmMNote.lstFindContextPopup(Sender: TObject; MousePos: TPoint;
@@ -1308,7 +1396,8 @@ end;
 
 procedure TfrmMNote.MenuItem2Click(Sender: TObject);
 begin
-
+    lstFind.Visible:= false;
+    pnResult.Visible:=false;
 end;
 
 procedure TfrmMNote.mnDesktopCenterClick(Sender: TObject);
@@ -1489,7 +1578,14 @@ end;
 
 
 procedure TfrmMNote.mnPesqItemClick(Sender: TObject);
+var
+   Line, SearchStr: string;
+   LineNum, StartPos, P: Integer;
+item : TItem;
+syn : TSynEdit;
+
 begin
+  (*
   if (frmchgtext = nil) then
   begin
       frmchgtext := Tfrmchgtext.create(self);
@@ -1502,6 +1598,10 @@ begin
   begin
        frmchgtext.show;
   end;
+  *)
+  FindDialog1.Execute;
+
+
 
 end;
 
