@@ -5,7 +5,8 @@ unit config;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, setmain;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, EditBtn,
+  setmain;
 
 type
 
@@ -14,12 +15,12 @@ type
   Tfrmconfig = class(TForm)
     btSave: TButton;
     btCancel: TButton;
-    edCHATGPT: TEdit;
-    edDLLPATH: TEdit;
-    edRun: TEdit;
-    edInstall: TEdit;
-    edClean: TEdit;
+    edCHATGPT: TFileNameEdit;
     edDebug: TEdit;
+    edDLLPATH: TFileNameEdit;
+    edInstall: TFileNameEdit;
+    edClean: TFileNameEdit;
+    edRun: TFileNameEdit;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;

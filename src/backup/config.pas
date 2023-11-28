@@ -5,7 +5,8 @@ unit config;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, setmain;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, EditBtn,
+  setmain;
 
 type
 
@@ -15,11 +16,11 @@ type
     btSave: TButton;
     btCancel: TButton;
     edCHATGPT: TEdit;
-    edDLLPATH: TEdit;
-    edRun: TEdit;
-    edInstall: TEdit;
-    edClean: TEdit;
     edDebug: TEdit;
+    edDLLPATH: TEdit;
+    edInstall: TEdit;
+    edClean: TFileNameEdit;
+    edRun: TFileNameEdit;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -51,7 +52,7 @@ begin
   FSetMain.RunScript:=edRun.text;
   FSetMain.DebugScript:=edDebug.text;
   FSetMain.DLLPath:= edDLLPATH.text;
-  FSetMain.CHATGPT:= edCHATGPT.tex;
+  FSetMain.CHATGPT:= edCHATGPT.text;
   FSetMain.SalvaContexto(false);
   close;
 end;

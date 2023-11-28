@@ -799,129 +799,155 @@ end;
 
 procedure TItem.Run();
 var
-
    Output : string;
    filenamerun : string;
-   //codigo : UnicodeString;
-   // PyExcType, PyExcValue, PyExcTraceback: Variant;
-    //PyEngine: Variant;
-
-    PyMainModule: PPyObject;
+   PyMainModule: PPyObject;
 begin
    //FItemType:= value;
   case FItemType of
     ti_PY :
     begin
-       if (FPythonCtrl.PythonEngine = nil) then
+       if(FSetMain.DLLPath<>'') then
        begin
-          FPythonCtrl.PythonEngine := TPythonEngine.Create(FSender);
-       end;
-       if(FResultado = nil) then
-       begin
-          FResultado.Lines.clear;
-       end;
-       if (FPythonCtrl.PythonGUIInputOutput1 = nil) then
-       begin
-            FPythonCtrl.PythonGUIInputOutput1 := TPythonGUIInputOutput.create(FSender);
-       end;
-       //FVarsList.Clear;
-       FPythonCtrl.PythonEngine.Name := 'PythonEngine';
-       FPythonCtrl.PythonEngine.AutoLoad := true;
-       FPythonCtrl.PythonEngine.FatalAbort := True;
-       FPythonCtrl.PythonEngine.FatalMsgDlg := True;
-       FPythonCtrl.PythonEngine.UseLastKnownVersion := True;
-       FPythonCtrl.PythonEngine.AutoLoad:= true;
-       FFileError := ''; //Zera o erro
-       //FPythonEngine.PythonPath:='C:\Users\marcelo.maurin\AppData\Local\Programs\Python\Python311\';
-       //FPythonEngine.DllPath:='C:\Users\marcelo.maurin\AppData\Local\Programs\Python\Python311\';
-       FPythonCtrl.FPythonEngine.DllPath:= FSetMain.DLLPath;
-       //PythonEngine.RegVersion :=  '3.11';
+         if (FPythonCtrl.PythonEngine = nil) then
+         begin
+            FPythonCtrl.PythonEngine := TPythonEngine.Create(FSender);
+         end;
+         if(FResultado = nil) then
+         begin
+            FResultado.Lines.clear;
+         end;
+         if (FPythonCtrl.PythonGUIInputOutput1 = nil) then
+         begin
+              FPythonCtrl.PythonGUIInputOutput1 := TPythonGUIInputOutput.create(FSender);
+         end;
+         //FVarsList.Clear;
+         FPythonCtrl.PythonEngine.Name := 'PythonEngine';
+         FPythonCtrl.PythonEngine.AutoLoad := true;
+         FPythonCtrl.PythonEngine.FatalAbort := True;
+         FPythonCtrl.PythonEngine.FatalMsgDlg := True;
+         FPythonCtrl.PythonEngine.UseLastKnownVersion := True;
+         FPythonCtrl.PythonEngine.AutoLoad:= true;
+         FFileError := ''; //Zera o erro
+         //FPythonEngine.PythonPath:='C:\Users\marcelo.maurin\AppData\Local\Programs\Python\Python311\';
+         //FPythonEngine.DllPath:='C:\Users\marcelo.maurin\AppData\Local\Programs\Python\Python311\';
+         FPythonCtrl.FPythonEngine.DllPath:= FSetMain.DLLPath;
+         //PythonEngine.RegVersion :=  '3.11';
 
-       //  PythonEngine.DllName := 'libpython3.7.dylib';
-       //  PythonEngine.DllPath :=
-       //    '/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/lib/';
-       //  PythonEngine.RegVersion := '3.7';
-       //  PythonEngine.UseLastKnownVersion := False;
-
-
-       FPythonCtrl.PythonEngine.AutoFinalize := True;
-       FPythonCtrl.PythonEngine.InitThreads := True;
-       FPythonCtrl.PythonEngine.PyFlags := [pfInteractive];
-       FPythonCtrl.PythonEngine.IO := FPythonCtrl.FPythonGUIInputOutput1;
-       if( FResultado <> nil) then
-       begin
-          FPythonCtrl.PythonGUIInputOutput1.Output :=FResultado;
-       end;
-       if not FPythonCtrl.PythonEngine.Initialized then
-       begin
-          FPythonCtrl.PythonEngine.LoadDll;
-
-       //FPythonCtrl.PythonEngine.Py_Initialize;
-       end;
-
-       filenamerun:= FileName;
+         //  PythonEngine.DllName := 'libpython3.7.dylib';
+         //  PythonEngine.DllPath :=
+         //    '/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/lib/';
+         //  PythonEngine.RegVersion := '3.7';
+         //  PythonEngine.UseLastKnownVersion := False;
 
 
-       //showmessage(filenamerun);
-       try
+         FPythonCtrl.PythonEngine.AutoFinalize := True;
+         FPythonCtrl.PythonEngine.InitThreads := True;
+         FPythonCtrl.PythonEngine.PyFlags := [pfInteractive];
+         FPythonCtrl.PythonEngine.IO := FPythonCtrl.FPythonGUIInputOutput1;
+         if( FResultado <> nil) then
+         begin
+            FPythonCtrl.PythonGUIInputOutput1.Output :=FResultado;
+         end;
+         if not FPythonCtrl.PythonEngine.Initialized then
+         begin
+            FPythonCtrl.PythonEngine.LoadDll;
 
-          FPythonCtrl.PythonEngine.ExecStrings(Fsyn.Lines);
+         //FPythonCtrl.PythonEngine.Py_Initialize;
+         end;
 
-          if (PythonCtrl.VarsCheck) then
-          begin
-               FMainModule:= PythonCtrl.FPythonEngine.PyImport_ImportModule('__main__');
-
-               FPythonCtrl.FVarsDict := FPythonCtrl.PythonEngine.PyModule_GetDict(FMainModule);
-
-               PyMainModule := FPythonCtrl.PythonEngine.PyImport_AddModule('__main__');
-               FPythonCtrl.VarsDict:= FPythonCtrl.PythonEngine.PyModule_GetDict(PyMainModule);
+         filenamerun:= FileName;
 
 
-               FPythonCtrl.FVarsGlobal  :=  @FPythonCtrl.FPythonEngine.PyDict_New;
+         //showmessage(filenamerun);
+         try
 
-               FPythonCtrl.VarsGlobalKeys:= FPythonCtrl.PythonEngine.PyDict_Keys(FPythonCtrl.VarsGlobal);
-               if (FPythonCtrl.VarsGlobalKeys <> nil) then
+            FPythonCtrl.PythonEngine.ExecStrings(Fsyn.Lines);
+
+            if (PythonCtrl.VarsCheck) then
+            begin
+                 FMainModule:= PythonCtrl.FPythonEngine.PyImport_ImportModule('__main__');
+
+                 FPythonCtrl.FVarsDict := FPythonCtrl.PythonEngine.PyModule_GetDict(FMainModule);
+
+                 PyMainModule := FPythonCtrl.PythonEngine.PyImport_AddModule('__main__');
+                 FPythonCtrl.VarsDict:= FPythonCtrl.PythonEngine.PyModule_GetDict(PyMainModule);
+
+
+                 FPythonCtrl.FVarsGlobal  :=  @FPythonCtrl.FPythonEngine.PyDict_New;
+
+                 FPythonCtrl.VarsGlobalKeys:= FPythonCtrl.PythonEngine.PyDict_Keys(FPythonCtrl.VarsGlobal);
+                 if (FPythonCtrl.VarsGlobalKeys <> nil) then
+                 begin
+                      FPythonCtrl.VarListGlobal_Size := FPythonCtrl.PythonEngine.PyList_Size(FPythonCtrl.VarsGlobalKeys);
+
+                 end;
+
+
+                 FPythonCtrl.VarsLocal:=@FPythonCtrl.PythonEngine.PyDict_New;
+                 FPythonCtrl.VarsLocalKeys:= FPythonCtrl.PythonEngine.PyDict_Keys(FPythonCtrl.VarsLocal);
+                 if (FPythonCtrl.VarsLocalKeys <> nil) then
+                 begin
+                      FPythonCtrl.VarListLocal_Size := FPythonCtrl.PythonEngine.PyList_Size(FPythonCtrl.VarsLocalKeys);
+                 end;
+            end;
+            FError := false;
+
+
+         except
+               on E: EPythonError  do
                begin
-                    FPythonCtrl.VarListGlobal_Size := FPythonCtrl.PythonEngine.PyList_Size(FPythonCtrl.VarsGlobalKeys);
+                 FError := true;
 
+                 FResultado.Append('Erro Python: ' + E.Message);
                end;
-
-
-               FPythonCtrl.VarsLocal:=@FPythonCtrl.PythonEngine.PyDict_New;
-               FPythonCtrl.VarsLocalKeys:= FPythonCtrl.PythonEngine.PyDict_Keys(FPythonCtrl.VarsLocal);
-               if (FPythonCtrl.VarsLocalKeys <> nil) then
+               on E: EPySyntaxError do
                begin
-                    FPythonCtrl.VarListLocal_Size := FPythonCtrl.PythonEngine.PyList_Size(FPythonCtrl.VarsLocalKeys);
+                 FLinhaError:= E.ELineNumber;
+                 FColumError:=E.EEndOffset;
+                 FFileError := E.EFileName;
+                 FResultado.Append('Erro Python: ' +E.EFileName + ' ' + E.ELineStr);
                end;
-          end;
-          FError := false;
+               on E: EPyIndentationError do
+               begin
+                 FLinhaError:= E.ELineNumber;
+                 FColumError:=E.EEndOffset;
+                 FFileError := E.EFileName;
+                 FResultado.Append('Erro Python: ' +E.EFileName + ' ' + E.ELineStr);
+               end;
+         end;
 
-       except
-             on E: EPythonError  do
-             begin
-               FError := true;
-
-               FResultado.Append('Erro Python: ' + E.Message);
-             end;
-             on E: EPySyntaxError do
-             begin
-               FLinhaError:= E.ELineNumber;
-               FColumError:=E.EEndOffset;
-               FFileError := E.EFileName;
-               FResultado.Append('Erro Python: ' +E.EFileName + ' ' + E.ELineStr);
-             end;
-             on E: EPyIndentationError do
-             begin
-               FLinhaError:= E.ELineNumber;
-               FColumError:=E.EEndOffset;
-               FFileError := E.EFileName;
-               FResultado.Append('Erro Python: ' +E.EFileName + ' ' + E.ELineStr);
-             end;
+         //PythonEngine.;
+         //PythonGUIInputOutput1.free;
+         //PythonEngine.Free;
+       end
+       else
+       begin
+         filenamerun := FSetMain.RunScript+' '+ ;
+         if (filenamerun <> '') then
+         begin
+              {$IFDEF WINDOWS}
+              if(Callprg(filenamerun, '', Output)=true) then
+              begin
+                   //showmessage('Run program!!');
+                   MessageHint(Fsender,'Run script'+ filenamerun);
+                   //meResult.Lines.Text:= Output;
+                   //pnResult.Visible:= true;
+              end
+              else
+              begin
+                   //showmessage('Fail run!!');
+                   MessageHint(Fsender,'fail run script'+ filenamerun);
+                   //pnResult.Visible:= false;
+              end;
+              {$ENDIF}
+         end
+         else
+         begin
+             MessageHint(Fsender,'Config RUN need!'+ filenamerun);
+             //pnResult.Visible:= false;
+         end;
        end;
-
-       //PythonEngine.;
-       //PythonGUIInputOutput1.free;
-       //PythonEngine.Free;
     end;
     else
     begin
@@ -943,7 +969,7 @@ begin
                  MessageHint(Fsender,'fail run script'+ filenamerun);
                  //pnResult.Visible:= false;
             end;
-            {$ENDIF
+            {$ENDIF}
        end
        else
        begin
@@ -951,7 +977,6 @@ begin
            //pnResult.Visible:= false;
        end;
     end;
-
   end;
 
 end;

@@ -11,7 +11,7 @@ uses
   splash, setFolders, config, SynEditKeyCmds, PythonEngine, chatgpt;
 
 
-const versao = '2.27';
+const versao = '2.2';
 
 type
 

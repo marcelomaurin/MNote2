@@ -65,13 +65,13 @@ function RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executave
 function IsAdministrator: Boolean;
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
-function VerificaArea(X, Y: longint): Boolean;
+
 function Callprg(filename: string; source: String; var Output: string): boolean;
 
 
 
 {$ENDIF}
-
+function VerificaArea(X, Y: longint): Boolean;
 {$IFDEF LINUX}
 function RunBatch(const batch, Params: string; var Output : string): boolean;
 {$ENDIF}
@@ -101,35 +101,42 @@ var LastTickCount     : cardinal = 0;
 
 function Callprg(filename: string; source: String; var Output: string): boolean;
 var
-       //source : string;
-       resultado : boolean;
-       //tb : TTabSheet;
-       //syn : TSynEdit;
-       //item : TItem;
-       //output : String;
-
+      resultado: boolean;
+      commandLine: string;
+      processInfo: TProcessInformation;
+      startInfo: TStartupInfo;
 begin
-  (*
-       resultado := false;
-       //item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+      resultado := false;
+      FillChar(startInfo, SizeOf(startInfo), 0);
+      startInfo.cb := SizeOf(startInfo);
+      startInfo.dwFlags := STARTF_USESHOWWINDOW;
+      startInfo.wShowWindow := SW_SHOWNORMAL;
 
-       {$IFDEF WINDOWS}
-       source := item.DirName+'\'+item.Name;
-       resultado :=RunBatch(self.Handle,filename, source);
-       {$ENDIF}
+      {$IFDEF WINDOWS}
+      commandLine := 'cmd.exe /C "' + filename + '" ' + source;
+      {$ENDIF}
 
-       {$IFDEF LINUX}
-       source := item.DirName+'/'+item.Name;
-       resultado :=RunBatch(filename, source, Output);
-       {$ENDIF}
+      {$IFDEF LINUX}
+      // Para Linux, você pode precisar ajustar o comando de acordo com suas necessidades
+      commandLine := filename + ' ' + source;
+      {$ENDIF}
 
-       {$ifdef Darwin}
-       source := item.DirName+'/'+item.Name;
-       {$ENDIF}
-        result := resultado;
-        *)
+      {$IFDEF DARWIN}
+      // Para macOS, ajuste o comando conforme necessário
+      commandLine := filename + ' ' + source;
+      {$ENDIF}
 
-end;
+      if CreateProcess(nil, PChar(commandLine), nil, nil, False, CREATE_NEW_CONSOLE, nil, nil, startInfo, processInfo) then
+      begin
+        CloseHandle(processInfo.hProcess);
+        CloseHandle(processInfo.hThread);
+        resultado := True;
+      end;
+
+      Result := resultado;
+    end;
+
+
 
 function VerificaArea(X, Y: longint): Boolean;
 var
