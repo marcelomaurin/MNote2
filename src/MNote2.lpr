@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, main,
+  Forms, rxnew, main,
   {$ifndef Darwin}
   folders
   {$ENDIF}

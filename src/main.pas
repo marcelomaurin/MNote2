@@ -8,7 +8,8 @@ uses
   Classes, SysUtils, FileUtil, SynEdit, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
   setmain, TypeDB, folders, funcoes, LCLType, ValEdit, chgtext, hint, registro,
-  splash, setFolders, config, SynEditKeyCmds, PythonEngine, chatgpt;
+  splash, setFolders, config, SynEditKeyCmds, PythonEngine, rxctrls,
+  LogTreeView, chatgpt;
 
 
 const versao = '2.29';
@@ -21,6 +22,7 @@ type
     FindDialog1: TFindDialog;
     FontDialog1: TFontDialog;
     ImageList1: TImageList;
+    meChatHist: TLabel;
     lstFind: TListBox;
     MainMenu1: TMainMenu;
     edChat: TMemo;
@@ -106,7 +108,6 @@ type
     Splitter2: TSplitter;
     Splitter3: TSplitter;
     Splitter4: TSplitter;
-    meChatHist: TSynEdit;
     tsLocal: TTabSheet;
     tsGlobal: TTabSheet;
     TrayIcon1: TTrayIcon;
@@ -125,6 +126,7 @@ type
       var Handled: Boolean);
     procedure lstFindDblClick(Sender: TObject);
     procedure lstFindSelectionChange(Sender: TObject; User: boolean);
+    procedure meChatHistClick(Sender: TObject);
     procedure MenuItem10Click(Sender: TObject);
     procedure MenuItem12Click(Sender: TObject);
     procedure MenuItem14Click(Sender: TObject);
@@ -179,6 +181,7 @@ type
     procedure PageControl1Change(Sender: TObject);
     procedure Panel1Click(Sender: TObject);
     procedure pnBottonClick(Sender: TObject);
+    procedure pnChatGPTResize(Sender: TObject);
     procedure ReplaceDialog1Find(Sender: TObject);
     procedure ReplaceDialog1Replace(Sender: TObject);
     procedure pntvClick(Sender: TObject);
@@ -841,10 +844,10 @@ begin
          FCHATGPT := TCHATGPT.create(self);
      end;
       FCHATGPT.TOKEN:= FSetMain.CHATGPT;
-      meChatHist.Append('Question:'+edChat.Text);
+      meChatHist.Caption :=  meChatHist.Caption + #13+ 'Question:'+edChat.Text+#13;
       FCHATGPT.SendQuestion(edChat.Text);
-      meChatHist.Append('Response:'+ FCHATGPT.Response);
-      meChatHist.Append(' ');
+      meChatHist.Caption := meChatHist.Caption + 'Response:'+ FCHATGPT.Response+#13;
+      meChatHist.Caption:=meChatHist.Caption+#13;
       edChat.Text:= '';
   end;
 end;
@@ -968,6 +971,11 @@ begin
 
 end;
 
+procedure TfrmMNote.meChatHistClick(Sender: TObject);
+begin
+
+end;
+
 procedure TfrmMNote.MenuItem10Click(Sender: TObject);
 begin
   frmSobre := TFrmsobre.create(self);
@@ -1002,6 +1010,7 @@ end;
 procedure TfrmMNote.miChatGPTClick(Sender: TObject);
 begin
     pnChatGPT.Visible:= not pnChatGPT.Visible;
+
 end;
 
 procedure TfrmMNote.micopyClick(Sender: TObject);
@@ -1297,7 +1306,7 @@ begin
 
    item.Run();
    syn := item.syn;
-   pnResult.Visible:=true;
+   //pnResult.Visible:=true;
    if (item.PythonCtrl.VarsCheck) then
    begin
       pnInspector.Visible:=true;
@@ -1712,6 +1721,23 @@ end;
 
 procedure TfrmMNote.pnBottonClick(Sender: TObject);
 begin
+
+end;
+
+procedure TfrmMNote.pnChatGPTResize(Sender: TObject);
+var
+  charWidth: integer;
+  numColumns: integer;
+begin
+  // Calcule a largura média de um caractere
+  charWidth := meChatHist.Canvas.TextWidth('M'); // 'M' é geralmente um dos caracteres mais largos
+
+  // Calcule o número desejado de colunas com base na largura do painel
+  numColumns := pnChatGPT.Width div charWidth;
+
+  // Ajuste a largura do Memo para corresponder ao número de colunas
+  // (levando em consideração a borda e o scrollbar, se houver)
+  meChatHist.Width := numColumns * charWidth + (meChatHist.Width - meChatHist.ClientWidth);
 
 end;
 
