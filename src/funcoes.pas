@@ -98,7 +98,39 @@ var LastTickCount     : cardinal = 0;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
 
+{$IFDEF LINUX}
+function Callprg(filename: string; source: String; var Output: string): boolean;
+var
+  Process: TProcess;
+  OutputLine: string;
+  cont : integer;
+begin
+  Result := False;
+  Process := TProcess.Create(nil);
+  Output := '';
+  try
+    Process.Executable := FileName;
+    Process.Parameters.AddStrings(Source);
 
+    Process.Options := [poUsePipes, poStdErrToOutPut];
+    Process.Execute;
+
+    // Ler a saída do programa linha por linha
+    while Process.Running do
+    begin
+      Process.Output.Read(OutputLine, cont);
+      Output := Output + OutputLine;
+    end;
+
+    Result := True;
+  finally
+    Process.Free;
+  end;
+end;
+
+{$endif}
+
+{$IFDEF WINDOWS}
 function Callprg(filename: string; source: String; var Output: string): boolean;
 var
       resultado: boolean;
@@ -116,10 +148,7 @@ begin
       commandLine := 'cmd.exe /C "' + filename + '" ' + source;
       {$ENDIF}
 
-      {$IFDEF LINUX}
-      // Para Linux, você pode precisar ajustar o comando de acordo com suas necessidades
-      commandLine := filename + ' ' + source;
-      {$ENDIF}
+
 
       {$IFDEF DARWIN}
       // Para macOS, ajuste o comando conforme necessário
@@ -135,7 +164,7 @@ begin
 
       Result := resultado;
 end;
-
+  {$ENDIF}
 
 
 function VerificaArea(X, Y: longint): Boolean;
