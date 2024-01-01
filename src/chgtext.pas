@@ -103,24 +103,24 @@ end;
 
 procedure Tfrmchgtext.lstFindClick(Sender: TObject);
 var
-   find : TFind;
+   finds : TFinds;
    res : boolean;
 begin
     If lstFind.SelCount > 0 then
     begin
-        find := TFIND(lstFind.items.objects[lstFind.ItemIndex]);
-        frmMNote.pgMain.ActivePage := find.tb;
-        FPOS := find.IPOS;
+        finds := TFINDS(lstFind.items.objects[lstFind.ItemIndex]);
+        frmMNote.pgMain.ActivePage := finds.tb;
+        FPOS := finds.IPOS;
 
 
-        FPos := find.IPos + length(find.strFind);
+        FPos := finds.IPos + length(finds.strFind);
         //   Hoved.BringToFront;       {Edit control must have focus in }
-        find.syn.SetFocus;
-        frmMnote.ActiveControl := find.syn;
-        find.syn.SelStart:= find.IPos;  // -1;   mike   {Select the string found by POS}
-        setSelLength(find.syn, find.FLen);     //Memo1.SelLength := FLen;
+        finds.syn.SetFocus;
+        frmMnote.ActiveControl := finds.syn;
+        finds.syn.SelStart:= finds.IPos;  // -1;   mike   {Select the string found by POS}
+        setSelLength(finds.syn, finds.FLen);     //Memo1.SelLength := FLen;
         //Found := True;
-        FPos:=FPos+find.FLen-1;   //mike - move just past end of found item
+        FPos:=FPos+finds.FLen-1;   //mike - move just past end of found item
 
     end;
 end;
@@ -223,12 +223,12 @@ end;
 
 procedure Tfrmchgtext.Pesquisar(Sender: TObject);
 Var
-     find : TFind;
+     finds : TFinds;
      syn : TSynEdit;
      item : TItem;
      tb : TTabsheet;
      arquivo : string;
-     FindS: String;
+     Findstr: String;
      Found : boolean;
      IPos, FLen, SLen: Integer; {Internpos, Lengde søkestreng, lengde memotekst}
      Res : integer;
@@ -244,7 +244,7 @@ begin
     FLen := Length(strFind);
     SLen := Length(syn.Text);
     //FindS := findDialog1.FindText;
-    FindS := cbSearch.text;
+    Findstr := cbSearch.text;
     frmchgtext.lstFind.Items.clear;
 
     repeat
@@ -256,9 +256,9 @@ begin
        if (IPOS>0) then
        begin
          FPos := FPos + IPos;
-         find := TFind.create(syn ,frmMNote.pgMain.ActivePage , item, FPOS, strFind);
+         finds := TFinds.create(syn ,frmMNote.pgMain.ActivePage , item, FPOS, strFind);
 
-         lstFind.Items.AddObject('Pos:'+inttostr(FPOS),tobject(find));
+         lstFind.Items.AddObject('Pos:'+inttostr(FPOS),tobject(finds));
 
        end
        else
@@ -284,26 +284,26 @@ end;
 
 procedure Tfrmchgtext.Trocar(Sender: TObject);
 var
-   find : TFind;
+   finds : TFinds;
    res : boolean;
 
 begin
     If lstFind.SelCount > 0 then
     begin
-        find := TFIND(lstFind.items.objects[lstFind.ItemIndex]);
-        frmMNote.pgMain.ActivePage := find.tb;
-        FPOS := find.IPOS;
+        finds := TFINDS(lstFind.items.objects[lstFind.ItemIndex]);
+        frmMNote.pgMain.ActivePage := finds.tb;
+        FPOS := finds.IPOS;
 
 
-        FPos := find.IPos + length(find.strFind);
+        FPos := finds.IPos + length(finds.strFind);
         //   Hoved.BringToFront;       {Edit control must have focus in }
-        find.syn.SetFocus;
-        frmMnote.ActiveControl := find.syn;
-        find.syn.SelStart:= find.IPos;  // -1;   mike   {Select the string found by POS}
-        setSelLength(find.syn, find.FLen);     //Memo1.SelLength := FLen;
-        find.syn.SelText:= lbChange.Caption;
+        finds.syn.SetFocus;
+        frmMnote.ActiveControl := finds.syn;
+        finds.syn.SelStart:= finds.IPos;  // -1;   mike   {Select the string found by POS}
+        setSelLength(finds.syn, finds.FLen);     //Memo1.SelLength := FLen;
+        finds.syn.SelText:= lbChange.Caption;
         //Found := True;
-        FPos:=FPos+find.FLen-1;   //mike - move just past end of found item
+        FPos:=FPos+finds.FLen-1;   //mike - move just past end of found item
 
     end;
 

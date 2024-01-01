@@ -1,41 +1,40 @@
 object frmMNote: TfrmMNote
-  Left = 515
-  Height = 548
-  Top = 187
-  Width = 1156
+  Left = 70
+  Height = 438
+  Top = 1005
+  Width = 925
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 523
-  ClientWidth = 1156
-  DesignTimePPI = 120
+  ClientHeight = 438
+  ClientWidth = 925
   Menu = MainMenu1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '2.2.6.0'
+  LCLVersion = '3.0.0.3'
   object Panel1: TPanel
     Left = 0
-    Height = 62
+    Height = 50
     Top = 0
-    Width = 1156
+    Width = 925
     Align = alTop
     TabOrder = 0
   end
   object pnclient: TPanel
     Left = 0
-    Height = 330
-    Top = 62
-    Width = 1156
+    Height = 283
+    Top = 50
+    Width = 925
     Align = alClient
-    ClientHeight = 330
-    ClientWidth = 1156
+    ClientHeight = 283
+    ClientWidth = 925
     TabOrder = 1
     object pgMain: TPageControl
-      Left = 236
-      Height = 322
+      Left = 189
+      Height = 276
       Top = 1
-      Width = 444
+      Width = 355
       Align = alClient
       Images = ImageList1
       TabOrder = 0
@@ -43,152 +42,152 @@ object frmMNote: TfrmMNote
     object Splitter2: TSplitter
       Cursor = crVSplit
       Left = 1
-      Height = 6
-      Top = 323
-      Width = 1154
+      Height = 5
+      Top = 277
+      Width = 923
       Align = alBottom
       ResizeAnchor = akBottom
     end
     object pnInspector: TPanel
       Left = 1
-      Height = 322
+      Height = 276
       Top = 1
-      Width = 229
+      Width = 183
       Align = alLeft
-      ClientHeight = 322
-      ClientWidth = 229
+      ClientHeight = 276
+      ClientWidth = 183
       TabOrder = 2
       Visible = False
       object pcInspector: TPageControl
         Left = 1
-        Height = 320
+        Height = 274
         Top = 1
-        Width = 227
+        Width = 181
         ActivePage = tsLocal
         Align = alClient
         TabIndex = 1
         TabOrder = 0
         object tsGlobal: TTabSheet
           Caption = 'Global'
-          ClientHeight = 287
-          ClientWidth = 219
+          ClientHeight = 243
+          ClientWidth = 171
           object vlGlobal: TValueListEditor
             Left = 0
-            Height = 287
+            Height = 243
             Top = 0
-            Width = 219
+            Width = 171
             Align = alClient
             FixedCols = 0
             RowCount = 2
             TabOrder = 0
             ColWidths = (
-              80
-              114
+              64
+              103
             )
           end
         end
         object tsLocal: TTabSheet
           Caption = 'Local'
-          ClientHeight = 287
-          ClientWidth = 219
+          ClientHeight = 243
+          ClientWidth = 171
           object vlLocal: TValueListEditor
             Left = 0
-            Height = 287
+            Height = 243
             Top = 0
-            Width = 219
+            Width = 171
             Align = alClient
             FixedCols = 0
             RowCount = 2
             TabOrder = 0
             ColWidths = (
-              80
-              135
+              64
+              105
             )
           end
         end
       end
     end
     object Splitter1: TSplitter
-      Left = 230
-      Height = 322
+      Left = 184
+      Height = 276
       Top = 1
-      Width = 6
+      Width = 5
     end
     object pnChatGPT: TPanel
-      Left = 686
-      Height = 322
+      Left = 549
+      Height = 276
       Top = 1
-      Width = 469
+      Width = 375
       Align = alRight
-      ClientHeight = 322
-      ClientWidth = 469
+      ClientHeight = 276
+      ClientWidth = 375
       TabOrder = 4
       Visible = False
       OnResize = pnChatGPTResize
       object Panel2: TPanel
         Left = 1
-        Height = 62
-        Top = 259
-        Width = 467
+        Height = 50
+        Top = 225
+        Width = 373
         Align = alBottom
-        ClientHeight = 62
-        ClientWidth = 467
+        ClientHeight = 50
+        ClientWidth = 373
         TabOrder = 0
         object edChat: TMemo
           Left = 1
-          Height = 60
+          Height = 48
           Top = 1
-          Width = 465
+          Width = 371
           Align = alClient
-          OnKeyPress = edChatKeyPress
           TabOrder = 0
+          OnKeyPress = edChatKeyPress
         end
       end
       object Splitter4: TSplitter
         Cursor = crVSplit
         Left = 1
-        Height = 6
-        Top = 253
-        Width = 467
+        Height = 5
+        Top = 220
+        Width = 373
         Align = alBottom
         ResizeAnchor = akBottom
       end
       object meChatHist: TLabel
         Left = 1
-        Height = 252
+        Height = 219
         Top = 1
-        Width = 467
+        Width = 373
         Align = alClient
         ParentColor = False
         WordWrap = True
       end
     end
     object Splitter3: TSplitter
-      Left = 680
-      Height = 322
+      Left = 544
+      Height = 276
       Top = 1
-      Width = 6
+      Width = 5
       Align = alRight
       ResizeAnchor = akRight
     end
   end
   object pnResult: TPanel
     Left = 0
-    Height = 131
-    Top = 392
-    Width = 1156
+    Height = 105
+    Top = 333
+    Width = 925
     Align = alBottom
     Caption = 'pnResult'
-    ClientHeight = 131
-    ClientWidth = 1156
+    ClientHeight = 105
+    ClientWidth = 925
     PopupMenu = pmResult
     TabOrder = 2
     Visible = False
     object meResult: TMemo
       Left = 1
-      Height = 129
+      Height = 103
       Top = 1
-      Width = 1154
+      Width = 923
       Align = alClient
       PopupMenu = pmResult
       ReadOnly = True
@@ -197,21 +196,22 @@ object frmMNote: TfrmMNote
     end
     object lstFind: TListBox
       Left = 1
-      Height = 129
+      Height = 103
       Top = 1
-      Width = 1154
+      Width = 923
       Align = alClient
       ItemHeight = 0
-      OnClick = lstFindClick
       PopupMenu = popFind
       TabOrder = 1
+      TopIndex = -1
       Visible = False
+      OnClick = lstFindClick
     end
   end
   object MainMenu1: TMainMenu
     Images = ImageList1
-    Left = 40
-    Top = 8
+    Left = 32
+    Top = 6
     object MenuItem1: TMenuItem
       Caption = 'File'
       ImageIndex = 5
@@ -339,9 +339,9 @@ object frmMNote: TfrmMNote
       ImageIndex = 11
       object MenuItem4: TMenuItem
         Caption = 'MQuery'
-        Enabled = False
         ImageIndex = 8
         ShortCut = 115
+        OnClick = MenuItem4Click
       end
       object MenuItem15: TMenuItem
         Caption = 'Folders'
@@ -369,6 +369,10 @@ object frmMNote: TfrmMNote
       object mniJSONVALID: TMenuItem
         Caption = 'JSON VALID'
         OnClick = mniJSONVALIDClick
+      end
+      object miporrada: TMenuItem
+        Caption = 'Stress WebApi Tester'
+        OnClick = miporradaClick
       end
     end
     object mnSetup: TMenuItem
@@ -417,17 +421,17 @@ object frmMNote: TfrmMNote
     end
   end
   object OpenDialog1: TOpenDialog
-    Left = 200
-    Top = 10
+    Left = 160
+    Top = 8
   end
   object SaveDialog1: TSaveDialog
-    Left = 319
-    Top = 14
+    Left = 255
+    Top = 11
   end
   object popFechar: TPopupMenu
     Images = ImageList1
-    Left = 200
-    Top = 166
+    Left = 160
+    Top = 133
     object mnFechar: TMenuItem
       Caption = 'Fechar'
       ImageIndex = 0
@@ -435,8 +439,8 @@ object frmMNote: TfrmMNote
     end
   end
   object ImageList1: TImageList
-    Left = 270
-    Top = 220
+    Left = 216
+    Top = 176
     Bitmap = {
       4C7A1000000010000000100000002D0A00000000000078DAED9B0B7017C51DC7
       0F2484405089484C4102010D45C5E0D0C4060208D51290501095024DA350B448
@@ -525,19 +529,19 @@ object frmMNote: TfrmMNote
   end
   object ReplaceDialog1: TReplaceDialog
     Options = [frDown, frReplace, frReplaceAll, frHidePromptOnReplace]
-    Left = 474
-    Top = 31
+    Left = 379
+    Top = 25
   end
   object FontDialog1: TFontDialog
     MinFontSize = 0
     MaxFontSize = 0
-    Left = 319
-    Top = 151
+    Left = 255
+    Top = 121
   end
   object popSysEdit: TPopupMenu
     Images = ImageList1
-    Left = 440
-    Top = 270
+    Left = 352
+    Top = 216
     object mnAssociar: TMenuItem
       Caption = 'Associar'
       ImageIndex = 14
@@ -1166,13 +1170,13 @@ object frmMNote: TfrmMNote
     }
     Hint = 'MNote2 Little Editor'
     Visible = True
-    Left = 604
-    Top = 189
+    Left = 483
+    Top = 151
   end
   object PopupMenu1: TPopupMenu
     Images = ImageList1
-    Left = 530
-    Top = 189
+    Left = 424
+    Top = 151
     object mnFixar: TMenuItem
       Caption = 'Fix'
       OnClick = mnFixarClick
@@ -1187,23 +1191,23 @@ object frmMNote: TfrmMNote
     end
   end
   object popFind: TPopupMenu
-    Left = 160
-    Top = 360
+    Left = 128
+    Top = 288
     object MenuItem2: TMenuItem
       Caption = 'Esconder'
       OnClick = MenuItem2Click
     end
   end
   object pmResult: TPopupMenu
-    Left = 90
-    Top = 370
+    Left = 72
+    Top = 296
     object mnHideResult: TMenuItem
       Caption = 'Hide'
     end
   end
   object FindDialog1: TFindDialog
     OnFind = FindDialog1Find
-    Left = 649
-    Top = 15
+    Left = 519
+    Top = 12
   end
 end

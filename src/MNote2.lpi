@@ -46,30 +46,39 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="7">
+    <RequiredPackages Count="10">
       <Item1>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="industrial"/>
       </Item1>
       <Item2>
-        <PackageName Value="rxnew"/>
+        <PackageName Value="pkg_gifanim"/>
       </Item2>
       <Item3>
-        <PackageName Value="SynEditDsgn"/>
+        <PackageName Value="zcomponent"/>
       </Item3>
       <Item4>
-        <PackageName Value="python4lazarus_package"/>
+        <PackageName Value="multiloglaz"/>
       </Item4>
       <Item5>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="rxnew"/>
       </Item5>
       <Item6>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="SynEditDsgn"/>
       </Item6>
       <Item7>
-        <PackageName Value="LCL"/>
+        <PackageName Value="python4lazarus_package"/>
       </Item7>
+      <Item8>
+        <PackageName Value="lnetvisual"/>
+      </Item8>
+      <Item9>
+        <PackageName Value="SynEdit"/>
+      </Item9>
+      <Item10>
+        <PackageName Value="LCL"/>
+      </Item10>
     </RequiredPackages>
-    <Units Count="25">
+    <Units Count="31">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -110,99 +119,133 @@
         <IsPartOfProject Value="True"/>
       </Unit7>
       <Unit8>
-        <Filename Value="classes/setbanco.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit8>
-      <Unit9>
-        <Filename Value="classes/setmquery.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="setMQuery"/>
-      </Unit9>
-      <Unit10>
-        <Filename Value="classes/tabela.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="Tabela"/>
-      </Unit10>
-      <Unit11>
-        <Filename Value="classes/typedb.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="TypeDB"/>
-      </Unit11>
-      <Unit12>
         <Filename Value="cfgdb.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmcfgdb"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit12>
-      <Unit13>
+      </Unit8>
+      <Unit9>
         <Filename Value="folders.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmFolders"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit13>
-      <Unit14>
+      </Unit9>
+      <Unit10>
         <Filename Value="classes/setfolders.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="setFolders"/>
-      </Unit14>
-      <Unit15>
+      </Unit10>
+      <Unit11>
         <Filename Value="Manifest.manifest"/>
         <IsPartOfProject Value="True"/>
-      </Unit15>
-      <Unit16>
+      </Unit11>
+      <Unit12>
         <Filename Value="Manifest.rc"/>
         <IsPartOfProject Value="True"/>
-      </Unit16>
-      <Unit17>
+      </Unit12>
+      <Unit13>
         <Filename Value="chgtext.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmchgtext"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit17>
-      <Unit18>
+      </Unit13>
+      <Unit14>
         <Filename Value="setchgtext.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit18>
-      <Unit19>
+      </Unit14>
+      <Unit15>
         <Filename Value="hint.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmHint"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit19>
-      <Unit20>
+      </Unit15>
+      <Unit16>
         <Filename Value="registro.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmRegistrar"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit20>
-      <Unit21>
+      </Unit16>
+      <Unit17>
         <Filename Value="splash.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmSplash"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit21>
-      <Unit22>
+      </Unit17>
+      <Unit18>
         <Filename Value="config.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmconfig"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit22>
-      <Unit23>
+      </Unit18>
+      <Unit19>
         <Filename Value="setlstbnc.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Setlstbnc"/>
-      </Unit23>
-      <Unit24>
+      </Unit19>
+      <Unit20>
         <Filename Value="classes/chatgpt.pas"/>
         <IsPartOfProject Value="True"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="mquery2/mquery2.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmmquery2"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit21>
+      <Unit22>
+        <Filename Value="mquery2/pesquisar.lfm"/>
+        <IsPartOfProject Value="True"/>
+      </Unit22>
+      <Unit23>
+        <Filename Value="mquery2/pesquisar.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmPesquisar"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit23>
+      <Unit24>
+        <Filename Value="mquery2/tabela.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Tabela"/>
       </Unit24>
+      <Unit25>
+        <Filename Value="mquery2/triggers.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit25>
+      <Unit26>
+        <Filename Value="mquery2/typedb.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="TypeDB"/>
+      </Unit26>
+      <Unit27>
+        <Filename Value="mquery2/view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit27>
+      <Unit28>
+        <Filename Value="mquery2/views.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Views"/>
+      </Unit28>
+      <Unit29>
+        <Filename Value="mquery2/benchmark.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmBenchmark"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit29>
+      <Unit30>
+        <Filename Value="porradawebapi.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmporradawebapi"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit30>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -212,7 +255,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="classes"/>
+      <OtherUnitFiles Value="classes;mquery2"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>

@@ -9,10 +9,10 @@ uses
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
   setmain, TypeDB, folders, funcoes, LCLType, ValEdit, chgtext, hint, registro,
   splash, setFolders, config, SynEditKeyCmds, PythonEngine, rxctrls,
-  LogTreeView, chatgpt;
+  LogTreeView, chatgpt, mquery2, porradawebapi;
 
 
-const versao = '2.29';
+const versao = '2.30';
 
 type
 
@@ -28,6 +28,7 @@ type
     edChat: TMemo;
     MenuItem14: TMenuItem;
     MenuItem17: TMenuItem;
+    miporrada: TMenuItem;
     miChatGPT: TMenuItem;
     mniJSONVALID: TMenuItem;
     mnidos2unix: TMenuItem;
@@ -134,6 +135,7 @@ type
     procedure miChatGPTClick(Sender: TObject);
     procedure micopyClick(Sender: TObject);
     procedure miPasteClick(Sender: TObject);
+    procedure miporradaClick(Sender: TObject);
     procedure miRedoClick(Sender: TObject);
     procedure miSelectAllClick(Sender: TObject);
     procedure miSelectBlockClick(Sender: TObject);
@@ -778,7 +780,7 @@ var
    Res : integer;
     item: TItem;
     syn: TSynEdit;
-    find : TFind;
+    find : TFinds;
 
 begin
   pnResult.Visible:= true;
@@ -809,7 +811,7 @@ begin
     if (IPOS>0) then
     begin
          FPos := FPos + IPos;
-         find := TFind.create(syn ,frmMNote.pgMain.ActivePage , item, FPOS, strFind);
+         find := TFinds.create(syn ,frmMNote.pgMain.ActivePage , item, FPOS, strFind);
          lstFind.Visible := true;
          lstFind.Items.AddObject('Pos:'+inttostr(FPOS),tobject(find));
 
@@ -928,7 +930,7 @@ end;
 
 procedure TfrmMNote.lstFindClick(Sender: TObject);
 var
-   find : TFind;
+   find : TFinds;
    res : boolean;
 procedure setSelLength(var textComponent:TSynEdit; newValue:integer);
 begin
@@ -938,7 +940,7 @@ end;
 begin
     If lstFind.SelCount > 0 then
     begin
-        find := TFIND(lstFind.items.objects[lstFind.ItemIndex]);
+        find := TFINDS(lstFind.items.objects[lstFind.ItemIndex]);
         frmMNote.pgMain.ActivePage := find.tb;
         FPOS := find.IPOS;
 
@@ -1037,6 +1039,14 @@ begin
   //syn.CommandProcessor(TsynEditorCommand(ecPaste),'',nil);
   syn.PasteFromClipboard;
 
+end;
+
+procedure TfrmMNote.miporradaClick(Sender: TObject);
+begin
+  frmporradawebapi := Tfrmporradawebapi.Create(self);
+  frmporradawebapi.ShowModal;
+  frmporradawebapi.free;
+  frmporradawebapi:= nil;
 end;
 
 procedure TfrmMNote.miRedoClick(Sender: TObject);
@@ -1346,20 +1356,20 @@ end;
 
 procedure TfrmMNote.MenuItem4Click(Sender: TObject);
 begin
-  (*
-  if frmmquery = nil then
+
+  if frmmquery2 = nil then
   begin
-    frmmquery := TFrmMQuery.create(self);
+    frmmquery2 := TFrmMQuery2.create(self);
   end;
-  if frmMQuery.Showing then
+  if frmMQuery2.Showing then
   begin
-    frmmquery.hide();
+    frmmquery2.hide();
   end
   else
   begin
-    frmmquery.show();
+    frmmquery2.show();
   end;
-  *)
+
 end;
 
 procedure TfrmMNote.miConfigClick(Sender: TObject);

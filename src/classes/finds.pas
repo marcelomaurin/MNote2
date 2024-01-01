@@ -9,7 +9,7 @@ uses
 
 
 type
-TFind = class(TObject)
+TFinds = class(TObject)
 
       public
             syn : TSynEdit;
@@ -27,7 +27,7 @@ end;
 
 implementation
 
-constructor TFind.create(fsyn: TSynEdit; ftb: TTabSheet; fitem: TItem; FIPOS: integer; fstrFind : string);
+constructor TFinds.create(fsyn: TSynEdit; ftb: TTabSheet; fitem: TItem; FIPOS: integer; fstrFind : string);
 begin
      syn := fsyn;
      tb := ftb;
@@ -37,7 +37,7 @@ begin
      FLen := Length(strFind);
 end;
 
-destructor TFind.destroy();
+destructor TFinds.destroy();
 begin
 
 end;
