@@ -22,10 +22,10 @@ type
     FindDialog1: TFindDialog;
     FontDialog1: TFontDialog;
     ImageList1: TImageList;
-    meChatHist: TLabel;
     lstFind: TListBox;
     MainMenu1: TMainMenu;
     edChat: TMemo;
+    meChatHist: TMemo;
     MenuItem14: TMenuItem;
     MenuItem17: TMenuItem;
     miporrada: TMenuItem;
@@ -950,7 +950,7 @@ begin
         find.syn.SetFocus;
         frmMnote.ActiveControl := find.syn;
         find.syn.SelStart:= find.IPos;  // -1;   mike   {Select the string found by POS}
-        setSelLength(find.syn, find.FLen);     //Memo1.SelLength := FLen;
+        setSelLength(find.syn, find.FLen);     //meChatHist.SelLength := FLen;
         //Found := True;
         FPos:=FPos+find.FLen-1;   //mike - move just past end of found item
 
@@ -1740,14 +1740,14 @@ var
   numColumns: integer;
 begin
   // Calcule a largura média de um caractere
-  charWidth := meChatHist.Canvas.TextWidth('M'); // 'M' é geralmente um dos caracteres mais largos
+  //charWidth := meChatHist.Canvas.TextWidth('M'); // 'M' é geralmente um dos caracteres mais largos
 
   // Calcule o número desejado de colunas com base na largura do painel
-  numColumns := pnChatGPT.Width div charWidth;
+  //numColumns := pnChatGPT.Width div charWidth;
 
   // Ajuste a largura do Memo para corresponder ao número de colunas
   // (levando em consideração a borda e o scrollbar, se houver)
-  meChatHist.Width := numColumns * charWidth + (meChatHist.Width - meChatHist.ClientWidth);
+  //meChatHist.Width := numColumns * charWidth + (meChatHist.Width - meChatHist.ClientWidth);
 
 end;
 
