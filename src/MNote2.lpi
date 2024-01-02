@@ -237,6 +237,7 @@
         <Filename Value="mquery2/benchmark.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmBenchmark"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit29>
       <Unit30>

@@ -1245,9 +1245,9 @@ object frmmquery2: Tfrmmquery2
           Height = 547
           Top = 1
           Width = 1091
-          ActivePage = tbConxao
+          ActivePage = tbTools
           Align = alClient
-          TabIndex = 0
+          TabIndex = 3
           TabOrder = 0
           OnChange = PageControl1Change
           object tbConxao: TTabSheet
@@ -1887,15 +1887,6 @@ object frmmquery2: Tfrmmquery2
               ClientHeight = 51
               ClientWidth = 1083
               TabOrder = 1
-              object Button3: TButton
-                Left = 489
-                Height = 31
-                Top = 14
-                Width = 94
-                Caption = 'Migrar'
-                OnClick = Button3Click
-                TabOrder = 0
-              end
               object Label16: TLabel
                 Left = 10
                 Height = 20
@@ -1927,6 +1918,14 @@ object frmmquery2: Tfrmmquery2
                 Width = 8
                 Caption = '0'
                 ParentColor = False
+              end
+              object btExecutar: TButton
+                Left = 840
+                Height = 31
+                Top = 10
+                Width = 94
+                Caption = 'Run'
+                TabOrder = 0
               end
             end
             object pnBotton: TPanel
@@ -2028,13 +2027,31 @@ object frmmquery2: Tfrmmquery2
               TabOrder = 2
             end
             object btcomparar: TButton
-              Left = 19
+              Left = 24
               Height = 31
-              Top = 276
+              Top = 264
               Width = 122
               Caption = 'Comparar'
               OnClick = btcompararClick
               TabOrder = 3
+            end
+            object Button3: TButton
+              Left = 19
+              Height = 31
+              Top = 328
+              Width = 121
+              Caption = 'Transfer'
+              OnClick = Button3Click
+              TabOrder = 4
+            end
+            object btbenchmark: TButton
+              Left = 24
+              Height = 31
+              Top = 400
+              Width = 115
+              Caption = 'Benchmark'
+              OnClick = btbenchmarkClick
+              TabOrder = 5
             end
           end
         end

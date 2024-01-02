@@ -210,7 +210,7 @@ end;
 
 procedure TfrmBenchmark.CriaTabelaMyTeste01();
 begin
-  frmmquery2.zmyqry1.SQL.text := 'create table consinco.tmp_teste01 '+
+  frmmquery2.zmyqry1.SQL.text := 'create table tmp_teste01 '+
     '('+
     ' indice int primary key, '+
     ' descricao varchar(30) '+
@@ -228,7 +228,7 @@ end;
 
 procedure TfrmBenchmark.ApagaTabelaMyTeste01();
 begin
-  frmmquery2.zmyqry1.SQL.text := 'drop table consinco.tmp_teste01; ';
+  frmmquery2.zmyqry1.SQL.text := 'drop table tmp_teste01; ';
   frmmquery2.zmyqry1.ExecSQL;
 end;
 
@@ -242,10 +242,10 @@ begin
   for a := 1 to volume do
   begin
     Application.ProcessMessages;
-    frmmain.zpostqry1.SQL.text := 'select * from tmp_teste01 '+
+    frmmquery2.zpostqry1.SQL.text := 'select * from tmp_teste01 '+
       ' where '+
       ' indice =  '+inttostr(a)+';';
-    frmmain.zpostqry1.open;
+    frmmquery2.zpostqry1.open;
     pbPercentual.Position:=a;
   end;
 end;
@@ -259,10 +259,10 @@ begin
   for a := 1 to volume do
   begin
     Application.ProcessMessages;
-    frmmain.zmyqry1.SQL.text := 'select * from consinco.tmp_teste01 '+
+    frmmquery2.zmyqry1.SQL.text := 'select * from .tmp_teste01 '+
       ' where '+
       ' indice =  '+inttostr(a)+';';
-    frmmain.zmyqry1.open;
+    frmmquery2.zmyqry1.open;
     pbPercentual.Position:=a;
   end;
 end;
@@ -277,10 +277,10 @@ begin
   for a := 1 to volume do
   begin
     Application.ProcessMessages;
-    frmmain.zpostqry1.SQL.text := 'select * from tmp_teste01 '+
+    frmmquery2.zpostqry1.SQL.text := 'select * from tmp_teste01 '+
       ' where '+
       ' descricao =  '+#39+'Teste'+inttostr(a)+#39+';';
-    frmmain.zpostqry1.open;
+    frmmquery2.zpostqry1.open;
     pbPercentual.Position:=a;
   end;
 end;
@@ -294,10 +294,10 @@ begin
   for a := 1 to volume do
   begin
     Application.ProcessMessages;
-    frmmain.zmyqry1.SQL.text := 'select * from consinco.tmp_teste01 '+
+    frmmquery2.zmyqry1.SQL.text := 'select * from tmp_teste01 '+
       ' where '+
       ' descricao =  '+#39+'Teste'+inttostr(a)+#39+';';
-    frmmain.zmyqry1.open;
+    frmmquery2.zmyqry1.open;
     pbPercentual.Position:=a;
   end;
 end;
@@ -312,7 +312,7 @@ begin
   for a := 1 to volume do
   begin
     Application.ProcessMessages;
-    frmmain.zpostqry1.SQL.text := 'insert into tmp_teste01 '+
+    frmmquery2.zpostqry1.SQL.text := 'insert into tmp_teste01 '+
       '('+
       ' indice, '+
       ' descricao'+
@@ -320,7 +320,7 @@ begin
         inttostr(a)+','+
         #39+'Teste'+inttostr(a)+#39+
       ');';
-    frmmain.zpostqry1.ExecSQL;
+    frmmquery2.zpostqry1.ExecSQL;
     pbPercentual.Position:=a;
   end;
 end;
@@ -334,7 +334,7 @@ begin
   for a := 1 to volume do
   begin
     Application.ProcessMessages;
-    frmmain.zmyqry1.SQL.text := 'insert into consinco.tmp_teste01 '+
+    frmmquery2.zmyqry1.SQL.text := 'insert into tmp_teste01 '+
       '('+
       ' indice, '+
       ' descricao'+
@@ -342,7 +342,7 @@ begin
         inttostr(a)+','+
         #39+'Teste'+inttostr(a)+#39+
       ');';
-    frmmain.zmyqry1.ExecSQL;
+    frmmquery2.zmyqry1.ExecSQL;
     pbPercentual.Position:=a;
   end;
 end;

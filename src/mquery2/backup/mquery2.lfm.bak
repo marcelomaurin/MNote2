@@ -44,7 +44,7 @@ object frmmquery2: Tfrmmquery2
     Left = 6
     Height = 582
     Top = 62
-    Width = 1062
+    Width = 1313
     ActivePage = tsMysql
     Align = alClient
     TabIndex = 1
@@ -52,7 +52,7 @@ object frmmquery2: Tfrmmquery2
     object TabSheet1: TTabSheet
       Caption = 'About'
       ClientHeight = 549
-      ClientWidth = 1054
+      ClientWidth = 1305
       object Label11: TLabel
         Left = 520
         Height = 20
@@ -73,7 +73,7 @@ object frmmquery2: Tfrmmquery2
     object tsMysql: TTabSheet
       Caption = 'Mysql'
       ClientHeight = 549
-      ClientWidth = 1054
+      ClientWidth = 1305
       object Panel2: TPanel
         Left = 0
         Height = 549
@@ -1235,25 +1235,25 @@ object frmmquery2: Tfrmmquery2
         Left = 212
         Height = 549
         Top = 0
-        Width = 842
+        Width = 1093
         Align = alClient
         ClientHeight = 549
-        ClientWidth = 842
+        ClientWidth = 1093
         TabOrder = 1
         object PageControl3: TPageControl
           Left = 1
           Height = 547
           Top = 1
-          Width = 840
-          ActivePage = tbConxao
+          Width = 1091
+          ActivePage = tbTools
           Align = alClient
-          TabIndex = 0
+          TabIndex = 3
           TabOrder = 0
           OnChange = PageControl1Change
           object tbConxao: TTabSheet
             Caption = 'Mysql Connection'
             ClientHeight = 514
-            ClientWidth = 832
+            ClientWidth = 1083
             object btConectarMy: TButton
               Left = 370
               Height = 31
@@ -1363,12 +1363,12 @@ object frmmquery2: Tfrmmquery2
           object tbSQL: TTabSheet
             Caption = 'SQL'
             ClientHeight = 514
-            ClientWidth = 832
+            ClientWidth = 1083
             inline edSQL: TSynEdit
               Left = 0
               Height = 303
               Top = 0
-              Width = 832
+              Width = 1083
               Align = alClient
               Font.CharSet = ANSI_CHARSET
               Font.Color = clBlack
@@ -1882,20 +1882,11 @@ object frmmquery2: Tfrmmquery2
               Left = 0
               Height = 51
               Top = 463
-              Width = 832
+              Width = 1083
               Align = alBottom
               ClientHeight = 51
-              ClientWidth = 832
+              ClientWidth = 1083
               TabOrder = 1
-              object Button3: TButton
-                Left = 489
-                Height = 31
-                Top = 14
-                Width = 94
-                Caption = 'Migrar'
-                OnClick = Button3Click
-                TabOrder = 0
-              end
               object Label16: TLabel
                 Left = 10
                 Height = 20
@@ -1928,22 +1919,30 @@ object frmmquery2: Tfrmmquery2
                 Caption = '0'
                 ParentColor = False
               end
+              object btExecutar: TButton
+                Left = 840
+                Height = 31
+                Top = 10
+                Width = 94
+                Caption = 'Run'
+                TabOrder = 0
+              end
             end
             object pnBotton: TPanel
               Left = 0
               Height = 62
               Top = 401
-              Width = 832
+              Width = 1083
               Align = alBottom
               ClientHeight = 62
-              ClientWidth = 832
+              ClientWidth = 1083
               TabOrder = 2
               Visible = False
               object lstfind: TListBox
                 Left = 1
                 Height = 60
                 Top = 1
-                Width = 830
+                Width = 1081
                 Align = alClient
                 ItemHeight = 0
                 OnClick = lstfindClick
@@ -1956,7 +1955,7 @@ object frmmquery2: Tfrmmquery2
               Left = 0
               Height = 6
               Top = 395
-              Width = 832
+              Width = 1083
               Align = alBottom
               ResizeAnchor = akBottom
             end
@@ -1964,17 +1963,17 @@ object frmmquery2: Tfrmmquery2
               Left = 0
               Height = 92
               Top = 303
-              Width = 832
+              Width = 1083
               Align = alBottom
               ClientHeight = 92
-              ClientWidth = 832
+              ClientWidth = 1083
               TabOrder = 4
               Visible = False
               object edErro: TMemo
                 Left = 1
                 Height = 90
                 Top = 1
-                Width = 830
+                Width = 1081
                 Align = alClient
                 Lines.Strings = (
                   'edErro'
@@ -1986,12 +1985,12 @@ object frmmquery2: Tfrmmquery2
           object tbLog: TTabSheet
             Caption = 'Log'
             ClientHeight = 514
-            ClientWidth = 832
+            ClientWidth = 1083
             object edLog: TMemo
               Left = 0
               Height = 514
               Top = 0
-              Width = 832
+              Width = 1083
               Align = alClient
               TabOrder = 0
             end
@@ -1999,7 +1998,7 @@ object frmmquery2: Tfrmmquery2
           object tbTools: TTabSheet
             Caption = 'tools'
             ClientHeight = 514
-            ClientWidth = 832
+            ClientWidth = 1083
             object ToggleBox2: TToggleBox
               Left = 19
               Height = 31
@@ -2028,13 +2027,31 @@ object frmmquery2: Tfrmmquery2
               TabOrder = 2
             end
             object btcomparar: TButton
-              Left = 19
+              Left = 24
               Height = 31
-              Top = 276
+              Top = 264
               Width = 122
               Caption = 'Comparar'
               OnClick = btcompararClick
               TabOrder = 3
+            end
+            object Button3: TButton
+              Left = 19
+              Height = 31
+              Top = 328
+              Width = 121
+              Caption = 'Transfer'
+              OnClick = Button3Click
+              TabOrder = 4
+            end
+            object btbenchmark: TButton
+              Left = 24
+              Height = 31
+              Top = 400
+              Width = 115
+              Caption = 'Benchmark'
+              OnClick = btbenchmarkClick
+              TabOrder = 5
             end
           end
         end
@@ -2043,7 +2060,7 @@ object frmmquery2: Tfrmmquery2
     object tspostgree: TTabSheet
       Caption = 'Postgree'
       ClientHeight = 549
-      ClientWidth = 1054
+      ClientWidth = 1305
       object Panel8: TPanel
         Left = 0
         Height = 549
@@ -2089,17 +2106,17 @@ object frmmquery2: Tfrmmquery2
         Left = 251
         Height = 549
         Top = 0
-        Width = 803
+        Width = 1054
         Align = alClient
         Caption = 'Panel14'
         ClientHeight = 549
-        ClientWidth = 803
+        ClientWidth = 1054
         TabOrder = 1
         object pcPostgree: TPageControl
           Left = 1
           Height = 547
           Top = 1
-          Width = 801
+          Width = 1052
           ActivePage = TabSheet2
           Align = alClient
           TabIndex = 0
@@ -2107,7 +2124,7 @@ object frmmquery2: Tfrmmquery2
           object TabSheet2: TTabSheet
             Caption = 'tsConectarPostgree'
             ClientHeight = 514
-            ClientWidth = 793
+            ClientWidth = 1044
             object edHostNamePost: TEdit
               Left = 30
               Height = 28
@@ -2203,7 +2220,7 @@ object frmmquery2: Tfrmmquery2
     object TabSheet7: TTabSheet
       Caption = 'Setup'
       ClientHeight = 549
-      ClientWidth = 1054
+      ClientWidth = 1305
       object Label12: TLabel
         Left = 10
         Height = 20
@@ -2366,47 +2383,6 @@ object frmmquery2: Tfrmmquery2
         Width = 29
         Images = ImageList1
         ImageIndex = 1
-      end
-    end
-  end
-  object Panel11: TPanel
-    Left = 1068
-    Height = 582
-    Top = 62
-    Width = 251
-    Align = alRight
-    ClientHeight = 582
-    ClientWidth = 251
-    TabOrder = 4
-    object tvPost1: TTreeView
-      Left = 1
-      Height = 549
-      Top = 32
-      Width = 249
-      Align = alClient
-      ReadOnly = True
-      TabOrder = 0
-      OnChange = tvPostChange
-      OnClick = tvPostClick
-      Options = [tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
-    end
-    object Panel12: TPanel
-      Left = 1
-      Height = 31
-      Top = 1
-      Width = 249
-      Align = alTop
-      ClientHeight = 31
-      ClientWidth = 249
-      TabOrder = 1
-      object edPesqPost1: TEdit
-        Left = 1
-        Height = 28
-        Top = 1
-        Width = 247
-        Align = alTop
-        OnKeyPress = edPesqPostKeyPress
-        TabOrder = 0
       end
     end
   end

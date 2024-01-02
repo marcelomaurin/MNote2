@@ -32,6 +32,8 @@ type
     btConectarpost1: TButton;
     btPermissao: TToggleBox;
     btPermissao1: TToggleBox;
+    btExecutar: TButton;
+    btbenchmark: TButton;
     Button3: TButton;
     Button4: TButton;
     edBanco: TEdit;
@@ -44,7 +46,6 @@ type
     edHostName1: TEdit;
     edHostNamePost: TEdit;
     edPesqMy: TEdit;
-    edPesqPost1: TEdit;
     edSchemaPost: TEdit;
     edHostNamePost1: TEdit;
     edLog: TMemo;
@@ -137,8 +138,6 @@ type
     PageControl2: TPageControl;
     PageControl3: TPageControl;
     Panel10: TPanel;
-    Panel11: TPanel;
-    Panel12: TPanel;
     Panel13: TPanel;
     Panel7: TPanel;
     pcPostgree: TPageControl;
@@ -204,7 +203,6 @@ type
     TrayIcon1: TTrayIcon;
     tvMysql: TTreeView;
     tvPost: TTreeView;
-    tvPost1: TTreeView;
     vlistequivalente: TStringGrid;
     vlistequivalente1: TStringGrid;
     zconmysql: TZConnection;
@@ -216,6 +214,7 @@ type
     zpostqry1: TZReadOnlyQuery;
     Zqrypost: TZQuery;
     procedure btBancoClick(Sender: TObject);
+    procedure btbenchmarkClick(Sender: TObject);
     procedure btcompararClick(Sender: TObject);
     procedure btPermissaoChange(Sender: TObject);
     procedure btConectarMyClick(Sender: TObject);
@@ -513,7 +512,7 @@ var
   Comando : string;
   a : integer;
 begin
-  Comando := '--Criado por Migrador em '+datetostr(now)+#13+#10;
+  Comando := '--Criado por MQuery2 em '+datetostr(now)+#13+#10;
   Comando := Comando + 'CREATE TABLE '+edSchemaPost.text+'.'+Tabela.Tablename+'('+#13+#10 ;
   for a := 0 to tabela.fieldname.count-2 do
   begin
@@ -877,8 +876,7 @@ end;
 
 procedure Tfrmmquery2.miBenchmarkClick(Sender: TObject);
 begin
-   frmBenchmark := TfrmBenchmark.create(self);
-   frmBenchmark.showmodal;
+
 end;
 
 procedure Tfrmmquery2.MenuItem9Click(Sender: TObject);
@@ -1076,6 +1074,12 @@ begin
   begin
      showmessage('Postgres não conectado!');
   end;
+end;
+
+procedure Tfrmmquery2.btbenchmarkClick(Sender: TObject);
+begin
+     frmBenchmark := TfrmBenchmark.create(self);
+   frmBenchmark.showmodal;
 end;
 
 procedure Tfrmmquery2.btcompararClick(Sender: TObject);
