@@ -43,6 +43,7 @@ type
     edHostName: TEdit;
     edHostName1: TEdit;
     edHostNamePost: TEdit;
+    edPesqMy: TEdit;
     edSchemaPost: TEdit;
     edHostNamePost1: TEdit;
     edLog: TMemo;
@@ -51,9 +52,7 @@ type
     edPasswrd1: TEdit;
     edPasswrdPost: TEdit;
     edPasswrdPost1: TEdit;
-    edPesqMy: TEdit;
     edPesqPost: TEdit;
-    edPesqPost1: TEdit;
     edSchemaPost1: TEdit;
     edSQL: TSynEdit;
     edSQL1: TSynEdit;
@@ -136,19 +135,17 @@ type
     PageControl1: TPageControl;
     PageControl2: TPageControl;
     PageControl3: TPageControl;
+    Panel10: TPanel;
     Panel13: TPanel;
+    Panel7: TPanel;
     pcPostgree: TPageControl;
     Panel1: TPanel;
-    Panel10: TPanel;
-    Panel11: TPanel;
-    Panel12: TPanel;
     Panel14: TPanel;
     Panel2: TPanel;
     Panel3: TPanel;
     Panel4: TPanel;
     Panel5: TPanel;
     Panel6: TPanel;
-    Panel7: TPanel;
     Panel8: TPanel;
     Panel9: TPanel;
     pgbar: TProgressBar;
@@ -177,7 +174,6 @@ type
     SpeedButton4: TSpeedButton;
     SpeedButton5: TSpeedButton;
     SpeedButton6: TSpeedButton;
-    Splitter1: TSplitter;
     Splitter2: TSplitter;
     Splitter3: TSplitter;
     Splitter4: TSplitter;
@@ -205,7 +201,6 @@ type
     TrayIcon1: TTrayIcon;
     tvMysql: TTreeView;
     tvPost: TTreeView;
-    tvPost1: TTreeView;
     vlistequivalente: TStringGrid;
     vlistequivalente1: TStringGrid;
     zconmysql: TZConnection;
@@ -1016,8 +1011,8 @@ begin
 
         zconmysql.Disconnect;
         {$IFDEF WINDOWS}
-        zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'\libpq74.dll';
-        zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'\libmysql.dll';
+        zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'libpq74.dll';
+        zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'libmysql.dll';
         {$ENDIF}
         {$IFDEF LINUX}
         zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libpq74.so';
@@ -1031,11 +1026,11 @@ begin
         zconmysql.Connect;
         if zconmysql.Connected then
         begin
-          tvitem := TTreeNode.Create(tvMysql.items);
           posicaofieldsmy := tvMysql.Items.AddChildObject(tvitemmy, 'Tabelas', pointer(ETDTabelas));
           posicaoViewmy := tvMysql.Items.AddChildObject(tvitemmy, 'Views', pointer(ETDViews));
           posicaoProceduremy := tvMysql.Items.AddChildObject(tvitemmy, 'Procedure', pointer(ETDProcedure));
           posicaoFunctionmy := tvMysql.Items.AddChildObject(tvitemmy, 'Functions', pointer(ETDFunctions));
+          tvitem := TTreeNode.Create(tvMysql.items);
           ListarTabelasMy();
           ListarViewsMy();
         end;

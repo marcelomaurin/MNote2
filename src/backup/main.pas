@@ -1743,7 +1743,7 @@ begin
   //charWidth := meChatHist.Canvas.TextWidth('M'); // 'M' é geralmente um dos caracteres mais largos
 
   // Calcule o número desejado de colunas com base na largura do painel
-  numColumns := pnChatGPT.Width div charWidth;
+  //numColumns := pnChatGPT.Width div charWidth;
 
   // Ajuste a largura do Memo para corresponder ao número de colunas
   // (levando em consideração a borda e o scrollbar, se houver)
