@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "MNote2"
-#define MyAppVersion "2.29"
+#define MyAppVersion "2.30"
 #define MyAppPublisher "Maurinsoft"
 #define MyAppURL "http://maurinsoft.com.br"
 #define MyAppExeName "MNote2.exe"
@@ -24,7 +24,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\MEDIT2
 DisableProgramGroupPage=yes
 OutputDir=C:\Users\marcelo.maurin\Desktop\projetos\MNote2\bin
-OutputBaseFilename=win_MNote2_29
+OutputBaseFilename=win_MNote2_30
 SetupIconFile=C:\Users\marcelo.maurin\Desktop\projetos\MNote2\src\MNote2.ico
 Compression=lzma
 SolidCompression=yes
