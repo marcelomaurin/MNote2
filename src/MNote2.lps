@@ -11,7 +11,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="2"/>
         <CursorPos X="10" Y="10"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit0>
       <Unit1>
         <Filename Value="main.pas"/>
@@ -19,10 +19,11 @@
         <ComponentName Value="frmMNote"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="-1"/>
         <TopLine Value="1044"/>
-        <CursorPos X="80" Y="1066"/>
-        <UsageCount Value="168"/>
+        <CursorPos X="21" Y="1052"/>
+        <UsageCount Value="169"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="classes\item.pas"/>
@@ -30,7 +31,7 @@
         <UnitName Value="Item"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="930"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit2>
       <Unit3>
         <Filename Value="sobre.pas"/>
@@ -38,14 +39,14 @@
         <ComponentName Value="frmSobre"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit3>
       <Unit4>
         <Filename Value="classes\finds.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="13" Y="22"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit4>
       <Unit5>
         <Filename Value="setmain.pas"/>
@@ -53,7 +54,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="294"/>
         <CursorPos X="37" Y="300"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit5>
       <Unit6>
         <Filename Value="funcoes.pas"/>
@@ -61,13 +62,13 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="121"/>
         <CursorPos Y="137"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit6>
       <Unit7>
         <Filename Value="classes\chaves.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit7>
       <Unit8>
         <Filename Value="cfgdb.pas"/>
@@ -78,7 +79,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="55"/>
         <CursorPos X="39" Y="55"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit8>
       <Unit9>
         <Filename Value="folders.pas"/>
@@ -89,25 +90,25 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="229"/>
         <CursorPos X="18" Y="239"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit9>
       <Unit10>
         <Filename Value="classes\setfolders.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="setFolders"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit10>
       <Unit11>
         <Filename Value="Manifest.manifest"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit11>
       <Unit12>
         <Filename Value="Manifest.rc"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit12>
       <Unit13>
@@ -119,12 +120,12 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="287"/>
         <CursorPos Y="296"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit13>
       <Unit14>
         <Filename Value="setchgtext.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit14>
       <Unit15>
         <Filename Value="hint.pas"/>
@@ -132,7 +133,7 @@
         <ComponentName Value="frmHint"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit15>
       <Unit16>
         <Filename Value="registro.pas"/>
@@ -142,7 +143,7 @@
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="10" Y="5"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit16>
       <Unit17>
         <Filename Value="splash.pas"/>
@@ -150,7 +151,7 @@
         <ComponentName Value="frmSplash"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit17>
       <Unit18>
         <Filename Value="config.pas"/>
@@ -161,7 +162,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="14"/>
         <CursorPos X="30" Y="18"/>
-        <UsageCount Value="168"/>
+        <UsageCount Value="169"/>
       </Unit18>
       <Unit19>
         <Filename Value="setlstbnc.pas"/>
@@ -170,7 +171,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="171"/>
         <CursorPos Y="182"/>
-        <UsageCount Value="118"/>
+        <UsageCount Value="119"/>
       </Unit19>
       <Unit20>
         <Filename Value="classes\chatgpt.pas"/>
@@ -178,7 +179,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="233"/>
         <CursorPos X="22" Y="251"/>
-        <UsageCount Value="58"/>
+        <UsageCount Value="59"/>
       </Unit20>
       <Unit21>
         <Filename Value="mquery2\mquery2.pas"/>
@@ -186,11 +187,10 @@
         <ComponentName Value="frmmquery2"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1108"/>
         <CursorPos X="101" Y="1124"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="47"/>
       </Unit21>
       <Unit22>
         <Filename Value="mquery2\pesquisar.lfm"/>
@@ -199,7 +199,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="47"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit22>
       <Unit23>
@@ -211,7 +211,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="47"/>
       </Unit23>
       <Unit24>
         <Filename Value="mquery2\tabela.pas"/>
@@ -220,14 +220,14 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="12"/>
         <CursorPos X="3" Y="17"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="47"/>
       </Unit24>
       <Unit25>
         <Filename Value="mquery2\triggers.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="3" Y="15"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="47"/>
       </Unit25>
       <Unit26>
         <Filename Value="mquery2\typedb.pas"/>
@@ -235,7 +235,7 @@
         <UnitName Value="TypeDB"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="23" Y="19"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="47"/>
       </Unit26>
       <Unit27>
         <Filename Value="mquery2\view.pas"/>
@@ -244,7 +244,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="47"/>
       </Unit27>
       <Unit28>
         <Filename Value="mquery2\views.pas"/>
@@ -254,7 +254,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="47"/>
       </Unit28>
       <Unit29>
         <Filename Value="mquery2\benchmark.pas"/>
@@ -264,7 +264,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="364"/>
         <CursorPos X="15" Y="345"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="47"/>
       </Unit29>
       <Unit30>
         <Filename Value="porradawebapi.pas"/>
@@ -272,10 +272,13 @@
         <ComponentName Value="frmporradawebapi"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="-1"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
         <TopLine Value="99"/>
-        <CursorPos X="7" Y="114"/>
-        <UsageCount Value="28"/>
+        <CursorPos X="28" Y="111"/>
+        <UsageCount Value="29"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit30>
       <Unit31>
         <Filename Value="classes\setbanco.pas"/>

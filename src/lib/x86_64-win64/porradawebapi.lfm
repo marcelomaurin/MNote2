@@ -1,119 +1,127 @@
 object frmporradawebapi: Tfrmporradawebapi
-  Left = 977
-  Height = 441
-  Top = 1207
-  Width = 586
+  Left = 454
+  Height = 551
+  Top = 257
+  Width = 732
   Caption = 'Stress Web Api Tools'
-  ClientHeight = 441
-  ClientWidth = 586
+  ClientHeight = 551
+  ClientWidth = 732
+  DesignTimePPI = 120
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '3.0.0.3'
+  Position = poMainFormCenter
+  LCLVersion = '2.2.6.0'
   object PageControl1: TPageControl
     Left = 0
-    Height = 441
+    Height = 551
     Top = 0
-    Width = 586
+    Width = 732
     ActivePage = tssetup
     Align = alClient
     TabIndex = 4
     TabOrder = 0
     object tsStatus: TTabSheet
       Caption = 'Status'
-      ClientHeight = 410
-      ClientWidth = 576
+      ClientHeight = 518
+      ClientWidth = 724
       object ledRealizadas: TLEDNumber
-        Left = 8
-        Height = 30
-        Top = 25
-        Width = 170
+        Left = 10
+        Height = 38
+        Top = 31
+        Width = 212
         Caption = '0'
       end
       object Label8: TLabel
-        Left = 8
-        Height = 17
-        Top = 8
-        Width = 37
+        Left = 10
+        Height = 20
+        Top = 10
+        Width = 36
         Caption = 'Send:'
+        ParentColor = False
       end
       object ledFalhas: TLEDNumber
-        Left = 8
-        Height = 30
-        Top = 81
-        Width = 170
+        Left = 10
+        Height = 38
+        Top = 101
+        Width = 212
         Caption = '0'
       end
       object Label9: TLabel
-        Left = 8
-        Height = 17
-        Top = 64
-        Width = 27
+        Left = 10
+        Height = 20
+        Top = 80
+        Width = 25
         Caption = 'Fail:'
+        ParentColor = False
       end
       object ledRespostas: TLEDNumber
-        Left = 8
-        Height = 30
-        Top = 137
-        Width = 170
+        Left = 10
+        Height = 38
+        Top = 171
+        Width = 212
         Caption = '0'
       end
       object Label10: TLabel
-        Left = 8
-        Height = 17
-        Top = 120
-        Width = 49
+        Left = 10
+        Height = 20
+        Top = 150
+        Width = 46
         Caption = 'Return:'
+        ParentColor = False
       end
       object Label11: TLabel
-        Left = 8
-        Height = 17
-        Top = 184
-        Width = 56
+        Left = 10
+        Height = 20
+        Top = 230
+        Width = 53
         Caption = 'Success:'
+        ParentColor = False
       end
       object ledSucesso: TLEDNumber
-        Left = 8
-        Height = 30
-        Top = 201
-        Width = 170
+        Left = 10
+        Height = 38
+        Top = 251
+        Width = 212
         Caption = '0'
       end
       object OnOffSwitch1: TOnOffSwitch
-        Left = 16
-        Height = 30
-        Top = 366
-        Width = 60
+        Left = 20
+        Height = 38
+        Top = 458
+        Width = 75
+        ButtonSize = 30
         CaptionOFF = 'OFF'
         CaptionON = 'ON'
         OnChange = OnOffSwitch1Change
         TabOrder = 0
       end
       object Label4: TLabel
-        Left = 16
-        Height = 17
-        Top = 351
-        Width = 108
+        Left = 20
+        Height = 20
+        Top = 439
+        Width = 104
         Caption = 'Start Automatic'
+        ParentColor = False
       end
       object btSend: TButton
-        Left = 160
-        Height = 29
-        Top = 366
-        Width = 83
+        Left = 200
+        Height = 36
+        Top = 458
+        Width = 104
         Caption = 'Single Send'
-        TabOrder = 1
         OnClick = btSendClick
+        TabOrder = 1
       end
     end
     object tslog: TTabSheet
       Caption = 'Log'
-      ClientHeight = 410
-      ClientWidth = 576
+      ClientHeight = 518
+      ClientWidth = 724
       object melog: TMemo
         Left = 0
-        Height = 410
+        Height = 518
         Top = 0
-        Width = 576
+        Width = 724
         Align = alClient
         Lines.Strings = (
           ''
@@ -123,13 +131,13 @@ object frmporradawebapi: Tfrmporradawebapi
     end
     object TabSheet1: TTabSheet
       Caption = 'JSon Send'
-      ClientHeight = 410
-      ClientWidth = 576
+      ClientHeight = 518
+      ClientWidth = 724
       object meJSON: TMemo
         Left = 0
-        Height = 410
+        Height = 518
         Top = 0
-        Width = 576
+        Width = 724
         Align = alClient
         Lines.Strings = (
           '{'
@@ -145,49 +153,51 @@ object frmporradawebapi: Tfrmporradawebapi
     end
     object TabSheet2: TTabSheet
       Caption = 'JSON Last Receive'
-      ClientHeight = 410
-      ClientWidth = 576
+      ClientHeight = 518
+      ClientWidth = 724
       object meLastReceive: TMemo
         Left = 0
-        Height = 410
+        Height = 518
         Top = 0
-        Width = 576
+        Width = 724
         Align = alClient
         TabOrder = 0
       end
     end
     object tssetup: TTabSheet
       Caption = 'Setup'
-      ClientHeight = 410
-      ClientWidth = 576
+      ClientHeight = 518
+      ClientWidth = 724
       object Label1: TLabel
-        Left = 10
-        Height = 17
-        Top = 11
-        Width = 31
+        Left = 12
+        Height = 20
+        Top = 14
+        Width = 29
         Caption = 'URL:'
+        ParentColor = False
       end
       object edURL: TEdit
-        Left = 8
-        Height = 34
-        Top = 32
-        Width = 408
+        Left = 10
+        Height = 28
+        Top = 40
+        Width = 510
         TabOrder = 0
         Text = 'https://jsonplaceholder.typicode.com'
       end
       object Label2: TLabel
-        Left = 10
-        Height = 17
-        Top = 152
-        Width = 36
+        Left = 12
+        Height = 20
+        Top = 190
+        Width = 34
         Caption = 'Type:'
+        ParentColor = False
       end
       object cbtype: TComboBox
-        Left = 10
-        Height = 34
-        Top = 176
-        Width = 229
-        ItemHeight = 0
+        Left = 12
+        Height = 28
+        Top = 220
+        Width = 286
+        ItemHeight = 20
         ItemIndex = 0
         Items.Strings = (
           'GET'
@@ -201,70 +211,74 @@ object frmporradawebapi: Tfrmporradawebapi
         Text = 'GET'
       end
       object mrequest: TmKnob
-        Left = 428
-        Height = 60
-        Top = 336
-        Width = 60
+        Left = 535
+        Height = 75
+        Top = 420
+        Width = 75
         Position = 0
         Max = 1000
         OnChange = mrequestChange
       end
       object Label3: TLabel
-        Left = 240
-        Height = 17
-        Top = 328
-        Width = 109
+        Left = 300
+        Height = 20
+        Top = 410
+        Width = 107
         Caption = 'call api requests'
+        ParentColor = False
       end
       object Label6: TLabel
-        Left = 435
-        Height = 17
-        Top = 18
-        Width = 34
+        Left = 544
+        Height = 20
+        Top = 22
+        Width = 29
         Caption = 'Port:'
+        ParentColor = False
       end
       object edPort: TEdit
-        Left = 435
-        Height = 34
-        Top = 32
-        Width = 80
+        Left = 544
+        Height = 28
+        Top = 40
+        Width = 100
         TabOrder = 3
         Text = '80'
       end
       object Label7: TLabel
-        Left = 12
-        Height = 17
-        Top = 72
-        Width = 57
+        Left = 15
+        Height = 20
+        Top = 90
+        Width = 55
         Caption = 'Method:'
+        ParentColor = False
       end
       object edMethod: TEdit
-        Left = 10
-        Height = 34
-        Top = 93
-        Width = 408
+        Left = 12
+        Height = 28
+        Top = 116
+        Width = 510
         TabOrder = 4
         Text = '/posts'
       end
       object Label5: TLabel
-        Left = 10
-        Height = 17
-        Top = 232
-        Width = 122
+        Left = 12
+        Height = 20
+        Top = 290
+        Width = 118
         Caption = 'Inline parameters:'
+        ParentColor = False
       end
       object edInline: TEdit
-        Left = 8
-        Height = 34
-        Top = 248
-        Width = 496
+        Left = 10
+        Height = 28
+        Top = 310
+        Width = 620
         TabOrder = 5
       end
       object lnNumber: TLEDNumber
-        Left = 240
-        Height = 30
-        Top = 351
-        Width = 170
+        Left = 300
+        Height = 38
+        Top = 439
+        Width = 212
         Caption = '0'
       end
     end
@@ -272,7 +286,7 @@ object frmporradawebapi: Tfrmporradawebapi
   object Timer1: TTimer
     Enabled = False
     OnTimer = Timer1Timer
-    Left = 272
-    Top = 216
+    Left = 340
+    Top = 270
   end
 end
