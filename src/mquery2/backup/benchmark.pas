@@ -15,8 +15,6 @@ type
   TfrmBenchmark = class(TForm)
     btIniciar: TButton;
     btIniciar1: TButton;
-    GifAnim1: TGifAnim;
-    Label1: TLabel;
     Label3: TLabel;
     lbOperacao: TLabel;
     Label5: TLabel;
@@ -27,7 +25,6 @@ type
     pbPercentual: TProgressBar;
     tsRelatorio: TTabSheet;
     tsOperacoes: TTabSheet;
-    tsEstatistica: TTabSheet;
     procedure btIniciarClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
@@ -259,7 +256,7 @@ begin
   for a := 1 to volume do
   begin
     Application.ProcessMessages;
-    frmmquery2.zmyqry1.SQL.text := 'select * from .tmp_teste01 '+
+    frmmquery2.zmyqry1.SQL.text := 'select * from tmp_teste01 '+
       ' where '+
       ' indice =  '+inttostr(a)+';';
     frmmquery2.zmyqry1.open;
@@ -350,7 +347,7 @@ end;
 procedure TfrmBenchmark.btIniciarClick(Sender: TObject);
 begin
   pbTestes.Max:=4;
-  GifAnim1.Animate:= true;
+
   pbTestes.Min:=0;
   pbTestes.Position:=0;
   edRelatorio.Clear; (*Limpa relatorio*)

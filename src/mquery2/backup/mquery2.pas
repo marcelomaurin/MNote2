@@ -134,9 +134,9 @@ type
     N1: TMenuItem;
     mnCriarSeq: TMenuItem;
     mnRefresh: TMenuItem;
-    PageControl1: TPageControl;
+    pgMain: TPageControl;
     PageControl2: TPageControl;
-    PageControl3: TPageControl;
+    pgMysql: TPageControl;
     Panel10: TPanel;
     Panel13: TPanel;
     Panel7: TPanel;
@@ -183,8 +183,8 @@ type
     SynCompletion1: TSynCompletion;
     SynPluginSyncroEdit1: TSynPluginSyncroEdit;
     SynSQLSyn2: TSynSQLSyn;
-    TabSheet1: TTabSheet;
-    TabSheet2: TTabSheet;
+    tsAbout: TTabSheet;
+    tsSetupPostres: TTabSheet;
     TabSheet7: TTabSheet;
     tbConxao: TTabSheet;
     tbLog: TTabSheet;
@@ -685,6 +685,8 @@ var
   tvitem : TTreeNode;
 begin
   TrayIcon1.Visible:= true;
+  pgMain.PageIndex:=0;
+  pgMysql.PageIndex:=0;
   tvitem := TTreeNode.Create(tvMysql.Items);
   tvitemmy := tvMysql.Items.AddObject(tvitem,'Mysql', pointer(ETDBBanco));
   {$IFDEF WINDOWS}
@@ -923,7 +925,7 @@ begin
   edsql.Lines.append(' INCREMENT 1 ');
   edSQL.Lines.Append('START 1;');
 
-  pagecontrol1.ActivePage := tbSQL;
+  pgMain.ActivePage := tbSQL;
   edSql.SetFocus;
 end;
 
@@ -1078,7 +1080,7 @@ end;
 
 procedure Tfrmmquery2.btbenchmarkClick(Sender: TObject);
 begin
-     frmBenchmark := TfrmBenchmark.create(self);
+   frmBenchmark := TfrmBenchmark.create(self);
    frmBenchmark.showmodal;
 end;
 
@@ -1140,7 +1142,7 @@ begin
   end;
 
    //tbSQL.SetFocus;
-   //PageControl1.Pages[].SetFocus;
+   //pgMain.Pages[].SetFocus;
    ShowMessage('Finalizou a pesquisa!');
 end;
 

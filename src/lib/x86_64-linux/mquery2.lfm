@@ -1,11 +1,11 @@
 object frmmquery2: Tfrmmquery2
-  Left = 70
-  Height = 587
-  Top = 1331
-  Width = 1000
+  Left = 612
+  Height = 535
+  Top = 1155
+  Width = 1060
   Caption = 'Query Tools'
-  ClientHeight = 587
-  ClientWidth = 1000
+  ClientHeight = 535
+  ClientWidth = 1060
   Menu = MainMenu1
   OnCreate = FormCreate
   LCLVersion = '3.0.0.3'
@@ -13,13 +13,13 @@ object frmmquery2: Tfrmmquery2
     Left = 0
     Height = 50
     Top = 0
-    Width = 1000
+    Width = 1060
     Align = alTop
     TabOrder = 0
   end
   object Splitter2: TSplitter
-    Left = 995
-    Height = 537
+    Left = 1055
+    Height = 485
     Top = 50
     Width = 5
     Align = alRight
@@ -27,7 +27,7 @@ object frmmquery2: Tfrmmquery2
   end
   object Splitter3: TSplitter
     Left = 0
-    Height = 537
+    Height = 485
     Top = 50
     Width = 5
   end
@@ -39,25 +39,26 @@ object frmmquery2: Tfrmmquery2
     Caption = 'Data Base Tools'
     ParentColor = False
   end
-  object PageControl1: TPageControl
+  object pgMain: TPageControl
     Left = 5
-    Height = 537
+    Height = 485
     Top = 50
-    Width = 990
+    Width = 1050
     ActivePage = tsMysql
     Align = alClient
     TabIndex = 1
     TabOrder = 3
-    object TabSheet1: TTabSheet
+    object tsAbout: TTabSheet
       Caption = 'About'
-      ClientHeight = 506
-      ClientWidth = 980
+      ClientHeight = 454
+      ClientWidth = 1040
       object Label11: TLabel
         Left = 416
         Height = 17
         Top = 96
         Width = 79
         Caption = 'Query Tools'
+        ParentColor = False
       end
       object Label17: TLabel
         Left = 408
@@ -65,37 +66,38 @@ object frmmquery2: Tfrmmquery2
         Top = 232
         Width = 85
         Caption = 'Open Source'
+        ParentColor = False
       end
     end
     object tsMysql: TTabSheet
       Caption = 'Mysql'
-      ClientHeight = 506
-      ClientWidth = 980
+      ClientHeight = 454
+      ClientWidth = 1040
       object Panel2: TPanel
         Left = 0
-        Height = 506
+        Height = 454
         Top = 0
         Width = 170
         Align = alLeft
         Caption = 'Panel2'
-        ClientHeight = 506
+        ClientHeight = 454
         ClientWidth = 170
         TabOrder = 0
         object Panel3: TPanel
           Left = 1
-          Height = 504
+          Height = 452
           Top = 1
           Width = 168
           Align = alClient
           Caption = 'Panel3'
-          ClientHeight = 504
+          ClientHeight = 452
           ClientWidth = 168
           TabOrder = 0
           object PageControl2: TPageControl
-            Left = 167
-            Height = 502
+            Left = 1
+            Height = 450
             Top = 1
-            Width = 1
+            Width = 166
             ActivePage = tbConxao1
             Align = alClient
             TabIndex = 0
@@ -103,8 +105,8 @@ object frmmquery2: Tfrmmquery2
             OnChange = PageControl1Change
             object tbConxao1: TTabSheet
               Caption = 'Mysql Connection'
-              ClientHeight = 471
-              ClientWidth = 1
+              ClientHeight = 419
+              ClientWidth = 156
               object btConectarMy1: TButton
                 Left = 296
                 Height = 25
@@ -205,8 +207,8 @@ object frmmquery2: Tfrmmquery2
             end
             object tbPost1: TTabSheet
               Caption = 'Postgres Connection'
-              ClientHeight = 471
-              ClientWidth = 1
+              ClientHeight = 419
+              ClientWidth = 156
               object Label25: TLabel
                 Left = 24
                 Height = 17
@@ -330,26 +332,26 @@ object frmmquery2: Tfrmmquery2
             end
             object tbLog1: TTabSheet
               Caption = 'Log'
-              ClientHeight = 471
-              ClientWidth = 1
+              ClientHeight = 419
+              ClientWidth = 156
               object edLog1: TMemo
                 Left = 0
-                Height = 471
+                Height = 419
                 Top = 0
-                Width = 33
+                Width = 156
                 Align = alClient
                 TabOrder = 0
               end
             end
             object tbSQL1: TTabSheet
               Caption = 'SQL'
-              ClientHeight = 471
-              ClientWidth = 1
+              ClientHeight = 419
+              ClientWidth = 156
               inline edSQL1: TSynEdit
                 Left = 0
-                Height = 301
+                Height = 249
                 Top = 0
-                Width = 1
+                Width = 156
                 Align = alClient
                 Font.CharSet = ANSI_CHARSET
                 Font.Color = clBlack
@@ -861,11 +863,11 @@ object frmmquery2: Tfrmmquery2
               object Panel5: TPanel
                 Left = 0
                 Height = 41
-                Top = 430
-                Width = 1
+                Top = 378
+                Width = 156
                 Align = alBottom
                 ClientHeight = 41
-                ClientWidth = 1
+                ClientWidth = 156
                 TabOrder = 1
                 object Button4: TButton
                   Left = 391
@@ -912,18 +914,18 @@ object frmmquery2: Tfrmmquery2
               object pnBotton1: TPanel
                 Left = 0
                 Height = 50
-                Top = 380
-                Width = 1
+                Top = 328
+                Width = 156
                 Align = alBottom
                 ClientHeight = 50
-                ClientWidth = 1
+                ClientWidth = 156
                 TabOrder = 2
                 Visible = False
                 object lstfind1: TListBox
-                  Left = 0
+                  Left = 1
                   Height = 48
                   Top = 1
-                  Width = 1
+                  Width = 154
                   Align = alClient
                   ItemHeight = 0
                   PopupMenu = popfind
@@ -936,26 +938,26 @@ object frmmquery2: Tfrmmquery2
                 Cursor = crVSplit
                 Left = 0
                 Height = 5
-                Top = 375
-                Width = 1
+                Top = 323
+                Width = 156
                 Align = alBottom
                 ResizeAnchor = akBottom
               end
               object pnErro1: TPanel
                 Left = 0
                 Height = 74
-                Top = 301
-                Width = 1
+                Top = 249
+                Width = 156
                 Align = alBottom
                 ClientHeight = 74
-                ClientWidth = 1
+                ClientWidth = 156
                 TabOrder = 4
                 Visible = False
                 object edErro1: TMemo
-                  Left = 0
+                  Left = 1
                   Height = 72
                   Top = 1
-                  Width = 33
+                  Width = 154
                   Align = alClient
                   Lines.Strings = (
                     'edErro'
@@ -966,8 +968,8 @@ object frmmquery2: Tfrmmquery2
             end
             object tbTools1: TTabSheet
               Caption = 'tools'
-              ClientHeight = 471
-              ClientWidth = 1
+              ClientHeight = 419
+              ClientWidth = 156
               object ToggleBox3: TToggleBox
                 Left = 15
                 Height = 25
@@ -1007,8 +1009,8 @@ object frmmquery2: Tfrmmquery2
             end
             object TabSheet3: TTabSheet
               Caption = 'Setups'
-              ClientHeight = 471
-              ClientWidth = 1
+              ClientHeight = 419
+              ClientWidth = 156
               object Label33: TLabel
                 Left = 0
                 Height = 17
@@ -1047,26 +1049,38 @@ object frmmquery2: Tfrmmquery2
                 ColCount = 6
                 Columns = <                
                   item
+                    MinSize = 10
+                    MaxSize = 200
                     Title.Caption = 'Chave'
                     Width = 64
                   end                
                   item
+                    MinSize = 10
+                    MaxSize = 200
                     Title.Caption = 'Trocar'
                     Width = 64
                   end                
                   item
+                    MinSize = 10
+                    MaxSize = 200
                     Title.Caption = 'Anterior'
                     Width = 64
                   end                
                   item
+                    MinSize = 10
+                    MaxSize = 200
                     Title.Caption = 'Posterior'
                     Width = 64
                   end                
                   item
+                    MinSize = 10
+                    MaxSize = 200
                     Title.Caption = 'Neg Anterior'
                     Width = 64
                   end                
                   item
+                    MinSize = 10
+                    MaxSize = 200
                     Title.Caption = 'Neg Posterior'
                     Width = 64
                   end>
@@ -1165,28 +1179,28 @@ object frmmquery2: Tfrmmquery2
           end
           object Panel6: TPanel
             Left = 1
-            Height = 502
+            Height = 450
             Top = 1
-            Width = 218
-            Align = alLeft
-            ClientHeight = 502
-            ClientWidth = 218
+            Width = 166
+            Align = alClient
+            ClientHeight = 450
+            ClientWidth = 166
             TabOrder = 1
             object Panel7: TPanel
-              Left = 6
-              Height = 500
+              Left = 1
+              Height = 448
               Top = 1
-              Width = 211
+              Width = 164
               Align = alClient
               Caption = 'Panel5'
-              ClientHeight = 500
-              ClientWidth = 211
+              ClientHeight = 448
+              ClientWidth = 164
               TabOrder = 0
               object tvMysql: TTreeView
                 Left = 1
-                Height = 475
+                Height = 423
                 Top = 24
-                Width = 209
+                Width = 162
                 Align = alClient
                 ReadOnly = True
                 TabOrder = 0
@@ -1198,67 +1212,20 @@ object frmmquery2: Tfrmmquery2
                 Left = 1
                 Height = 23
                 Top = 1
-                Width = 209
+                Width = 162
                 Align = alTop
                 ClientHeight = 23
-                ClientWidth = 209
+                ClientWidth = 162
                 TabOrder = 1
                 object edPesqMy: TEdit
                   Left = 1
                   Height = 34
                   Top = -12
-                  Width = 207
+                  Width = 160
                   Align = alBottom
                   TabOrder = 0
                   OnKeyPress = edPesqMyKeyPress
                 end
-              end
-            end
-            object Splitter1: TSplitter
-              Left = 1
-              Height = 500
-              Top = 1
-              Width = 5
-            end
-          end
-          object Panel11: TPanel
-            Left = -34
-            Height = 502
-            Top = 1
-            Width = 201
-            Align = alRight
-            ClientHeight = 502
-            ClientWidth = 201
-            TabOrder = 2
-            object tvPost1: TTreeView
-              Left = 1
-              Height = 475
-              Top = 26
-              Width = 199
-              Align = alClient
-              ReadOnly = True
-              TabOrder = 0
-              OnChange = tvPostChange
-              OnClick = tvPostClick
-              Options = [tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
-            end
-            object Panel12: TPanel
-              Left = 1
-              Height = 25
-              Top = 1
-              Width = 199
-              Align = alTop
-              ClientHeight = 25
-              ClientWidth = 199
-              TabOrder = 1
-              object edPesqPost1: TEdit
-                Left = 1
-                Height = 34
-                Top = 1
-                Width = 197
-                Align = alTop
-                TabOrder = 0
-                OnKeyPress = edPesqPostKeyPress
               end
             end
           end
@@ -1266,27 +1233,27 @@ object frmmquery2: Tfrmmquery2
       end
       object Panel4: TPanel
         Left = 170
-        Height = 506
+        Height = 454
         Top = 0
-        Width = 810
+        Width = 870
         Align = alClient
-        ClientHeight = 506
-        ClientWidth = 810
+        ClientHeight = 454
+        ClientWidth = 870
         TabOrder = 1
-        object PageControl3: TPageControl
+        object pgMysql: TPageControl
           Left = 1
-          Height = 504
+          Height = 452
           Top = 1
-          Width = 808
-          ActivePage = tbConxao
+          Width = 868
+          ActivePage = tbTools
           Align = alClient
-          TabIndex = 0
+          TabIndex = 3
           TabOrder = 0
           OnChange = PageControl1Change
           object tbConxao: TTabSheet
             Caption = 'Mysql Connection'
-            ClientHeight = 473
-            ClientWidth = 798
+            ClientHeight = 421
+            ClientWidth = 858
             object btConectarMy: TButton
               Left = 296
               Height = 25
@@ -1395,13 +1362,13 @@ object frmmquery2: Tfrmmquery2
           end
           object tbSQL: TTabSheet
             Caption = 'SQL'
-            ClientHeight = 473
-            ClientWidth = 798
+            ClientHeight = 421
+            ClientWidth = 858
             inline edSQL: TSynEdit
               Left = 0
-              Height = 303
+              Height = 251
               Top = 0
-              Width = 798
+              Width = 858
               Align = alClient
               Font.CharSet = ANSI_CHARSET
               Font.Color = clBlack
@@ -1913,21 +1880,12 @@ object frmmquery2: Tfrmmquery2
             object Panel13: TPanel
               Left = 0
               Height = 41
-              Top = 432
-              Width = 798
+              Top = 380
+              Width = 858
               Align = alBottom
               ClientHeight = 41
-              ClientWidth = 798
+              ClientWidth = 858
               TabOrder = 1
-              object Button3: TButton
-                Left = 391
-                Height = 25
-                Top = 11
-                Width = 75
-                Caption = 'Migrar'
-                TabOrder = 0
-                OnClick = Button3Click
-              end
               object Label16: TLabel
                 Left = 8
                 Height = 17
@@ -1960,22 +1918,30 @@ object frmmquery2: Tfrmmquery2
                 Caption = '0'
                 ParentColor = False
               end
+              object btExecutar: TButton
+                Left = 672
+                Height = 25
+                Top = 8
+                Width = 75
+                Caption = 'Run'
+                TabOrder = 0
+              end
             end
             object pnBotton: TPanel
               Left = 0
               Height = 50
-              Top = 382
-              Width = 798
+              Top = 330
+              Width = 858
               Align = alBottom
               ClientHeight = 50
-              ClientWidth = 798
+              ClientWidth = 858
               TabOrder = 2
               Visible = False
               object lstfind: TListBox
                 Left = 1
                 Height = 48
                 Top = 1
-                Width = 796
+                Width = 856
                 Align = alClient
                 ItemHeight = 0
                 PopupMenu = popfind
@@ -1988,26 +1954,26 @@ object frmmquery2: Tfrmmquery2
               Cursor = crVSplit
               Left = 0
               Height = 5
-              Top = 377
-              Width = 798
+              Top = 325
+              Width = 858
               Align = alBottom
               ResizeAnchor = akBottom
             end
             object pnErro: TPanel
               Left = 0
               Height = 74
-              Top = 303
-              Width = 798
+              Top = 251
+              Width = 858
               Align = alBottom
               ClientHeight = 74
-              ClientWidth = 798
+              ClientWidth = 858
               TabOrder = 4
               Visible = False
               object edErro: TMemo
                 Left = 1
                 Height = 72
                 Top = 1
-                Width = 796
+                Width = 856
                 Align = alClient
                 Lines.Strings = (
                   'edErro'
@@ -2018,26 +1984,26 @@ object frmmquery2: Tfrmmquery2
           end
           object tbLog: TTabSheet
             Caption = 'Log'
-            ClientHeight = 473
-            ClientWidth = 798
+            ClientHeight = 421
+            ClientWidth = 858
             object edLog: TMemo
               Left = 0
-              Height = 473
+              Height = 421
               Top = 0
-              Width = 798
+              Width = 858
               Align = alClient
               TabOrder = 0
             end
           end
           object tbTools: TTabSheet
             Caption = 'tools'
-            ClientHeight = 473
-            ClientWidth = 798
+            ClientHeight = 421
+            ClientWidth = 858
             object ToggleBox2: TToggleBox
               Left = 15
               Height = 25
               Top = 90
-              Width = 96
+              Width = 186
               Caption = 'Criar usuario'
               TabOrder = 0
               OnChange = ToggleBox2Change
@@ -2046,7 +2012,7 @@ object frmmquery2: Tfrmmquery2
               Left = 15
               Height = 25
               Top = 139
-              Width = 97
+              Width = 186
               Caption = 'Permissão'
               TabOrder = 1
               OnChange = btPermissaoChange
@@ -2055,19 +2021,28 @@ object frmmquery2: Tfrmmquery2
               Left = 15
               Height = 25
               Top = 40
-              Width = 98
+              Width = 186
               Caption = 'Cria database'
               TabOrder = 2
               OnClick = btBancoClick
             end
             object btcomparar: TButton
-              Left = 15
+              Left = 19
               Height = 25
-              Top = 221
-              Width = 98
+              Top = 211
+              Width = 182
               Caption = 'Comparar'
               TabOrder = 3
               OnClick = btcompararClick
+            end
+            object Button3: TButton
+              Left = 15
+              Height = 25
+              Top = 262
+              Width = 186
+              Caption = 'Migration to PostgreSQL'
+              TabOrder = 4
+              OnClick = Button3Click
             end
           end
         end
@@ -2075,20 +2050,20 @@ object frmmquery2: Tfrmmquery2
     end
     object tspostgree: TTabSheet
       Caption = 'Postgree'
-      ClientHeight = 506
-      ClientWidth = 980
+      ClientHeight = 454
+      ClientWidth = 1040
       object Panel8: TPanel
         Left = 0
-        Height = 506
+        Height = 454
         Top = 0
         Width = 201
         Align = alLeft
-        ClientHeight = 506
+        ClientHeight = 454
         ClientWidth = 201
         TabOrder = 0
         object tvPost: TTreeView
           Left = 1
-          Height = 479
+          Height = 427
           Top = 26
           Width = 199
           Align = alClient
@@ -2120,27 +2095,27 @@ object frmmquery2: Tfrmmquery2
       end
       object Panel14: TPanel
         Left = 201
-        Height = 506
+        Height = 454
         Top = 0
-        Width = 779
+        Width = 839
         Align = alClient
         Caption = 'Panel14'
-        ClientHeight = 506
-        ClientWidth = 779
+        ClientHeight = 454
+        ClientWidth = 839
         TabOrder = 1
         object pcPostgree: TPageControl
           Left = 1
-          Height = 504
+          Height = 452
           Top = 1
-          Width = 777
-          ActivePage = TabSheet2
+          Width = 837
+          ActivePage = tsSQLPostgreSQL
           Align = alClient
-          TabIndex = 0
+          TabIndex = 1
           TabOrder = 0
-          object TabSheet2: TTabSheet
-            Caption = 'tsConectarPostgree'
-            ClientHeight = 500
-            ClientWidth = 773
+          object tsSetupPostres: TTabSheet
+            Caption = 'PostgreSql Connection'
+            ClientHeight = 421
+            ClientWidth = 827
             object edHostNamePost: TEdit
               Left = 24
               Height = 34
@@ -2230,13 +2205,16 @@ object frmmquery2: Tfrmmquery2
               ParentColor = False
             end
           end
+          object tsSQLPostgreSQL: TTabSheet
+            Caption = 'SQL'
+          end
         end
       end
     end
     object TabSheet7: TTabSheet
       Caption = 'Setup'
-      ClientHeight = 506
-      ClientWidth = 980
+      ClientHeight = 454
+      ClientWidth = 1040
       object Label12: TLabel
         Left = 8
         Height = 17
@@ -2253,26 +2231,38 @@ object frmmquery2: Tfrmmquery2
         ColCount = 6
         Columns = <        
           item
+            MinSize = 10
+            MaxSize = 200
             Title.Caption = 'Chave'
             Width = 64
           end        
           item
+            MinSize = 10
+            MaxSize = 200
             Title.Caption = 'Trocar'
             Width = 64
           end        
           item
+            MinSize = 10
+            MaxSize = 200
             Title.Caption = 'Anterior'
             Width = 64
           end        
           item
+            MinSize = 10
+            MaxSize = 200
             Title.Caption = 'Posterior'
             Width = 64
           end        
           item
+            MinSize = 10
+            MaxSize = 200
             Title.Caption = 'Neg Anterior'
             Width = 64
           end        
           item
+            MinSize = 10
+            MaxSize = 200
             Title.Caption = 'Neg Posterior'
             Width = 64
           end>
@@ -2353,9 +2343,8 @@ object frmmquery2: Tfrmmquery2
           'COALESCE'
           'CONVERT_FROM'
         )
-        ItemHeight = 0
+        ItemHeight = 23
         TabOrder = 1
-        TopIndex = -1
       end
       object Label13: TLabel
         Left = 408
@@ -8487,7 +8476,7 @@ object frmmquery2: Tfrmmquery2
     Top = 520
   end
   object SynCompletion1: TSynCompletion
-    Position = -1
+    Position = 0
     LinesInWindow = 6
     OnPositionChanged = SynCompletion1PositionChanged
     SelectedColor = clHighlight
@@ -8525,8 +8514,8 @@ object frmmquery2: Tfrmmquery2
     end
   end
   object SaveDialog1: TSaveDialog
-    Left = 157
-    Top = 97
+    Left = 840
+    Top = 128
   end
   object SynPluginSyncroEdit1: TSynPluginSyncroEdit
     GutterGlyph.Data = {

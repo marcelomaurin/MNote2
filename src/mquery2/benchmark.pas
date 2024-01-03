@@ -15,8 +15,6 @@ type
   TfrmBenchmark = class(TForm)
     btIniciar: TButton;
     btIniciar1: TButton;
-    GifAnim1: TGifAnim;
-    Label1: TLabel;
     Label3: TLabel;
     lbOperacao: TLabel;
     Label5: TLabel;
@@ -27,7 +25,6 @@ type
     pbPercentual: TProgressBar;
     tsRelatorio: TTabSheet;
     tsOperacoes: TTabSheet;
-    tsEstatistica: TTabSheet;
     procedure btIniciarClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
@@ -350,7 +347,7 @@ end;
 procedure TfrmBenchmark.btIniciarClick(Sender: TObject);
 begin
   pbTestes.Max:=4;
-  GifAnim1.Animate:= true;
+
   pbTestes.Min:=0;
   pbTestes.Position:=0;
   edRelatorio.Clear; (*Limpa relatorio*)
@@ -384,7 +381,7 @@ begin
 
 
   (*Fim de teste*)
-  GifAnim1.Animate:= false;
+
   Application.ProcessMessages;
   Showmessage('Analise realizada com sucesso!');
 

@@ -1,69 +1,48 @@
 object frmBenchmark: TfrmBenchmark
-  Left = 407
+  Left = 378
   Height = 467
-  Top = 1276
-  Width = 974
+  Top = 1158
+  Width = 588
   Caption = 'Benchmark'
   ClientHeight = 467
-  ClientWidth = 974
+  ClientWidth = 588
   OnCreate = FormCreate
+  Position = poMainFormCenter
   LCLVersion = '3.0.0.3'
-  object GifAnim1: TGifAnim
-    Left = 16
-    Height = 350
-    Top = 88
-    Width = 350
-    Animate = False
-    FileName = 'X:\consinco\migrador\img\WelcomeEminentApisdorsatalaboriosa-small.gif'
-  end
-  object Label1: TLabel
-    Left = 427
-    Height = 25
-    Top = 8
-    Width = 374
-    Caption = 'Analisador de Performace de dados'
-    Font.CharSet = ANSI_CHARSET
-    Font.Color = clBlack
-    Font.Height = -21
-    Font.Name = 'Segoe UI'
-    Font.Pitch = fpVariable
-    Font.Quality = fqDraft
-    ParentColor = False
-    ParentFont = False
-  end
   object PageControl1: TPageControl
-    Left = 376
-    Height = 400
-    Top = 56
-    Width = 576
-    ActivePage = tsOperacoes
-    TabIndex = 0
+    Left = 0
+    Height = 467
+    Top = 0
+    Width = 588
+    ActivePage = tsRelatorio
+    Align = alClient
+    TabIndex = 1
     TabOrder = 0
     object tsOperacoes: TTabSheet
       Caption = 'Operações'
-      ClientHeight = 369
-      ClientWidth = 566
+      ClientHeight = 436
+      ClientWidth = 578
       object pbTestes: TProgressBar
-        Left = 128
+        Left = 32
         Height = 20
         Top = 80
         Width = 240
         TabOrder = 2
       end
       object btIniciar: TButton
-        Left = 312
-        Height = 25
-        Top = 336
-        Width = 112
+        Left = 128
+        Height = 41
+        Top = 224
+        Width = 128
         Caption = 'Iniciar'
         TabOrder = 0
         OnClick = btIniciarClick
       end
       object btIniciar1: TButton
-        Left = 432
-        Height = 25
-        Top = 336
-        Width = 112
+        Left = 280
+        Height = 42
+        Top = 224
+        Width = 128
         Caption = 'Parar/Cancelar'
         TabOrder = 1
       end
@@ -84,7 +63,7 @@ object frmBenchmark: TfrmBenchmark
         ParentColor = False
       end
       object Label5: TLabel
-        Left = 216
+        Left = 32
         Height = 17
         Top = 144
         Width = 66
@@ -92,14 +71,14 @@ object frmBenchmark: TfrmBenchmark
         ParentColor = False
       end
       object pbPercentual: TProgressBar
-        Left = 128
+        Left = 32
         Height = 20
         Top = 160
         Width = 240
         TabOrder = 3
       end
       object Label7: TLabel
-        Left = 224
+        Left = 32
         Height = 17
         Top = 64
         Width = 39
@@ -109,13 +88,13 @@ object frmBenchmark: TfrmBenchmark
     end
     object tsRelatorio: TTabSheet
       Caption = 'Relatório'
-      ClientHeight = 369
-      ClientWidth = 566
+      ClientHeight = 436
+      ClientWidth = 578
       inline edRelatorio: TSynEdit
         Left = 0
-        Height = 369
+        Height = 436
         Top = 0
-        Width = 566
+        Width = 578
         Align = alClient
         Font.Height = -13
         Font.Name = 'Courier New'
@@ -552,9 +531,6 @@ object frmBenchmark: TfrmBenchmark
         MouseActions = <>
         MouseTextActions = <>
         MouseSelActions = <>
-        Lines.Strings = (
-          'edRelatorio'
-        )
         VisibleSpecialChars = [vscSpace, vscTabAtLast]
         SelectedColor.BackPriority = 50
         SelectedColor.ForePriority = 50
@@ -610,9 +586,6 @@ object frmBenchmark: TfrmBenchmark
           end
         end
       end
-    end
-    object tsEstatistica: TTabSheet
-      Caption = 'Estatística'
     end
   end
 end
