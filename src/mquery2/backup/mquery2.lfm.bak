@@ -44,9 +44,9 @@ object frmmquery2: Tfrmmquery2
     Height = 485
     Top = 50
     Width = 1050
-    ActivePage = tspostgree
+    ActivePage = tsMysql
     Align = alClient
-    TabIndex = 2
+    TabIndex = 1
     TabOrder = 3
     object tsAbout: TTabSheet
       Caption = 'About'
@@ -2003,7 +2003,7 @@ object frmmquery2: Tfrmmquery2
               Left = 15
               Height = 25
               Top = 90
-              Width = 96
+              Width = 186
               Caption = 'Criar usuario'
               TabOrder = 0
               OnChange = ToggleBox2Change
@@ -2012,7 +2012,7 @@ object frmmquery2: Tfrmmquery2
               Left = 15
               Height = 25
               Top = 139
-              Width = 97
+              Width = 186
               Caption = 'Permissão'
               TabOrder = 1
               OnChange = btPermissaoChange
@@ -2021,7 +2021,7 @@ object frmmquery2: Tfrmmquery2
               Left = 15
               Height = 25
               Top = 40
-              Width = 98
+              Width = 186
               Caption = 'Cria database'
               TabOrder = 2
               OnClick = btBancoClick
@@ -2030,7 +2030,7 @@ object frmmquery2: Tfrmmquery2
               Left = 19
               Height = 25
               Top = 211
-              Width = 98
+              Width = 182
               Caption = 'Comparar'
               TabOrder = 3
               OnClick = btcompararClick
@@ -2039,19 +2039,10 @@ object frmmquery2: Tfrmmquery2
               Left = 15
               Height = 25
               Top = 262
-              Width = 97
-              Caption = 'Transfer'
+              Width = 186
+              Caption = 'Migration to PostgreSQL'
               TabOrder = 4
               OnClick = Button3Click
-            end
-            object btbenchmark: TButton
-              Left = 19
-              Height = 25
-              Top = 320
-              Width = 92
-              Caption = 'Benchmark'
-              TabOrder = 5
-              OnClick = btbenchmarkClick
             end
           end
         end
@@ -2117,13 +2108,13 @@ object frmmquery2: Tfrmmquery2
           Height = 452
           Top = 1
           Width = 837
-          ActivePage = tsSetupPostres
+          ActivePage = tsSQLPostgreSQL
           Align = alClient
-          TabIndex = 0
+          TabIndex = 1
           TabOrder = 0
           object tsSetupPostres: TTabSheet
             Caption = 'PostgreSql Connection'
-            ClientHeight = 421
+            ClientHeight = 418
             ClientWidth = 827
             object edHostNamePost: TEdit
               Left = 24
@@ -2213,6 +2204,9 @@ object frmmquery2: Tfrmmquery2
               Caption = 'Schema:'
               ParentColor = False
             end
+          end
+          object tsSQLPostgreSQL: TTabSheet
+            Caption = 'SQL'
           end
         end
       end
@@ -2349,8 +2343,9 @@ object frmmquery2: Tfrmmquery2
           'COALESCE'
           'CONVERT_FROM'
         )
-        ItemHeight = 23
+        ItemHeight = 0
         TabOrder = 1
+        TopIndex = -1
       end
       object Label13: TLabel
         Left = 408
@@ -8482,7 +8477,7 @@ object frmmquery2: Tfrmmquery2
     Top = 520
   end
   object SynCompletion1: TSynCompletion
-    Position = 0
+    Position = -1
     LinesInWindow = 6
     OnPositionChanged = SynCompletion1PositionChanged
     SelectedColor = clHighlight

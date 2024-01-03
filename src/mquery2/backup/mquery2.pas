@@ -33,7 +33,6 @@ type
     btPermissao: TToggleBox;
     btPermissao1: TToggleBox;
     btExecutar: TButton;
-    btbenchmark: TButton;
     Button3: TButton;
     Button4: TButton;
     edBanco: TEdit;
@@ -183,6 +182,7 @@ type
     SynCompletion1: TSynCompletion;
     SynPluginSyncroEdit1: TSynPluginSyncroEdit;
     SynSQLSyn2: TSynSQLSyn;
+    tsSQLPostgreSQL: TTabSheet;
     tsAbout: TTabSheet;
     tsSetupPostres: TTabSheet;
     TabSheet7: TTabSheet;
@@ -878,7 +878,8 @@ end;
 
 procedure Tfrmmquery2.miBenchmarkClick(Sender: TObject);
 begin
-
+   frmBenchmark := TfrmBenchmark.create(self);
+   frmBenchmark.showmodal;
 end;
 
 procedure Tfrmmquery2.MenuItem9Click(Sender: TObject);
@@ -1019,8 +1020,8 @@ begin
         zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'libmysql.dll';
         {$ENDIF}
         {$IFDEF LINUX}
-        zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libpq74.so';
-        zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libmysqlclient.so.21';
+        zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'libs/linux64/libpq74.so';
+        zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'libs/linux64/libmysqlclient.so.21';
         {$ENDIF}
 
         zconmysql.Database := edBanco.text;
@@ -1080,8 +1081,7 @@ end;
 
 procedure Tfrmmquery2.btbenchmarkClick(Sender: TObject);
 begin
-   frmBenchmark := TfrmBenchmark.create(self);
-   frmBenchmark.showmodal;
+
 end;
 
 procedure Tfrmmquery2.btcompararClick(Sender: TObject);

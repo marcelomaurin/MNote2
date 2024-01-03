@@ -9,7 +9,7 @@ uses
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
   setmain, TypeDB, folders, funcoes, LCLType, ValEdit, chgtext, hint, registro,
   splash, setFolders, config, SynEditKeyCmds, PythonEngine, rxctrls,
-  LogTreeView, chatgpt, mquery2, porradawebapi;
+  LogTreeView, chatgpt, mquery2, porradawebapi, SynEditHighlighter, SynEditTypes;
 
 
 const versao = '2.30';
@@ -25,7 +25,6 @@ type
     lstFind: TListBox;
     MainMenu1: TMainMenu;
     edChat: TMemo;
-    meChatHist: TMemo;
     MenuItem14: TMenuItem;
     MenuItem17: TMenuItem;
     miporrada: TMenuItem;
@@ -33,6 +32,7 @@ type
     mniJSONVALID: TMenuItem;
     mnidos2unix: TMenuItem;
     Panel2: TPanel;
+    pnWait: TPanel;
     pnChatGPT: TPanel;
     pcInspector: TPageControl;
     pnclient: TPanel;
@@ -109,6 +109,7 @@ type
     Splitter2: TSplitter;
     Splitter3: TSplitter;
     Splitter4: TSplitter;
+    meChatHist: TSynEdit;
     tsLocal: TTabSheet;
     tsGlobal: TTabSheet;
     TrayIcon1: TTrayIcon;
@@ -201,7 +202,8 @@ type
     FCHATGPT : TCHATGPT;
     strFind : String;
     FPos : integer;
-
+    procedure AplicarEstilo(SynEdit: TSynEdit; StartLine, EndLine: Integer);
+    procedure AnalisarSynEdit(SynEdit: TSynEdit);
     procedure CarregarParametros();
     procedure CarregarOld();
     function NovoItem():TTabSheet;
@@ -836,21 +838,94 @@ begin
   end;
 end;
 
+procedure TfrmMNote.AplicarEstilo(SynEdit: TSynEdit; StartLine, EndLine: Integer);
+var
+  i: Integer;
+  TempAttr: TSynHighlighterAttributes;
+begin
+  // Cria um novo objeto de atributo de realce para definir o estilo
+  //TempAttr := TSynHighlighterAttributes.Create('TempHighlight', hcPlainText);
+  TempAttr := TSynHighlighterAttributes.Create('TempHighlight', '');
+  try
+    // Define a cor de fundo como preta
+    TempAttr.Background := clBlack;
+    TempAttr.Foreground := clWhite; // Define a cor do texto como branca para melhor visibilidade
+    TempAttr.Style := []; // Você pode adicionar mais estilos, como negrito ou itálico, se desejar
+
+    // Aplica o estilo às linhas especificadas
+    for i := StartLine to EndLine do
+    begin
+      // Isso é apenas um exemplo e pode não funcionar conforme esperado, pois o SynEdit
+      // geralmente requer a modificação do realce de sintaxe para alterar estilos.
+      //SynEdit.Lines.Attributes[i] := TempAttr;
+
+    end;
+  finally
+    TempAttr.Free;
+  end;
+end;
+
+
+procedure TfrmMNote.AnalisarSynEdit(SynEdit: TSynEdit);
+var
+  StartPos, EndPos: Integer;
+  InCodeBlock: Boolean;
+  i: Integer;
+  Line: string;
+begin
+  InCodeBlock := False;
+  StartPos := -1;
+  EndPos := -1;
+
+  for i := 0 to SynEdit.Lines.Count - 1 do
+  begin
+    Line := SynEdit.Lines[i];
+
+    // Verifica se a linha contém o marcador de início ou fim do bloco de código
+    if Pos('```', Line) > 0 then
+    begin
+      if not InCodeBlock then
+      begin
+        // Início de um novo bloco de código
+        StartPos := i;
+        InCodeBlock := True;
+      end
+      else
+      begin
+        // Fim do bloco de código
+        EndPos := i;
+        InCodeBlock := False;
+
+        // Aplica o estilo com fundo preto ao bloco de código
+        AplicarEstilo(SynEdit, StartPos, EndPos);
+
+        // Resetar para o próximo bloco, se houver
+        StartPos := -1;
+        EndPos := -1;
+      end;
+    end;
+  end;
+end;
+
+
 
 procedure TfrmMNote.edChatKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #13 then
   begin
+     pnWait.Visible:=true;
      if(FCHATGPT = nil) then
      begin
          FCHATGPT := TCHATGPT.create(self);
      end;
-      FCHATGPT.TOKEN:= FSetMain.CHATGPT;
-      meChatHist.Caption :=  meChatHist.Caption + #13+ 'Question:'+edChat.Text+#13;
-      FCHATGPT.SendQuestion(edChat.Text);
-      meChatHist.Caption := meChatHist.Caption + 'Response:'+ FCHATGPT.Response+#13;
-      meChatHist.Caption:=meChatHist.Caption+#13;
-      edChat.Text:= '';
+     FCHATGPT.TOKEN:= FSetMain.CHATGPT;
+     meChatHist.Caption :=  meChatHist.Caption + #13+ #13+ 'Question: '+edChat.Text+#13;
+     FCHATGPT.SendQuestion(edChat.Text);
+     meChatHist.Caption := meChatHist.Caption + 'Response: '+ FCHATGPT.Response+#13;
+     meChatHist.Caption:=meChatHist.Caption+#13;
+     edChat.Text:= '';
+     //AnalisarSynEdit(meChatHist);
+     pnWait.Visible:=false;
   end;
 end;
 

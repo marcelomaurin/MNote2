@@ -222,6 +222,7 @@ type
     procedure Button3Click(Sender: TObject);
     procedure edPesqMyKeyPress(Sender: TObject; var Key: char);
     procedure edPesqPostKeyPress(Sender: TObject; var Key: char);
+    procedure edSchemaPostChange(Sender: TObject);
     procedure edSQLChange(Sender: TObject);
     procedure edSQLChangeUpdating(ASender: TObject; AnUpdating: Boolean);
     procedure edSQLClickLink(Sender: TObject; Button: TMouseButton;
@@ -1020,8 +1021,8 @@ begin
         zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'libmysql.dll';
         {$ENDIF}
         {$IFDEF LINUX}
-        zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libpq74.so';
-        zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libmysqlclient.so.21';
+        zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'libs/linux64/libpq74.so';
+        zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'libs/linux64/libmysqlclient.so.21';
         {$ENDIF}
 
         zconmysql.Database := edBanco.text;
@@ -1406,6 +1407,11 @@ begin
   begin
       procuraTVPost(edPesqPost.text);
   end;
+end;
+
+procedure Tfrmmquery2.edSchemaPostChange(Sender: TObject);
+begin
+
 end;
 
 procedure Tfrmmquery2.edSQLChange(Sender: TObject);
