@@ -1,14 +1,14 @@
 object frmSobre: TfrmSobre
-  Left = 659
+  Left = 673
   Height = 200
-  Top = 559
+  Top = 1290
   Width = 320
   BorderStyle = bsDialog
   Caption = 'About'
   ClientHeight = 200
   ClientWidth = 320
   OnCreate = FormCreate
-  LCLVersion = '2.2.0.4'
+  LCLVersion = '3.0.0.3'
   object Label2: TLabel
     Left = 40
     Height = 17
@@ -22,8 +22,8 @@ object frmSobre: TfrmSobre
     Top = 152
     Width = 90
     Caption = 'Close'
-    OnChange = ToggleBox1Change
     TabOrder = 0
+    OnChange = ToggleBox1Change
   end
   object Label3: TLabel
     Left = 104
@@ -39,6 +39,7 @@ object frmSobre: TfrmSobre
     Width = 51
     Caption = 'Version'
     OnClick = Label4Click
+    OnDblClick = Label4DblClick
   end
   object lbversao: TLabel
     Left = 184
@@ -52,6 +53,8 @@ object frmSobre: TfrmSobre
     Height = 80
     Top = 24
     Width = 72
+    OnClick = Image1Click
+    OnDblClick = Image1DblClick
     Picture.Data = {
       055449636F6EA1C0020000000100090000000000010020004B48000096000000
       808000000100200028080100E14800006060000001002000A894000009510100
@@ -5693,5 +5696,25 @@ object frmSobre: TfrmSobre
       010000C0030000E0070000
     }
     Stretch = True
+  end
+  object Poweredby1: TPoweredby
+    About.Description.Strings = (
+      'Component that shows a Powered By graphic.'#10'Use method ShowPoweredByForm in your form.create()'#10'to use the component'
+    )
+    About.Title = 'PoweredBy component'
+    About.Height = 280
+    About.Width = 400
+    About.Font.Color = clNavy
+    About.Font.Height = -13
+    About.Font.Name = 'Arial'
+    About.BackGroundColor = clWindow
+    About.Version = '1.0.4.0'
+    About.Authorname = 'Gordon Bamber'
+    About.Organisation = 'Public Domain'
+    About.AuthorEmail = 'minesadorada@charcodelvalle.com'
+    About.ComponentName = 'PoweredBy component'
+    About.LicenseType = abModifiedGPL
+    Left = 251
+    Top = 88
   end
 end

@@ -9,7 +9,8 @@ uses
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
   setmain, TypeDB, folders, funcoes, LCLType, ValEdit, chgtext, hint, registro,
   splash, setFolders, config, SynEditKeyCmds, PythonEngine, rxctrls,
-  LogTreeView, chatgpt, mquery2, porradawebapi, SynEditHighlighter, SynEditTypes;
+  LogTreeView, uPoweredby, chatgpt, mquery2, porradawebapi, SynEditHighlighter,
+  SynEditTypes;
 
 
 const versao = '2.31';

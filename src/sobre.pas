@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls;
+  ExtCtrls, uPoweredby;
 
 type
 
@@ -18,9 +18,13 @@ type
     Label3: TLabel;
     Label4: TLabel;
     lbversao: TLabel;
+    Poweredby1: TPoweredby;
     ToggleBox1: TToggleBox;
     procedure FormCreate(Sender: TObject);
+    procedure Image1Click(Sender: TObject);
+    procedure Image1DblClick(Sender: TObject);
     procedure Label4Click(Sender: TObject);
+    procedure Label4DblClick(Sender: TObject);
     procedure ToggleBox1Change(Sender: TObject);
   private
     { private declarations }
@@ -42,7 +46,23 @@ begin
 
 end;
 
+procedure TfrmSobre.Image1Click(Sender: TObject);
+begin
+  Poweredby1.ShowPoweredByForm;
+end;
+
+procedure TfrmSobre.Image1DblClick(Sender: TObject);
+begin
+
+
+end;
+
 procedure TfrmSobre.Label4Click(Sender: TObject);
+begin
+
+end;
+
+procedure TfrmSobre.Label4DblClick(Sender: TObject);
 begin
 
 end;

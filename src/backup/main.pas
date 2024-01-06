@@ -9,10 +9,11 @@ uses
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
   setmain, TypeDB, folders, funcoes, LCLType, ValEdit, chgtext, hint, registro,
   splash, setFolders, config, SynEditKeyCmds, PythonEngine, rxctrls,
-  LogTreeView, chatgpt, mquery2, porradawebapi, SynEditHighlighter, SynEditTypes;
+  LogTreeView, uPoweredby, chatgpt, mquery2, porradawebapi, SynEditHighlighter,
+  SynEditTypes;
 
 
-const versao = '2.30';
+const versao = '2.31';
 
 type
 
@@ -37,6 +38,7 @@ type
     pcInspector: TPageControl;
     pnclient: TPanel;
     pnInspector: TPanel;
+    Poweredby1: TPoweredby;
     Separator4: TMenuItem;
     miRedo: TMenuItem;
     miSelectAll: TMenuItem;

@@ -46,37 +46,43 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="10">
+    <RequiredPackages Count="12">
       <Item1>
-        <PackageName Value="industrial"/>
+        <PackageName Value="FCL"/>
       </Item1>
       <Item2>
-        <PackageName Value="pkg_gifanim"/>
+        <PackageName Value="poweredby"/>
       </Item2>
       <Item3>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="industrial"/>
       </Item3>
       <Item4>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="pkg_gifanim"/>
       </Item4>
       <Item5>
-        <PackageName Value="rxnew"/>
+        <PackageName Value="zcomponent"/>
       </Item5>
       <Item6>
-        <PackageName Value="SynEditDsgn"/>
+        <PackageName Value="multiloglaz"/>
       </Item6>
       <Item7>
-        <PackageName Value="python4lazarus_package"/>
+        <PackageName Value="rxnew"/>
       </Item7>
       <Item8>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="SynEditDsgn"/>
       </Item8>
       <Item9>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="python4lazarus_package"/>
       </Item9>
       <Item10>
-        <PackageName Value="LCL"/>
+        <PackageName Value="lnetvisual"/>
       </Item10>
+      <Item11>
+        <PackageName Value="SynEdit"/>
+      </Item11>
+      <Item12>
+        <PackageName Value="LCL"/>
+      </Item12>
     </RequiredPackages>
     <Units Count="31">
       <Unit0>

@@ -7,13 +7,13 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
   ComCtrls, Menus, ValEdit, SynEdit, SynHighlighterSQL, SynCompletion,
-  ZConnection, ZDataset, ZPgEventAlerter, Tabela, views, View, strUtils,
+  ZConnection, ZDataset, ZPgEventAlerter, Tabela, views, View, strUtils, DB,
   SynEditTypes, SynGutterBase, SynEditMarks, SynEditKeyCmds,
   SynPluginSyncroEdit, SynGutterMarks, SynGutterLineNumber, SynGutterChanges,
-  SynGutter, SynGutterCodeFolding, LCLType, Grids, Buttons, finds,
-  ZClasses, ZCollections, ZCompatibility, ZTokenizer, ZSelectSchema,
-  ZGenericSqlAnalyser, ZDbcLogging, ZVariant, ZPlainDriver, ZURL, TypeDB,
-  triggers;
+  SynGutter, SynGutterCodeFolding, LCLType, Grids, Buttons, PairSplitter,
+  DBCtrls, DBGrids, finds, ZClasses, ZCollections, ZCompatibility, ZTokenizer,
+  ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging, ZVariant, ZPlainDriver, ZURL,
+  TypeDB, triggers;
 
 type
 
@@ -23,44 +23,30 @@ type
 
   Tfrmmquery2= class(TForm)
     btBanco: TButton;
-    btBanco1: TButton;
     btcomparar: TButton;
-    btcomparar1: TButton;
     btConectarMy: TButton;
-    btConectarMy1: TButton;
     btConectarPost: TButton;
-    btConectarpost1: TButton;
     btPermissao: TToggleBox;
-    btPermissao1: TToggleBox;
     btExecutar: TButton;
+    btExecute: TButton;
     Button3: TButton;
-    Button4: TButton;
+    dsmy: TDataSource;
+    dbgridmy: TDBGrid;
+    dbnavmy: TDBNavigator;
     edBanco: TEdit;
-    edBanco1: TEdit;
     edBancoPost: TEdit;
-    edBancoPost1: TEdit;
     edErro: TMemo;
-    edErro1: TMemo;
     edHostName: TEdit;
-    edHostName1: TEdit;
     edHostNamePost: TEdit;
     edPesqMy: TEdit;
     edSchemaPost: TEdit;
-    edHostNamePost1: TEdit;
     edLog: TMemo;
-    edLog1: TMemo;
     edPasswrd: TEdit;
-    edPasswrd1: TEdit;
     edPasswrdPost: TEdit;
-    edPasswrdPost1: TEdit;
     edPesqPost: TEdit;
-    edSchemaPost1: TEdit;
     edSQL: TSynEdit;
-    edSQL1: TSynEdit;
     edusuario: TEdit;
-    edusuario1: TEdit;
     edusuarioPost: TEdit;
-    edusuarioPost1: TEdit;
     FindDialog1: TFindDialog;
     FontDialog1: TFontDialog;
     ImageList1: TImageList;
@@ -75,22 +61,7 @@ type
     Label17: TLabel;
     Label18: TLabel;
     Label2: TLabel;
-    Label20: TLabel;
-    Label21: TLabel;
-    Label22: TLabel;
-    Label23: TLabel;
-    Label24: TLabel;
-    Label25: TLabel;
-    Label26: TLabel;
-    Label27: TLabel;
-    Label28: TLabel;
-    Label29: TLabel;
     Label3: TLabel;
-    Label30: TLabel;
-    Label31: TLabel;
-    Label32: TLabel;
-    Label33: TLabel;
-    Label34: TLabel;
     Label4: TLabel;
     Label5: TLabel;
     Label6: TLabel;
@@ -98,18 +69,15 @@ type
     Label8: TLabel;
     Label9: TLabel;
     lbCol: TLabel;
-    lbCol1: TLabel;
     lblinha: TLabel;
-    lblinha1: TLabel;
     ListBox1: TListBox;
-    ListBox2: TListBox;
     lstfind: TListBox;
-    lstfind1: TListBox;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     MenuItem10: TMenuItem;
     MenuItem11: TMenuItem;
     MenuItem12: TMenuItem;
+    miCreate: TMenuItem;
     miOcultarPost: TMenuItem;
     miCFunction: TMenuItem;
     miCTrigger: TMenuItem;
@@ -133,55 +101,42 @@ type
     N1: TMenuItem;
     mnCriarSeq: TMenuItem;
     mnRefresh: TMenuItem;
-    pgMain: TPageControl;
-    PageControl2: TPageControl;
-    pgMysql: TPageControl;
     Panel10: TPanel;
+    Panel11: TPanel;
+    pgMain: TPageControl;
+    pgMysql: TPageControl;
     Panel13: TPanel;
-    Panel7: TPanel;
     pcPostgree: TPageControl;
     Panel1: TPanel;
     Panel14: TPanel;
-    Panel2: TPanel;
-    Panel3: TPanel;
     Panel4: TPanel;
-    Panel5: TPanel;
-    Panel6: TPanel;
     Panel8: TPanel;
     Panel9: TPanel;
     pgbar: TProgressBar;
-    pgbar2: TProgressBar;
-    pgbar3: TProgressBar;
+    pmTabelaMy: TPopupMenu;
     pnBotton: TPanel;
-    pnBotton1: TPanel;
     pnErro: TPanel;
-    pnErro1: TPanel;
     pnlProgresso: TPanel;
-    pnlProgresso2: TPanel;
-    pnlProgresso3: TPanel;
     popSeq: TPopupMenu;
     popMenu: TPopupMenu;
     popSQL: TPopupMenu;
     popfind: TPopupMenu;
     popmenuTrigger: TPopupMenu;
-    pmTabelaMy: TPopupMenu;
+    pmTabelasMy: TPopupMenu;
     pmTabelaPost: TPopupMenu;
     PopupMenuTblPost: TPopupMenu;
     SaveDialog1: TSaveDialog;
-    ShapeCon1: TShape;
     SpeedButton1: TSpeedButton;
     SpeedButton2: TSpeedButton;
     SpeedButton3: TSpeedButton;
-    SpeedButton4: TSpeedButton;
-    SpeedButton5: TSpeedButton;
-    SpeedButton6: TSpeedButton;
+    Splitter1: TSplitter;
     Splitter2: TSplitter;
     Splitter3: TSplitter;
     Splitter4: TSplitter;
-    Splitter5: TSplitter;
     SynCompletion1: TSynCompletion;
     SynPluginSyncroEdit1: TSynPluginSyncroEdit;
     SynSQLSyn2: TSynSQLSyn;
+    TabSheet1: TTabSheet;
     tsSQLPostgreSQL: TTabSheet;
     tsAbout: TTabSheet;
     tsSetupPostres: TTabSheet;
@@ -192,19 +147,11 @@ type
     tbTools: TTabSheet;
     ToggleBox2: TToggleBox;
     tsMysql: TTabSheet;
-    TabSheet3: TTabSheet;
     tspostgree: TTabSheet;
-    tbConxao1: TTabSheet;
-    tbLog1: TTabSheet;
-    tbPost1: TTabSheet;
-    tbSQL1: TTabSheet;
-    tbTools1: TTabSheet;
-    ToggleBox3: TToggleBox;
     TrayIcon1: TTrayIcon;
-    tvMysql: TTreeView;
     tvPost: TTreeView;
+    tvMysql: TTreeView;
     vlistequivalente: TStringGrid;
-    vlistequivalente1: TStringGrid;
     zconmysql: TZConnection;
     zconpost: TZConnection;
     zmyqry: TZReadOnlyQuery;
@@ -216,9 +163,11 @@ type
     procedure btBancoClick(Sender: TObject);
     procedure btbenchmarkClick(Sender: TObject);
     procedure btcompararClick(Sender: TObject);
+    procedure btExecutarClick(Sender: TObject);
     procedure btPermissaoChange(Sender: TObject);
     procedure btConectarMyClick(Sender: TObject);
     procedure btConectarpostClick(Sender: TObject);
+    procedure btExecuteClick(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure edPesqMyKeyPress(Sender: TObject; var Key: char);
     procedure edPesqPostKeyPress(Sender: TObject; var Key: char);
@@ -248,6 +197,7 @@ type
     procedure MenuItem5Click(Sender: TObject);
     procedure MenuItem8Click(Sender: TObject);
     procedure miCFunctionClick(Sender: TObject);
+    procedure miCreateClick(Sender: TObject);
     procedure miCTriggerClick(Sender: TObject);
     procedure miEsconderClick(Sender: TObject);
     procedure miFontClick(Sender: TObject);
@@ -296,6 +246,7 @@ type
     sequences : TStringList;
     FPos : integer;
     strFind : String;
+    procedure MontaCreateTrigger(Tabela : TTabela; posicao : integer);
     procedure ListarTabelasMy();
     procedure ListarTabelasPost();
     procedure ProcuraTVMysql(Nome: String);
@@ -412,14 +363,36 @@ begin
  result := Info;
 end;
 
+procedure Tfrmmquery2.MontaCreateTrigger(Tabela : TTabela; posicao : integer);
+begin
+     edsql.Lines.clear;
+     edsql.Lines.Append('create or replace function '+tabela.triggers.Triggername[posicao]+ '() ');
+     edsql.Lines.Append('RETURNS TRIGGER as $'+  tabela.triggers.Triggername[posicao] +'$ ' );
+     edsql.Lines.Append('BEGIN ');
+     //edsql.text := edsql.text + FormataSQL(tabela.triggers.Source[posicao]);
+     edsql.Lines.Append(' RETURN NULL; -- resultado é ignorado ');
+     edsql.Lines.Append(' END; ');
+     //edsql.text := edsql.text + FormataSQL(tabela.triggers.Source[posicao]);
+
+
+     edsql.Lines.Append( '$'+tabela.triggers.Triggername[posicao]+'$ LANGUAGE plpgsql;');
+     //edsql.Lines.Append( 'DROP TRIGGER IF EXISTS '+tabela.triggers.Triggername[posicao]+' '+#39+edSchemaPost.Text+#39+'.'+#39+tabela.triggers.tablename+#39+';');
+     edsql.Lines.Append('create TRIGGER '+tabela.triggers.Triggername[posicao]+ ' ');
+     edsql.Lines.Append(Tabela.triggers.Time[posicao]+ ' ' +tabela.triggers.Event[posicao] );
+     edsql.Lines.Append(' on '+ tabela.triggers.tablename);
+     //edsql.text := edsql.text + FormataSQL(tabela.triggers.Source[posicao]);
+     edsql.Lines.Append( ' FOR EACH ROW ');
+     edsql.Lines.Append( 'execute function '+tabela.triggers.Triggername[posicao]+'();');
+end;
+
 procedure Tfrmmquery2.tvMysqlChange(Sender: TObject; Node: TTreeNode);
 var
+  posicao : integer;
   tvBisavo : TTreeNode;
   tvAvo : TTreeNode;
   tvPai : TTreeNode;
   view : TView;
   Tabela : TTabela;
-  posicao : integer;
 begin
   tvPai := nil;
   tvAvo := nil;
@@ -433,10 +406,12 @@ begin
       begin
        //edSQL.Text:= Node.Text;
        if Node.data <> nil then
-           edsql.Text:= GeraSQL(TTabela(Node.Data))
+       begin
+           //edsql.Text:= GeraSQL(TTabela(Node.Data))
+           tvMysql.PopupMenu := pmTabelaMy;
+       end
        else
          edsql.Text:= 'no data';
-
       end
        else
       begin
@@ -455,49 +430,28 @@ begin
          edsql.Text :=  formatasql(view.definicao.text);
       end;
 
-
-
       if (tvBisavo = posicaofieldsmy) then (*Se o bisavo for tabelas*)
       begin
-        if tvPai.Text = 'Chave Primaria' then
+        if (tvPai.Text = 'Primary Key') then
         begin
             tvMysql.PopupMenu := popSeq;
         end;
 
-        if ((integer(tvPai.Data)) = IsETDTriggers()) then (*trigger*)
+        if((integer(tvPai.Data)) = IsETDTriggers()) then (*trigger*)
         begin
+          tvMysql.PopupMenu := popmenuTrigger;
+
           Tabela := TTabela(TObject(tvAvo.Data));
           posicao := Tabela.triggers.Triggername.IndexOf(node.Text);
-          edsql.Lines.clear;
-          edsql.Lines.Append('create or replace function '+tabela.triggers.Triggername[posicao]+ '() ');
-           edsql.Lines.Append('RETURNS TRIGGER as $'+  tabela.triggers.Triggername[posicao] +'$ ' );
-           edsql.Lines.Append('BEGIN ');
-           //edsql.text := edsql.text + FormataSQL(tabela.triggers.Source[posicao]);
-           edsql.Lines.Append(' RETURN NULL; -- resultado é ignorado ');
-           edsql.Lines.Append(' END; ');
-          //edsql.text := edsql.text + FormataSQL(tabela.triggers.Source[posicao]);
+          MontaCreateTrigger(Tabela, posicao);
 
-
-          edsql.Lines.Append( '$'+tabela.triggers.Triggername[posicao]+'$ LANGUAGE plpgsql;');
-          //edsql.Lines.Append( 'DROP TRIGGER IF EXISTS '+tabela.triggers.Triggername[posicao]+' '+#39+edSchemaPost.Text+#39+'.'+#39+tabela.triggers.tablename+#39+';');
-          edsql.Lines.Append('create TRIGGER '+tabela.triggers.Triggername[posicao]+ ' ');
-          edsql.Lines.Append(Tabela.triggers.Time[posicao]+ ' ' +tabela.triggers.Event[posicao] );
-          edsql.Lines.Append(' on '+ tabela.triggers.tablename);
-          //edsql.text := edsql.text + FormataSQL(tabela.triggers.Source[posicao]);
-          edsql.Lines.Append( ' FOR EACH ROW ');
-          edsql.Lines.Append( 'execute function '+tabela.triggers.Triggername[posicao]+'();');
-
-          tvMysql.PopupMenu := popmenuTrigger;
         end;
-
       end;
 
       if (node = posicaofieldsmy) then
       begin
-        tvMysql.PopupMenu := pmTabelaMy;
+        tvMysql.PopupMenu := pmTabelasMy;
       end;
-
-
     end;
    end;
 end;
@@ -689,7 +643,8 @@ begin
   pgMain.PageIndex:=0;
   pgMysql.PageIndex:=0;
   tvitem := TTreeNode.Create(tvMysql.Items);
-  tvitemmy := tvMysql.Items.AddObject(tvitem,'Mysql', pointer(ETDBBanco));
+  tvitemmy := tvMysql.Items.AddObject(tvitem,'mysql', pointer(ETDBBanco));
+  tvitemmy.ImageIndex:=-1;
   {$IFDEF WINDOWS}
   zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'\libpq74.dll';
   zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'\libmysql.dll';
@@ -701,6 +656,7 @@ begin
 
   tvitem := TTreeNode.Create(tvPost.Items);
   tvitempost := tvpost.Items.AddObject(tvitem,'Postgres', pointer(ETDBBanco));
+  tvitempost.ImageIndex:=-1;
 
 
 end;
@@ -828,6 +784,11 @@ begin
   edsql.Lines.Append(' RETURN NULL; -- resultado é ignorado ');
   edsql.Lines.Append(' END; ');
   edsql.Lines.Append('$'+tabela.triggers.tablename+'$ LANGUAGE plpgsql; ');
+end;
+
+procedure Tfrmmquery2.miCreateClick(Sender: TObject);
+begin
+  edsql.Text:= GeraSQL(TTabela(tvMysql.Selected.Data))
 end;
 
 procedure Tfrmmquery2.miCTriggerClick(Sender: TObject);
@@ -1032,7 +993,10 @@ begin
         zconmysql.Connect;
         if zconmysql.Connected then
         begin
-          posicaofieldsmy := tvMysql.Items.AddChildObject(tvitemmy, 'Tabelas', pointer(ETDTabelas));
+          tvitemmy.Text:= edBanco.text; //Muda para o banco de dados
+          tvitemmy.ImageIndex:=13;
+          posicaofieldsmy := tvMysql.Items.AddChildObject(tvitemmy, 'Tables', pointer(ETDTabelas));
+          posicaofieldsmy.ImageIndex:=15;
           posicaoViewmy := tvMysql.Items.AddChildObject(tvitemmy, 'Views', pointer(ETDViews));
           posicaoProceduremy := tvMysql.Items.AddChildObject(tvitemmy, 'Procedure', pointer(ETDProcedure));
           posicaoFunctionmy := tvMysql.Items.AddChildObject(tvitemmy, 'Functions', pointer(ETDFunctions));
@@ -1147,9 +1111,50 @@ begin
    ShowMessage('Finalizou a pesquisa!');
 end;
 
+procedure Tfrmmquery2.btExecutarClick(Sender: TObject);
+begin
+  try
+    zmyqry2.sql.text := edSQL.Lines.Text;
+
+    dsmy.DataSet := zmyqry2;
+    edlog.Append('SQL OPEN:'+edSQL.Lines.Text);
+    dbnavmy.DataSource := dsmy;
+    dbgridmy.DataSource := dsmy;
+    zmyqry2.Open;
+  except
+     on E: Exception do
+     begin
+          edLog.Append('Error:'+e.message);
+          ShowMessage('Error:'+e.message);
+     end;
+
+  end;
+
+end;
+
 procedure Tfrmmquery2.btConectarpostClick(Sender: TObject);
 begin
      refreshPost();
+end;
+
+procedure Tfrmmquery2.btExecuteClick(Sender: TObject);
+begin
+    try
+    zmyqry2.sql.text := edSQL.Lines.Text;
+
+    dsmy.DataSet := nil;
+    dbnavmy.DataSource := nil;
+    dbgridmy.DataSource := nil;
+    edLog.Append('SQL Execute:'+edSQL.Lines.Text);
+    zmyqry2.ExecSQL;
+
+  except
+     on E: Exception do
+     begin
+          ShowMessage('Error:'+e.message);
+          edLog.Append('Error:'+e.message);
+     end;
+  end;
 end;
 
 procedure Tfrmmquery2.RefreshPost();
@@ -1178,7 +1183,10 @@ begin
         zconpost.Connect;
         if zconpost.Connected then
         begin
-          posicaofieldspost := tvPost.Items.AddChildObject(tvitemPost, 'Tabelas',pointer(ETDTabelas));
+          tvitempost.Text:=edBancoPost.text;
+          tvitempost.ImageIndex:=13;
+          posicaofieldspost := tvPost.Items.AddChildObject(tvitemPost, 'tables',pointer(ETDTabelas));
+          posicaofieldspost.ImageIndex:=15;
           posicaoSequencePost := tvPost.Items.AddChildObject(tvitemPost, 'Sequences',pointer(ETDTabelas));
           posicaoViewPost := tvPost.Items.AddChildObject(tvitemPost, 'Views', pointer(ETDViews));
           posicaoProcedurePost := tvPost.Items.AddChildObject(tvitemPost, 'Procedure', pointer(ETDProcedure));
@@ -1496,6 +1504,7 @@ procedure Tfrmmquery2.ListarTabelasMy();
 var
   Tabela : TTabela;
   tvitem : TTreeNode;
+  tvtemp : TTreeNode;
   tvcolunas : TTreeNode;
   tvindice : TTreeNode;
   tvFK : TTreeNode;
@@ -1521,20 +1530,25 @@ begin
        Tabela := TTabela.create(zmyqry1,TabelaNome, DBMysql);
 
        tvitem := TTreenode.Create(tvMysql.items);
+       tvitem.ImageIndex:= 14;
        tvitem := tvMysql.Items.AddNode(tvitem,posicaofieldsmy,TabelaNome,TObject(Tabela),naAddChild);
 
        (*Adiciona colunas da tabela*)
-       tvcolunas := tvMysql.Items.AddChildObject(tvitem,'campos', tobject(ETDBCampos));
+       tvcolunas := tvMysql.Items.AddChildObject(tvitem,'fields', tobject(ETDBCampos));
+       tvcolunas.ImageIndex:=16;
        for a:= 0 to tabela.count-1 do
        begin
-         tvMysql.items.AddChildObject(tvcolunas,tabela.fieldname[a],pointer(a));
+         tvTemp := tvMysql.items.AddChildObject(tvcolunas,tabela.fieldname[a],pointer(a));
+         tvtemp.ImageIndex:=16;
        end;
 
        (*adiciona pk da tabela*)
-       tvindice := tvMysql.Items.AddChildObject(tvitem,'Chave Primaria',pointer(ETDBPK));
+       tvindice := tvMysql.Items.AddChildObject(tvitem,'Primary Key',pointer(ETDBPK));
+       tvindice.ImageIndex:=17;
        for a := 0 to tabela.chaves.primarykeys.Count-1 do
        begin
-         tvMysql.items.AddChildObject(tvindice,tabela.chaves.primarykeys[a],pointer(a));
+         tvTemp := tvMysql.items.AddChildObject(tvindice,tabela.chaves.primarykeys[a],pointer(a));
+         tvTemp.ImageIndex:=18;
        end;
 
        (*adiciona pk da tabela*)
@@ -1617,6 +1631,7 @@ procedure Tfrmmquery2.ListarTabelasPost();
 var
   Tabela : TTabela;
   tvitem : TTreeNode;
+  tvtemp : Ttreenode;
   tvcolunas : TTreeNode;
   tvindice : TTreeNode;
   tvFK : TTreeNode;
@@ -1648,21 +1663,26 @@ begin
         SynSQLSyn2.TableNames.Append(zpostqry.FieldByName('table_name').asstring);
         Tabela := TTabela.create(zpostqry1,TabelaNome, DBPostgres);
         tvitem := TTreenode.Create(tvPost.items);
+        tvitem.ImageIndex:= 14;
         tvitem := tvPost.Items.AddNode(tvitem,posicaofieldspost,TabelaNome,pointer(Tabela),naAddChild);
       end;
 
       (*Adiciona colunas da tabela*)
-      tvcolunas := tvPost.Items.AddChildObject(tvitem,'campos', pointer(ETDBCampos));
+      tvcolunas := tvPost.Items.AddChildObject(tvitem,'fields', pointer(ETDBCampos));
+      tvcolunas.ImageIndex:=16;
       for a:= 0 to tabela.count-1 do
       begin
-        tvPost.items.AddChildObject(tvcolunas,tabela.fieldname[a],pointer(a));
+        tvtemp := tvPost.items.AddChildObject(tvcolunas,tabela.fieldname[a],pointer(a));
+        tvtemp.ImageIndex:=19;
       end;
 
       (*adiciona pk da tabela*)
-      tvindice := tvPost.Items.AddChildObject(tvitem,'Chave Primaria',pointer(ETDBPK));
+      tvindice := tvPost.Items.AddChildObject(tvitem,'Primary Key',pointer(ETDBPK));
+      tvindice.ImageIndex:=17;
       for a := 0 to tabela.chaves.primarykeys.Count-1 do
       begin
-        tvPost.items.AddChildObject(tvindice,tabela.chaves.primarykeys[a],pointer(a));
+        tvtemp := tvPost.items.AddChildObject(tvindice,tabela.chaves.primarykeys[a],pointer(a));
+        tvtemp.ImageIndex:= 18;
       end;
 
       (*adiciona pk da tabela*)
