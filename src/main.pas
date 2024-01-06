@@ -12,7 +12,7 @@ uses
   LogTreeView, chatgpt, mquery2, porradawebapi, SynEditHighlighter, SynEditTypes;
 
 
-const versao = '2.30';
+const versao = '2.31';
 
 type
 

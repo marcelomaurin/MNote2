@@ -1,6 +1,6 @@
 #!/bin/bash
 ARQUITETURA=$(uname -m)
-VERSAO=2.30
+VERSAO=2.31
 
 
 case $(uname -m) in
