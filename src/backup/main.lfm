@@ -1706,24 +1706,4 @@ object frmMNote: TfrmMNote
     Left = 519
     Top = 12
   end
-  object Poweredby1: TPoweredby
-    About.Description.Strings = (
-      'Component that shows a Powered By graphic.'#10'Use method ShowPoweredByForm in your form.create()'#10'to use the component'
-    )
-    About.Title = 'PoweredBy component'
-    About.Height = 280
-    About.Width = 400
-    About.Font.Color = clNavy
-    About.Font.Height = -13
-    About.Font.Name = 'Arial'
-    About.BackGroundColor = clWindow
-    About.Version = '1.0.4.0'
-    About.Authorname = 'Gordon Bamber'
-    About.Organisation = 'Public Domain'
-    About.AuthorEmail = 'minesadorada@charcodelvalle.com'
-    About.ComponentName = 'PoweredBy component'
-    About.LicenseType = abModifiedGPL
-    Left = 1051
-    Top = 6
-  end
 end

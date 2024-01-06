@@ -1150,8 +1150,10 @@ begin
 
   except
      on E: Exception do
+     begin
           ShowMessage('Error:'+e.message);
           edLog.Append('Error:'+e.message);
+     end;
   end;
 end;
 

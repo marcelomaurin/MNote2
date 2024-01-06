@@ -1,18 +1,18 @@
 object frmMNote: TfrmMNote
-  Left = 411
+  Left = 314
   Height = 787
-  Top = 1052
+  Top = 66
   Width = 1172
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 787
+  ClientHeight = 759
   ClientWidth = 1172
   Menu = MainMenu1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '3.0.0.3'
+  LCLVersion = '2.2.6.0'
   object Panel1: TPanel
     Left = 0
     Height = 50
@@ -23,16 +23,16 @@ object frmMNote: TfrmMNote
   end
   object pnclient: TPanel
     Left = 0
-    Height = 632
+    Height = 604
     Top = 50
     Width = 1172
     Align = alClient
-    ClientHeight = 632
+    ClientHeight = 604
     ClientWidth = 1172
     TabOrder = 1
     object pgMain: TPageControl
       Left = 189
-      Height = 625
+      Height = 597
       Top = 1
       Width = 602
       Align = alClient
@@ -43,24 +43,24 @@ object frmMNote: TfrmMNote
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 626
+      Top = 598
       Width = 1170
       Align = alBottom
       ResizeAnchor = akBottom
     end
     object pnInspector: TPanel
       Left = 1
-      Height = 625
+      Height = 597
       Top = 1
       Width = 183
       Align = alLeft
-      ClientHeight = 625
+      ClientHeight = 597
       ClientWidth = 183
       TabOrder = 2
       Visible = False
       object pcInspector: TPageControl
         Left = 1
-        Height = 623
+        Height = 595
         Top = 1
         Width = 181
         ActivePage = tsLocal
@@ -69,11 +69,11 @@ object frmMNote: TfrmMNote
         TabOrder = 0
         object tsGlobal: TTabSheet
           Caption = 'Global'
-          ClientHeight = 592
+          ClientHeight = 547
           ClientWidth = 171
           object vlGlobal: TValueListEditor
             Left = 0
-            Height = 592
+            Height = 547
             Top = 0
             Width = 171
             Align = alClient
@@ -88,11 +88,11 @@ object frmMNote: TfrmMNote
         end
         object tsLocal: TTabSheet
           Caption = 'Local'
-          ClientHeight = 592
+          ClientHeight = 547
           ClientWidth = 171
           object vlLocal: TValueListEditor
             Left = 0
-            Height = 592
+            Height = 547
             Top = 0
             Width = 171
             Align = alClient
@@ -109,17 +109,17 @@ object frmMNote: TfrmMNote
     end
     object Splitter1: TSplitter
       Left = 184
-      Height = 625
+      Height = 597
       Top = 1
       Width = 5
     end
     object pnChatGPT: TPanel
       Left = 796
-      Height = 625
+      Height = 597
       Top = 1
       Width = 375
       Align = alRight
-      ClientHeight = 625
+      ClientHeight = 597
       ClientWidth = 375
       TabOrder = 4
       Visible = False
@@ -127,7 +127,7 @@ object frmMNote: TfrmMNote
       object Panel2: TPanel
         Left = 1
         Height = 50
-        Top = 574
+        Top = 546
         Width = 373
         Align = alBottom
         ClientHeight = 50
@@ -139,15 +139,15 @@ object frmMNote: TfrmMNote
           Top = 1
           Width = 371
           Align = alClient
-          TabOrder = 0
           OnKeyPress = edChatKeyPress
+          TabOrder = 0
         end
       end
       object Splitter4: TSplitter
         Cursor = crVSplit
         Left = 1
         Height = 5
-        Top = 569
+        Top = 541
         Width = 373
         Align = alBottom
         ResizeAnchor = akBottom
@@ -163,7 +163,7 @@ object frmMNote: TfrmMNote
       end
       inline meChatHist: TSynEdit
         Left = 1
-        Height = 568
+        Height = 540
         Top = 1
         Width = 373
         Align = alClient
@@ -660,7 +660,7 @@ object frmMNote: TfrmMNote
     end
     object Splitter3: TSplitter
       Left = 791
-      Height = 625
+      Height = 597
       Top = 1
       Width = 5
       Align = alRight
@@ -670,7 +670,7 @@ object frmMNote: TfrmMNote
   object pnResult: TPanel
     Left = 0
     Height = 105
-    Top = 682
+    Top = 654
     Width = 1172
     Align = alBottom
     Caption = 'pnResult'
@@ -697,11 +697,11 @@ object frmMNote: TfrmMNote
       Width = 1170
       Align = alClient
       ItemHeight = 0
+      OnClick = lstFindClick
       PopupMenu = popFind
       TabOrder = 1
       TopIndex = -1
       Visible = False
-      OnClick = lstFindClick
     end
   end
   object MainMenu1: TMainMenu

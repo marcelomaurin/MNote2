@@ -38,7 +38,6 @@ type
     pcInspector: TPageControl;
     pnclient: TPanel;
     pnInspector: TPanel;
-    Poweredby1: TPoweredby;
     Separator4: TMenuItem;
     miRedo: TMenuItem;
     miSelectAll: TMenuItem;

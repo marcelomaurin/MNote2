@@ -64,7 +64,7 @@ end;
 
 procedure TfrmSobre.Label4DblClick(Sender: TObject);
 begin
-    Poweredby1.About.ShowDialog;
+
 end;
 
 procedure TfrmSobre.ToggleBox1Change(Sender: TObject);
