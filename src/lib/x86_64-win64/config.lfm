@@ -27,141 +27,169 @@ object frmconfig: Tfrmconfig
     OnClick = btCancelClick
     TabOrder = 1
   end
-  object Label1: TLabel
-    Left = 19
-    Height = 20
-    Top = 15
-    Width = 42
-    Caption = 'Install:'
-    ParentColor = False
-  end
-  object edInstall: TFileNameEdit
-    Left = 19
-    Height = 28
-    Hint = 'Run Script Install'
-    Top = 40
-    Width = 420
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 23
-    NumGlyphs = 1
-    MaxLength = 0
+  object PageControl1: TPageControl
+    Left = 0
+    Height = 410
+    Top = 0
+    Width = 554
+    ActivePage = TabSheet1
+    Align = alTop
+    TabIndex = 0
     TabOrder = 2
-    TextHint = 'Path + Filename Script Install'
-  end
-  object Label2: TLabel
-    Left = 19
-    Height = 20
-    Top = 80
-    Width = 40
-    Caption = 'Clean:'
-    ParentColor = False
-  end
-  object edClean: TFileNameEdit
-    Left = 19
-    Height = 28
-    Hint = 'Run Script Clean'
-    Top = 105
-    Width = 420
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 23
-    NumGlyphs = 1
-    MaxLength = 0
-    TabOrder = 3
-    TextHint = 'Path + Filename Script Clean'
-  end
-  object Label3: TLabel
-    Left = 20
-    Height = 20
-    Top = 150
-    Width = 28
-    Caption = 'Run:'
-    ParentColor = False
-  end
-  object Label4: TLabel
-    Left = 19
-    Height = 20
-    Top = 220
-    Width = 48
-    Caption = 'Debug:'
-    ParentColor = False
-  end
-  object Label5: TLabel
-    Left = 19
-    Height = 20
-    Top = 288
-    Width = 108
-    Caption = 'Token CHATGPT:'
-    ParentColor = False
-  end
-  object edCHATGPT: TFileNameEdit
-    Left = 19
-    Height = 28
-    Hint = 'CHATGPT TOKEN'
-    Top = 312
-    Width = 420
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 23
-    NumGlyphs = 1
-    MaxLength = 0
-    TabOrder = 5
-    TextHint = 'CHATGPT TOKEN'
-  end
-  object Label6: TLabel
-    Left = 19
-    Height = 20
-    Top = 352
-    Width = 77
-    Caption = 'DLL Python:'
-    ParentColor = False
-  end
-  object edDLLPATH: TFileNameEdit
-    Left = 19
-    Height = 28
-    Hint = 'DLL PATH Python'
-    Top = 376
-    Width = 420
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 23
-    NumGlyphs = 1
-    MaxLength = 0
-    TabOrder = 6
-    TextHint = 'DLL PATH Python'
-  end
-  object edRun: TFileNameEdit
-    Left = 19
-    Height = 28
-    Hint = 'Run Script Run'
-    Top = 176
-    Width = 420
-    FileName = 'edRun'
-    Filter = 'Bash|*.sh|Bat|*.bat|All|*.*'
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 29
-    NumGlyphs = 1
-    MaxLength = 0
-    ParentShowHint = False
-    ShowHint = True
-    TabOrder = 4
-    Text = 'edRun'
-    TextHint = 'Path + Filename Script Run'
-  end
-  object edDebug: TFileNameEdit
-    Left = 19
-    Height = 28
-    Hint = 'Run Script Debug'
-    Top = 245
-    Width = 420
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 23
-    NumGlyphs = 1
-    MaxLength = 0
-    TabOrder = 7
-    TextHint = 'Path + Filename Script Debug'
+    object TabSheet1: TTabSheet
+      Caption = 'Compiler Option'
+      ClientHeight = 377
+      ClientWidth = 546
+      object Label1: TLabel
+        Left = 19
+        Height = 20
+        Top = 15
+        Width = 42
+        Caption = 'Install:'
+        ParentColor = False
+      end
+      object edInstall: TFileNameEdit
+        Left = 19
+        Height = 28
+        Hint = 'Run Script Install'
+        Top = 40
+        Width = 420
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 23
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 0
+        TextHint = 'Path + Filename Script Install'
+      end
+      object edClean: TFileNameEdit
+        Left = 19
+        Height = 28
+        Hint = 'Run Script Clean'
+        Top = 105
+        Width = 420
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 23
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 1
+        TextHint = 'Path + Filename Script Clean'
+      end
+      object Label2: TLabel
+        Left = 19
+        Height = 20
+        Top = 80
+        Width = 40
+        Caption = 'Clean:'
+        ParentColor = False
+      end
+      object edRun: TFileNameEdit
+        Left = 19
+        Height = 28
+        Hint = 'Run Script Run'
+        Top = 176
+        Width = 420
+        FileName = 'edRun'
+        Filter = 'Bash|*.sh|Bat|*.bat|All|*.*'
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 29
+        NumGlyphs = 1
+        MaxLength = 0
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 2
+        Text = 'edRun'
+        TextHint = 'Path + Filename Script Run'
+      end
+      object Label3: TLabel
+        Left = 20
+        Height = 20
+        Top = 150
+        Width = 28
+        Caption = 'Run:'
+        ParentColor = False
+      end
+      object Label4: TLabel
+        Left = 19
+        Height = 20
+        Top = 220
+        Width = 48
+        Caption = 'Debug:'
+        ParentColor = False
+      end
+      object edDebug: TFileNameEdit
+        Left = 19
+        Height = 28
+        Hint = 'Run Script Debug'
+        Top = 245
+        Width = 420
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 23
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 3
+        TextHint = 'Path + Filename Script Debug'
+      end
+    end
+    object TabSheet3: TTabSheet
+      Caption = 'Python'
+      ClientHeight = 377
+      ClientWidth = 546
+      object Label6: TLabel
+        Left = 9
+        Height = 20
+        Top = 16
+        Width = 77
+        Caption = 'DLL Python:'
+        ParentColor = False
+      end
+      object edDLLPATH: TFileNameEdit
+        Left = 8
+        Height = 28
+        Hint = 'DLL PATH Python'
+        Top = 40
+        Width = 420
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 23
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 0
+        TextHint = 'DLL PATH Python'
+      end
+    end
+    object TabSheet2: TTabSheet
+      Caption = 'IA'
+      ClientHeight = 377
+      ClientWidth = 546
+      object Label5: TLabel
+        Left = 16
+        Height = 20
+        Top = 24
+        Width = 108
+        Caption = 'Token CHATGPT:'
+        ParentColor = False
+      end
+      object edCHATGPT: TFileNameEdit
+        Left = 19
+        Height = 28
+        Hint = 'CHATGPT TOKEN'
+        Top = 48
+        Width = 420
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 23
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 0
+        TextHint = 'CHATGPT TOKEN'
+      end
+    end
+    object TabSheet4: TTabSheet
+      Caption = 'Text to Speech'
+    end
   end
 end

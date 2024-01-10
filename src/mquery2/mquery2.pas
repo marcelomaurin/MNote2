@@ -13,7 +13,7 @@ uses
   SynGutter, SynGutterCodeFolding, LCLType, Grids, Buttons, PairSplitter,
   DBCtrls, DBGrids, finds, ZClasses, ZCollections, ZCompatibility, ZTokenizer,
   ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging, ZVariant, ZPlainDriver, ZURL,
-  TypeDB, triggers;
+  TypeDB, triggers, setmain;
 
 type
 
@@ -639,6 +639,16 @@ procedure Tfrmmquery2.FormCreate(Sender: TObject);
 var
   tvitem : TTreeNode;
 begin
+  edBanco.Text  := FSetMain.BancoMy;
+  edBancoPost.text := FSetMain.BancoPOST;
+  edusuario.text := FSetMain.UsernameMy;
+  edusuarioPost.text := FSetMain.UsernamePost;
+  edHostName.Text:= FSetMain.HostnameMy;
+  edHostNamePost.text := FSetMain.HostnamePost;
+  edSchemaPost.text := FSetMain.SchemaPost;
+  edPasswrd.text := FSetMain.PasswordMy;
+  edPasswrdPost.text := FSetMain.PasswordPost;
+
   TrayIcon1.Visible:= true;
   pgMain.PageIndex:=0;
   pgMysql.PageIndex:=0;
@@ -975,6 +985,10 @@ var
   tvitem : TTreeNode;
 begin
    try
+        FSetMain.BancoMy := edBanco.Text;
+        FSetMain.UsernameMy := edusuario.text;
+        FSetMain.HostnameMy := edHostName.Text;
+        FSetMain.PasswordMy := edPasswrd.text;
 
         zconmysql.Disconnect;
         {$IFDEF WINDOWS}
@@ -1134,7 +1148,12 @@ end;
 
 procedure Tfrmmquery2.btConectarpostClick(Sender: TObject);
 begin
-     refreshPost();
+  FSetMain.PasswordPost := edPasswrdPost.text;
+  FSetMain.BancoPOST := edBancoPost.text;
+  FSetMain.UsernamePost := edusuarioPost.text;
+  FSetMain.HostnamePost := edHostNamePost.text;
+  FSetMain.SchemaPost :=   edSchemaPost.text;
+  refreshPost();
 end;
 
 procedure Tfrmmquery2.btExecuteClick(Sender: TObject);

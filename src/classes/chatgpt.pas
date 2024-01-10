@@ -40,45 +40,6 @@ implementation
 { TCHATGPT }
 
 
-(*
-function TCHATGPT.PegaMensagem(const JSON: string): string;
-var
-  Data: TJSONData;
-  JsonObject: TJSONObject;
-begin
-  // Cria um objeto TJSONData a partir da string JSON
-  Data := GetJSON(JSON);
-
-  try
-    // Verifica se o objeto é um TJSONObject
-    if Data is TJSONObject then
-    begin
-      // Converte o objeto para um TJSONObject
-      JsonObject := TJSONObject(Data);
-      //Response:{"id":"chatcmpl-7MFxY1Qe0QYARlJPjLHqofCT0ZqkX","object":"chat.completion","created":1685538920,"model":"gpt-3.5-turbo-0301","usage":{"prompt_tokens":9,"completion_tokens":9,"total_tokens":18},"choices":[{"message":{"role":"assistant","content":"Olá! Como posso ajudar?"},"finish_reason":"stop","index":0}]}
-
-      // Obtém o valor do campo "message"
-      if JsonObject.Booleans['choices[0].message.content'] then
-      begin
-        Result := JsonObject.GetPath('choices[0].message[0].content').AsString;
-
-      end
-      else
-      begin
-         Result :=  JsonObject.GetPath('choices[0].message').AsString;
-      end;
-    end
-    else
-    begin
-      // Objeto JSON inválido, retorna uma string vazia ou lança uma exceção, conforme necessário
-      Result := '';
-    end;
-  finally
-    Data.Free; // Libera a memória do objeto TJSONData
-  end;
-end;
-*)
-
 
 function TCHATGPT.PegaMensagem(const JSON: string): string;
 var

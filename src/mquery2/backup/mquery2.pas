@@ -13,7 +13,7 @@ uses
   SynGutter, SynGutterCodeFolding, LCLType, Grids, Buttons, PairSplitter,
   DBCtrls, DBGrids, finds, ZClasses, ZCollections, ZCompatibility, ZTokenizer,
   ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging, ZVariant, ZPlainDriver, ZURL,
-  TypeDB, triggers;
+  TypeDB, triggers, setmain;
 
 type
 
@@ -639,6 +639,16 @@ procedure Tfrmmquery2.FormCreate(Sender: TObject);
 var
   tvitem : TTreeNode;
 begin
+  edBanco.Text  := FSetMain.BancoMy;
+  edBancoPost.text := FSetMain.BancoPOST;
+  edusuario.text := FSetMain.UsernameMy;
+  edusuarioPost.text := FSetMain.UsernamePost;
+  edHostName.Text:= FSetMain.HostnameMy;
+  edHostNamePost.text := FSetMain.HostnamePost;
+  edSchemaPost.text := FSetMain.SchemaPost;
+  edPasswrd.text := FSetMain.PasswordMy;
+  edPasswrdPost.text := FSetMain.PasswordPost;
+
   TrayIcon1.Visible:= true;
   pgMain.PageIndex:=0;
   pgMysql.PageIndex:=0;

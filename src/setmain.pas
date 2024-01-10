@@ -41,6 +41,18 @@ type
         FCleanScript : string;  //Script de Limpeza
         FInstall : string;      //Script de Instalacao
 
+        FHostnameMy : String;
+        FBancoMy : String;
+        FUsernameMy : String;
+        FPasswordMy : String;
+
+        FHostnamePost : String;
+        FBancoPOST : String;
+        FUsernamePost: String;
+        FPasswordPost : String;
+        FSchemaPost: String;
+
+
         //filename : String;
         procedure SetDevice(const Value : Boolean);
         procedure SetPOSX(value : integer);
@@ -73,6 +85,16 @@ type
         property Font : TFont read FFont write SetFont;
         property CHATGPT: String read FCHATGPT write SetCHATGPT;
         property DLLPath : String read FDllPath write SetDllPath;
+
+        property HostnameMy: string read FHostnameMy write FHostnameMy;
+        property BancoMy : String read FBancoMy write FBancoMy;
+        property UsernameMy : String read FUsernameMy write FUsernameMy;
+        property PasswordMy : String read FPasswordMy write FPasswordMy;
+        property HostnamePost : String read FHostnamePost write FHostnamePost;
+        property BancoPOST : String read FBancoPOST write FBancoPOST;
+        property UsernamePost: String read FUsernamePOST write FUsernamePost;
+        property PasswordPost : String read FPasswordPost write FPasswordPost;
+        property SchemaPost: String read FSchemaPost write FSchemaPost;
   end;
 
   var
@@ -222,6 +244,43 @@ begin
       FDLLPATH := RetiraInfo(arquivo.Strings[posicao]);
     end;
 
+    if  BuscaChave(arquivo,'HOSTNAMEMY:',posicao) then
+    begin
+      FHostnameMy := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'BANCOMY:',posicao) then
+    begin
+      FBancoMy := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'USERNAMEMY:',posicao) then
+    begin
+      FUsernameMy := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'PASSWORDMY:',posicao) then
+    begin
+      FPasswordMy := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'HOSTNAMEPOST:',posicao) then
+    begin
+      FHostnamePost := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'BANCOPOST:',posicao) then
+    begin
+      FBancoPost := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'USERNAMEPOST:',posicao) then
+    begin
+      FUsernamePost := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'PASSWORDPOST:',posicao) then
+    begin
+      FPasswordPost := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'SCHEMAPOST:',posicao) then
+    begin
+      FSchemaPost := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+
 end;
 
 
@@ -298,6 +357,16 @@ begin
   arquivo.Append('CHATGPT:'+FCHATGPT);
   arquivo.Append('DLLPATH:'+FDLLPATH);
 
+  arquivo.Append('HOSTNAMEMY:'+FHostnameMy);
+  arquivo.Append('BANCOMY:'+FBancoMy);
+  arquivo.Append('USERNAMEMY:'+FUsernameMy);
+  arquivo.Append('PASSWORDMY:'+FPasswordMy);
+
+  arquivo.Append('HOSTNAMEPOST:'+FHostnamePOST);
+  arquivo.Append('BANCOPOST:'+FBancoPOST);
+  arquivo.Append('USERNAMEPOST:'+FUsernamePOST);
+  arquivo.Append('PASSWORDPOST:'+FPasswordPOST);
+  arquivo.Append('SCHEMAPOST:'+FSchemaPost);
   arquivo.SaveToFile(fpath+filename);
 end;
 
