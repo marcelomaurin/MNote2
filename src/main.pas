@@ -203,6 +203,8 @@ type
     FCHATGPT : TCHATGPT;
     strFind : String;
     FPos : integer;
+    procedure RodaSQL();
+    procedure RodaPrograma();
     procedure AplicarEstilo(SynEdit: TSynEdit; StartLine, EndLine: Integer);
     procedure AnalisarSynEdit(SynEdit: TSynEdit);
     procedure CarregarParametros();
@@ -1387,47 +1389,14 @@ var
 begin
    mnSalvarClick(self); (*Salva antes de rodar*)
    item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-   meResult.Lines.clear;
-   item.Resultado := meResult;
-
-   item.Run();
-   syn := item.syn;
-   //pnResult.Visible:=true;
-   if (item.PythonCtrl.VarsCheck) then
+   if( item.ItemType <> ti_SQL) then
    begin
-      pnInspector.Visible:=true;
-   end;
-   if item.Error then
-   begin
-      syn.CaretY:= item.LinhaError;
+        RodaPrograma();
    end
    else
    begin
-     if (item.PythonCtrl.VarsCheck) then
-     begin
-         for I := 0 to item.PythonCtrl.VarListGlobal_Size -1  do
-         begin
-               //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
-               //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
-               //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
-               variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsGlobalKeys,I);
-               variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
-               vlGlobal.InsertRow(variavelname,'',true);
-         end;
-         for I := 0 to item.PythonCtrl.VarListLocal_Size -1  do
-         begin
-               //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
-               //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
-               //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
-               variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsLocalKeys,I);
-               variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
-               vlLocal.InsertRow(variavelname,'',true);
-         end;
-     end;
-
+     RodaSQL();
    end;
-
-
 end;
 
 procedure TfrmMNote.MenuItem4Click(Sender: TObject);
@@ -1582,6 +1551,81 @@ begin
        syn := item.syn;
        syn.Font := FSetMain.Font;
   end;
+
+end;
+
+procedure TfrmMNote.RodaSQL;
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+   I : NativeInt;
+   variavel : PPyObject;
+   variavelname : string;
+begin
+  mnSalvarClick(self); (*Salva antes de rodar*)
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
+  if (frmmquery2 <> nil) then
+  begin
+    frmmquery2.edSQL.text := syn.text;
+    frmmquery2.show;
+  end;
+end;
+
+procedure TfrmMNote.RodaPrograma;
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+   I : NativeInt;
+   variavel : PPyObject;
+   variavelname : string;
+
+begin
+   mnSalvarClick(self); (*Salva antes de rodar*)
+   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+
+   meResult.Lines.clear;
+   item.Resultado := meResult;
+
+   item.Run();
+   syn := item.syn;
+   //pnResult.Visible:=true;
+   if (item.PythonCtrl.VarsCheck) then
+   begin
+      pnInspector.Visible:=true;
+   end;
+   if item.Error then
+   begin
+      syn.CaretY:= item.LinhaError;
+   end
+   else
+   begin
+     if (item.PythonCtrl.VarsCheck) then
+     begin
+         for I := 0 to item.PythonCtrl.VarListGlobal_Size -1  do
+         begin
+               //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
+               //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
+               //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
+               variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsGlobalKeys,I);
+               variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
+               vlGlobal.InsertRow(variavelname,'',true);
+         end;
+         for I := 0 to item.PythonCtrl.VarListLocal_Size -1  do
+         begin
+               //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
+               //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
+               //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
+               variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsLocalKeys,I);
+               variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
+               vlLocal.InsertRow(variavelname,'',true);
+         end;
+     end;
+
+   end;
+
 
 end;
 

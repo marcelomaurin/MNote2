@@ -83,7 +83,7 @@ object frmMNote: TfrmMNote
             TabOrder = 0
             ColWidths = (
               80
-              135
+              114
             )
           end
         end

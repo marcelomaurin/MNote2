@@ -246,6 +246,7 @@ type
     sequences : TStringList;
     FPos : integer;
     strFind : String;
+    procedure CriarBanco();
     procedure MontaCreateTrigger(Tabela : TTabela; posicao : integer);
     procedure ListarTabelasMy();
     procedure ListarTabelasPost();
@@ -292,8 +293,8 @@ var
 begin
   if zconpost.Connected then
   begin
-       nome := InputBox('Criação de usuario','Usuario:','username');
-       edSQL.text  := 'create user root with password '+#39+nome+#39+';';
+       nome := InputBox('Create User','Username:','username');
+       edSQL.text  := 'create user root with password '+QuotedStr(nome)+';';
        zqrypost.sql.text := edSQL.text;
        Zqrypost.ExecSQL;
   end
@@ -747,6 +748,23 @@ begin
 
 end;
 
+procedure Tfrmmquery2.CriarBanco;
+var
+  banco : string;
+begin
+  if zconpost.Connected then
+  begin
+       banco := InputBox('Create database','Banco:','database');
+       edSQL.text  := 'create database '+QuotedStr(banco)+';';
+       zqrypost.sql.text := edSQL.text;
+       Zqrypost.ExecSQL;
+  end
+  else
+  begin
+     showmessage('Postgres não conectado!');
+  end;
+end;
+
 procedure Tfrmmquery2.MenuItem1Click(Sender: TObject);
 var
   nome : string;
@@ -1029,8 +1047,8 @@ var
 begin
   if zconpost.Connected then
   begin
-       banco := InputBox('Permissão de banco','Database:','database');
-       nome := InputBox('Permissão de banco','Usuario:','root');
+       banco := InputBox('Grant Database','Database:','database');
+       nome := InputBox('Grant Database','Username:','root');
        edSQL.text  := 'grant ALL PRIVILES on database '+banco+' to '+nome+';';
        zqrypost.sql.text := edSQL.text;
        Zqrypost.ExecSQL;
@@ -1042,20 +1060,8 @@ begin
 end;
 
 procedure Tfrmmquery2.btBancoClick(Sender: TObject);
-var
-  banco : string;
 begin
-  if zconpost.Connected then
-  begin
-       banco := InputBox('Criação de database','Banco:','database');
-       edSQL.text  := 'create database '+#39+banco+#39+';';
-       zqrypost.sql.text := edSQL.text;
-       Zqrypost.ExecSQL;
-  end
-  else
-  begin
-     showmessage('Postgres não conectado!');
-  end;
+ CriarBanco();
 end;
 
 procedure Tfrmmquery2.btbenchmarkClick(Sender: TObject);
@@ -1082,36 +1088,28 @@ begin
           begin
               if (tvMysql.Items[a].Parent = posicaofieldspost) then
               begin
-                   edSQL.Lines.Append('Não encontrou tabela:'+nome);
+                   edSQL.Lines.Append('Not found table:'+nome);
                    achou := true;
               end;
               if (tvMysql.Items[a].Parent = posicaoViewPost) then
               begin
-                   edSQL.Lines.Append('Não encontrou View:'+nome);
+                   edSQL.Lines.Append('Not found View:'+nome);
                    achou := true;
               end;
               if (tvMysql.Items[a].Parent = posicaoFunctionPost) then
               begin
-                   edSQL.Lines.Append('Não encontrou Function:'+nome);
+                   edSQL.Lines.Append('Not Found Function:'+nome);
                    achou := true;
               end;
               if (tvMysql.Items[a].Parent = posicaoProcedurePost) then
               begin
-                   edSQL.Lines.Append('Não encontrou Procedure:'+nome);
+                   edSQL.Lines.Append('Not found Procedure:'+nome);
                    achou := true;
               end;
-              (*
-              if (tvMysql.Items[a].Parent = posicaoSequencePost) then
-              begin
-                   edSQL.Lines.Append('Não encontrou Sequencia:'+nome);
-                   achou := true;
-              end;
-              *)
-
 
               if (achou = false) then
               begin
-                   edSQL.Lines.Append('Não encontrou item:'+nome);
+                   edSQL.Lines.Append('Not found item:'+nome);
               end;
 
           end;
@@ -1120,9 +1118,8 @@ begin
 
   end;
 
-   //tbSQL.SetFocus;
-   //pgMain.Pages[].SetFocus;
-   ShowMessage('Finalizou a pesquisa!');
+
+  ShowMessage('End Diff!');
 end;
 
 procedure Tfrmmquery2.btExecutarClick(Sender: TObject);
@@ -1302,7 +1299,7 @@ begin
   Result.Right  := aRight;
 end;
 
-Function Tfrmmquery2.RectInRect(const aOuterRect, aInnerRect:TRect):Boolean;
+function Tfrmmquery2.RectInRect(const aOuterRect, aInnerRect: TRect): Boolean;
 begin
   Result := (aInnerRect.Left   >= aOuterRect.Left) and (aInnerRect.Left   <= aOuterRect.Right)  and
             (aInnerRect.Right  >= aOuterRect.Left) and (aInnerRect.Right  <= aOuterRect.Right)  and
