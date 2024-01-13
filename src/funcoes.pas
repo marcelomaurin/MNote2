@@ -57,6 +57,7 @@ procedure RemoveCtrlMFromSynEdit(SynEdit: TSynEdit);
 function ValidateDirectory(const DirectoryPath: string): Boolean;
 function ValidateJson(SynEdit: TSynEdit): Boolean;
 function GetProcessList: TProcessList;
+
 {$IFDEF WINDOWS}
 function RegisterFileType(ExtName: string; AppName: string): boolean;
 function  VerificaRegExt(extensao : string) : boolean;
@@ -97,6 +98,8 @@ var LastTickCount     : cardinal = 0;
     FLastIdleTime: Int64;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
+
+
 
 {$IFDEF LINUX}
 function Callprg(filename: string; source: String; var Output: string): boolean;

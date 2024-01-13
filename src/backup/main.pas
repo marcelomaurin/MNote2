@@ -7,10 +7,10 @@ interface
 uses
   Classes, SysUtils, FileUtil, SynEdit, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
-  setmain, TypeDB, folders, funcoes, LCLType, ValEdit, chgtext, hint, registro,
-  splash, setFolders, config, SynEditKeyCmds, PythonEngine, rxctrls,
-  LogTreeView, uPoweredby, chatgpt, mquery2, porradawebapi, SynEditHighlighter,
-  SynEditTypes;
+  setmain, TypeDB, folders, funcoes, LCLType, ValEdit, PairSplitter, chgtext,
+  hint, registro, splash, setFolders, config, SynEditKeyCmds, PythonEngine,
+  rxctrls, LogTreeView, uPoweredby, chatgpt, mquery2, porradawebapi,
+  SynEditHighlighter, SynEditTypes, codigo;
 
 
 const versao = '2.31';
@@ -20,24 +20,35 @@ type
   { TfrmMNote }
 
   TfrmMNote = class(TForm)
+    edChat: TMemo;
     FindDialog1: TFindDialog;
     FontDialog1: TFontDialog;
     ImageList1: TImageList;
     lstFind: TListBox;
     MainMenu1: TMainMenu;
-    edChat: TMemo;
+    meChatHist: TSynEdit;
+    meCodes: TSynEdit;
+    meDialog: TSynEdit;
+    MenuItem19: TMenuItem;
+    MenuItem20: TMenuItem;
+    mequestion: TMemo;
     MenuItem14: TMenuItem;
     MenuItem17: TMenuItem;
+    MenuItem18: TMenuItem;
     miporrada: TMenuItem;
     miChatGPT: TMenuItem;
     mniJSONVALID: TMenuItem;
     mnidos2unix: TMenuItem;
+    PageControl1: TPageControl;
     Panel2: TPanel;
-    pnWait: TPanel;
     pnChatGPT: TPanel;
+    Panel3: TPanel;
     pcInspector: TPageControl;
+    pnChatGPT2: TPanel;
     pnclient: TPanel;
     pnInspector: TPanel;
+    pnWait: TPanel;
+    pmchatgpt: TPopupMenu;
     Separator4: TMenuItem;
     miRedo: TMenuItem;
     miSelectAll: TMenuItem;
@@ -110,7 +121,10 @@ type
     Splitter2: TSplitter;
     Splitter3: TSplitter;
     Splitter4: TSplitter;
-    meChatHist: TSynEdit;
+    tsDialog: TTabSheet;
+    tsQuestion: TTabSheet;
+    tsHistory: TTabSheet;
+    tsCode: TTabSheet;
     tsLocal: TTabSheet;
     tsGlobal: TTabSheet;
     TrayIcon1: TTrayIcon;
@@ -133,6 +147,9 @@ type
     procedure MenuItem10Click(Sender: TObject);
     procedure MenuItem12Click(Sender: TObject);
     procedure MenuItem14Click(Sender: TObject);
+    procedure MenuItem18Click(Sender: TObject);
+    procedure MenuItem19Click(Sender: TObject);
+    procedure MenuItem20Click(Sender: TObject);
     procedure MenuItem7Click(Sender: TObject);
     procedure miChatGPTClick(Sender: TObject);
     procedure micopyClick(Sender: TObject);
@@ -185,7 +202,7 @@ type
     procedure PageControl1Change(Sender: TObject);
     procedure Panel1Click(Sender: TObject);
     procedure pnBottonClick(Sender: TObject);
-    procedure pnChatGPTResize(Sender: TObject);
+    procedure pnChatGPT2Resize(Sender: TObject);
     procedure ReplaceDialog1Find(Sender: TObject);
     procedure ReplaceDialog1Replace(Sender: TObject);
     procedure pntvClick(Sender: TObject);
@@ -203,6 +220,7 @@ type
     FCHATGPT : TCHATGPT;
     strFind : String;
     FPos : integer;
+    procedure QuestionChat();
     procedure AplicarEstilo(SynEdit: TSynEdit; StartLine, EndLine: Integer);
     procedure AnalisarSynEdit(SynEdit: TSynEdit);
     procedure CarregarParametros();
@@ -603,6 +621,7 @@ begin
   CarregarParametros();
   frmRegistrar := TfrmRegistrar.Create(self);
   frmRegistrar.Identifica();
+
 end;
 
 procedure TfrmMNote.CarregaContexto();
@@ -915,16 +934,9 @@ begin
   if Key = #13 then
   begin
      pnWait.Visible:=true;
-     if(FCHATGPT = nil) then
-     begin
-         FCHATGPT := TCHATGPT.create(self);
-     end;
-     FCHATGPT.TOKEN:= FSetMain.CHATGPT;
-     meChatHist.Caption :=  meChatHist.Caption + #13+ #13+ 'Question: '+edChat.Text+#13;
-     FCHATGPT.SendQuestion(edChat.Text);
-     meChatHist.Caption := meChatHist.Caption + 'Response: '+ FCHATGPT.Response+#13;
-     meChatHist.Caption:=meChatHist.Caption+#13;
-     edChat.Text:= '';
+     Application.ProcessMessages;
+     QuestionChat();
+
      //AnalisarSynEdit(meChatHist);
      pnWait.Visible:=false;
   end;
@@ -1078,6 +1090,25 @@ begin
   syn := item.syn;
   //syn.CommandProcessor(TsynEditorCommand(ecCut),'',nil);
   syn.CutToClipboard;
+end;
+
+procedure TfrmMNote.MenuItem18Click(Sender: TObject);
+begin
+  meChatHist.Text := '';
+  meDialog.text:= '';
+  meCodes.text := '';
+
+end;
+
+procedure TfrmMNote.MenuItem19Click(Sender: TObject);
+begin
+  meCodes.se;
+  meCodes.CopyToClipboard;
+end;
+
+procedure TfrmMNote.MenuItem20Click(Sender: TObject);
+begin
+  mequestion.Text := '';
 end;
 
 procedure TfrmMNote.MenuItem7Click(Sender: TObject);
@@ -1585,6 +1616,60 @@ begin
 
 end;
 
+procedure TfrmMNote.QuestionChat();
+var
+  resposta : string;
+  codigo : TCodigo;
+  item : TFonte;
+  i : integer;
+begin
+
+     if(FCHATGPT = nil) then
+     begin
+         FCHATGPT := TCHATGPT.create(self);
+     end;
+     FCHATGPT.TOKEN:= FSetMain.CHATGPT;
+     FCHATGPT.SendQuestion(mequestion.Text);
+     //Armazena pergunta historica
+     mequestion.Text := mequestion.Text + edChat.Text;
+     resposta := FCHATGPT.Response;
+     //Armazena no historico
+     meChatHist.Caption :=  meChatHist.Caption + #13+ #13+ 'Question: '+edChat.Text+#13;
+     meChatHist.Caption := meChatHist.Caption + 'Response: '+ resposta+#13;
+     meChatHist.Caption:=meChatHist.Caption+#13;
+
+     //Armazena no Dialogo
+     meDialog.Caption :=  'Question: '+edChat.Text+#13;
+     meDialog.Caption := meDialog.Caption + 'Response: '+ resposta+#13;
+     meDialog.Caption:=meDialog.Caption+#13;
+
+     //Captura o fonte
+     // Captura os blocos de código
+     codigo := TCodigo.create();
+     codigo.AnalisaTexto(resposta);
+
+
+      // Limpa o texto existente
+      meCodes.Clear;
+
+
+
+      // Itera por cada bloco de código capturado
+      for i := 0 to codigo.Count-1 do
+      begin
+        item := TFonte(codigo.Items[i]);
+        // Aqui você pode adicionar o tipo e o código ao memo ou tratar conforme necessário
+        //meCodes.Lines.Add('Tipo: ' + item.Tipo);
+        meCodes.Lines.text := meCodes.Lines.text + item.codigo;
+      end;
+
+      // Se houver pelo menos um bloco de código, foca no componente meCodes
+      //if (codigo.Count > 0) then
+        //tsCode.SetFocus;
+
+     edChat.Text:= '';
+end;
+
 procedure TfrmMNote.mnfontClick(Sender: TObject);
 var
    tb : TTabSheet;
@@ -1810,7 +1895,7 @@ begin
 
 end;
 
-procedure TfrmMNote.pnChatGPTResize(Sender: TObject);
+procedure TfrmMNote.pnChatGPT2Resize(Sender: TObject);
 var
   charWidth: integer;
   numColumns: integer;
@@ -1819,7 +1904,7 @@ begin
   //charWidth := meChatHist.Canvas.TextWidth('M'); // 'M' é geralmente um dos caracteres mais largos
 
   // Calcule o número desejado de colunas com base na largura do painel
-  //numColumns := pnChatGPT.Width div charWidth;
+  //numColumns := pnChatGPT2.Width div charWidth;
 
   // Ajuste a largura do Memo para corresponder ao número de colunas
   // (levando em consideração a borda e o scrollbar, se houver)

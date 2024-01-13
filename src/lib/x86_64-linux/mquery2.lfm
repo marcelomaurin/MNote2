@@ -1,7 +1,7 @@
 object frmmquery2: Tfrmmquery2
-  Left = 612
+  Left = 357
   Height = 627
-  Top = 1155
+  Top = 927
   Width = 1060
   Caption = 'Query Tools'
   ClientHeight = 627
@@ -44,9 +44,9 @@ object frmmquery2: Tfrmmquery2
     Height = 577
     Top = 50
     Width = 1050
-    ActivePage = tsMysql
+    ActivePage = tspostgree
     Align = alClient
-    TabIndex = 1
+    TabIndex = 2
     TabOrder = 3
     object tsAbout: TTabSheet
       Caption = 'About'
@@ -87,9 +87,9 @@ object frmmquery2: Tfrmmquery2
           Height = 544
           Top = 1
           Width = 832
-          ActivePage = tbSQL
+          ActivePage = tbConxao
           Align = alClient
-          TabIndex = 1
+          TabIndex = 0
           TabOrder = 0
           OnChange = PageControl1Change
           object tbConxao: TTabSheet
@@ -166,6 +166,8 @@ object frmmquery2: Tfrmmquery2
               Height = 34
               Top = 215
               Width = 168
+              EchoMode = emPassword
+              PasswordChar = '*'
               TabOrder = 3
             end
             object Label15: TLabel
@@ -1062,6 +1064,8 @@ object frmmquery2: Tfrmmquery2
               Height = 34
               Top = 248
               Width = 168
+              EchoMode = emPassword
+              PasswordChar = '*'
               TabOrder = 4
             end
             object btConectarPost: TButton
@@ -1164,38 +1168,26 @@ object frmmquery2: Tfrmmquery2
         ColCount = 6
         Columns = <        
           item
-            MinSize = 10
-            MaxSize = 200
             Title.Caption = 'Chave'
             Width = 64
           end        
           item
-            MinSize = 10
-            MaxSize = 200
             Title.Caption = 'Trocar'
             Width = 64
           end        
           item
-            MinSize = 10
-            MaxSize = 200
             Title.Caption = 'Anterior'
             Width = 64
           end        
           item
-            MinSize = 10
-            MaxSize = 200
             Title.Caption = 'Posterior'
             Width = 64
           end        
           item
-            MinSize = 10
-            MaxSize = 200
             Title.Caption = 'Neg Anterior'
             Width = 64
           end        
           item
-            MinSize = 10
-            MaxSize = 200
             Title.Caption = 'Neg Posterior'
             Width = 64
           end>
@@ -1276,8 +1268,9 @@ object frmmquery2: Tfrmmquery2
           'COALESCE'
           'CONVERT_FROM'
         )
-        ItemHeight = 23
+        ItemHeight = 0
         TabOrder = 1
+        TopIndex = -1
       end
       object Label13: TLabel
         Left = 408
@@ -7409,7 +7402,7 @@ object frmmquery2: Tfrmmquery2
     Top = 520
   end
   object SynCompletion1: TSynCompletion
-    Position = 0
+    Position = -1
     LinesInWindow = 6
     OnPositionChanged = SynCompletion1PositionChanged
     SelectedColor = clHighlight
