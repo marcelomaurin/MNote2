@@ -81,8 +81,13 @@ object frmMNote: TfrmMNote
             RowCount = 2
             TabOrder = 0
             ColWidths = (
+<<<<<<< HEAD
               64
               103
+=======
+              80
+              114
+>>>>>>> 4cda4f462de70792d5d0d44f8b358605a0093932
             )
           end
         end

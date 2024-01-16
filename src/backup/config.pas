@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, EditBtn,
-  setmain;
+  ComCtrls, setmain;
 
 type
 
@@ -16,10 +16,10 @@ type
     btSave: TButton;
     btCancel: TButton;
     edCHATGPT: TFileNameEdit;
-    edDebug: TEdit;
+    edClean: TFileNameEdit;
+    edDebug: TFileNameEdit;
     edDLLPATH: TFileNameEdit;
     edInstall: TFileNameEdit;
-    edClean: TFileNameEdit;
     edRun: TFileNameEdit;
     Label1: TLabel;
     Label2: TLabel;
@@ -27,6 +27,11 @@ type
     Label4: TLabel;
     Label5: TLabel;
     Label6: TLabel;
+    PageControl1: TPageControl;
+    TabSheet1: TTabSheet;
+    TabSheet2: TTabSheet;
+    TabSheet3: TTabSheet;
+    TabSheet4: TTabSheet;
     procedure btCancelClick(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);

@@ -120,7 +120,8 @@ begin
             if MessageObject.IndexOfName('content') >= 0 then
             begin
               // Obtém o valor do campo "content"
-              Result := MessageObject.Get('content').AsString;
+              Result := MessageObject.Find('content').AsString;
+              //MessageObject.Get('content').AsString;
             end
             else
             begin

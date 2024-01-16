@@ -94,7 +94,7 @@ object frmmquery2: Tfrmmquery2
           OnChange = PageControl1Change
           object tbConxao: TTabSheet
             Caption = 'Mysql Connection'
-            ClientHeight = 513
+            ClientHeight = 540
             ClientWidth = 822
             object btConectarMy: TButton
               Left = 296
@@ -206,11 +206,11 @@ object frmmquery2: Tfrmmquery2
           end
           object tbSQL: TTabSheet
             Caption = 'SQL'
-            ClientHeight = 513
+            ClientHeight = 540
             ClientWidth = 822
             inline edSQL: TSynEdit
               Left = 0
-              Height = 343
+              Height = 370
               Top = 0
               Width = 822
               Align = alClient
@@ -724,7 +724,7 @@ object frmmquery2: Tfrmmquery2
             object Panel13: TPanel
               Left = 0
               Height = 41
-              Top = 472
+              Top = 499
               Width = 822
               Align = alBottom
               ClientHeight = 41
@@ -784,18 +784,18 @@ object frmmquery2: Tfrmmquery2
             object pnBotton: TPanel
               Left = 0
               Height = 50
-              Top = 422
+              Top = 449
               Width = 822
               Align = alBottom
-              ClientHeight = 50
-              ClientWidth = 822
+              ClientHeight = 46
+              ClientWidth = 818
               TabOrder = 2
               Visible = False
               object lstfind: TListBox
                 Left = 1
-                Height = 48
+                Height = 44
                 Top = 1
-                Width = 820
+                Width = 816
                 Align = alClient
                 ItemHeight = 0
                 PopupMenu = popfind
@@ -808,7 +808,7 @@ object frmmquery2: Tfrmmquery2
               Cursor = crVSplit
               Left = 0
               Height = 5
-              Top = 417
+              Top = 444
               Width = 822
               Align = alBottom
               ResizeAnchor = akBottom
@@ -816,18 +816,18 @@ object frmmquery2: Tfrmmquery2
             object pnErro: TPanel
               Left = 0
               Height = 74
-              Top = 343
+              Top = 370
               Width = 822
               Align = alBottom
-              ClientHeight = 74
-              ClientWidth = 822
+              ClientHeight = 70
+              ClientWidth = 818
               TabOrder = 4
               Visible = False
               object edErro: TMemo
                 Left = 1
-                Height = 72
+                Height = 68
                 Top = 1
-                Width = 820
+                Width = 816
                 Align = alClient
                 Lines.Strings = (
                   'edErro'
@@ -838,7 +838,7 @@ object frmmquery2: Tfrmmquery2
           end
           object TabSheet1: TTabSheet
             Caption = 'Grid'
-            ClientHeight = 513
+            ClientHeight = 540
             ClientWidth = 822
             object dbnavmy: TDBNavigator
               Left = 36
@@ -852,15 +852,15 @@ object frmmquery2: Tfrmmquery2
               ChildSizing.ShrinkVertical = crsScaleChilds
               ChildSizing.Layout = cclLeftToRightThenTopToBottom
               ChildSizing.ControlsPerLine = 100
-              ClientHeight = 25
-              ClientWidth = 241
+              ClientHeight = 21
+              ClientWidth = 237
               Options = []
               TabOrder = 0
             end
             object dbgridmy: TDBGrid
               Left = 0
               Height = 452
-              Top = 61
+              Top = 88
               Width = 822
               Align = alBottom
               Color = clWindow
@@ -870,11 +870,11 @@ object frmmquery2: Tfrmmquery2
           end
           object tbLog: TTabSheet
             Caption = 'Log'
-            ClientHeight = 513
+            ClientHeight = 540
             ClientWidth = 822
             object edLog: TMemo
               Left = 0
-              Height = 513
+              Height = 540
               Top = 0
               Width = 822
               Align = alClient
@@ -883,7 +883,7 @@ object frmmquery2: Tfrmmquery2
           end
           object tbTools: TTabSheet
             Caption = 'tools'
-            ClientHeight = 513
+            ClientHeight = 540
             ClientWidth = 822
             object ToggleBox2: TToggleBox
               Left = 15
@@ -7402,7 +7402,7 @@ object frmmquery2: Tfrmmquery2
     Top = 520
   end
   object SynCompletion1: TSynCompletion
-    Position = -1
+    Position = 0
     LinesInWindow = 6
     OnPositionChanged = SynCompletion1PositionChanged
     SelectedColor = clHighlight
