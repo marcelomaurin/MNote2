@@ -40,7 +40,7 @@
         <ComponentName Value="frmSobre"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="7"/>
+        <EditorIndex Value="6"/>
         <TopLine Value="47"/>
         <CursorPos X="3" Y="67"/>
         <UsageCount Value="189"/>
@@ -167,7 +167,7 @@
         <ComponentName Value="frmconfig"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="6"/>
+        <EditorIndex Value="5"/>
         <TopLine Value="14"/>
         <CursorPos X="30" Y="18"/>
         <UsageCount Value="189"/>
@@ -198,7 +198,7 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="8"/>
+        <EditorIndex Value="7"/>
         <TopLine Value="1139"/>
         <CursorPos X="60" Y="1148"/>
         <UsageCount Value="67"/>
@@ -805,10 +805,9 @@
       <Unit99>
         <Filename Value="..\..\..\..\..\usr\share\fpcsrc\3.2.2\packages\fcl-base\src\contnrs.pp"/>
         <UnitName Value="Contnrs"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="-1"/>
         <CursorPos X="13" Y="19"/>
         <UsageCount Value="12"/>
-        <Loaded Value="True"/>
       </Unit99>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
