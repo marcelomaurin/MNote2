@@ -25,6 +25,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="2"/>
       <MinorVersionNr Value="26"/>
+      <BuildNr Value="1"/>
       <Language Value="0416"/>
     </VersionInfo>
     <BuildModes Count="1">

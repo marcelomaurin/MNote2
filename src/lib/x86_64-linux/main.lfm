@@ -187,9 +187,9 @@ object frmMNote: TfrmMNote
           Height = 261
           Top = 27
           Width = 375
-          ActivePage = tsDialog
+          ActivePage = tsQuestion
           Align = alClient
-          TabIndex = 0
+          TabIndex = 1
           TabOrder = 4
           object tsDialog: TTabSheet
             Caption = 'Dialog'

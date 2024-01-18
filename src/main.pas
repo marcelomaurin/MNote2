@@ -1613,7 +1613,10 @@ begin
        syn := item.syn;
        syn.Font := FSetMain.Font;
   end;
-
+  meChatHist.Font := FSetMain.Font;
+  meCodes.font := FSetMain.Font;
+  mequestion.font := FSetMain.Font;
+  meDialog.font := FSetMain.Font;
 end;
 
 procedure TfrmMNote.QuestionChat();
@@ -1686,6 +1689,10 @@ begin
   begin
       syn.Font := FontDialog1.Font;
       FSetMain.Font := FontDialog1.Font;
+      meChatHist.Font := FontDialog1.Font;
+      meCodes.font := FontDialog1.Font;
+      mequestion.font := FontDialog1.Font;
+      meDialog.font := FontDialog1.Font;
       MudaTodasaFontes();
       FSetMain.SalvaContexto(false);
 
