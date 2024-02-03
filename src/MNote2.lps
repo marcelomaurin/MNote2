@@ -10,7 +10,6 @@
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="6"/>
-        <TopLine Value="2"/>
         <CursorPos X="15" Y="13"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
@@ -336,23 +335,13 @@
         <UsageCount Value="21"/>
       </Unit35>
       <Unit36>
-        <Filename Value="imgjson\config2.pas"/>
-        <ComponentName Value="frmconfig2"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="8"/>
-        <CursorPos X="59" Y="22"/>
-        <UsageCount Value="21"/>
-        <Loaded Value="True"/>
-      </Unit36>
-      <Unit37>
         <Filename Value="imgjson\funcoes2.pas"/>
         <IsPartOfProject Value="True"/>
         <CursorPos X="14"/>
         <UsageCount Value="21"/>
         <Loaded Value="True"/>
-      </Unit37>
-      <Unit38>
+      </Unit36>
+      <Unit37>
         <Filename Value="imgjson\nntrainning.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="NNTrainning"/>
@@ -360,8 +349,8 @@
         <CursorPos X="70" Y="8"/>
         <UsageCount Value="21"/>
         <Loaded Value="True"/>
-      </Unit38>
-      <Unit39>
+      </Unit37>
+      <Unit38>
         <Filename Value="imgjson\novo.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmNovo"/>
@@ -372,8 +361,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="21"/>
-      </Unit39>
-      <Unit40>
+      </Unit38>
+      <Unit39>
         <Filename Value="imgjson\pythonrun.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="PythonRun"/>
@@ -382,8 +371,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="21"/>
-      </Unit40>
-      <Unit41>
+      </Unit39>
+      <Unit40>
         <Filename Value="imgjson\setimg.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="1"/>
@@ -391,16 +380,16 @@
         <CursorPos X="19" Y="301"/>
         <UsageCount Value="21"/>
         <Loaded Value="True"/>
-      </Unit41>
-      <Unit42>
+      </Unit40>
+      <Unit41>
         <Filename Value="imgjson\setproject.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="2"/>
         <CursorPos X="30" Y="12"/>
         <UsageCount Value="21"/>
         <Loaded Value="True"/>
-      </Unit42>
-      <Unit43>
+      </Unit41>
+      <Unit42>
         <Filename Value="imgjson\sobre.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="Form1"/>
@@ -410,8 +399,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="21"/>
-      </Unit43>
-      <Unit44>
+      </Unit42>
+      <Unit43>
         <Filename Value="imgjson\sqledititem.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="SqlEditItem"/>
@@ -420,8 +409,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="21"/>
-      </Unit44>
-      <Unit45>
+      </Unit43>
+      <Unit44>
         <Filename Value="imgjson\sqleditor.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmSQLEditor"/>
@@ -431,8 +420,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="21"/>
-      </Unit45>
-      <Unit46>
+      </Unit44>
+      <Unit45>
         <Filename Value="imgjson\sqlitem.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="SQLItem"/>
@@ -441,8 +430,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="21"/>
-      </Unit46>
-      <Unit47>
+      </Unit45>
+      <Unit46>
         <Filename Value="imgjson\trainning.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmTrainning"/>
@@ -452,6 +441,16 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="21"/>
+      </Unit46>
+      <Unit47>
+        <Filename Value="imgjson\config2.pas"/>
+        <ComponentName Value="frmconfig2"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="8"/>
+        <CursorPos X="59" Y="22"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
       </Unit47>
       <Unit48>
         <Filename Value="classes\setbanco.pas"/>
@@ -1039,7 +1038,7 @@
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit126>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
+    <JumpHistory Count="29" HistoryIndex="28">
       <Position1>
         <Filename Value="imgjson\jsonmain.pas"/>
         <Caret Line="202" Column="21" TopLine="178"/>
@@ -1153,13 +1152,9 @@
         <Caret Line="8" Column="98"/>
       </Position28>
       <Position29>
-        <Filename Value="imgjson\config2.lfm"/>
-        <Caret Column="31" TopLine="10"/>
-      </Position29>
-      <Position30>
         <Filename Value="MNote2.lpr"/>
         <Caret Line="13" Column="15" TopLine="2"/>
-      </Position30>
+      </Position29>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
