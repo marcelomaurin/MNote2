@@ -1,0 +1,104 @@
+{
+  "training_data": [
+    {
+      "inputs": [123,
+
+
+
+
+
+
+
+
+ 456,
+
+
+
+
+
+
+
+
+ ...,
+
+
+
+
+
+
+
+
+ (100 números inteiros)],
+
+
+
+
+
+
+
+
+
+      "output": 1
+    },
+
+
+
+
+
+
+
+
+
+    {
+      "inputs": [-123,
+
+
+
+
+
+
+
+
+ -456,
+
+
+
+
+
+
+
+
+ ...,
+
+
+
+
+
+
+
+
+ (100 números inteiros)],
+
+
+
+
+
+
+
+
+
+      "output": 0
+    },
+
+
+
+
+
+
+
+
+
+    ...
+    (100 objetos de entrada/saída no total)
+  ]
+}

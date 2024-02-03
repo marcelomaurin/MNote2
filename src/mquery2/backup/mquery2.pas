@@ -831,12 +831,31 @@ begin
   tvitemmy.ImageIndex:=-1;
   {$IFDEF WINDOWS}
   zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'\libpq74.dll';
+
   zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'\libmysql.dll';
   {$ENDIF}
   {$IFDEF LINUX}
-  zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libpq74.so';
-  zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libmysqlclient.so.21';
+  //zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libpq74.so';
+  if (FSetMain.DLLPostPath<> '') then
+  begin
+       zconpost.LibraryLocation:= FSetMain.DLLPostPath;
+  end
+  else
+  begin
+    ShowMessage('Set Postgre Path in config');
+  end;
+  //zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libmysqlclient.so.21';
+  if (FSetMain.DLLMyPath<>'') then
+  begin
+       zconmysql.LibraryLocation:= FSetMain.DLLMyPath;
+  end
+    else
+  begin
+    ShowMessage('Set Mysql Path in config');
+  end;
+
   {$ENDIF}
+
 
   tvitem := TTreeNode.Create(tvPost.Items);
   tvitempost := tvpost.Items.AddObject(tvitem,'Postgres', pointer(ETDBBanco));
@@ -1414,7 +1433,7 @@ begin
   item := TItem(ts.Tag);
 
   syn1 := item.syn;
-  case cbMake.ItemIndex:
+  case cbMake.ItemIndex of
        0:   //JSON
        begin
            syn1.text :=  DatasetToJsonString( dbgridmy.DataSource.DataSet);

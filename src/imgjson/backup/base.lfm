@@ -1,0 +1,46 @@
+object dmBase: TdmBase
+  OldCreateOrder = False
+  Height = 325
+  HorizontalOffset = 759
+  VerticalOffset = 400
+  Width = 416
+  PPI = 120
+  object DataSource1: TDataSource
+    Left = 160
+    Top = 51
+  end
+  object zcon: TZConnection
+    ControlsCodePage = cCP_UTF8
+    AutoEncodeStrings = True
+    Properties.Strings = (
+      'AutoEncodeStrings=ON'
+      'controls_cp=CP_UTF8'
+    )
+    DesignConnection = True
+    Port = 0
+    Database = 'localdb'
+    User = 'root'
+    Protocol = 'mysqld-5'
+    LibraryLocation = 'C:\Users\marcelo.maurin\Desktop\projetos\IMGJSON\libs\mysql\win64\lib64\libmysql.dll'
+    Left = 35
+    Top = 37
+  end
+  object zqryaux: TZQuery
+    Connection = zcon
+    Params = <>
+    Left = 328
+    Top = 56
+  end
+  object zqryaux1: TZQuery
+    Connection = zcon
+    Params = <>
+    Left = 328
+    Top = 136
+  end
+  object zqryaux2: TZQuery
+    Connection = zcon
+    Params = <>
+    Left = 328
+    Top = 216
+  end
+end

@@ -47,48 +47,57 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="13">
+    <RequiredPackages Count="16">
       <Item1>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="synuni"/>
       </Item1>
       <Item2>
-        <PackageName Value="FCL"/>
+        <PackageName Value="synfacilsyn"/>
       </Item2>
       <Item3>
-        <PackageName Value="poweredby"/>
+        <PackageName Value="SynEditDsgn"/>
       </Item3>
       <Item4>
-        <PackageName Value="industrial"/>
+        <PackageName Value="SynEdit"/>
       </Item4>
       <Item5>
-        <PackageName Value="pkg_gifanim"/>
+        <PackageName Value="myexamplepackage"/>
       </Item5>
       <Item6>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item6>
       <Item7>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="FCL"/>
       </Item7>
       <Item8>
-        <PackageName Value="rxnew"/>
+        <PackageName Value="poweredby"/>
       </Item8>
       <Item9>
-        <PackageName Value="SynEditDsgn"/>
+        <PackageName Value="industrial"/>
       </Item9>
       <Item10>
-        <PackageName Value="python4lazarus_package"/>
+        <PackageName Value="pkg_gifanim"/>
       </Item10>
       <Item11>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="zcomponent"/>
       </Item11>
       <Item12>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="multiloglaz"/>
       </Item12>
       <Item13>
-        <PackageName Value="LCL"/>
+        <PackageName Value="rxnew"/>
       </Item13>
+      <Item14>
+        <PackageName Value="python4lazarus_package"/>
+      </Item14>
+      <Item15>
+        <PackageName Value="lnetvisual"/>
+      </Item15>
+      <Item16>
+        <PackageName Value="LCL"/>
+      </Item16>
     </RequiredPackages>
-    <Units Count="33">
+    <Units Count="48">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -268,6 +277,88 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit32>
+      <Unit33>
+        <Filename Value="imgjson/jsonmain.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmmainJSON"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit33>
+      <Unit34>
+        <Filename Value="imgjson/about.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmAbout"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit34>
+      <Unit35>
+        <Filename Value="imgjson/base.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="dmBase"/>
+        <ResourceBaseClass Value="DataModule"/>
+      </Unit35>
+      <Unit36>
+        <Filename Value="imgjson/config2.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmconfig2"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit36>
+      <Unit37>
+        <Filename Value="imgjson/funcoes2.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit37>
+      <Unit38>
+        <Filename Value="imgjson/nntrainning.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="NNTrainning"/>
+      </Unit38>
+      <Unit39>
+        <Filename Value="imgjson/novo.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmNovo"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="Novo"/>
+      </Unit39>
+      <Unit40>
+        <Filename Value="imgjson/pythonrun.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="PythonRun"/>
+      </Unit40>
+      <Unit41>
+        <Filename Value="imgjson/setimg.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit41>
+      <Unit42>
+        <Filename Value="imgjson/setproject.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit42>
+      <Unit43>
+        <Filename Value="imgjson/sobre.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit43>
+      <Unit44>
+        <Filename Value="imgjson/sqledititem.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="SqlEditItem"/>
+      </Unit44>
+      <Unit45>
+        <Filename Value="imgjson/sqleditor.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmSQLEditor"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit45>
+      <Unit46>
+        <Filename Value="imgjson/sqlitem.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="SQLItem"/>
+      </Unit46>
+      <Unit47>
+        <Filename Value="imgjson/trainning.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmTrainning"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit47>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -277,7 +368,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="classes;mquery2"/>
+      <OtherUnitFiles Value="classes;mquery2;imgjson"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>

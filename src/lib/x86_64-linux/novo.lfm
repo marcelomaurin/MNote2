@@ -1,0 +1,170 @@
+object frmNovo: TfrmNovo
+  Left = 609
+  Height = 585
+  Top = 297
+  Width = 381
+  Caption = 'New Project'
+  ClientHeight = 585
+  ClientWidth = 381
+  DesignTimePPI = 120
+  OnCreate = FormCreate
+  LCLVersion = '2.2.6.0'
+  object Label1: TLabel
+    Left = 26
+    Height = 20
+    Top = 15
+    Width = 93
+    Caption = 'Project Name:'
+    ParentColor = False
+  end
+  object Label2: TLabel
+    Left = 26
+    Height = 20
+    Top = 136
+    Width = 105
+    Caption = 'Data Base Type:'
+    ParentColor = False
+  end
+  object cbDataBaseType: TComboBox
+    Left = 26
+    Height = 28
+    Top = 155
+    Width = 289
+    ItemHeight = 20
+    ItemIndex = 0
+    Items.Strings = (
+      'None'
+      'Mysql'
+      'MSSQLServer'
+      'Interbase'
+      'Oracle'
+    )
+    TabOrder = 2
+    Text = 'None'
+  end
+  object btCancel: TButton
+    Left = 144
+    Height = 31
+    Top = 528
+    Width = 94
+    Caption = 'Cancel'
+    OnClick = btCancelClick
+    TabOrder = 3
+  end
+  object btSalvar: TButton
+    Left = 248
+    Height = 31
+    Top = 528
+    Width = 94
+    Caption = 'Save'
+    OnClick = btSalvarClick
+    TabOrder = 4
+  end
+  object edProjectName: TEdit
+    Left = 26
+    Height = 28
+    Top = 39
+    Width = 342
+    TabOrder = 0
+  end
+  object Label3: TLabel
+    Left = 26
+    Height = 20
+    Top = 72
+    Width = 23
+    Caption = 'Dir:'
+    ParentColor = False
+  end
+  object DirectoryEdit1: TDirectoryEdit
+    Left = 26
+    Height = 28
+    Top = 96
+    Width = 342
+    ShowHidden = False
+    ButtonWidth = 29
+    NumGlyphs = 1
+    MaxLength = 0
+    TabOrder = 1
+  end
+  object Label4: TLabel
+    Left = 26
+    Height = 20
+    Top = 192
+    Width = 118
+    Caption = 'String Connection'
+    ParentColor = False
+  end
+  object edStringConnection: TEdit
+    Left = 24
+    Height = 28
+    Top = 216
+    Width = 294
+    TabOrder = 5
+  end
+  object SpeedButton1: TSpeedButton
+    Left = 321
+    Height = 28
+    Top = 216
+    Width = 29
+  end
+  object Label5: TLabel
+    Left = 24
+    Height = 20
+    Top = 256
+    Width = 69
+    Caption = 'Username:'
+    ParentColor = False
+  end
+  object edUsername: TEdit
+    Left = 24
+    Height = 28
+    Top = 280
+    Width = 294
+    TabOrder = 6
+  end
+  object Label6: TLabel
+    Left = 26
+    Height = 20
+    Top = 320
+    Width = 64
+    Caption = 'Password:'
+    ParentColor = False
+  end
+  object edPassword: TEdit
+    Left = 26
+    Height = 28
+    Top = 344
+    Width = 294
+    TabOrder = 7
+  end
+  object edHostname: TEdit
+    Left = 26
+    Height = 28
+    Top = 408
+    Width = 294
+    TabOrder = 8
+  end
+  object Label7: TLabel
+    Left = 26
+    Height = 20
+    Top = 384
+    Width = 71
+    Caption = 'Hostname:'
+    ParentColor = False
+  end
+  object edDatabase: TEdit
+    Left = 26
+    Height = 28
+    Top = 472
+    Width = 294
+    TabOrder = 9
+  end
+  object Label8: TLabel
+    Left = 26
+    Height = 20
+    Top = 448
+    Width = 66
+    Caption = 'Database:'
+    ParentColor = False
+  end
+end

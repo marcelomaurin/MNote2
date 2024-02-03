@@ -1,0 +1,29 @@
+{
+"DEVICE": "0",
+"POSX": "100",
+"POSY": "100",
+"FIXAR": "0",
+"STAY": "0",
+"LASTFILES": "",
+"HEIGHT": "400",
+"WIDTH": "400",
+"RUNSCRIPT": "",
+"DEBUGSCRIPT": "",
+"CLEANSCRIPT": "",
+"INSTALLSCRIPT": "",
+"CHATGPT": "",
+"DLLPATH": "",
+"NOMEPROJETO": "teste1",
+"FILENAME": "teste1.json",
+"DIRETORIO": "C:\\Users\\marcelo.maurin\\Desktop\\projetos\\IMGJSON\\teste\\Teste01",
+"STRINGCONNECTION": "",
+"DATABASETYPE": "1",
+"USERNAME": "root",
+"PASSWORD": "",
+"DATABASE": "localdb",
+"HOSTNAME": "127.0.0.1",
+"SQLGroup": [
+{ "SQLItem": { "Nome":"query01",
+ "SQL":"select * from import\r\n" } }
+
+]}
