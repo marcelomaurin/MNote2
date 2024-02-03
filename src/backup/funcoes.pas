@@ -7,10 +7,12 @@ interface
 
 uses
 Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
-StdCtrls, ExtCtrls, UTF8Process, Process, TypInfo , SynEdit, fpjson
+StdCtrls, ExtCtrls, UTF8Process, Process, TypInfo , SynEdit, fpjson , DB,
+jsonparser, RegExpr
 {$IFDEF MSWINDOWS}
 ,windows, jwaWinBase, shellAPI , Registry , JwaTlHelp32
 {$ENDIF}
+
 {$IFDEF LINUX}
 //LCLType,
 //LCLIntf
@@ -57,7 +59,10 @@ procedure RemoveCtrlMFromSynEdit(SynEdit: TSynEdit);
 function ValidateDirectory(const DirectoryPath: string): Boolean;
 function ValidateJson(SynEdit: TSynEdit): Boolean;
 function GetProcessList: TProcessList;
-function CapturaFonte(texto: string; var tipo: string; var fonte: string): boolean;
+function PegaFields(DataSet: TDataSet): TStringList;
+function PegaTabelas(SQL: string): TStringList;
+function CapturaJSONTabela(resposta: string): TStringList;
+
 {$IFDEF WINDOWS}
 function RegisterFileType(ExtName: string; AppName: string): boolean;
 function  VerificaRegExt(extensao : string) : boolean;
@@ -68,10 +73,10 @@ function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
 
 function Callprg(filename: string; source: String; var Output: string): boolean;
-
-
-
 {$ENDIF}
+function retiraCRLF(texto: string): string;
+function DatasetToJsonString(Dataset: TDataset): string;
+function DatasetToCSVString(Dataset: TDataset): String;
 function VerificaArea(X, Y: longint): Boolean;
 {$IFDEF LINUX}
 function RunBatch(const batch, Params: string; var Output : string): boolean;
@@ -98,6 +103,202 @@ var LastTickCount     : cardinal = 0;
     FLastIdleTime: Int64;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
+
+
+function CapturaJSONTabela(resposta: string): TStringList;
+var
+  JSONObj: TJSONObject;
+  JSONArray: TJSONArray;
+  i: Integer;
+begin
+  Result := TStringList.Create;
+  try
+    // Analisa a string de resposta como JSON
+    JSONObj := TJSONObject(GetJSON(resposta));
+    try
+      // Obtém o array JSON do campo 'tabela'
+      JSONArray := JSONObj.Get('tables', TJSONArray.Create) as TJSONArray;
+
+      // Itera sobre todos os itens no array JSON
+      for i := 0 to JSONArray.Count - 1 do
+      begin
+        // Adiciona cada item à lista
+        Result.Add(JSONArray.Strings[i]);
+      end;
+    finally
+      JSONObj.Free;
+    end;
+  except
+    on E: Exception do
+    begin
+      // Tratamento de erro, se necessário
+      Result.Add('Erro ao processar JSON: ' + E.Message);
+    end;
+  end;
+end;
+
+
+function PegaTabelas(SQL: string): TStringList;
+var
+  RegEx: TRegExpr;
+begin
+  Result := TStringList.Create;
+  Result.Duplicates := dupIgnore;  // Ignora duplicatas
+  Result.Sorted := True;           // Mantém a lista ordenada
+
+  RegEx := TRegExpr.Create;
+  try
+    // Regex para identificar nomes de tabelas
+    // Esta expressão é bastante básica e pode precisar ser ajustada
+    RegEx.Expression := '\bfrom\b\s+([a-zA-Z0-9_]+)|\bjoin\b\s+([a-zA-Z0-9_]+)';
+
+    if RegEx.Exec(SQL) then
+    begin
+      repeat
+        if RegEx.Match[1] <> '' then
+          Result.Add(RegEx.Match[1])
+        else if RegEx.Match[2] <> '' then
+          Result.Add(RegEx.Match[2]);
+      until not RegEx.ExecNext;
+    end;
+  finally
+    RegEx.Free;
+  end;
+end;
+
+function PegaFields(DataSet: TDataSet): TStringList;
+var
+      i: Integer;
+begin
+      Result := TStringList.Create; // Cria a lista de strings
+      try
+        for i := 0 to DataSet.FieldCount - 1 do
+        begin
+          Result.Add(DataSet.Fields[i].FieldName); // Adiciona o nome de cada campo à lista
+        end;
+      except
+        Result.Free; // Libera a lista em caso de erro
+        raise; // Relança a exceção
+      end;
+end;
+
+
+function DatasetToJsonString(Dataset: TDataset): string;
+var
+      JsonArray: TJSONArray;
+      RowObject: TJSONObject;
+      Field: TField;
+      I: Integer;
+begin
+      Dataset.First;
+      JsonArray := TJSONArray.Create;
+
+      while not Dataset.Eof do
+      begin
+        RowObject := TJSONObject.Create;
+
+        for I := 0 to Dataset.FieldCount - 1 do
+        begin
+          Field := Dataset.Fields[I];
+
+          case Field.DataType of
+            ftString, ftWideString:
+              RowObject.Add(Field.FieldName, Field.AsString);
+
+            ftSmallint, ftInteger, ftWord, ftFloat, ftCurrency, ftBCD, ftLargeint:
+              RowObject.Add(Field.FieldName, Field.AsFloat);
+
+            ftDate, ftTime, ftDateTime:
+              RowObject.Add(Field.FieldName, FormatDateTime('yyyy-mm-dd hh:nn:ss', Field.AsDateTime));
+
+            // Adicione mais tipos de dados conforme necessário
+          else
+            RowObject.Add(Field.FieldName, Field.AsString);
+          end;
+        end;
+
+        JsonArray.Add(RowObject);
+        Dataset.Next;
+      end;
+
+      Result := JsonArray.FormatJSON();
+      JsonArray.Free;
+end;
+
+function DatasetToCSVString(Dataset: TDataset): String;
+var
+  CSVText: TStringList;
+  RowLine: string;
+  Field: TField;
+  I: Integer;
+begin
+  Result := False;
+  Dataset.First;
+  CSVText := TStringList.Create;
+  try
+    // Criar o cabeçalho
+    RowLine := '';
+    for I := 0 to Dataset.FieldCount - 1 do
+    begin
+      Field := Dataset.Fields[I];
+      RowLine := RowLine + Field.FieldName;
+      if I < Dataset.FieldCount - 1 then
+        RowLine := RowLine + ',';
+    end;
+    CSVText.Add(RowLine);
+
+    // Processar cada linha do Dataset
+    while not Dataset.Eof do
+    begin
+      RowLine := '';
+      for I := 0 to Dataset.FieldCount - 1 do
+      begin
+        Field := Dataset.Fields[I];
+
+        case Field.DataType of
+          ftString, ftWideString:
+            RowLine := RowLine + Field.AsString;
+
+          ftSmallint, ftInteger, ftWord, ftFloat, ftCurrency, ftBCD, ftLargeint:
+            RowLine := RowLine + FloatToStr(Field.AsFloat);
+
+          ftDate, ftTime, ftDateTime:
+            RowLine := RowLine + FormatDateTime('yyyy-mm-dd hh:nn:ss', Field.AsDateTime);
+
+          // Adicione mais tipos de dados conforme necessário
+        else
+          RowLine := RowLine + Field.AsString;
+        end;
+
+        if I < Dataset.FieldCount - 1 then
+          RowLine := RowLine + ',';
+      end;
+      CSVText.Add(RowLine);
+      Dataset.Next;
+    end;
+
+    // Salvar o arquivo CSV
+    //CSVText.SaveToFile(FileName);
+    Result := CSVText.Text;
+  finally
+    CSVText.Free;
+  end;
+end;
+
+
+function retiraCRLF(texto: string): string;
+    var
+      i: Integer;
+      resultado: string;
+begin
+      resultado := '';
+      for i := 1 to Length(texto) do
+      begin
+        if not (texto[i] in [#13, #10]) then
+          resultado := resultado + texto[i];
+      end;
+      retiraCRLF := resultado;
+end;
 
 
 

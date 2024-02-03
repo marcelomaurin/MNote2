@@ -1,12 +1,13 @@
 object frmconfig: Tfrmconfig
-  Left = 597
+  Left = 619
   Height = 385
-  Top = 1091
+  Top = 1212
   Width = 443
   Caption = 'Config'
   ClientHeight = 385
   ClientWidth = 443
   OnCreate = FormCreate
+  Position = poMainFormCenter
   LCLVersion = '3.0.0.3'
   object btSave: TButton
     Left = 346
@@ -26,141 +27,215 @@ object frmconfig: Tfrmconfig
     TabOrder = 1
     OnClick = btCancelClick
   end
-  object Label1: TLabel
-    Left = 15
-    Height = 17
-    Top = 12
-    Width = 45
-    Caption = 'Install:'
-    ParentColor = False
-  end
-  object edInstall: TFileNameEdit
-    Left = 15
-    Height = 34
-    Hint = 'Run Script Install'
-    Top = 32
-    Width = 336
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 18
-    NumGlyphs = 1
-    MaxLength = 0
+  object PageControl1: TPageControl
+    Left = 0
+    Height = 339
+    Top = 0
+    Width = 443
+    ActivePage = TabSheet4
+    Align = alTop
+    TabIndex = 3
     TabOrder = 2
-    TextHint = 'Path + Filename Script Install'
-  end
-  object Label2: TLabel
-    Left = 15
-    Height = 17
-    Top = 64
-    Width = 41
-    Caption = 'Clean:'
-    ParentColor = False
-  end
-  object edClean: TFileNameEdit
-    Left = 15
-    Height = 34
-    Hint = 'Run Script Clean'
-    Top = 84
-    Width = 336
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 18
-    NumGlyphs = 1
-    MaxLength = 0
-    TabOrder = 3
-    TextHint = 'Path + Filename Script Clean'
-  end
-  object Label3: TLabel
-    Left = 16
-    Height = 17
-    Top = 120
-    Width = 29
-    Caption = 'Run:'
-    ParentColor = False
-  end
-  object Label4: TLabel
-    Left = 15
-    Height = 17
-    Top = 176
-    Width = 47
-    Caption = 'Debug:'
-    ParentColor = False
-  end
-  object Label5: TLabel
-    Left = 15
-    Height = 17
-    Top = 230
-    Width = 108
-    Caption = 'Token CHATGPT:'
-    ParentColor = False
-  end
-  object edCHATGPT: TFileNameEdit
-    Left = 15
-    Height = 34
-    Hint = 'CHATGPT TOKEN'
-    Top = 250
-    Width = 336
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 18
-    NumGlyphs = 1
-    MaxLength = 0
-    TabOrder = 5
-    TextHint = 'CHATGPT TOKEN'
-  end
-  object Label6: TLabel
-    Left = 15
-    Height = 17
-    Top = 282
-    Width = 80
-    Caption = 'DLL Python:'
-    ParentColor = False
-  end
-  object edDLLPATH: TFileNameEdit
-    Left = 15
-    Height = 34
-    Hint = 'DLL PATH Python'
-    Top = 301
-    Width = 336
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 18
-    NumGlyphs = 1
-    MaxLength = 0
-    TabOrder = 6
-    TextHint = 'DLL PATH Python'
-  end
-  object edRun: TFileNameEdit
-    Left = 15
-    Height = 34
-    Hint = 'Run Script Run'
-    Top = 141
-    Width = 336
-    FileName = 'edRun'
-    Filter = 'Bash|*.sh|Bat|*.bat|All|*.*'
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 23
-    NumGlyphs = 1
-    MaxLength = 0
-    ParentShowHint = False
-    ShowHint = True
-    TabOrder = 4
-    Text = 'edRun'
-    TextHint = 'Path + Filename Script Run'
-  end
-  object edDebug: TFileNameEdit
-    Left = 15
-    Height = 34
-    Hint = 'Run Script Debug'
-    Top = 196
-    Width = 336
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 18
-    NumGlyphs = 1
-    MaxLength = 0
-    TabOrder = 7
-    TextHint = 'Path + Filename Script Debug'
+    object TabSheet1: TTabSheet
+      Caption = 'Scripts'
+      ClientHeight = 308
+      ClientWidth = 433
+      object Label1: TLabel
+        Left = 6
+        Height = 17
+        Top = 6
+        Width = 45
+        Caption = 'Install:'
+        ParentColor = False
+      end
+      object edInstall: TFileNameEdit
+        Left = 6
+        Height = 34
+        Hint = 'Run Script Install'
+        Top = 26
+        Width = 336
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 18
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 0
+        TextHint = 'Path + Filename Script Install'
+      end
+      object edClean: TFileNameEdit
+        Left = 6
+        Height = 34
+        Hint = 'Run Script Clean'
+        Top = 78
+        Width = 336
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 18
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 1
+        TextHint = 'Path + Filename Script Clean'
+      end
+      object Label2: TLabel
+        Left = 6
+        Height = 17
+        Top = 58
+        Width = 41
+        Caption = 'Clean:'
+        ParentColor = False
+      end
+      object edRun: TFileNameEdit
+        Left = 6
+        Height = 34
+        Hint = 'Run Script Run'
+        Top = 135
+        Width = 336
+        FileName = 'edRun'
+        Filter = 'Bash|*.sh|Bat|*.bat|All|*.*'
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 23
+        NumGlyphs = 1
+        MaxLength = 0
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 2
+        Text = 'edRun'
+        TextHint = 'Path + Filename Script Run'
+      end
+      object Label3: TLabel
+        Left = 7
+        Height = 17
+        Top = 114
+        Width = 29
+        Caption = 'Run:'
+        ParentColor = False
+      end
+      object Label4: TLabel
+        Left = 6
+        Height = 17
+        Top = 170
+        Width = 47
+        Caption = 'Debug:'
+        ParentColor = False
+      end
+      object edDebug: TFileNameEdit
+        Left = 6
+        Height = 34
+        Hint = 'Run Script Debug'
+        Top = 190
+        Width = 336
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 18
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 3
+        TextHint = 'Path + Filename Script Debug'
+      end
+    end
+    object TabSheet2: TTabSheet
+      Caption = 'OPENIA'
+      ClientHeight = 308
+      ClientWidth = 433
+      object Label5: TLabel
+        Left = 6
+        Height = 17
+        Top = 6
+        Width = 108
+        Caption = 'Token CHATGPT:'
+        ParentColor = False
+      end
+      object edCHATGPT: TFileNameEdit
+        Left = 6
+        Height = 34
+        Hint = 'CHATGPT TOKEN'
+        Top = 26
+        Width = 336
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 18
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 0
+        TextHint = 'CHATGPT TOKEN'
+      end
+    end
+    object TabSheet3: TTabSheet
+      Caption = 'Python'
+      ClientHeight = 308
+      ClientWidth = 433
+      object Label6: TLabel
+        Left = 6
+        Height = 17
+        Top = 6
+        Width = 80
+        Caption = 'DLL Python:'
+        ParentColor = False
+      end
+      object edDLLPATH: TFileNameEdit
+        Left = 6
+        Height = 34
+        Hint = 'DLL PATH Python'
+        Top = 26
+        Width = 336
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 18
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 0
+        TextHint = 'DLL PATH Python'
+      end
+    end
+    object TabSheet4: TTabSheet
+      Caption = 'Database'
+      ClientHeight = 308
+      ClientWidth = 433
+      object edDLLMyPATH: TFileNameEdit
+        Left = 6
+        Height = 34
+        Hint = 'DLL PATH Mysql'
+        Top = 26
+        Width = 336
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 18
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 0
+        TextHint = 'DLL PATH Mysql'
+      end
+      object Label7: TLabel
+        Left = 6
+        Height = 17
+        Top = 6
+        Width = 98
+        Caption = 'DLL/SO Mysql:'
+        ParentColor = False
+      end
+      object edDLLPostPATH: TFileNameEdit
+        Left = 6
+        Height = 34
+        Hint = 'DLL PATH POSTGRE'
+        Top = 92
+        Width = 336
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 18
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 1
+        TextHint = 'DLL PATH Postgre'
+      end
+      object Label8: TLabel
+        Left = 6
+        Height = 17
+        Top = 72
+        Width = 121
+        Caption = 'DLL/SO POSTGRE:'
+        ParentColor = False
+      end
+    end
   end
 end

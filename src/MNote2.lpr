@@ -7,9 +7,10 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, rxnew, pkg_gifanim, zcomponent, main,
+  Forms, tachartlazaruspkg, rxnew, pkg_gifanim, zcomponent, main,
   {$ifndef Darwin}
-  folders, mquery2, pesquisar, triggers, view, Views, benchmark, porradawebapi
+  folders, mquery2, pesquisar, triggers, view, Views, benchmark, porradawebapi,
+  chart
   {$ENDIF}
   ;
 

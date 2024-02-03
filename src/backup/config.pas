@@ -18,7 +18,9 @@ type
     edCHATGPT: TFileNameEdit;
     edClean: TFileNameEdit;
     edDebug: TFileNameEdit;
+    edDLLPostPATH: TFileNameEdit;
     edDLLPATH: TFileNameEdit;
+    edDLLMyPATH: TFileNameEdit;
     edInstall: TFileNameEdit;
     edRun: TFileNameEdit;
     Label1: TLabel;
@@ -27,6 +29,8 @@ type
     Label4: TLabel;
     Label5: TLabel;
     Label6: TLabel;
+    Label7: TLabel;
+    Label8: TLabel;
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
     TabSheet2: TTabSheet;
@@ -57,6 +61,8 @@ begin
   FSetMain.RunScript:=edRun.text;
   FSetMain.DebugScript:=edDebug.text;
   FSetMain.DLLPath:= edDLLPATH.text;
+  FSetMain.DLLMYPath:= edDLLMYPATH.text;
+  FSetMain.DLLPOSTPath:= edDLLPOSTPATH.text;
   FSetMain.CHATGPT:= edCHATGPT.text;
   FSetMain.SalvaContexto(false);
   close;
@@ -70,6 +76,8 @@ begin
   edDebug.text := FSetMain.DebugScript;
   edCHATGPT.Text := FSetMain.CHATGPT;
   edDLLPATH.text := FSetMain.DLLPath;
+  edDLLMyPATH.text := FSetMain.DLLMyPath;
+  edDLLPostPATH.text := FSetMain.DLLPostPath;
 end;
 
 procedure Tfrmconfig.btCancelClick(Sender: TObject);

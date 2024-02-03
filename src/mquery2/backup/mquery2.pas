@@ -8,12 +8,18 @@ uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
   ComCtrls, Menus, ValEdit, SynEdit, SynHighlighterSQL, SynCompletion,
   ZConnection, ZDataset, ZPgEventAlerter, Tabela, views, View, strUtils, DB,
-  SynEditTypes, SynGutterBase, SynEditMarks, SynEditKeyCmds,
+  csvdataset, SynEditTypes, SynGutterBase, SynEditMarks, SynEditKeyCmds,
   SynPluginSyncroEdit, SynGutterMarks, SynGutterLineNumber, SynGutterChanges,
-  SynGutter, SynGutterCodeFolding, LCLType, Grids, Buttons, PairSplitter,
-  DBCtrls, DBGrids, finds, ZClasses, ZCollections, ZCompatibility, ZTokenizer,
-  ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging, ZVariant, ZPlainDriver, ZURL,
-  TypeDB, triggers;
+  SynGutter, SynGutterCodeFolding, TAGraph, LCLType, Grids, Buttons,
+  PairSplitter, DBCtrls, DBGrids, finds, ZClasses, ZCollections, ZCompatibility,
+  ZTokenizer, ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging, ZVariant,
+  ZPlainDriver, ZURL, TypeDB, triggers, item, funcoes, chart, chatgpt, codigo,
+  setmain;
+
+const
+  sqltabela = 'Você poderia me fornecer a consulta SQL que deseja analisar? Assim que eu receber o SQL, irei extrair os nomes das tabelas envolvidas e gerar um código em JSON com esses nomes. A resposta será apresentada dentro de uma caixa de texto apropriada para cópia, Desta forma refaça a pergunta mesmo nao havendo certeza da resposta,claramente formatada como um código JSON:';
+  sqlMelhorias = 'Faça uma analise de melhorias do sql a seguir, gerando um codigo JSON onde cada melhoria fica listada em uma lista no campo melhoria, nao acrescentando numeração, apenas uma lista de melhorias como elementos deste campo';
+  sqlEstetica = 'Por favor, forneça um código embelezado para o seguinte SQL. Gostaria que ele fosse apresentado em uma caixa de texto ou em um formato que me permita copiar e colar facilmente no meu editor de código. Aqui está o SQL: ';
 
 type
 
@@ -22,22 +28,40 @@ type
   { Tfrmmquery2 }
 
   Tfrmmquery2= class(TForm)
+    btAnalise1: TButton;
     btBanco: TButton;
+    btBanco1: TButton;
+    btChart1: TButton;
     btcomparar: TButton;
+    btcomparar1: TButton;
     btConectarMy: TButton;
     btConectarPost: TButton;
+    btExecutar1: TButton;
+    btExecute1: TButton;
+    btJSON1: TButton;
     btPermissao: TToggleBox;
     btExecutar: TButton;
     btExecute: TButton;
+    btJSON: TButton;
+    btChart: TButton;
+    btAnalise: TButton;
+    btPermissao1: TToggleBox;
     Button3: TButton;
+    Button4: TButton;
+    ckGPT: TCheckBox;
+    cbMake: TComboBox;
+    dbgridmy1: TDBGrid;
+    dbnavmy1: TDBNavigator;
     dsmy: TDataSource;
     dbgridmy: TDBGrid;
     dbnavmy: TDBNavigator;
     edBanco: TEdit;
     edBancoPost: TEdit;
     edErro: TMemo;
+    edErro1: TMemo;
     edHostName: TEdit;
     edHostNamePost: TEdit;
+    edLog1: TMemo;
     edPesqMy: TEdit;
     edSchemaPost: TEdit;
     edLog: TMemo;
@@ -45,6 +69,7 @@ type
     edPasswrdPost: TEdit;
     edPesqPost: TEdit;
     edSQL: TSynEdit;
+    edSQL1: TSynEdit;
     edusuario: TEdit;
     edusuarioPost: TEdit;
     FindDialog1: TFindDialog;
@@ -60,7 +85,10 @@ type
     Label16: TLabel;
     Label17: TLabel;
     Label18: TLabel;
+    Label19: TLabel;
     Label2: TLabel;
+    Label20: TLabel;
+    Label21: TLabel;
     Label3: TLabel;
     Label4: TLabel;
     Label5: TLabel;
@@ -69,14 +97,22 @@ type
     Label8: TLabel;
     Label9: TLabel;
     lbCol: TLabel;
+    lbCol1: TLabel;
     lblinha: TLabel;
+    lblinha1: TLabel;
     ListBox1: TListBox;
+    lbTables: TListBox;
     lstfind: TListBox;
+    lstfind1: TListBox;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
-    MenuItem10: TMenuItem;
+    miEmbelezar: TMenuItem;
+    miChart: TMenuItem;
+    miCNewEdit: TMenuItem;
     MenuItem11: TMenuItem;
     MenuItem12: TMenuItem;
+    midrop: TMenuItem;
+    miselect: TMenuItem;
     miCreate: TMenuItem;
     miOcultarPost: TMenuItem;
     miCFunction: TMenuItem;
@@ -103,6 +139,7 @@ type
     mnRefresh: TMenuItem;
     Panel10: TPanel;
     Panel11: TPanel;
+    Panel15: TPanel;
     pgMain: TPageControl;
     pgMysql: TPageControl;
     Panel13: TPanel;
@@ -115,7 +152,9 @@ type
     pgbar: TProgressBar;
     pmTabelaMy: TPopupMenu;
     pnBotton: TPanel;
+    pnBotton1: TPanel;
     pnErro: TPanel;
+    pnErro1: TPanel;
     pnlProgresso: TPanel;
     popSeq: TPopupMenu;
     popMenu: TPopupMenu;
@@ -126,6 +165,7 @@ type
     pmTabelaPost: TPopupMenu;
     PopupMenuTblPost: TPopupMenu;
     SaveDialog1: TSaveDialog;
+    Separator1: TMenuItem;
     SpeedButton1: TSpeedButton;
     SpeedButton2: TSpeedButton;
     SpeedButton3: TSpeedButton;
@@ -133,10 +173,16 @@ type
     Splitter2: TSplitter;
     Splitter3: TSplitter;
     Splitter4: TSplitter;
+    Splitter5: TSplitter;
     SynCompletion1: TSynCompletion;
     SynPluginSyncroEdit1: TSynPluginSyncroEdit;
     SynSQLSyn2: TSynSQLSyn;
     TabSheet1: TTabSheet;
+    TabSheet2: TTabSheet;
+    TabSheet3: TTabSheet;
+    TabSheet4: TTabSheet;
+    ToggleBox3: TToggleBox;
+    tsgrid: TTabSheet;
     tsSQLPostgreSQL: TTabSheet;
     tsAbout: TTabSheet;
     tsSetupPostres: TTabSheet;
@@ -160,10 +206,13 @@ type
     zpostqry: TZReadOnlyQuery;
     zpostqry1: TZReadOnlyQuery;
     Zqrypost: TZQuery;
+    procedure btAnaliseClick(Sender: TObject);
     procedure btBancoClick(Sender: TObject);
     procedure btbenchmarkClick(Sender: TObject);
+    procedure btChartClick(Sender: TObject);
     procedure btcompararClick(Sender: TObject);
     procedure btExecutarClick(Sender: TObject);
+    procedure btJSONClick(Sender: TObject);
     procedure btPermissaoChange(Sender: TObject);
     procedure btConectarMyClick(Sender: TObject);
     procedure btConectarpostClick(Sender: TObject);
@@ -197,8 +246,12 @@ type
     procedure MenuItem5Click(Sender: TObject);
     procedure MenuItem8Click(Sender: TObject);
     procedure miCFunctionClick(Sender: TObject);
+    procedure miChartClick(Sender: TObject);
+    procedure miCNewEditClick(Sender: TObject);
     procedure miCreateClick(Sender: TObject);
     procedure miCTriggerClick(Sender: TObject);
+    procedure midropClick(Sender: TObject);
+    procedure miEmbelezarClick(Sender: TObject);
     procedure miEsconderClick(Sender: TObject);
     procedure miFontClick(Sender: TObject);
     procedure miMostrarClick(Sender: TObject);
@@ -206,6 +259,7 @@ type
     procedure MenuItem9Click(Sender: TObject);
     procedure miNovaPesquisaClick(Sender: TObject);
     procedure miOcultarPostClick(Sender: TObject);
+    procedure miselectClick(Sender: TObject);
     procedure mnCriarSeqClick(Sender: TObject);
     procedure mnFonteClick(Sender: TObject);
     procedure mnLTriggerClick(Sender: TObject);
@@ -230,6 +284,7 @@ type
     procedure ZPgEventAlerter1Notify(Sender: TObject; Event: string;
       ProcessID: Integer; Payload: string);
   private
+    FCHATGPT : TCHATGPT;
     posicaofieldsmy : TTreeNode;
     posicaofieldspost : TTreeNode;
     tvitemPost : TTreeNode;
@@ -257,15 +312,18 @@ type
     function FormataSQL(Info : string): string;
     function TrocarPalavra(Info : String; de: String; para : String): String;
     procedure setSelLength(var textComponent:TSynEdit; newValue:integer);
-
+    procedure Analise(SQL : String);
   public
     procedure RefreshPost();
+    procedure ChartView();
     procedure Pesquisar(sender: TObject);
     procedure ProcessaErro(message : string);
     function RectIsEmpty(const aRect:TRect):Boolean;
     function ToRect(const aTopLeft, aBottomRight:TPoint):TRect; overload;
     function ToRect(const aTop, aLeft, aBottom, aRight : LongInt):TRect; overload;
     Function RectInRect(const aOuterRect, aInnerRect:TRect):Boolean;
+    procedure QuestionSQLChat();
+    procedure QuestionSQLEmbeleza();
   end;
 
 var
@@ -275,9 +333,135 @@ implementation
 
 {$R *.lfm}
 
-uses benchmark;
+uses benchmark, main;
 
 { TForm1 }
+
+
+procedure Tfrmmquery2.QuestionSQLChat();
+var
+  resposta : string;
+  codigo : TCodigo;
+  item : TFonte;
+  i : integer;
+  tabelaList: TStringList;
+begin
+    tabelaList := TStringList.create();
+    frmMNote.NewContext();
+    frmMNote.edChat.text := sqltabela + edSQL.text+' faça em uma caixa de texto';
+    frmMNote.FazPergunta();
+    if (frmMNote.meCodes.text<>'') then
+    begin
+      resposta := frmMNote.meCodes.text;
+
+     //Captura o fonte
+     // Captura os blocos de código
+     codigo := TCodigo.create();
+     codigo.AnalisaTexto(resposta);
+
+
+     try
+        // Itera por cada bloco de código capturado
+        for i := 0 to codigo.Count-1 do
+        begin
+          item := TFonte(codigo.Items[i]);
+          // Chama a função CapturaTabela
+          tabelaList := CapturaJSONTabela(item.codigo);
+
+          lbTables.Items.AddStrings(tabelaList);
+        end;
+     finally
+        tabelaList.Free;
+     end;
+
+    end;
+end;
+
+procedure Tfrmmquery2.QuestionSQLEmbeleza;
+var
+  resposta : string;
+  codigo : TCodigo;
+  item : TFonte;
+  i : integer;
+  tabelaList: TStringList;
+begin
+  frmMNote.NewContext();
+  frmMNote.edChat.text := sqlEstetica + edSQL.text;
+  frmMNote.FazPergunta();
+  if (frmMNote.meCodes.text<>'') then
+  begin
+      edSQL.text := frmMNote.meCodes.text;
+  end;
+
+(*
+     if(FCHATGPT = nil) then
+     begin
+         FCHATGPT := TCHATGPT.create(self);
+     end;
+     //mequestion.Text := sqltabela + edSQL.text;
+
+     FCHATGPT.TOKEN:= FSetMain.CHATGPT;
+     if (FCHATGPT.SendQuestion(sqlEstetica + edSQL.text) ) then
+     begin
+        //Armazena pergunta historica
+        resposta := FCHATGPT.Response;
+     end
+     else
+     begin
+       resposta := '';
+     end;
+
+     //Armazena no historico
+     //meChatHist.Caption :=  meChatHist.Caption + #13+ #13+ 'Question: '+edChat.Text+#13;
+     //meChatHist.Caption := meChatHist.Caption + 'Response: '+ resposta+#13;
+     //meChatHist.Caption:=meChatHist.Caption+#13;
+
+     //Armazena no Dialogo
+     //meDialog.Caption :=  'Question: '+edChat.Text+#13;
+     //meDialog.Caption := meDialog.Caption + 'Response: '+ resposta+#13;
+     //meDialog.Caption:=meDialog.Caption+#13;
+
+
+     //Captura o fonte
+     // Captura os blocos de código
+     codigo := TCodigo.create();
+     if (resposta<>'') then
+     begin
+       codigo.AnalisaTexto(resposta);
+     end;
+
+
+      // Limpa o texto existente
+      //meCodes.Clear;
+
+
+      try
+        // Itera por cada bloco de código capturado
+        for i := 0 to codigo.Count-1 do
+        begin
+          item := TFonte(codigo.Items[i]);
+          // Chama a função CapturaTabela
+          //tabelaList := CapturaJSONTabela(item.codigo);
+          // Aqui você pode adicionar o tipo e o código ao memo ou tratar conforme necessário
+          //meCodes.Lines.Add('Tipo: ' + item.Tipo);
+          //meCodes.Lines.text := meCodes.Lines.text + item.codigo;
+          //lbTables.Items.AddStrings(tabelaList);
+          edSQL.Text:=item.codigo;
+        end;
+      finally
+        //tabelaList.Free;
+      end;
+
+
+      // Se houver pelo menos um bloco de código, foca no componente meCodes
+      //if (codigo.Count > 0) then
+        //tsCode.SetFocus;
+
+     //edChat.Text:= '';
+     *)
+
+end;
+
 
 procedure Tfrmmquery2.FieldClickChange(Sender: TObject);
 begin
@@ -666,6 +850,13 @@ begin
 textComponent.SelEnd:=textComponent.SelStart+newValue ;
 end;
 
+procedure Tfrmmquery2.Analise(SQL: String);
+begin
+   lbTables.Items.Clear;
+   QuestionSQLChat();
+   //lbTables.Items := PegaTabelas(sql);
+end;
+
 procedure Tfrmmquery2.lstfindClick(Sender: TObject);
 var
    find : TFinds;
@@ -786,6 +977,28 @@ begin
   edsql.Lines.Append('$'+tabela.triggers.tablename+'$ LANGUAGE plpgsql; ');
 end;
 
+procedure Tfrmmquery2.miChartClick(Sender: TObject);
+begin
+  ChartView();
+end;
+
+procedure Tfrmmquery2.miCNewEditClick(Sender: TObject);
+var
+  ts : TTabSheet;
+  item : TItem;
+  tvPai : ttreenode;
+  tvAvo : ttreenode;
+  syn1 : TSynEdit;
+
+begin
+  ts :=  frmMNote.NovoItem();
+  item := TItem(ts.Tag);
+
+  syn1 := item.syn;
+  syn1.Text := edsql.Lines.text;
+
+end;
+
 procedure Tfrmmquery2.miCreateClick(Sender: TObject);
 begin
   edsql.Text:= GeraSQL(TTabela(tvMysql.Selected.Data))
@@ -814,6 +1027,29 @@ begin
    edsql.text := ' FOR EACH ROW ';
    edsql.text := 'execute function fnc_'+tabela.triggers.Triggername[posicao]+'();';
 
+end;
+
+procedure Tfrmmquery2.midropClick(Sender: TObject);
+
+  var
+  item : ttreenode;
+  tvPai : ttreenode;
+  tvAvo : ttreenode;
+begin
+  item := tvMysql.Selected;
+  tvPai := item.parent;
+  tvAvo := tvPai.parent;
+  //ShowMessage(item.text);
+  edSQL.clear;
+  edSQL.Lines.text := '';
+  edSql.Lines.Append('drop table '+ item.text );
+  pgMysql.ActivePage := tbSQL;
+  //edSql.SetFocus;
+end;
+
+procedure Tfrmmquery2.miEmbelezarClick(Sender: TObject);
+begin
+   QuestionSQLEmbeleza();
 end;
 
 procedure Tfrmmquery2.miEsconderClick(Sender: TObject);
@@ -869,6 +1105,27 @@ begin
       tvPost.items[a].Collapse(true);
     end;
   end;
+end;
+
+procedure Tfrmmquery2.miselectClick(Sender: TObject);
+var
+  item : ttreenode;
+  tvPai : ttreenode;
+  tvAvo : ttreenode;
+begin
+  item := tvMysql.Selected;
+  tvPai := item.parent;
+  tvAvo := tvPai.parent;
+  //ShowMessage(item.text);
+  edSQL.clear;
+  edSQL.Lines.text := '';
+  //edSql.Lines.Append('--Select criada tabela '+ item.text);
+  edSql.Lines.Append('select * from '+ item.text + ' limit 1000 ');
+  pgMysql.ActivePage := tbSQL;
+  //edSql.SetFocus;
+
+
+
 end;
 
 procedure Tfrmmquery2.mnCriarSeqClick(Sender: TObject);
@@ -1044,9 +1301,19 @@ begin
   end;
 end;
 
+procedure Tfrmmquery2.btAnaliseClick(Sender: TObject);
+begin
+   Analise(edSQL.Lines.Text);
+end;
+
 procedure Tfrmmquery2.btbenchmarkClick(Sender: TObject);
 begin
 
+end;
+
+procedure Tfrmmquery2.btChartClick(Sender: TObject);
+begin
+  ChartView();
 end;
 
 procedure Tfrmmquery2.btcompararClick(Sender: TObject);
@@ -1120,7 +1387,9 @@ begin
     edlog.Append('SQL OPEN:'+edSQL.Lines.Text);
     dbnavmy.DataSource := dsmy;
     dbgridmy.DataSource := dsmy;
+
     zmyqry2.Open;
+    pgMysql.ActivePage := tsgrid;
   except
      on E: Exception do
      begin
@@ -1128,6 +1397,33 @@ begin
           ShowMessage('Error:'+e.message);
      end;
 
+  end;
+
+end;
+
+procedure Tfrmmquery2.btJSONClick(Sender: TObject);
+var
+  ts : TTabSheet;
+  item : TItem;
+  tvPai : ttreenode;
+  tvAvo : ttreenode;
+  syn1 : TSynEdit;
+
+begin
+  ts :=  frmMNote.NovoItem();
+  item := TItem(ts.Tag);
+
+  syn1 := item.syn;
+  case cbMake.ItemIndex:
+       0:   //JSON
+       begin
+           syn1.text :=  DatasetToJsonString( dbgridmy.DataSource.DataSet);
+       end;
+       1: //CSV
+       begin
+         syn1.text :=  DatasetTocsvString( dbgridmy.DataSource.DataSet);
+
+       end;
   end;
 
 end;
@@ -1199,6 +1495,15 @@ begin
         end;
     finally
     end;
+end;
+
+procedure Tfrmmquery2.ChartView;
+begin
+  if (frmChart=nil) then
+  begin
+    frmChart := TfrmChart.create(self);
+  end;
+  frmChart.show();
 end;
 
 procedure Tfrmmquery2.Pesquisar(sender: TObject);
@@ -1283,7 +1588,7 @@ begin
   Result.Right  := aRight;
 end;
 
-Function Tfrmmquery2.RectInRect(const aOuterRect, aInnerRect:TRect):Boolean;
+function Tfrmmquery2.RectInRect(const aOuterRect, aInnerRect: TRect): Boolean;
 begin
   Result := (aInnerRect.Left   >= aOuterRect.Left) and (aInnerRect.Left   <= aOuterRect.Right)  and
             (aInnerRect.Right  >= aOuterRect.Left) and (aInnerRect.Right  <= aOuterRect.Right)  and

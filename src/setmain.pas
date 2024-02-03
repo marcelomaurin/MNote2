@@ -35,6 +35,8 @@ type
         FFONT : TFont;
         FCHATGPT : string;
         FDllPath : string;
+        FDllMyPath : string;
+        FDllPostPath : string;
 
         FRunScript : string;    //Script de Compilação
         FDebugScript : string;  //Script de Debug
@@ -63,6 +65,8 @@ type
         procedure SetFont(value : TFont);
         procedure SetCHATGPT(value : String);
         procedure SetDllPath( value : string);
+        procedure SetDllMyPath( value : string);
+        procedure SetDllPostPath( value : string);
         procedure Default();
   public
         constructor create();
@@ -85,6 +89,8 @@ type
         property Font : TFont read FFont write SetFont;
         property CHATGPT: String read FCHATGPT write SetCHATGPT;
         property DLLPath : String read FDllPath write SetDllPath;
+        property DLLMyPath : String read FDllMyPath write SetDllMyPath;
+        property DLLPostPath : String read FDllPostPath write SetDllPostPath;
 
         property HostnameMy: string read FHostnameMy write FHostnameMy;
         property BancoMy : String read FBancoMy write FBancoMy;
@@ -120,6 +126,8 @@ begin
     FFixar :=false;
     FStay := false;
     FDllPath:= ExtractFilePath(ApplicationName);
+    FDllMyPath:= ExtractFilePath(ApplicationName);
+    FDllPostPath:= ExtractFilePath(ApplicationName);
     //FLastFiles :="";
     //    FPATH : string;
     FHeight :=400;
@@ -177,6 +185,16 @@ end;
 procedure TSetMain.SetDllPath(value: string);
 begin
   FDllPath:= value;
+end;
+
+procedure TSetMain.SetDllMyPath(value: string);
+begin
+  FDllMyPath:= value;
+end;
+
+procedure TSetMain.SetDllPostPath(value: string);
+begin
+  FDllPostPath:= value;
 end;
 
 procedure TSetMain.CarregaContexto();
@@ -242,6 +260,14 @@ begin
     if  BuscaChave(arquivo,'DLLPATH:',posicao) then
     begin
       FDLLPATH := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'DLLMYPATH:',posicao) then
+    begin
+      FDLLMyPATH := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+    if  BuscaChave(arquivo,'DLLPOSTPATH:',posicao) then
+    begin
+      FDLLPOSTPATH := RetiraInfo(arquivo.Strings[posicao]);
     end;
 
     if  BuscaChave(arquivo,'HOSTNAMEMY:',posicao) then
@@ -356,6 +382,8 @@ begin
   arquivo.Append('FONT:'+FontToString(FFONT));
   arquivo.Append('CHATGPT:'+FCHATGPT);
   arquivo.Append('DLLPATH:'+FDLLPATH);
+  arquivo.Append('DLLMYPATH:'+FDLLMYPATH);
+  arquivo.Append('DLLPOSTPATH:'+FDLLPOSTPATH);
 
   arquivo.Append('HOSTNAMEMY:'+FHostnameMy);
   arquivo.Append('BANCOMY:'+FBancoMy);

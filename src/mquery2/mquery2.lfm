@@ -1,204 +1,205 @@
 object frmmquery2: Tfrmmquery2
-  Left = 63
-  Height = 627
-  Top = 75
-  Width = 955
+  Left = 334
+  Height = 784
+  Top = 70
+  Width = 1289
   Caption = 'Query Tools'
-  ClientHeight = 599
-  ClientWidth = 955
+  ClientHeight = 759
+  ClientWidth = 1289
+  DesignTimePPI = 120
   Menu = MainMenu1
   OnCreate = FormCreate
   LCLVersion = '2.2.6.0'
   object Panel1: TPanel
     Left = 0
-    Height = 50
+    Height = 62
     Top = 0
-    Width = 955
+    Width = 1289
     Align = alTop
     TabOrder = 0
   end
   object Splitter2: TSplitter
-    Left = 950
-    Height = 549
-    Top = 50
-    Width = 5
+    Left = 1283
+    Height = 697
+    Top = 62
+    Width = 6
     Align = alRight
     ResizeAnchor = akRight
   end
   object Splitter3: TSplitter
     Left = 0
-    Height = 549
-    Top = 50
-    Width = 5
+    Height = 697
+    Top = 62
+    Width = 6
   end
   object Label14: TLabel
-    Left = 247
-    Height = 22
-    Top = 25
-    Width = 116
+    Left = 309
+    Height = 20
+    Top = 31
+    Width = 106
     Caption = 'Data Base Tools'
     ParentColor = False
   end
   object pgMain: TPageControl
-    Left = 5
-    Height = 549
-    Top = 50
-    Width = 945
-    ActivePage = tsAbout
+    Left = 6
+    Height = 697
+    Top = 62
+    Width = 1277
+    ActivePage = tsMysql
     Align = alClient
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 3
     object tsAbout: TTabSheet
       Caption = 'About'
-      ClientHeight = 501
-      ClientWidth = 935
+      ClientHeight = 664
+      ClientWidth = 1269
       object Label11: TLabel
-        Left = 416
-        Height = 22
-        Top = 96
-        Width = 85
+        Left = 520
+        Height = 20
+        Top = 120
+        Width = 78
         Caption = 'Query Tools'
         ParentColor = False
       end
       object Label17: TLabel
-        Left = 408
-        Height = 22
-        Top = 232
-        Width = 90
+        Left = 510
+        Height = 20
+        Top = 290
+        Width = 85
         Caption = 'Open Source'
         ParentColor = False
       end
     end
     object tsMysql: TTabSheet
       Caption = 'Mysql'
-      ClientHeight = 501
-      ClientWidth = 935
+      ClientHeight = 664
+      ClientWidth = 1269
       object Panel4: TPanel
-        Left = 206
-        Height = 501
+        Left = 257
+        Height = 664
         Top = 0
-        Width = 729
+        Width = 1012
         Align = alClient
-        ClientHeight = 501
-        ClientWidth = 729
+        ClientHeight = 664
+        ClientWidth = 1012
         TabOrder = 0
         object pgMysql: TPageControl
           Left = 1
-          Height = 499
+          Height = 662
           Top = 1
-          Width = 727
-          ActivePage = tbConxao
+          Width = 1010
+          ActivePage = tsgrid
           Align = alClient
-          TabIndex = 0
+          TabIndex = 2
           TabOrder = 0
           OnChange = PageControl1Change
           object tbConxao: TTabSheet
             Caption = 'Mysql Connection'
-            ClientHeight = 451
-            ClientWidth = 717
+            ClientHeight = 629
+            ClientWidth = 1002
             object btConectarMy: TButton
-              Left = 296
-              Height = 25
-              Top = 248
-              Width = 75
+              Left = 370
+              Height = 31
+              Top = 310
+              Width = 94
               Caption = 'Conectar'
               OnClick = btConectarMyClick
               TabOrder = 4
             end
             object Label1: TLabel
-              Left = 24
-              Height = 22
-              Top = 71
-              Width = 48
+              Left = 30
+              Height = 20
+              Top = 89
+              Width = 44
               Caption = 'Banco:'
               ParentColor = False
             end
             object edBanco: TEdit
-              Left = 24
-              Height = 32
-              Top = 91
-              Width = 215
+              Left = 30
+              Height = 28
+              Top = 114
+              Width = 269
               TabOrder = 1
               Text = 'localdb'
             end
             object Label2: TLabel
-              Left = 24
-              Height = 22
-              Top = 11
-              Width = 76
+              Left = 30
+              Height = 20
+              Top = 14
+              Width = 71
               Caption = 'Hostname:'
               ParentColor = False
             end
             object edHostName: TEdit
-              Left = 24
-              Height = 32
-              Top = 32
-              Width = 216
+              Left = 30
+              Height = 28
+              Top = 40
+              Width = 270
               TabOrder = 0
               Text = '127.0.0.1'
             end
             object Label3: TLabel
-              Left = 24
-              Height = 22
-              Top = 137
-              Width = 58
+              Left = 30
+              Height = 20
+              Top = 171
+              Width = 53
               Caption = 'Usuario:'
               ParentColor = False
             end
             object edusuario: TEdit
-              Left = 24
-              Height = 32
-              Top = 152
-              Width = 168
+              Left = 30
+              Height = 28
+              Top = 190
+              Width = 210
               TabOrder = 2
               Text = 'root'
             end
             object Label4: TLabel
-              Left = 24
-              Height = 22
-              Top = 200
-              Width = 48
+              Left = 30
+              Height = 20
+              Top = 250
+              Width = 43
               Caption = 'Senha:'
               ParentColor = False
             end
             object edPasswrd: TEdit
-              Left = 24
-              Height = 32
-              Top = 215
-              Width = 168
+              Left = 30
+              Height = 28
+              Top = 269
+              Width = 210
               EchoMode = emPassword
               PasswordChar = '*'
               TabOrder = 3
             end
             object Label15: TLabel
-              Left = 216
-              Height = 22
-              Top = 168
-              Width = 157
+              Left = 270
+              Height = 20
+              Top = 210
+              Width = 147
               Caption = 'This is part to MNote2'
               ParentColor = False
             end
             object pnlProgresso: TPanel
-              Left = 64
-              Height = 98
-              Top = 87
-              Width = 367
-              ClientHeight = 98
-              ClientWidth = 367
+              Left = 80
+              Height = 122
+              Top = 109
+              Width = 459
+              ClientHeight = 122
+              ClientWidth = 459
               TabOrder = 5
               Visible = False
               object pgbar: TProgressBar
-                Left = 48
-                Height = 20
-                Top = 40
-                Width = 260
+                Left = 60
+                Height = 25
+                Top = 50
+                Width = 325
                 TabOrder = 0
               end
               object Label5: TLabel
-                Left = 48
-                Height = 22
-                Top = 16
-                Width = 156
+                Left = 60
+                Height = 20
+                Top = 20
+                Width = 144
                 Caption = 'Progresso de Leitura...'
                 ParentColor = False
               end
@@ -206,17 +207,17 @@ object frmmquery2: Tfrmmquery2
           end
           object tbSQL: TTabSheet
             Caption = 'SQL'
-            ClientHeight = 451
-            ClientWidth = 717
+            ClientHeight = 629
+            ClientWidth = 1002
             inline edSQL: TSynEdit
               Left = 0
-              Height = 281
+              Height = 418
               Top = 0
-              Width = 717
+              Width = 1002
               Align = alClient
               Font.CharSet = ANSI_CHARSET
               Font.Color = clBlack
-              Font.Height = -19
+              Font.Height = -24
               Font.Name = 'Courier New'
               Font.Pitch = fpFixed
               Font.Quality = fqDraft
@@ -229,7 +230,7 @@ object frmmquery2: Tfrmmquery2
               OnKeyUp = edSQLKeyUp
               OnMouseMove = edSQLMouseMove
               OnClickLink = edSQLClickLink
-              Gutter.Width = 63
+              Gutter.Width = 80
               Gutter.MouseActions = <>
               Gutter.OnChange = edSQLSynGutterChange
               RightGutter.Width = 0
@@ -687,11 +688,11 @@ object frmmquery2: Tfrmmquery2
               OnStatusChange = edSQLStatusChange
               inline SynLeftGutterPartList1: TSynGutterPartList
                 object SynGutterMarks1: TSynGutterMarks
-                  Width = 24
+                  Width = 30
                   MouseActions = <>
                 end
                 object SynGutterLineNumber1: TSynGutterLineNumber
-                  Width = 23
+                  Width = 29
                   MouseActions = <>
                   MarkupInfo.Background = clBtnFace
                   MarkupInfo.Foreground = clNone
@@ -701,18 +702,19 @@ object frmmquery2: Tfrmmquery2
                   LeadingZeros = False
                 end
                 object SynGutterChanges1: TSynGutterChanges
-                  Width = 4
+                  Width = 5
                   MouseActions = <>
                   ModifiedColor = 59900
                   SavedColor = clGreen
                 end
                 object SynGutterSeparator1: TSynGutterSeparator
-                  Width = 2
+                  Width = 3
                   MouseActions = <>
                   MarkupInfo.Background = clWhite
                   MarkupInfo.Foreground = clGray
                 end
                 object SynGutterCodeFolding1: TSynGutterCodeFolding
+                  Width = 13
                   MouseActions = <>
                   MarkupInfo.Background = clNone
                   MarkupInfo.Foreground = clGray
@@ -723,111 +725,119 @@ object frmmquery2: Tfrmmquery2
             end
             object Panel13: TPanel
               Left = 0
-              Height = 41
-              Top = 410
-              Width = 717
+              Height = 51
+              Top = 578
+              Width = 1002
               Align = alBottom
-              ClientHeight = 41
-              ClientWidth = 717
+              ClientHeight = 51
+              ClientWidth = 1002
               TabOrder = 1
               object Label16: TLabel
-                Left = 8
-                Height = 22
-                Top = 8
-                Width = 42
+                Left = 10
+                Height = 20
+                Top = 10
+                Width = 38
                 Caption = 'Linha:'
                 ParentColor = False
               end
               object lblinha: TLabel
-                Left = 48
-                Height = 22
-                Top = 8
-                Width = 9
+                Left = 60
+                Height = 20
+                Top = 10
+                Width = 8
                 Caption = '0'
                 ParentColor = False
               end
               object Label18: TLabel
-                Left = 96
-                Height = 22
-                Top = 8
-                Width = 53
+                Left = 120
+                Height = 20
+                Top = 10
+                Width = 49
                 Caption = 'Coluna:'
                 ParentColor = False
               end
               object lbCol: TLabel
-                Left = 144
-                Height = 22
-                Top = 8
-                Width = 9
+                Left = 180
+                Height = 20
+                Top = 10
+                Width = 8
                 Caption = '0'
                 ParentColor = False
               end
               object btExecutar: TButton
-                Left = 600
-                Height = 25
-                Top = 8
-                Width = 75
+                Left = 750
+                Height = 31
+                Top = 10
+                Width = 94
                 Caption = 'Open'
                 OnClick = btExecutarClick
                 TabOrder = 0
               end
               object btExecute: TButton
-                Left = 699
-                Height = 25
-                Top = 8
-                Width = 75
+                Left = 874
+                Height = 31
+                Top = 10
+                Width = 94
                 Caption = 'Execute'
                 OnClick = btExecuteClick
                 TabOrder = 1
               end
+              object btAnalise: TButton
+                Left = 632
+                Height = 31
+                Top = 10
+                Width = 94
+                Caption = 'Analysis'
+                OnClick = btAnaliseClick
+                TabOrder = 2
+              end
             end
             object pnBotton: TPanel
               Left = 0
-              Height = 50
-              Top = 360
-              Width = 717
+              Height = 62
+              Top = 516
+              Width = 1002
               Align = alBottom
-              ClientHeight = 50
-              ClientWidth = 717
+              ClientHeight = 62
+              ClientWidth = 1002
               TabOrder = 2
               Visible = False
               object lstfind: TListBox
                 Left = 1
-                Height = 48
+                Height = 60
                 Top = 1
-                Width = 715
+                Width = 1000
                 Align = alClient
                 ItemHeight = 0
                 OnClick = lstfindClick
                 PopupMenu = popfind
                 TabOrder = 0
-                TopIndex = -1
               end
             end
             object Splitter4: TSplitter
               Cursor = crVSplit
               Left = 0
-              Height = 5
-              Top = 355
-              Width = 717
+              Height = 6
+              Top = 510
+              Width = 1002
               Align = alBottom
               ResizeAnchor = akBottom
             end
             object pnErro: TPanel
               Left = 0
-              Height = 74
-              Top = 281
-              Width = 717
+              Height = 92
+              Top = 418
+              Width = 1002
               Align = alBottom
-              ClientHeight = 74
-              ClientWidth = 717
+              ClientHeight = 92
+              ClientWidth = 1002
               TabOrder = 4
               Visible = False
               object edErro: TMemo
                 Left = 1
-                Height = 72
+                Height = 90
                 Top = 1
-                Width = 715
+                Width = 1000
                 Align = alClient
                 Lines.Strings = (
                   'edErro'
@@ -836,15 +846,15 @@ object frmmquery2: Tfrmmquery2
               end
             end
           end
-          object TabSheet1: TTabSheet
+          object tsgrid: TTabSheet
             Caption = 'Grid'
-            ClientHeight = 451
-            ClientWidth = 717
+            ClientHeight = 629
+            ClientWidth = 1002
             object dbnavmy: TDBNavigator
-              Left = 36
-              Height = 25
-              Top = 17
-              Width = 241
+              Left = 45
+              Height = 31
+              Top = 21
+              Width = 301
               BevelOuter = bvNone
               ChildSizing.EnlargeHorizontal = crsScaleChilds
               ChildSizing.EnlargeVertical = crsScaleChilds
@@ -852,101 +862,163 @@ object frmmquery2: Tfrmmquery2
               ChildSizing.ShrinkVertical = crsScaleChilds
               ChildSizing.Layout = cclLeftToRightThenTopToBottom
               ChildSizing.ControlsPerLine = 100
-              ClientHeight = 25
-              ClientWidth = 241
+              ClientHeight = 31
+              ClientWidth = 301
               Options = []
               TabOrder = 0
             end
             object dbgridmy: TDBGrid
               Left = 0
-              Height = 452
-              Top = -1
-              Width = 717
+              Height = 565
+              Top = 64
+              Width = 1002
               Align = alBottom
               Color = clWindow
               Columns = <>
               TabOrder = 1
             end
+            object btJSON: TButton
+              Left = 880
+              Height = 31
+              Top = 21
+              Width = 94
+              Caption = 'Make'
+              OnClick = btJSONClick
+              TabOrder = 2
+            end
+            object btChart: TButton
+              Left = 456
+              Height = 31
+              Top = 21
+              Width = 94
+              Caption = 'Chart'
+              OnClick = btChartClick
+              TabOrder = 3
+            end
+            object cbMake: TComboBox
+              Left = 681
+              Height = 28
+              Top = 25
+              Width = 189
+              ItemHeight = 20
+              ItemIndex = 0
+              Items.Strings = (
+                'JSON'
+                'CSV'
+                'HTML'
+              )
+              TabOrder = 4
+              Text = 'JSON'
+            end
           end
           object tbLog: TTabSheet
             Caption = 'Log'
-            ClientHeight = 451
-            ClientWidth = 717
+            ClientHeight = 629
+            ClientWidth = 1002
             object edLog: TMemo
               Left = 0
-              Height = 451
+              Height = 629
               Top = 0
-              Width = 717
+              Width = 1002
               Align = alClient
               TabOrder = 0
             end
           end
           object tbTools: TTabSheet
             Caption = 'tools'
-            ClientHeight = 451
-            ClientWidth = 717
+            ClientHeight = 629
+            ClientWidth = 1002
             object ToggleBox2: TToggleBox
-              Left = 15
-              Height = 25
-              Top = 90
-              Width = 186
+              Left = 19
+              Height = 31
+              Top = 112
+              Width = 232
               Caption = 'Criar usuario'
               OnChange = ToggleBox2Change
               TabOrder = 0
             end
             object btPermissao: TToggleBox
-              Left = 15
-              Height = 25
-              Top = 139
-              Width = 186
+              Left = 19
+              Height = 31
+              Top = 174
+              Width = 232
               Caption = 'Permissão'
               OnChange = btPermissaoChange
               TabOrder = 1
             end
             object btBanco: TButton
-              Left = 15
-              Height = 25
-              Top = 40
-              Width = 186
+              Left = 19
+              Height = 31
+              Top = 50
+              Width = 232
               Caption = 'Cria database'
               OnClick = btBancoClick
               TabOrder = 2
             end
             object btcomparar: TButton
-              Left = 19
-              Height = 25
-              Top = 211
-              Width = 182
+              Left = 24
+              Height = 31
+              Top = 264
+              Width = 228
               Caption = 'Comparar'
               OnClick = btcompararClick
               TabOrder = 3
             end
             object Button3: TButton
-              Left = 15
-              Height = 25
-              Top = 262
-              Width = 186
+              Left = 19
+              Height = 31
+              Top = 328
+              Width = 232
               Caption = 'Migration to PostgreSQL'
               OnClick = Button3Click
               TabOrder = 4
+            end
+          end
+          object TabSheet1: TTabSheet
+            Caption = 'syntactic analysis'
+            ClientHeight = 629
+            ClientWidth = 1002
+            object Label19: TLabel
+              Left = 13
+              Height = 20
+              Top = 30
+              Width = 44
+              Caption = 'Tables:'
+              ParentColor = False
+            end
+            object lbTables: TListBox
+              Left = 16
+              Height = 192
+              Top = 56
+              Width = 205
+              ItemHeight = 0
+              TabOrder = 0
+            end
+            object ckGPT: TCheckBox
+              Left = 16
+              Height = 24
+              Top = 6
+              Width = 182
+              Caption = 'enable chatGPT analysis'
+              TabOrder = 1
             end
           end
         end
       end
       object Panel10: TPanel
         Left = 0
-        Height = 501
+        Height = 664
         Top = 0
-        Width = 201
+        Width = 251
         Align = alLeft
-        ClientHeight = 501
-        ClientWidth = 201
+        ClientHeight = 664
+        ClientWidth = 251
         TabOrder = 1
         object tvMysql: TTreeView
           Left = 1
-          Height = 474
-          Top = 26
-          Width = 199
+          Height = 631
+          Top = 32
+          Width = 249
           Align = alClient
           Images = ImageList1
           ReadOnly = True
@@ -957,18 +1029,18 @@ object frmmquery2: Tfrmmquery2
         end
         object Panel11: TPanel
           Left = 1
-          Height = 25
+          Height = 31
           Top = 1
-          Width = 199
+          Width = 249
           Align = alTop
-          ClientHeight = 25
-          ClientWidth = 199
+          ClientHeight = 31
+          ClientWidth = 249
           TabOrder = 1
           object edPesqMy: TEdit
             Left = 1
-            Height = 32
+            Height = 28
             Top = 1
-            Width = 197
+            Width = 247
             Align = alTop
             OnKeyPress = edPesqMyKeyPress
             TabOrder = 0
@@ -976,30 +1048,30 @@ object frmmquery2: Tfrmmquery2
         end
       end
       object Splitter1: TSplitter
-        Left = 201
-        Height = 501
+        Left = 251
+        Height = 664
         Top = 0
-        Width = 5
+        Width = 6
       end
     end
     object tspostgree: TTabSheet
       Caption = 'Postgree'
-      ClientHeight = 501
-      ClientWidth = 935
+      ClientHeight = 664
+      ClientWidth = 1269
       object Panel8: TPanel
         Left = 0
-        Height = 501
+        Height = 664
         Top = 0
-        Width = 201
+        Width = 251
         Align = alLeft
-        ClientHeight = 501
-        ClientWidth = 201
+        ClientHeight = 664
+        ClientWidth = 251
         TabOrder = 0
         object tvPost: TTreeView
           Left = 1
-          Height = 474
-          Top = 26
-          Width = 199
+          Height = 631
+          Top = 32
+          Width = 249
           Align = alClient
           Images = ImageList1
           ReadOnly = True
@@ -1010,18 +1082,18 @@ object frmmquery2: Tfrmmquery2
         end
         object Panel9: TPanel
           Left = 1
-          Height = 25
+          Height = 31
           Top = 1
-          Width = 199
+          Width = 249
           Align = alTop
-          ClientHeight = 25
-          ClientWidth = 199
+          ClientHeight = 31
+          ClientWidth = 249
           TabOrder = 1
           object edPesqPost: TEdit
             Left = 1
-            Height = 32
+            Height = 28
             Top = 1
-            Width = 197
+            Width = 247
             Align = alTop
             OnKeyPress = edPesqPostKeyPress
             TabOrder = 0
@@ -1029,167 +1101,930 @@ object frmmquery2: Tfrmmquery2
         end
       end
       object Panel14: TPanel
-        Left = 201
-        Height = 501
+        Left = 251
+        Height = 664
         Top = 0
-        Width = 734
+        Width = 1018
         Align = alClient
         Caption = 'Panel14'
-        ClientHeight = 501
-        ClientWidth = 734
+        ClientHeight = 664
+        ClientWidth = 1018
         TabOrder = 1
         object pcPostgree: TPageControl
           Left = 1
-          Height = 499
+          Height = 662
           Top = 1
-          Width = 732
-          ActivePage = tsSetupPostres
+          Width = 1016
+          ActivePage = TabSheet4
           Align = alClient
-          TabIndex = 0
+          TabIndex = 4
           TabOrder = 0
           object tsSetupPostres: TTabSheet
             Caption = 'PostgreSql Connection'
-            ClientHeight = 451
-            ClientWidth = 722
+            ClientHeight = 629
+            ClientWidth = 1008
             object edHostNamePost: TEdit
-              Left = 24
-              Height = 32
-              Top = 32
-              Width = 216
+              Left = 30
+              Height = 28
+              Top = 40
+              Width = 270
               TabOrder = 0
               Text = '127.0.0.1'
             end
             object edPasswrdPost: TEdit
-              Left = 25
-              Height = 32
-              Top = 248
-              Width = 168
+              Left = 31
+              Height = 28
+              Top = 310
+              Width = 210
               EchoMode = emPassword
               PasswordChar = '*'
               TabOrder = 4
             end
             object btConectarPost: TButton
-              Left = 296
-              Height = 25
-              Top = 304
-              Width = 75
+              Left = 370
+              Height = 31
+              Top = 380
+              Width = 94
               Caption = 'Conectar'
               OnClick = btConectarpostClick
               TabOrder = 5
             end
             object edBancoPost: TEdit
-              Left = 25
-              Height = 32
-              Top = 136
-              Width = 215
+              Left = 31
+              Height = 28
+              Top = 170
+              Width = 269
               TabOrder = 2
               Text = 'localdb'
             end
             object edusuarioPost: TEdit
-              Left = 25
-              Height = 32
-              Top = 192
-              Width = 168
+              Left = 31
+              Height = 28
+              Top = 240
+              Width = 210
               TabOrder = 3
               Text = 'root'
             end
             object edSchemaPost: TEdit
-              Left = 25
-              Height = 32
-              Top = 87
-              Width = 216
+              Left = 31
+              Height = 28
+              Top = 109
+              Width = 270
               OnChange = edSchemaPostChange
               TabOrder = 1
             end
             object Label6: TLabel
-              Left = 24
-              Height = 22
-              Top = 16
-              Width = 76
+              Left = 30
+              Height = 20
+              Top = 20
+              Width = 71
               Caption = 'Hostname:'
               ParentColor = False
             end
             object Label7: TLabel
-              Left = 24
-              Height = 22
-              Top = 120
-              Width = 48
+              Left = 30
+              Height = 20
+              Top = 150
+              Width = 44
               Caption = 'Banco:'
               ParentColor = False
             end
             object Label8: TLabel
-              Left = 24
-              Height = 22
-              Top = 176
-              Width = 58
+              Left = 30
+              Height = 20
+              Top = 220
+              Width = 53
               Caption = 'Usuario:'
               ParentColor = False
             end
             object Label9: TLabel
-              Left = 24
-              Height = 22
-              Top = 232
-              Width = 48
+              Left = 30
+              Height = 20
+              Top = 290
+              Width = 43
               Caption = 'Senha:'
               ParentColor = False
             end
             object Label10: TLabel
-              Left = 25
-              Height = 22
-              Top = 71
-              Width = 61
+              Left = 31
+              Height = 20
+              Top = 89
+              Width = 55
               Caption = 'Schema:'
               ParentColor = False
             end
           end
           object tsSQLPostgreSQL: TTabSheet
             Caption = 'SQL'
+            ClientHeight = 629
+            ClientWidth = 1008
+            object Splitter5: TSplitter
+              Cursor = crVSplit
+              Left = 0
+              Height = 6
+              Top = 510
+              Width = 1008
+              Align = alBottom
+              ResizeAnchor = akBottom
+            end
+            object pnBotton1: TPanel
+              Left = 0
+              Height = 62
+              Top = 516
+              Width = 1008
+              Align = alBottom
+              ClientHeight = 62
+              ClientWidth = 1008
+              TabOrder = 1
+              Visible = False
+              object lstfind1: TListBox
+                Left = 1
+                Height = 60
+                Top = 1
+                Width = 1006
+                Align = alClient
+                ItemHeight = 0
+                OnClick = lstfindClick
+                PopupMenu = popfind
+                TabOrder = 0
+              end
+            end
+            object pnErro1: TPanel
+              Left = 0
+              Height = 92
+              Top = 418
+              Width = 1008
+              Align = alBottom
+              ClientHeight = 92
+              ClientWidth = 1008
+              TabOrder = 2
+              Visible = False
+              object edErro1: TMemo
+                Left = 1
+                Height = 90
+                Top = 1
+                Width = 1006
+                Align = alClient
+                Lines.Strings = (
+                  'edErro'
+                )
+                TabOrder = 0
+              end
+            end
+            object Panel15: TPanel
+              Left = 0
+              Height = 51
+              Top = 578
+              Width = 1008
+              Align = alBottom
+              ClientHeight = 51
+              ClientWidth = 1008
+              TabOrder = 3
+              object Label20: TLabel
+                Left = 10
+                Height = 20
+                Top = 10
+                Width = 38
+                Caption = 'Linha:'
+                ParentColor = False
+              end
+              object lblinha1: TLabel
+                Left = 60
+                Height = 20
+                Top = 10
+                Width = 8
+                Caption = '0'
+                ParentColor = False
+              end
+              object Label21: TLabel
+                Left = 120
+                Height = 20
+                Top = 10
+                Width = 49
+                Caption = 'Coluna:'
+                ParentColor = False
+              end
+              object lbCol1: TLabel
+                Left = 180
+                Height = 20
+                Top = 10
+                Width = 8
+                Caption = '0'
+                ParentColor = False
+              end
+              object btExecutar1: TButton
+                Left = 750
+                Height = 31
+                Top = 10
+                Width = 94
+                Caption = 'Open'
+                OnClick = btExecutarClick
+                TabOrder = 0
+              end
+              object btExecute1: TButton
+                Left = 874
+                Height = 31
+                Top = 10
+                Width = 94
+                Caption = 'Execute'
+                OnClick = btExecuteClick
+                TabOrder = 1
+              end
+              object btAnalise1: TButton
+                Left = 632
+                Height = 31
+                Top = 10
+                Width = 94
+                Caption = 'Analysis'
+                OnClick = btAnaliseClick
+                TabOrder = 2
+              end
+            end
+            inline edSQL1: TSynEdit
+              Left = 0
+              Height = 418
+              Top = 0
+              Width = 1008
+              Align = alClient
+              Font.CharSet = ANSI_CHARSET
+              Font.Color = clBlack
+              Font.Height = -24
+              Font.Name = 'Courier New'
+              Font.Pitch = fpFixed
+              Font.Quality = fqDraft
+              ParentColor = False
+              ParentFont = False
+              PopupMenu = popSQL
+              TabOrder = 4
+              OnEnter = edSQLEnter
+              OnKeyPress = edSQLKeyPress
+              OnKeyUp = edSQLKeyUp
+              OnMouseMove = edSQLMouseMove
+              OnClickLink = edSQLClickLink
+              Gutter.Width = 80
+              Gutter.MouseActions = <>
+              Gutter.OnChange = edSQLSynGutterChange
+              RightGutter.Width = 0
+              RightGutter.MouseActions = <>
+              Highlighter = SynSQLSyn2
+              Keystrokes = <              
+                item
+                  Command = ecUp
+                  ShortCut = 38
+                end              
+                item
+                  Command = ecSelUp
+                  ShortCut = 8230
+                end              
+                item
+                  Command = ecScrollUp
+                  ShortCut = 16422
+                end              
+                item
+                  Command = ecDown
+                  ShortCut = 40
+                end              
+                item
+                  Command = ecSelDown
+                  ShortCut = 8232
+                end              
+                item
+                  Command = ecScrollDown
+                  ShortCut = 16424
+                end              
+                item
+                  Command = ecLeft
+                  ShortCut = 37
+                end              
+                item
+                  Command = ecSelLeft
+                  ShortCut = 8229
+                end              
+                item
+                  Command = ecWordLeft
+                  ShortCut = 16421
+                end              
+                item
+                  Command = ecSelWordLeft
+                  ShortCut = 24613
+                end              
+                item
+                  Command = ecRight
+                  ShortCut = 39
+                end              
+                item
+                  Command = ecSelRight
+                  ShortCut = 8231
+                end              
+                item
+                  Command = ecWordRight
+                  ShortCut = 16423
+                end              
+                item
+                  Command = ecSelWordRight
+                  ShortCut = 24615
+                end              
+                item
+                  Command = ecPageDown
+                  ShortCut = 34
+                end              
+                item
+                  Command = ecSelPageDown
+                  ShortCut = 8226
+                end              
+                item
+                  Command = ecPageBottom
+                  ShortCut = 16418
+                end              
+                item
+                  Command = ecSelPageBottom
+                  ShortCut = 24610
+                end              
+                item
+                  Command = ecPageUp
+                  ShortCut = 33
+                end              
+                item
+                  Command = ecSelPageUp
+                  ShortCut = 8225
+                end              
+                item
+                  Command = ecPageTop
+                  ShortCut = 16417
+                end              
+                item
+                  Command = ecSelPageTop
+                  ShortCut = 24609
+                end              
+                item
+                  Command = ecLineStart
+                  ShortCut = 36
+                end              
+                item
+                  Command = ecSelLineStart
+                  ShortCut = 8228
+                end              
+                item
+                  Command = ecEditorTop
+                  ShortCut = 16420
+                end              
+                item
+                  Command = ecSelEditorTop
+                  ShortCut = 24612
+                end              
+                item
+                  Command = ecLineEnd
+                  ShortCut = 35
+                end              
+                item
+                  Command = ecSelLineEnd
+                  ShortCut = 8227
+                end              
+                item
+                  Command = ecEditorBottom
+                  ShortCut = 16419
+                end              
+                item
+                  Command = ecSelEditorBottom
+                  ShortCut = 24611
+                end              
+                item
+                  Command = ecToggleMode
+                  ShortCut = 45
+                end              
+                item
+                  Command = ecCopy
+                  ShortCut = 16429
+                end              
+                item
+                  Command = ecPaste
+                  ShortCut = 8237
+                end              
+                item
+                  Command = ecDeleteChar
+                  ShortCut = 46
+                end              
+                item
+                  Command = ecCut
+                  ShortCut = 8238
+                end              
+                item
+                  Command = ecDeleteLastChar
+                  ShortCut = 8
+                end              
+                item
+                  Command = ecDeleteLastChar
+                  ShortCut = 8200
+                end              
+                item
+                  Command = ecDeleteLastWord
+                  ShortCut = 16392
+                end              
+                item
+                  Command = ecUndo
+                  ShortCut = 32776
+                end              
+                item
+                  Command = ecRedo
+                  ShortCut = 40968
+                end              
+                item
+                  Command = ecLineBreak
+                  ShortCut = 13
+                end              
+                item
+                  Command = ecSelectAll
+                  ShortCut = 16449
+                end              
+                item
+                  Command = ecCopy
+                  ShortCut = 16451
+                end              
+                item
+                  Command = ecBlockIndent
+                  ShortCut = 24649
+                end              
+                item
+                  Command = ecLineBreak
+                  ShortCut = 16461
+                end              
+                item
+                  Command = ecInsertLine
+                  ShortCut = 16462
+                end              
+                item
+                  Command = ecDeleteWord
+                  ShortCut = 16468
+                end              
+                item
+                  Command = ecBlockUnindent
+                  ShortCut = 24661
+                end              
+                item
+                  Command = ecPaste
+                  ShortCut = 16470
+                end              
+                item
+                  Command = ecCut
+                  ShortCut = 16472
+                end              
+                item
+                  Command = ecDeleteLine
+                  ShortCut = 16473
+                end              
+                item
+                  Command = ecDeleteEOL
+                  ShortCut = 24665
+                end              
+                item
+                  Command = ecUndo
+                  ShortCut = 16474
+                end              
+                item
+                  Command = ecRedo
+                  ShortCut = 24666
+                end              
+                item
+                  Command = ecGotoMarker0
+                  ShortCut = 16432
+                end              
+                item
+                  Command = ecGotoMarker1
+                  ShortCut = 16433
+                end              
+                item
+                  Command = ecGotoMarker2
+                  ShortCut = 16434
+                end              
+                item
+                  Command = ecGotoMarker3
+                  ShortCut = 16435
+                end              
+                item
+                  Command = ecGotoMarker4
+                  ShortCut = 16436
+                end              
+                item
+                  Command = ecGotoMarker5
+                  ShortCut = 16437
+                end              
+                item
+                  Command = ecGotoMarker6
+                  ShortCut = 16438
+                end              
+                item
+                  Command = ecGotoMarker7
+                  ShortCut = 16439
+                end              
+                item
+                  Command = ecGotoMarker8
+                  ShortCut = 16440
+                end              
+                item
+                  Command = ecGotoMarker9
+                  ShortCut = 16441
+                end              
+                item
+                  Command = ecSetMarker0
+                  ShortCut = 24624
+                end              
+                item
+                  Command = ecSetMarker1
+                  ShortCut = 24625
+                end              
+                item
+                  Command = ecSetMarker2
+                  ShortCut = 24626
+                end              
+                item
+                  Command = ecSetMarker3
+                  ShortCut = 24627
+                end              
+                item
+                  Command = ecSetMarker4
+                  ShortCut = 24628
+                end              
+                item
+                  Command = ecSetMarker5
+                  ShortCut = 24629
+                end              
+                item
+                  Command = ecSetMarker6
+                  ShortCut = 24630
+                end              
+                item
+                  Command = ecSetMarker7
+                  ShortCut = 24631
+                end              
+                item
+                  Command = ecSetMarker8
+                  ShortCut = 24632
+                end              
+                item
+                  Command = ecSetMarker9
+                  ShortCut = 24633
+                end              
+                item
+                  Command = EcFoldLevel1
+                  ShortCut = 41009
+                end              
+                item
+                  Command = EcFoldLevel2
+                  ShortCut = 41010
+                end              
+                item
+                  Command = EcFoldLevel3
+                  ShortCut = 41011
+                end              
+                item
+                  Command = EcFoldLevel4
+                  ShortCut = 41012
+                end              
+                item
+                  Command = EcFoldLevel5
+                  ShortCut = 41013
+                end              
+                item
+                  Command = EcFoldLevel6
+                  ShortCut = 41014
+                end              
+                item
+                  Command = EcFoldLevel7
+                  ShortCut = 41015
+                end              
+                item
+                  Command = EcFoldLevel8
+                  ShortCut = 41016
+                end              
+                item
+                  Command = EcFoldLevel9
+                  ShortCut = 41017
+                end              
+                item
+                  Command = EcFoldLevel0
+                  ShortCut = 41008
+                end              
+                item
+                  Command = EcFoldCurrent
+                  ShortCut = 41005
+                end              
+                item
+                  Command = EcUnFoldCurrent
+                  ShortCut = 41003
+                end              
+                item
+                  Command = EcToggleMarkupWord
+                  ShortCut = 32845
+                end              
+                item
+                  Command = ecNormalSelect
+                  ShortCut = 24654
+                end              
+                item
+                  Command = ecColumnSelect
+                  ShortCut = 24643
+                end              
+                item
+                  Command = ecLineSelect
+                  ShortCut = 24652
+                end              
+                item
+                  Command = ecTab
+                  ShortCut = 9
+                end              
+                item
+                  Command = ecShiftTab
+                  ShortCut = 8201
+                end              
+                item
+                  Command = ecMatchBracket
+                  ShortCut = 24642
+                end              
+                item
+                  Command = ecColSelUp
+                  ShortCut = 40998
+                end              
+                item
+                  Command = ecColSelDown
+                  ShortCut = 41000
+                end              
+                item
+                  Command = ecColSelLeft
+                  ShortCut = 40997
+                end              
+                item
+                  Command = ecColSelRight
+                  ShortCut = 40999
+                end              
+                item
+                  Command = ecColSelPageDown
+                  ShortCut = 40994
+                end              
+                item
+                  Command = ecColSelPageBottom
+                  ShortCut = 57378
+                end              
+                item
+                  Command = ecColSelPageUp
+                  ShortCut = 40993
+                end              
+                item
+                  Command = ecColSelPageTop
+                  ShortCut = 57377
+                end              
+                item
+                  Command = ecColSelLineStart
+                  ShortCut = 40996
+                end              
+                item
+                  Command = ecColSelLineEnd
+                  ShortCut = 40995
+                end              
+                item
+                  Command = ecColSelEditorTop
+                  ShortCut = 57380
+                end              
+                item
+                  Command = ecColSelEditorBottom
+                  ShortCut = 57379
+                end>
+              MouseActions = <>
+              MouseTextActions = <>
+              MouseSelActions = <>
+              VisibleSpecialChars = [vscSpace, vscTabAtLast]
+              SelectedColor.BackPriority = 50
+              SelectedColor.ForePriority = 50
+              SelectedColor.FramePriority = 50
+              SelectedColor.BoldPriority = 50
+              SelectedColor.ItalicPriority = 50
+              SelectedColor.UnderlinePriority = 50
+              SelectedColor.StrikeOutPriority = 50
+              BracketHighlightStyle = sbhsBoth
+              BracketMatchColor.Background = clNone
+              BracketMatchColor.Foreground = clNone
+              BracketMatchColor.Style = [fsBold]
+              FoldedCodeColor.Background = clNone
+              FoldedCodeColor.Foreground = clGray
+              FoldedCodeColor.FrameColor = clGray
+              MouseLinkColor.Background = clNone
+              MouseLinkColor.Foreground = clBlue
+              LineHighlightColor.Background = clNone
+              LineHighlightColor.Foreground = clNone
+              OnChange = edSQLChange
+              OnChangeUpdating = edSQLChangeUpdating
+              OnCommandProcessed = edSQLCommandProcessed
+              OnGutterClick = edSQLGutterClick
+              OnPaint = edSQLPaint
+              OnPlaceBookmark = edSQLPlaceBookmark
+              OnStatusChange = edSQLStatusChange
+              inline SynLeftGutterPartList1: TSynGutterPartList
+                object SynGutterMarks1: TSynGutterMarks
+                  Width = 30
+                  MouseActions = <>
+                end
+                object SynGutterLineNumber1: TSynGutterLineNumber
+                  Width = 29
+                  MouseActions = <>
+                  MarkupInfo.Background = clBtnFace
+                  MarkupInfo.Foreground = clNone
+                  DigitCount = 2
+                  ShowOnlyLineNumbersMultiplesOf = 1
+                  ZeroStart = False
+                  LeadingZeros = False
+                end
+                object SynGutterChanges1: TSynGutterChanges
+                  Width = 5
+                  MouseActions = <>
+                  ModifiedColor = 59900
+                  SavedColor = clGreen
+                end
+                object SynGutterSeparator1: TSynGutterSeparator
+                  Width = 3
+                  MouseActions = <>
+                  MarkupInfo.Background = clWhite
+                  MarkupInfo.Foreground = clGray
+                end
+                object SynGutterCodeFolding1: TSynGutterCodeFolding
+                  Width = 13
+                  MouseActions = <>
+                  MarkupInfo.Background = clNone
+                  MarkupInfo.Foreground = clGray
+                  MouseActionsExpanded = <>
+                  MouseActionsCollapsed = <>
+                end
+              end
+            end
+          end
+          object TabSheet2: TTabSheet
+            Caption = 'Grid'
+            ClientHeight = 629
+            ClientWidth = 1008
+            object btJSON1: TButton
+              Left = 768
+              Height = 31
+              Top = 21
+              Width = 94
+              Caption = 'Make JSON'
+              OnClick = btJSONClick
+              TabOrder = 0
+            end
+            object btChart1: TButton
+              Left = 632
+              Height = 31
+              Top = 21
+              Width = 94
+              Caption = 'Chart'
+              OnClick = btChartClick
+              TabOrder = 1
+            end
+            object dbnavmy1: TDBNavigator
+              Left = 45
+              Height = 31
+              Top = 21
+              Width = 301
+              BevelOuter = bvNone
+              ChildSizing.EnlargeHorizontal = crsScaleChilds
+              ChildSizing.EnlargeVertical = crsScaleChilds
+              ChildSizing.ShrinkHorizontal = crsScaleChilds
+              ChildSizing.ShrinkVertical = crsScaleChilds
+              ChildSizing.Layout = cclLeftToRightThenTopToBottom
+              ChildSizing.ControlsPerLine = 100
+              ClientHeight = 31
+              ClientWidth = 301
+              Options = []
+              TabOrder = 2
+            end
+            object dbgridmy1: TDBGrid
+              Left = 0
+              Height = 565
+              Top = 64
+              Width = 1008
+              Align = alBottom
+              Color = clWindow
+              Columns = <>
+              TabOrder = 3
+            end
+          end
+          object TabSheet3: TTabSheet
+            Caption = 'Log'
+            ClientHeight = 629
+            ClientWidth = 1008
+            object edLog1: TMemo
+              Left = 0
+              Height = 629
+              Top = 0
+              Width = 1008
+              Align = alClient
+              TabOrder = 0
+            end
+          end
+          object TabSheet4: TTabSheet
+            Caption = 'Tools'
+            ClientHeight = 629
+            ClientWidth = 1008
+            object btBanco1: TButton
+              Left = 19
+              Height = 31
+              Top = 50
+              Width = 232
+              Caption = 'Cria database'
+              OnClick = btBancoClick
+              TabOrder = 0
+            end
+            object ToggleBox3: TToggleBox
+              Left = 19
+              Height = 31
+              Top = 112
+              Width = 232
+              Caption = 'Criar usuario'
+              OnChange = ToggleBox2Change
+              TabOrder = 1
+            end
+            object btPermissao1: TToggleBox
+              Left = 19
+              Height = 31
+              Top = 174
+              Width = 232
+              Caption = 'Permissão'
+              OnChange = btPermissaoChange
+              TabOrder = 2
+            end
+            object btcomparar1: TButton
+              Left = 24
+              Height = 31
+              Top = 264
+              Width = 228
+              Caption = 'Comparar'
+              OnClick = btcompararClick
+              TabOrder = 3
+            end
+            object Button4: TButton
+              Left = 19
+              Height = 31
+              Top = 328
+              Width = 232
+              Caption = 'Migration to PostgreSQL'
+              OnClick = Button3Click
+              TabOrder = 4
+            end
           end
         end
       end
     end
     object TabSheet7: TTabSheet
       Caption = 'Setup'
-      ClientHeight = 501
-      ClientWidth = 935
+      ClientHeight = 664
+      ClientWidth = 1269
       object Label12: TLabel
-        Left = 8
-        Height = 22
-        Top = 56
-        Width = 163
+        Left = 10
+        Height = 20
+        Top = 70
+        Width = 151
         Caption = 'Tabela de Equivalentes'
         ParentColor = False
       end
       object vlistequivalente: TStringGrid
-        Left = 8
-        Height = 403
-        Top = 73
-        Width = 392
+        Left = 10
+        Height = 504
+        Top = 91
+        Width = 490
         ColCount = 6
         Columns = <        
           item
+            MinSize = 12
+            MaxSize = 250
             Title.Caption = 'Chave'
-            Width = 64
+            Width = 80
           end        
           item
+            MinSize = 12
+            MaxSize = 250
             Title.Caption = 'Trocar'
-            Width = 64
+            Width = 80
           end        
           item
+            MinSize = 12
+            MaxSize = 250
             Title.Caption = 'Anterior'
-            Width = 64
+            Width = 80
           end        
           item
+            MinSize = 12
+            MaxSize = 250
             Title.Caption = 'Posterior'
-            Width = 64
+            Width = 80
           end        
           item
+            MinSize = 12
+            MaxSize = 250
             Title.Caption = 'Neg Anterior'
-            Width = 64
+            Width = 80
           end        
           item
+            MinSize = 12
+            MaxSize = 250
             Title.Caption = 'Neg Posterior'
-            Width = 64
+            Width = 80
           end>
         FixedCols = 0
         RowCount = 10
@@ -1259,48 +2094,47 @@ object frmmquery2: Tfrmmquery2
         )
       end
       object ListBox1: TListBox
-        Left = 408
-        Height = 403
-        Top = 73
-        Width = 157
+        Left = 510
+        Height = 504
+        Top = 91
+        Width = 196
         Items.Strings = (
           'NULLIF'
           'COALESCE'
           'CONVERT_FROM'
         )
-        ItemHeight = 0
+        ItemHeight = 20
         TabOrder = 1
-        TopIndex = -1
       end
       object Label13: TLabel
-        Left = 408
-        Height = 22
-        Top = 56
-        Width = 136
+        Left = 510
+        Height = 20
+        Top = 70
+        Width = 121
         Caption = 'Postgres Functions'
         ParentColor = False
       end
       object SpeedButton1: TSpeedButton
-        Left = 8
-        Height = 22
-        Top = 16
-        Width = 23
+        Left = 10
+        Height = 28
+        Top = 20
+        Width = 29
         Caption = '+'
         OnClick = SpeedButton1Click
       end
       object SpeedButton2: TSpeedButton
-        Left = 36
-        Height = 22
-        Top = 16
-        Width = 23
+        Left = 45
+        Height = 28
+        Top = 20
+        Width = 29
         Caption = '-'
         OnClick = SpeedButton2Click
       end
       object SpeedButton3: TSpeedButton
-        Left = 64
-        Height = 22
-        Top = 16
-        Width = 23
+        Left = 80
+        Height = 28
+        Top = 20
+        Width = 29
         Images = ImageList1
         ImageIndex = 1
       end
@@ -1319,8 +2153,8 @@ object frmmquery2: Tfrmmquery2
     Port = 0
     User = 'root'
     Protocol = 'mysql'
-    Left = 424
-    Top = 107
+    Left = 530
+    Top = 134
   end
   object zconpost: TZConnection
     ControlsCodePage = cCP_UTF8
@@ -1334,26 +2168,26 @@ object frmmquery2: Tfrmmquery2
     User = 'root'
     Protocol = 'postgresql'
     LibraryLocation = '/Applications/Postgres.app/Contents/Versions/12/lib/libpq.5.12.dylib'
-    Left = 426
-    Top = 187
+    Left = 533
+    Top = 234
   end
   object Zqrypost: TZQuery
     Connection = zconpost
     Params = <>
-    Left = 616
-    Top = 419
+    Left = 770
+    Top = 524
   end
   object zmyqry: TZReadOnlyQuery
     Connection = zconmysql
     Params = <>
-    Left = 608
-    Top = 339
+    Left = 760
+    Top = 424
   end
   object zmyqry1: TZReadOnlyQuery
     Connection = zconmysql
     Params = <>
-    Left = 672
-    Top = 336
+    Left = 840
+    Top = 420
   end
   object TrayIcon1: TTrayIcon
     PopUpMenu = popMenu
@@ -7295,30 +8129,30 @@ object frmmquery2: Tfrmmquery2
       0080010000800100008001000080010000800100008001000080010000800100
       00C0030000FFFF0000
     }
-    Left = 248
-    Top = 456
+    Left = 310
+    Top = 570
   end
   object zpostqry: TZReadOnlyQuery
     Connection = zconpost
     Params = <>
-    Left = 680
-    Top = 419
+    Left = 850
+    Top = 524
   end
   object zpostqry1: TZReadOnlyQuery
     Connection = zconpost
     Params = <>
-    Left = 744
-    Top = 419
+    Left = 930
+    Top = 524
   end
   object zmyqry2: TZReadOnlyQuery
     Connection = zconmysql
     Params = <>
-    Left = 744
-    Top = 336
+    Left = 930
+    Top = 420
   end
   object PopupMenuTblPost: TPopupMenu
-    Left = 846
-    Top = 215
+    Left = 1058
+    Top = 269
     object mnRefresh: TMenuItem
       Caption = 'Refresh'
       OnClick = mnRefreshClick
@@ -7332,16 +8166,16 @@ object frmmquery2: Tfrmmquery2
     end
   end
   object popSeq: TPopupMenu
-    Left = 248
-    Top = 344
+    Left = 310
+    Top = 430
     object mnCriarSeq: TMenuItem
       Caption = 'Migrar Sequência'
       OnClick = mnCriarSeqClick
     end
   end
   object MainMenu1: TMainMenu
-    Left = 64
-    Top = 440
+    Left = 80
+    Top = 550
     object MenuItem3: TMenuItem
       Caption = 'File'
       object MenuItem6: TMenuItem
@@ -7375,6 +8209,10 @@ object frmmquery2: Tfrmmquery2
           OnClick = mnLTriggerClick
         end
       end
+      object miChart: TMenuItem
+        Caption = 'Chart'
+        OnClick = miChartClick
+      end
     end
     object miEditor: TMenuItem
       Caption = 'Edit'
@@ -7398,8 +8236,8 @@ object frmmquery2: Tfrmmquery2
     DefaultFilter = 'Arquivos SQL (*.sql)|*.sql'
     Enabled = False
     SQLDialect = sqlPostgres
-    Left = 544
-    Top = 520
+    Left = 680
+    Top = 650
   end
   object SynCompletion1: TSynCompletion
     Position = 0
@@ -7413,12 +8251,12 @@ object frmmquery2: Tfrmmquery2
     EndOfTokenChr = '()[].'
     ExecCommandID = ecSynCompletionExecute
     ToggleReplaceWhole = False
-    Left = 440
-    Top = 520
+    Left = 550
+    Top = 650
   end
   object popMenu: TPopupMenu
-    Left = 248
-    Top = 416
+    Left = 310
+    Top = 520
     object miMostrar: TMenuItem
       Caption = 'Show'
       OnClick = miMostrarClick
@@ -7429,19 +8267,24 @@ object frmmquery2: Tfrmmquery2
     end
   end
   object popSQL: TPopupMenu
-    Left = 342
-    Top = 203
+    Left = 428
+    Top = 254
     object miFont: TMenuItem
       Caption = 'Fonte'
       OnClick = miFontClick
     end
-    object MenuItem10: TMenuItem
-      Caption = 'MenuItem10'
+    object miCNewEdit: TMenuItem
+      Caption = 'Copy to New Edit'
+      OnClick = miCNewEditClick
+    end
+    object miEmbelezar: TMenuItem
+      Caption = 'Beautify Code'
+      OnClick = miEmbelezarClick
     end
   end
   object SaveDialog1: TSaveDialog
-    Left = 840
-    Top = 128
+    Left = 1050
+    Top = 160
   end
   object SynPluginSyncroEdit1: TSynPluginSyncroEdit
     GutterGlyph.Data = {
@@ -10719,31 +11562,31 @@ object frmmquery2: Tfrmmquery2
     MarkupInfoSync.FrameColor = clFuchsia
     MarkupInfoArea.Background = clMoneyGreen
     MarkupInfoArea.Foreground = clNone
-    Left = 336
-    Top = 520
+    Left = 420
+    Top = 650
   end
   object FindDialog1: TFindDialog
     OnFind = FindDialog1Find
-    Left = 144
-    Top = 184
+    Left = 180
+    Top = 230
   end
   object FontDialog1: TFontDialog
     MinFontSize = 0
     MaxFontSize = 0
-    Left = 712
-    Top = 528
+    Left = 890
+    Top = 660
   end
   object popfind: TPopupMenu
-    Left = 248
-    Top = 504
+    Left = 310
+    Top = 630
     object MenuItem8: TMenuItem
       Caption = 'Ocultar'
       OnClick = MenuItem8Click
     end
   end
   object popmenuTrigger: TPopupMenu
-    Left = 384
-    Top = 416
+    Left = 480
+    Top = 520
     object miCTrigger: TMenuItem
       Caption = 'Criar Trigger'
       OnClick = miCTriggerClick
@@ -10754,8 +11597,8 @@ object frmmquery2: Tfrmmquery2
     end
   end
   object ImageList1: TImageList
-    Left = 720
-    Top = 464
+    Left = 900
+    Top = 580
     Bitmap = {
       4C7A140000001000000010000000572800000000000078DAED7B0558545B17F6
       99648266E8EE8E4144522FA5608082052225368A0812A2828D058A62120A480A
@@ -11084,31 +11927,42 @@ object frmmquery2: Tfrmmquery2
     }
   end
   object pmTabelasMy: TPopupMenu
-    Left = 424
-    Top = 352
+    Left = 530
+    Top = 440
     object MenuItem12: TMenuItem
       Caption = 'Ocultar detalhes'
       OnClick = MenuItem12Click
     end
   end
   object pmTabelaPost: TPopupMenu
-    Left = 848
-    Top = 264
+    Left = 1060
+    Top = 330
     object miOcultarPost: TMenuItem
       Caption = 'Ocultar Detalhes'
       OnClick = miOcultarPostClick
     end
   end
   object pmTabelaMy: TPopupMenu
-    Left = 320
-    Top = 352
+    Left = 400
+    Top = 440
     object miCreate: TMenuItem
       Caption = 'Create Table'
       OnClick = miCreateClick
     end
+    object midrop: TMenuItem
+      Caption = 'Drop table'
+      OnClick = midropClick
+    end
+    object Separator1: TMenuItem
+      Caption = '-'
+    end
+    object miselect: TMenuItem
+      Caption = 'Select 1000'
+      OnClick = miselectClick
+    end
   end
   object dsmy: TDataSource
-    Left = 520
-    Top = 339
+    Left = 650
+    Top = 424
   end
 end

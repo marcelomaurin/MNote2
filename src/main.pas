@@ -225,7 +225,6 @@ type
     procedure AnalisarSynEdit(SynEdit: TSynEdit);
     procedure CarregarParametros();
     procedure CarregarOld();
-    function NovoItem():TTabSheet;
     procedure Carregar(arquivo : String);
     procedure SalvarTab(tb : TTabSheet);
     procedure synChange(Sender: TObject);
@@ -246,9 +245,12 @@ type
 
   public
     { public declarations }
+    function NovoItem():TTabSheet;
     procedure MessageHint(info : string);
     function ExistFileOpen(Arquivo : string): boolean;
     procedure CarregarArquivo(arquivo : string);
+    procedure NewContext();
+    procedure FazPergunta();
   end;
 
 var
@@ -485,6 +487,21 @@ begin
         end;
      end;
   end;
+end;
+
+procedure TfrmMNote.NewContext;
+begin
+  mequestion.Text := '';
+end;
+
+procedure TfrmMNote.FazPergunta;
+begin
+   pnWait.Visible:=true;
+     Application.ProcessMessages;
+     QuestionChat();
+
+     //AnalisarSynEdit(meChatHist);
+     pnWait.Visible:=false;
 end;
 
 function TfrmMNote.NovoItem():TTabSheet;
@@ -933,12 +950,7 @@ procedure TfrmMNote.edChatKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #13 then
   begin
-     pnWait.Visible:=true;
-     Application.ProcessMessages;
-     QuestionChat();
-
-     //AnalisarSynEdit(meChatHist);
-     pnWait.Visible:=false;
+    FazPergunta();
   end;
 end;
 
@@ -1108,7 +1120,7 @@ end;
 
 procedure TfrmMNote.MenuItem20Click(Sender: TObject);
 begin
-  mequestion.Text := '';
+  NewContext();
 end;
 
 procedure TfrmMNote.MenuItem7Click(Sender: TObject);
@@ -1631,10 +1643,11 @@ begin
      begin
          FCHATGPT := TCHATGPT.create(self);
      end;
+     mequestion.Text := mequestion.Text + edChat.Text;
+
      FCHATGPT.TOKEN:= FSetMain.CHATGPT;
      FCHATGPT.SendQuestion(mequestion.Text);
      //Armazena pergunta historica
-     mequestion.Text := mequestion.Text + edChat.Text;
      resposta := FCHATGPT.Response;
      //Armazena no historico
      meChatHist.Caption :=  meChatHist.Caption + #13+ #13+ 'Question: '+edChat.Text+#13;

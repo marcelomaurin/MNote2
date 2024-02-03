@@ -1,20 +1,21 @@
 object frmSobre: TfrmSobre
-  Left = 673
+  Left = 684
   Height = 200
-  Top = 1290
+  Top = 295
   Width = 320
   BorderStyle = bsDialog
   Caption = 'About'
   ClientHeight = 200
   ClientWidth = 320
   OnCreate = FormCreate
-  LCLVersion = '3.0.0.3'
+  LCLVersion = '2.2.6.0'
   object Label2: TLabel
     Left = 40
-    Height = 17
+    Height = 22
     Top = 200
-    Width = 235
+    Width = 247
     Caption = 'Criado por Marcelo Maurin Martins'
+    ParentColor = False
   end
   object ToggleBox1: TToggleBox
     Left = 120
@@ -22,31 +23,34 @@ object frmSobre: TfrmSobre
     Top = 152
     Width = 90
     Caption = 'Close'
-    TabOrder = 0
     OnChange = ToggleBox1Change
+    TabOrder = 0
   end
   object Label3: TLabel
     Left = 104
-    Height = 17
+    Height = 22
     Top = 32
-    Width = 146
+    Width = 154
     Caption = 'MNote2 - Maurin note'
+    ParentColor = False
   end
   object Label4: TLabel
     Left = 120
-    Height = 17
+    Height = 22
     Top = 67
-    Width = 51
+    Width = 53
     Caption = 'Version'
+    ParentColor = False
     OnClick = Label4Click
     OnDblClick = Label4DblClick
   end
   object lbversao: TLabel
     Left = 184
-    Height = 17
+    Height = 22
     Top = 67
-    Width = 20
+    Width = 22
     Caption = '0.1'
+    ParentColor = False
   end
   object Image1: TImage
     Left = 16
@@ -5701,7 +5705,7 @@ object frmSobre: TfrmSobre
     About.Description.Strings = (
       'Component that shows a Powered By graphic.'#10'Use method ShowPoweredByForm in your form.create()'#10'to use the component'
     )
-    About.Title = 'PoweredBy component'
+    About.Title = 'About PoweredBy component'
     About.Height = 280
     About.Width = 400
     About.Font.Color = clNavy

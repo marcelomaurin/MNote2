@@ -47,45 +47,48 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="12">
+    <RequiredPackages Count="13">
       <Item1>
-        <PackageName Value="FCL"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item1>
       <Item2>
-        <PackageName Value="poweredby"/>
+        <PackageName Value="FCL"/>
       </Item2>
       <Item3>
-        <PackageName Value="industrial"/>
+        <PackageName Value="poweredby"/>
       </Item3>
       <Item4>
-        <PackageName Value="pkg_gifanim"/>
+        <PackageName Value="industrial"/>
       </Item4>
       <Item5>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="pkg_gifanim"/>
       </Item5>
       <Item6>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="zcomponent"/>
       </Item6>
       <Item7>
-        <PackageName Value="rxnew"/>
+        <PackageName Value="multiloglaz"/>
       </Item7>
       <Item8>
-        <PackageName Value="SynEditDsgn"/>
+        <PackageName Value="rxnew"/>
       </Item8>
       <Item9>
-        <PackageName Value="python4lazarus_package"/>
+        <PackageName Value="SynEditDsgn"/>
       </Item9>
       <Item10>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="python4lazarus_package"/>
       </Item10>
       <Item11>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="lnetvisual"/>
       </Item11>
       <Item12>
-        <PackageName Value="LCL"/>
+        <PackageName Value="SynEdit"/>
       </Item12>
+      <Item13>
+        <PackageName Value="LCL"/>
+      </Item13>
     </RequiredPackages>
-    <Units Count="32">
+    <Units Count="33">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -258,6 +261,13 @@
         <Filename Value="codigo.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit31>
+      <Unit32>
+        <Filename Value="chart.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmChart"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit32>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
