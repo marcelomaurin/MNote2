@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="12"/>
     <BuildModes Active="Default"/>
-    <Units Count="127">
+    <Units Count="129">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -18,9 +18,10 @@
         <ComponentName Value="frmMNote"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
-        <TopLine Value="1152"/>
-        <CursorPos X="3" Y="1154"/>
+        <TopLine Value="1661"/>
+        <CursorPos X="11" Y="1688"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -54,9 +55,9 @@
       <Unit5>
         <Filename Value="setmain.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="5"/>
-        <TopLine Value="26"/>
-        <CursorPos X="19" Y="38"/>
+        <EditorIndex Value="6"/>
+        <TopLine Value="397"/>
+        <CursorPos X="52" Y="411"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit5>
@@ -162,9 +163,9 @@
         <ComponentName Value="frmconfig"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="4"/>
-        <TopLine Value="46"/>
-        <CursorPos X="83" Y="73"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="65"/>
+        <CursorPos X="46" Y="84"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -176,7 +177,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="171"/>
         <CursorPos Y="182"/>
-        <UsageCount Value="197"/>
+        <UsageCount Value="199"/>
       </Unit19>
       <Unit20>
         <Filename Value="classes\chatgpt.pas"/>
@@ -184,7 +185,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="186"/>
         <CursorPos Y="202"/>
-        <UsageCount Value="137"/>
+        <UsageCount Value="139"/>
       </Unit20>
       <Unit21>
         <Filename Value="mquery2\mquery2.pas"/>
@@ -195,7 +196,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="832"/>
         <CursorPos X="8" Y="850"/>
-        <UsageCount Value="125"/>
+        <UsageCount Value="127"/>
       </Unit21>
       <Unit22>
         <Filename Value="mquery2\pesquisar.lfm"/>
@@ -204,7 +205,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="125"/>
+        <UsageCount Value="127"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit22>
       <Unit23>
@@ -216,7 +217,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="125"/>
+        <UsageCount Value="127"/>
       </Unit23>
       <Unit24>
         <Filename Value="mquery2\tabela.pas"/>
@@ -225,14 +226,14 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="12"/>
         <CursorPos X="3" Y="17"/>
-        <UsageCount Value="125"/>
+        <UsageCount Value="127"/>
       </Unit24>
       <Unit25>
         <Filename Value="mquery2\triggers.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="3" Y="15"/>
-        <UsageCount Value="125"/>
+        <UsageCount Value="127"/>
       </Unit25>
       <Unit26>
         <Filename Value="mquery2\typedb.pas"/>
@@ -240,7 +241,7 @@
         <UnitName Value="TypeDB"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="23" Y="19"/>
-        <UsageCount Value="125"/>
+        <UsageCount Value="127"/>
       </Unit26>
       <Unit27>
         <Filename Value="mquery2\view.pas"/>
@@ -249,7 +250,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="125"/>
+        <UsageCount Value="127"/>
       </Unit27>
       <Unit28>
         <Filename Value="mquery2\views.pas"/>
@@ -259,7 +260,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="125"/>
+        <UsageCount Value="127"/>
       </Unit28>
       <Unit29>
         <Filename Value="mquery2\benchmark.pas"/>
@@ -270,7 +271,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="356"/>
         <CursorPos X="3" Y="384"/>
-        <UsageCount Value="125"/>
+        <UsageCount Value="127"/>
       </Unit29>
       <Unit30>
         <Filename Value="porradawebapi.pas"/>
@@ -281,7 +282,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="116"/>
         <CursorPos X="28" Y="111"/>
-        <UsageCount Value="107"/>
+        <UsageCount Value="109"/>
       </Unit30>
       <Unit31>
         <Filename Value="codigo.pas"/>
@@ -289,7 +290,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="55"/>
         <CursorPos X="8" Y="65"/>
-        <UsageCount Value="82"/>
+        <UsageCount Value="84"/>
       </Unit31>
       <Unit32>
         <Filename Value="chart.pas"/>
@@ -300,7 +301,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="164"/>
         <CursorPos X="43" Y="175"/>
-        <UsageCount Value="62"/>
+        <UsageCount Value="64"/>
       </Unit32>
       <Unit33>
         <Filename Value="imgjson\jsonmain.pas"/>
@@ -308,11 +309,10 @@
         <ComponentName Value="frmmainJSON"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="3"/>
         <TopLine Value="340"/>
         <CursorPos X="11" Y="347"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit33>
@@ -325,7 +325,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
       </Unit34>
       <Unit35>
         <Filename Value="imgjson\base.pas"/>
@@ -336,7 +336,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
       </Unit35>
       <Unit36>
         <Filename Value="imgjson\funcoes2.pas"/>
@@ -351,7 +351,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="148"/>
         <CursorPos X="25" Y="166"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
       </Unit37>
       <Unit38>
         <Filename Value="imgjson\novo.pas"/>
@@ -363,7 +363,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
       </Unit38>
       <Unit39>
         <Filename Value="imgjson\pythonrun.pas"/>
@@ -373,7 +373,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
       </Unit39>
       <Unit40>
         <Filename Value="imgjson\setimg.pas"/>
@@ -388,7 +388,7 @@
         <EditorIndex Value="1"/>
         <TopLine Value="118"/>
         <CursorPos X="14" Y="141"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
         <Loaded Value="True"/>
       </Unit41>
       <Unit42>
@@ -400,7 +400,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
       </Unit42>
       <Unit43>
         <Filename Value="imgjson\sqledititem.pas"/>
@@ -410,7 +410,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
       </Unit43>
       <Unit44>
         <Filename Value="imgjson\sqleditor.pas"/>
@@ -421,7 +421,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
       </Unit44>
       <Unit45>
         <Filename Value="imgjson\sqlitem.pas"/>
@@ -431,7 +431,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
       </Unit45>
       <Unit46>
         <Filename Value="imgjson\trainning.pas"/>
@@ -442,7 +442,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
       </Unit46>
       <Unit47>
         <Filename Value="imgjson\config2.pas"/>
@@ -1036,127 +1036,146 @@
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit126>
+      <Unit127>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmToolsfalar"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="25"/>
+        <CursorPos X="16" Y="45"/>
+        <UsageCount Value="22"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit127>
+      <Unit128>
+        <Filename Value="toolsfalar\toolsfalar.lfm"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="21" Y="9"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit128>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="funcoes.pas"/>
-        <Caret Line="115" Column="61" TopLine="91"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="6" Column="123"/>
       </Position1>
       <Position2>
-        <Filename Value="funcoes.pas"/>
-        <Caret Line="379" Column="81" TopLine="373"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="957" Column="16" TopLine="952"/>
       </Position2>
       <Position3>
-        <Filename Value="funcoes.pas"/>
-        <Caret Line="7"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="257" Column="26" TopLine="244"/>
       </Position3>
       <Position4>
-        <Filename Value="funcoes.pas"/>
-        <Caret Line="10" Column="9"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="505" Column="18" TopLine="492"/>
       </Position4>
       <Position5>
-        <Filename Value="funcoes.pas"/>
-        <Caret Line="12" Column="32"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="34" Column="42" TopLine="15"/>
       </Position5>
       <Position6>
-        <Filename Value="imgjson\setproject.pas"/>
-        <Caret Line="381" Column="43" TopLine="367"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="62" Column="11" TopLine="60"/>
       </Position6>
       <Position7>
-        <Filename Value="imgjson\setproject.pas"/>
-        <Caret Line="12" Column="29"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="39" Column="5" TopLine="21"/>
       </Position7>
       <Position8>
-        <Filename Value="imgjson\setproject.pas"/>
-        <Caret Line="141" Column="14" TopLine="118"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="97" Column="19" TopLine="74"/>
       </Position8>
       <Position9>
-        <Filename Value="funcoes.pas"/>
-        <Caret Line="12" Column="32"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="53" Column="14" TopLine="51"/>
       </Position9>
       <Position10>
-        <Filename Value="main.pas"/>
-        <Caret Line="1506" Column="36" TopLine="253"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="40" Column="26" TopLine="18"/>
       </Position10>
       <Position11>
-        <Filename Value="main.pas"/>
-        <Caret Line="258" Column="11" TopLine="232"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="104" Column="59" TopLine="80"/>
       </Position11>
       <Position12>
-        <Filename Value="main.pas"/>
-        <Caret Line="260" Column="11" TopLine="234"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="59" Column="17" TopLine="57"/>
       </Position12>
       <Position13>
-        <Filename Value="main.pas"/>
-        <Caret Line="1154" Column="31" TopLine="1152"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="41" Column="29" TopLine="29"/>
       </Position13>
       <Position14>
-        <Filename Value="main.pas"/>
-        <Caret Line="1158" Column="20" TopLine="1140"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="106" Column="5" TopLine="86"/>
       </Position14>
       <Position15>
-        <Filename Value="main.pas"/>
-        <Caret Line="1154" Column="18" TopLine="1140"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="100" TopLine="87"/>
       </Position15>
       <Position16>
-        <Filename Value="main.pas"/>
-        <Caret Line="13" Column="53"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="80" Column="5" TopLine="73"/>
       </Position16>
       <Position17>
-        <Filename Value="imgjson\jsonmain.pas"/>
-        <Caret Line="180" Column="11" TopLine="158"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="85" Column="5" TopLine="73"/>
       </Position17>
       <Position18>
-        <Filename Value="imgjson\jsonmain.pas"/>
-        <Caret Line="369" Column="3" TopLine="367"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1682" Column="31" TopLine="1612"/>
       </Position18>
       <Position19>
-        <Filename Value="imgjson\jsonmain.pas"/>
-        <Caret Line="369" Column="3" TopLine="361"/>
+        <Filename Value="main.pas"/>
       </Position19>
       <Position20>
-        <Filename Value="imgjson\jsonmain.pas"/>
-        <Caret Line="9" Column="24"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="141" Column="23" TopLine="118"/>
       </Position20>
       <Position21>
-        <Filename Value="imgjson\jsonmain.pas"/>
-        <Caret Line="40" Column="13" TopLine="16"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="366" Column="15" TopLine="342"/>
       </Position21>
       <Position22>
-        <Filename Value="imgjson\jsonmain.pas"/>
-        <Caret Line="81" Column="23" TopLine="58"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="610" Column="13" TopLine="586"/>
       </Position22>
       <Position23>
-        <Filename Value="imgjson\jsonmain.pas"/>
-        <Caret Line="367" Column="32" TopLine="343"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1033" Column="5" TopLine="1019"/>
       </Position23>
       <Position24>
-        <Filename Value="imgjson\jsonmain.pas"/>
-        <Caret Line="373" Column="46" TopLine="345"/>
+        <Filename Value="toolsfalar\toolsfalar.pas"/>
+        <Caret Line="95" Column="5" TopLine="73"/>
       </Position24>
       <Position25>
         <Filename Value="main.pas"/>
-        <Caret Line="13" Column="53"/>
+        <Caret Line="3"/>
       </Position25>
       <Position26>
         <Filename Value="main.pas"/>
-        <Caret Line="1507" TopLine="1505"/>
+        <Caret Line="1033" Column="29" TopLine="1015"/>
       </Position26>
       <Position27>
-        <Filename Value="imgjson\jsonmain.pas"/>
-        <Caret Line="371" Column="22"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1030" Column="62" TopLine="1017"/>
       </Position27>
       <Position28>
-        <Filename Value="imgjson\jsonmain.pas"/>
-        <Caret Line="370" Column="22" TopLine="342"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="957" Column="16" TopLine="952"/>
       </Position28>
       <Position29>
-        <Filename Value="imgjson\jsonmain.pas"/>
-        <Caret Line="369" Column="22" TopLine="341"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="257" Column="26" TopLine="244"/>
       </Position29>
       <Position30>
-        <Filename Value="imgjson\jsonmain.pas"/>
-        <Caret Line="368" Column="22" TopLine="340"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="505" Column="18" TopLine="483"/>
       </Position30>
     </JumpHistory>
     <RunParams>
@@ -1297,28 +1316,28 @@
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="main.pas"/>
-        <Line Value="1462"/>
+        <Line Value="1481"/>
       </Item>
       <Item>
         <Kind Value="bpkSource"/>
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="main.pas"/>
-        <Line Value="1466"/>
+        <Line Value="1485"/>
       </Item>
       <Item>
         <Kind Value="bpkSource"/>
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="main.pas"/>
-        <Line Value="463"/>
+        <Line Value="465"/>
       </Item>
       <Item>
         <Kind Value="bpkSource"/>
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="main.pas"/>
-        <Line Value="1803"/>
+        <Line Value="1832"/>
       </Item>
       <Item>
         <Kind Value="bpkSource"/>

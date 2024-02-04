@@ -53,6 +53,7 @@ type
         FUsernamePost: String;
         FPasswordPost : String;
         FSchemaPost: String;
+        FToolsFalar : Boolean;
 
 
         //filename : String;
@@ -67,6 +68,7 @@ type
         procedure SetDllPath( value : string);
         procedure SetDllMyPath( value : string);
         procedure SetDllPostPath( value : string);
+        procedure SetToolsFalar(value : boolean);
         procedure Default();
   public
         constructor create();
@@ -101,6 +103,7 @@ type
         property UsernamePost: String read FUsernamePOST write FUsernamePost;
         property PasswordPost : String read FPasswordPost write FPasswordPost;
         property SchemaPost: String read FSchemaPost write FSchemaPost;
+        property ToolsFalar : Boolean read FToolsFalar write SetToolsFalar;
   end;
 
   var
@@ -125,6 +128,7 @@ begin
     FPosY := 100;
     FFixar :=false;
     FStay := false;
+
     FDllPath:= ExtractFilePath(ApplicationName);
     FDllMyPath:= ExtractFilePath(ApplicationName);
     FDllPostPath:= ExtractFilePath(ApplicationName);
@@ -142,7 +146,7 @@ begin
 
     end;
     FCHATGPT:=''; //CHATGPT TOKEN
-
+    FToolsFalar := false;
 
 end;
 
@@ -195,6 +199,11 @@ end;
 procedure TSetMain.SetDllPostPath(value: string);
 begin
   FDllPostPath:= value;
+end;
+
+procedure TSetMain.SetToolsFalar(value: boolean);
+begin
+  FToolsFalar := value;
 end;
 
 procedure TSetMain.CarregaContexto();
@@ -306,6 +315,10 @@ begin
     begin
       FSchemaPost := RetiraInfo(arquivo.Strings[posicao]);
     end;
+    if  BuscaChave(arquivo,'TOOLSFALAR:',posicao) then
+    begin
+      FTOOLSFALAR := iif(RetiraInfo(arquivo.Strings[posicao])='0',false,true);
+    end;
 
 end;
 
@@ -395,6 +408,7 @@ begin
   arquivo.Append('USERNAMEPOST:'+FUsernamePOST);
   arquivo.Append('PASSWORDPOST:'+FPasswordPOST);
   arquivo.Append('SCHEMAPOST:'+FSchemaPost);
+  arquivo.Append('TOOLSFALAR:'+iif(FToolsFalar,'1','0'));
   arquivo.SaveToFile(fpath+filename);
 end;
 

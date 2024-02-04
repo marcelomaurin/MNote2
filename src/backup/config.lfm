@@ -1,7 +1,7 @@
 object frmconfig: Tfrmconfig
-  Left = 2067
+  Left = 2135
   Height = 385
-  Top = 1507
+  Top = 1081
   Width = 443
   Caption = 'Config'
   ClientHeight = 385
@@ -235,6 +235,19 @@ object frmconfig: Tfrmconfig
         Width = 121
         Caption = 'DLL/SO POSTGRE:'
         ParentColor = False
+      end
+    end
+    object tsFalar: TTabSheet
+      Caption = 'Tools Falar'
+      ClientHeight = 308
+      ClientWidth = 433
+      object ckToolsFalar: TCheckBox
+        Left = 40
+        Height = 23
+        Top = 30
+        Width = 146
+        Caption = 'Speak - ToolsFalar'
+        TabOrder = 0
       end
     end
   end

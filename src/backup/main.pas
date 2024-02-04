@@ -10,7 +10,7 @@ uses
   setmain, TypeDB, folders, funcoes, LCLType, ValEdit, PairSplitter, chgtext,
   hint, registro, splash, setFolders, config, SynEditKeyCmds, PythonEngine,
   rxctrls, LogTreeView, uPoweredby, chatgpt, mquery2, porradawebapi,
-  SynEditHighlighter, SynEditTypes, codigo;
+  SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar;
 
 
 const versao = '2.31';
@@ -31,6 +31,7 @@ type
     meDialog: TSynEdit;
     MenuItem19: TMenuItem;
     MenuItem20: TMenuItem;
+    miToolsFalar: TMenuItem;
     miIMGJSON: TMenuItem;
     mequestion: TMemo;
     MenuItem14: TMenuItem;
@@ -161,6 +162,7 @@ type
     procedure miSelectAllClick(Sender: TObject);
     procedure miSelectBlockClick(Sender: TObject);
     procedure miSelectCmdClick(Sender: TObject);
+    procedure miToolsFalarClick(Sender: TObject);
     procedure mncleanClick(Sender: TObject);
     procedure mndebugClick(Sender: TObject);
     procedure mnHideResultClick(Sender: TObject);
@@ -1022,6 +1024,14 @@ begin
     frmSplash.Free;
     frmSplash := nil;
   end;
+  if(Fsetmain.ToolsFalar) then
+  begin
+    if(frmToolsfalar= nil) then
+    begin
+       frmToolsfalar := TfrmToolsFalar.create(self);
+    end;
+    frmToolsfalar.Conectar();
+  end;
 end;
 
 procedure TfrmMNote.lstFindChangeBounds(Sender: TObject);
@@ -1204,6 +1214,15 @@ end;
 procedure TfrmMNote.miSelectCmdClick(Sender: TObject);
 begin
 
+end;
+
+procedure TfrmMNote.miToolsFalarClick(Sender: TObject);
+begin
+  if (frmToolsFalar= nil) then
+  begin
+       frmToolsFalar := TfrmToolsFalar.create(self);
+  end;
+  frmToolsFalar.show();
 end;
 
 procedure TfrmMNote.mncleanClick(Sender: TObject);
@@ -1660,6 +1679,16 @@ begin
      FCHATGPT.SendQuestion(mequestion.Text);
      //Armazena pergunta historica
      resposta := FCHATGPT.Response;
+     if(FSetMain.ToolsFalar) then
+     begin
+        if (frmToolsfalar = nil) then
+        begin
+           frmToolsfalar := TfrmToolsfalar.create(self);
+        end;
+        frmToolsfalar.show;
+        frmToolsfalar.edFalar.text := resposta;
+        frmToolsfalar.Falar();
+     end;
      //Armazena no historico
      meChatHist.Caption :=  meChatHist.Caption + #13+ #13+ 'Question: '+edChat.Text+#13;
      meChatHist.Caption := meChatHist.Caption + 'Response: '+ resposta+#13;

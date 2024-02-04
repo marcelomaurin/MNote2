@@ -15,6 +15,7 @@ type
   Tfrmconfig = class(TForm)
     btSave: TButton;
     btCancel: TButton;
+    ckToolsFalar: TCheckBox;
     edCHATGPT: TFileNameEdit;
     edClean: TFileNameEdit;
     edDebug: TFileNameEdit;
@@ -36,6 +37,7 @@ type
     TabSheet2: TTabSheet;
     TabSheet3: TTabSheet;
     TabSheet4: TTabSheet;
+    tsFalar: TTabSheet;
     procedure btCancelClick(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -64,6 +66,7 @@ begin
   FSetMain.DLLMYPath:= edDLLMYPATH.text;
   FSetMain.DLLPOSTPath:= edDLLPOSTPATH.text;
   FSetMain.CHATGPT:= edCHATGPT.text;
+  FSetMain.ToolsFalar:=ckToolsFalar.Checked;
   FSetMain.SalvaContexto(false);
   close;
 end;
@@ -78,6 +81,7 @@ begin
   edDLLPATH.text := FSetMain.DLLPath;
   edDLLMyPATH.text := FSetMain.DLLMyPath;
   edDLLPostPATH.text := FSetMain.DLLPostPath;
+  ckToolsFalar.Checked:= FSetMain.ToolsFalar;
 end;
 
 procedure Tfrmconfig.btCancelClick(Sender: TObject);

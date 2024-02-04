@@ -187,9 +187,9 @@ object frmMNote: TfrmMNote
           Height = 311
           Top = 27
           Width = 375
-          ActivePage = tsCode
+          ActivePage = tsDialog
           Align = alClient
-          TabIndex = 3
+          TabIndex = 0
           TabOrder = 4
           object tsDialog: TTabSheet
             Caption = 'Dialog'
@@ -1914,6 +1914,10 @@ object frmMNote: TfrmMNote
       object miIMGJSON: TMenuItem
         Caption = 'ImgJSON'
         OnClick = miIMGJSONClick
+      end
+      object miToolsFalar: TMenuItem
+        Caption = 'ToolsFalar'
+        OnClick = miToolsFalarClick
       end
       object Separator4: TMenuItem
         Caption = '-'
