@@ -9,7 +9,7 @@ unit setproject;
 interface
 
 uses
-  Classes, SysUtils, funcoes, graphics, controls, fpjson, jsonparser, Contnrs,
+  Classes, SysUtils,  graphics, controls, fpjson, jsonparser, Contnrs,
   SqlEditItem, NNTrainning;
 
 //const filename = 'setproject.json';
@@ -137,6 +137,8 @@ type
 
 
 implementation
+
+
 
 procedure Tsetproject.SetDevice(const Value: Boolean);
 begin

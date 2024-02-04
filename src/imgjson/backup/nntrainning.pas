@@ -5,7 +5,7 @@ unit NNTrainning;
 interface
 
 uses
-  Classes, SysUtils, base, pythonRun , sqledititem, Dialogs, funcoes, grids,
+  Classes, SysUtils, base, pythonRun , sqledititem, Dialogs,  grids,
   PythonEngine, FileUtil;
 
 

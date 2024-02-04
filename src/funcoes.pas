@@ -7,8 +7,9 @@ interface
 
 uses
 Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
+Grids ,
 StdCtrls, ExtCtrls, UTF8Process, Process, TypInfo , SynEdit, fpjson , DB,
-jsonparser, RegExpr
+jsonparser, RegExpr, setproject
 {$IFDEF MSWINDOWS}
 ,windows, jwaWinBase, shellAPI , Registry , JwaTlHelp32
 {$ENDIF}
@@ -16,8 +17,10 @@ jsonparser, RegExpr
 {$IFDEF LINUX}
 //LCLType,
 //LCLIntf
-,BaseUnix
-,Unix
+,BaseUnix, UnixType, Unix
+{$ENDIF}
+{$IFDEF DARWIN}
+
 {$ENDIF}
 {$IFDEF DARWIN}
 
@@ -62,25 +65,37 @@ function GetProcessList: TProcessList;
 function PegaFields(DataSet: TDataSet): TStringList;
 function PegaTabelas(SQL: string): TStringList;
 function CapturaJSONTabela(resposta: string): TStringList;
+function retiraCRLF(texto: string): string;
+function DatasetToJsonString(Dataset: TDataset): string;
+function DatasetToCSVString(Dataset: TDataset): String;
+function VerificaArea(X, Y: longint): Boolean;
+function StrtoBin(const Str: string): string;
+function HexToStr(const Value: string): string;
+function StrToHex(const Value: string): string;
+procedure AdicionarLog(const Mensagem: string);
+function splitstr(input: string): TStringList;
+function PreparaJSON(const Value: String): String;
+procedure AdicionarLinhaAGrid(Grid: TStringGrid; Valores: array of string);
+procedure PopulaPropertys(aGrid: TStringGrid; aObject: TObject); //Tem que sair daqui
+procedure CriaJSON(ADataset: TDataSet; const AFileName: String);
+
 
 {$IFDEF WINDOWS}
 function RegisterFileType(ExtName: string; AppName: string): boolean;
-function  VerificaRegExt(extensao : string) : boolean;
+function VerificaRegExt(extensao : string) : boolean;
 function RegisterFileType2(const DocFileName: string; AppName : string): boolean;
 function RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executavel: string) : boolean;
 function IsAdministrator: Boolean;
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
-
 function Callprg(filename: string; source: String; var Output: string): boolean;
 {$ENDIF}
-function retiraCRLF(texto: string): string;
-function DatasetToJsonString(Dataset: TDataset): string;
-function DatasetToCSVString(Dataset: TDataset): String;
-function VerificaArea(X, Y: longint): Boolean;
+
 {$IFDEF LINUX}
 function RunBatch(const batch, Params: string; var Output : string): boolean;
+function Callprg(filename: string; source: String; var Output: string): boolean;
 {$ENDIF}
+
 {$IFDEF Darwin}
 function VerifyAdminLogin:boolean;
 {$endif}
@@ -104,6 +119,224 @@ var LastTickCount     : cardinal = 0;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
 
+procedure CriaJSON(ADataset: TDataSet; const AFileName: String);
+var
+  JSONStringList: TStringList;
+  I: Integer;
+  Field: TField;
+  Line: String;
+begin
+  JSONStringList := TStringList.Create;
+  try
+    JSONStringList.Add('[');
+    ADataset.First;
+    while not ADataset.Eof do
+    begin
+      Line := '  {';
+      for I := 0 to ADataset.FieldCount - 1 do
+      begin
+        Field := ADataset.Fields[I];
+        Line := Line + Format('"%s":"%s"', [Field.FieldName, Field.AsString]);
+        if I < ADataset.FieldCount - 1 then
+          Line := Line + ', ';
+      end;
+      Line := Line + '}';
+      ADataset.Next;
+      if not ADataset.Eof then
+        Line := Line + ',';
+      JSONStringList.Add(Line);
+    end;
+    JSONStringList.Add(']');
+    JSONStringList.SaveToFile(AFileName);
+  finally
+    JSONStringList.Free;
+  end;
+end;
+
+//Precisa sair daqui
+procedure PopulaPropertys(aGrid: TStringGrid; aObject: TObject);
+var
+  ClassType: TClass;
+  nome : ShortString;
+  setproject : TSetProject;
+begin
+  //aGrid.Clear;
+  // Obtendo informação do tipo do objeto
+  ClassType := aObject.ClassType;
+  nome := ClassType.ClassName;
+
+  if(LowerCase(nome)='tsetproject') then
+  begin
+       setProject := TSetProject(aObject);
+       AdicionarLinhaAGrid(aGrid,['ClassName', setProject.ClassName]);
+       AdicionarLinhaAGrid(aGrid,['Filename', setProject.Filename]);
+       AdicionarLinhaAGrid(aGrid,['Diretorio', setProject.Diretorio]);
+       AdicionarLinhaAGrid(aGrid,['DataBaseType', inttostr(integer(setProject.DataBaseType))]);
+       AdicionarLinhaAGrid(aGrid,['StringConnection', setProject.StringConnection]);
+       AdicionarLinhaAGrid(aGrid,['Username', setProject.Username]);
+       AdicionarLinhaAGrid(aGrid,['Password', setProject.Password]);
+       AdicionarLinhaAGrid(aGrid,['Hostname', setProject.HostName]);
+  end;
+
+
+end;
+
+procedure AdicionarLinhaAGrid(Grid: TStringGrid; Valores: array of string);
+var
+  i, RowIndex: Integer;
+begin
+  // Checa se a grade tem colunas suficientes
+  if High(Valores) >= Grid.ColCount then
+    Grid.ColCount := High(Valores) + 1;
+
+  // Adiciona uma nova linha
+  RowIndex := Grid.RowCount;
+  Grid.RowCount := Grid.RowCount + 1;
+
+  // Preenche a linha com os valores fornecidos
+  for i := Low(Valores) to High(Valores) do
+    Grid.Cells[i, RowIndex] := Valores[i];
+end;
+
+function PreparaJSON(const Value: String): String;
+var
+  i: Integer;
+begin
+  Result := '';
+  for i := 1 to Length(Value) do
+  begin
+    case Value[i] of
+      '\': Result := Result + '\\';
+      '"': Result := Result + '\"';
+      '/': Result := Result + '\/';
+      #8: Result := Result + '\b';
+      #9: Result := Result + '\t';
+      #10: Result := Result + '\n';
+      #12: Result := Result + '\f';
+      #13: Result := Result + '\r';
+    else
+      Result := Result + Value[i];
+    end;
+  end;
+end;
+
+function splitstr(input: string): TStringList;
+var
+  i: Integer;
+  start: Integer;
+begin
+  // Criando a TStringList que será retornada
+  Result := TStringList.Create;
+
+  // Substituindo '-' e '_' por espaços
+  input := StringReplace(input, '-', ' ', [rfReplaceAll]);
+  input := StringReplace(input, '_', ' ', [rfReplaceAll]);
+
+  // Quebrando a string em palavras e adicionando à TStringList
+  i := 1;
+  while i <= Length(input) do
+  begin
+    // Encontrando uma palavra
+    while (i <= Length(input)) and (input[i] = ' ') do Inc(i);
+    if i <= Length(input) then
+    begin
+      start := i;
+      while (i <= Length(input)) and (input[i] <> ' ') do Inc(i);
+      Result.Add(trim(Copy(input, start, i - start)));
+    end;
+  end;
+end;
+
+procedure AdicionarLog(const Mensagem: string);
+var
+  ArquivoLog: TextFile;
+  NomeArquivoLog: string;
+begin
+  // Obtém o nome do programa atual e muda a extensão para .log
+  NomeArquivoLog := ChangeFileExt(ExtractFileName(ParamStr(0)), '.log');
+
+  // Tenta abrir o arquivo para adicionar texto. Se o arquivo não existir, ele será criado.
+  AssignFile(ArquivoLog, NomeArquivoLog);
+  if FileExists(NomeArquivoLog) then
+    Append(ArquivoLog)  // Abre o arquivo para adicionar texto no final
+  else
+    Rewrite(ArquivoLog); // Cria um novo arquivo de log se não existir
+
+  // Escreve a mensagem no arquivo
+  WriteLn(ArquivoLog, Format('%s: %s', [DateTimeToStr(Now), Mensagem]));
+
+  // Fecha o arquivo
+  CloseFile(ArquivoLog);
+end;
+
+function BintoStr(const BinaryString: string): string;
+var
+  cont : Integer;
+  BinaryChar: string;
+  CharCode: Byte;
+  innerCont: Integer; // Renomeamos a variável para evitar sobrescrita
+begin
+  Result := '';
+  for cont := 1 to Length(BinaryString) div 8 do
+  begin
+    BinaryChar := Copy(BinaryString, (cont - 1) * 8 + 1, 8);
+    CharCode := 0;
+    for innerCont := 1 to 8 do // Renomeamos a variável para evitar sobrescrita
+    begin
+      if BinaryChar[innerCont] = '1' then
+        CharCode := CharCode or (1 shl (8 - innerCont));
+    end;
+    Result := Result + Chr(CharCode);
+  end;
+end;
+
+function StrToHex(const Value: string): string;
+var
+  i: Integer;
+begin
+  Result := '';
+  if (Value <> '') then
+  begin
+    for i := 1 to Length(Value) do
+      Result := Result + IntToHex(Ord(Value[i]), 2);
+  end
+  else
+  begin
+    result := '';
+  end;
+end;
+
+function HexToStr(const Value: string): string;
+var
+  i: Integer;
+begin
+  Result := '';
+  if Value <> '' then
+  begin
+    for i := 1 to Length(Value) div 2 do
+      Result := Result + Chr(StrToInt('$' + Copy(Value, (i - 1) * 2 + 1, 2)));
+  end
+  else
+      Result := '';
+end;
+
+
+function StrtoBin(const Str: string): string;
+var
+      I, J: Integer;
+      CharCode: Byte;
+begin
+      Result := '';
+      for I := 1 to Length(Str) do
+      begin
+        CharCode := Ord(Str[I]);
+        for J := 7 downto 0 do
+          if (CharCode and (1 shl J)) <> 0 then
+            Result := Result + '1'
+          else
+            Result := Result + '0';
+      end;
+end;
 
 function CapturaJSONTabela(resposta: string): TStringList;
 var

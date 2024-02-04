@@ -1,47 +1,46 @@
 object frmconfig2: Tfrmconfig2
-  Left = 573
-  Height = 405
-  Top = 263
-  Width = 660
+  Left = 662
+  Height = 324
+  Top = 1563
+  Width = 528
   Caption = 'Configuration'
-  ClientHeight = 405
-  ClientWidth = 660
-  DesignTimePPI = 120
+  ClientHeight = 324
+  ClientWidth = 528
   OnCreate = FormCreate
-  LCLVersion = '2.2.6.0'
+  LCLVersion = '3.0.0.3'
   object Label1: TLabel
-    Left = 31
-    Height = 20
-    Top = 10
-    Width = 60
+    Left = 25
+    Height = 17
+    Top = 8
+    Width = 64
     Caption = 'DLL Path:'
     ParentColor = False
   end
   object btSalvar: TButton
-    Left = 528
-    Height = 31
-    Top = 344
-    Width = 94
+    Left = 422
+    Height = 25
+    Top = 275
+    Width = 75
     Caption = 'Save'
-    OnClick = btSalvarClick
     TabOrder = 0
+    OnClick = btSalvarClick
   end
   object btCancel: TButton
-    Left = 416
-    Height = 31
-    Top = 344
-    Width = 94
+    Left = 333
+    Height = 25
+    Top = 275
+    Width = 75
     Caption = 'Cancel'
     TabOrder = 1
   end
   object edFileDLL: TDirectoryEdit
-    Left = 31
-    Height = 28
-    Top = 32
-    Width = 417
+    Left = 25
+    Height = 34
+    Top = 26
+    Width = 334
     Directory = 'edFileDLL'
     ShowHidden = False
-    ButtonWidth = 29
+    ButtonWidth = 23
     NumGlyphs = 1
     MaxLength = 0
     TabOrder = 2

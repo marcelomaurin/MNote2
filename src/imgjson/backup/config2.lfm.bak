@@ -1,4 +1,4 @@
-object frmconfig: Tfrmconfig
+object frmconfig2: Tfrmconfig2
   Left = 573
   Height = 405
   Top = 263

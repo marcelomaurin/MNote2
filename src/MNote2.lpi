@@ -97,7 +97,7 @@
         <PackageName Value="LCL"/>
       </Item16>
     </RequiredPackages>
-    <Units Count="47">
+    <Units Count="45">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -281,6 +281,7 @@
         <Filename Value="imgjson/jsonmain.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmmainJSON"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit33>
       <Unit34>
@@ -296,62 +297,54 @@
         <ResourceBaseClass Value="DataModule"/>
       </Unit35>
       <Unit36>
-        <Filename Value="imgjson/funcoes2.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit36>
-      <Unit37>
         <Filename Value="imgjson/nntrainning.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="NNTrainning"/>
-      </Unit37>
-      <Unit38>
+      </Unit36>
+      <Unit37>
         <Filename Value="imgjson/novo.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmNovo"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Novo"/>
-      </Unit38>
-      <Unit39>
+      </Unit37>
+      <Unit38>
         <Filename Value="imgjson/pythonrun.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="PythonRun"/>
-      </Unit39>
-      <Unit40>
-        <Filename Value="imgjson/setimg.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit40>
-      <Unit41>
+      </Unit38>
+      <Unit39>
         <Filename Value="imgjson/setproject.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit41>
-      <Unit42>
+      </Unit39>
+      <Unit40>
         <Filename Value="imgjson/sobre.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="Form1"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit42>
-      <Unit43>
+      </Unit40>
+      <Unit41>
         <Filename Value="imgjson/sqledititem.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="SqlEditItem"/>
-      </Unit43>
-      <Unit44>
+      </Unit41>
+      <Unit42>
         <Filename Value="imgjson/sqleditor.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmSQLEditor"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit44>
-      <Unit45>
+      </Unit42>
+      <Unit43>
         <Filename Value="imgjson/sqlitem.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="SQLItem"/>
-      </Unit45>
-      <Unit46>
+      </Unit43>
+      <Unit44>
         <Filename Value="imgjson/trainning.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmTrainning"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit46>
+      </Unit44>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

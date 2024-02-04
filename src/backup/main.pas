@@ -31,6 +31,7 @@ type
     meDialog: TSynEdit;
     MenuItem19: TMenuItem;
     MenuItem20: TMenuItem;
+    miIMGJSON: TMenuItem;
     mequestion: TMemo;
     MenuItem14: TMenuItem;
     MenuItem17: TMenuItem;
@@ -153,6 +154,7 @@ type
     procedure MenuItem7Click(Sender: TObject);
     procedure miChatGPTClick(Sender: TObject);
     procedure micopyClick(Sender: TObject);
+    procedure miIMGJSONClick(Sender: TObject);
     procedure miPasteClick(Sender: TObject);
     procedure miporradaClick(Sender: TObject);
     procedure miRedoClick(Sender: TObject);
@@ -1145,6 +1147,15 @@ begin
   //syn.CommandProcessor(TsynEditorCommand(ecCopy),'',nil);
   syn.CopyToClipboard;
 
+end;
+
+procedure TfrmMNote.miIMGJSONClick(Sender: TObject);
+begin
+  if (frmmainJSON = nil) then
+  begin
+       frmmainJSON := TfrmmainJSON.create(self);
+  end;
+  frmmainJSON.show;
 end;
 
 procedure TfrmMNote.miPasteClick(Sender: TObject);

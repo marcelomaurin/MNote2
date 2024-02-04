@@ -1,7 +1,7 @@
 object frmconfig: Tfrmconfig
-  Left = 619
+  Left = 2067
   Height = 385
-  Top = 1212
+  Top = 1507
   Width = 443
   Caption = 'Config'
   ClientHeight = 385
@@ -204,7 +204,7 @@ object frmconfig: Tfrmconfig
         NumGlyphs = 1
         MaxLength = 0
         TabOrder = 0
-        TextHint = 'DLL PATH Python'
+        TextHint = 'DLL PATH Mysql'
       end
       object Label7: TLabel
         Left = 6

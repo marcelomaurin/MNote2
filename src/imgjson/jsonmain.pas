@@ -6,12 +6,11 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Menus, StdCtrls,
-  About, setimg, config2, EditBtn, ExtCtrls, ComCtrls, Grids,
-  setproject, Novo, funcoes2, base, sqleditor, sqlEditItem, NNTrainning,
+  About, setimg, config, EditBtn, ExtCtrls, ComCtrls, Grids,
+  setproject, Novo, funcoes, base, sqleditor, sqlEditItem, NNTrainning,
   frmnntrainning, PythonEngine;
 
-Const
-  Versao = '0.7';
+
 
 type
 
@@ -38,10 +37,7 @@ type
     mitrainning: TMenuItem;
     miQuery: TMenuItem;
     miClose: TMenuItem;
-    mnConfig: TMenuItem;
     mnNovo: TMenuItem;
-    mnsobre: TMenuItem;
-    mnTools: TMenuItem;
     mnSair: TMenuItem;
     OpenDialog1: TOpenDialog;
     PageControl1: TPageControl;
@@ -177,6 +173,8 @@ var
   frmmainJSON: TfrmmainJSON;
 
 implementation
+
+uses main;
 
 {$R *.lfm}
 
@@ -365,16 +363,9 @@ end;
 
 procedure TfrmmainJSON.mnConfigClick(Sender: TObject);
 begin
-  frmconfig2 := Tfrmconfig2.create(self);
-  frmconfig2.edFileDLL.Text:= FSetImg.DLLPath;
-  frmconfig2.showmodal();
-  if (frmconfig2.flgsalvar) then
-  begin
-    FSetImg.DLLPath := frmconfig2.edFileDLL.Text;
-    FSetImg.SalvaContexto(false);
-  end;
-  frmconfig2.free;
-  frmconfig2 := nil;
+  frmConfig := TfrmConfig.create(self);
+  frmConfig.showmodal();
+  frmConfig.free();
 end;
 
 procedure TfrmmainJSON.mnNovoClick(Sender: TObject);

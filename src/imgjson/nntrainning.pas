@@ -5,7 +5,7 @@ unit NNTrainning;
 interface
 
 uses
-  Classes, SysUtils, base, pythonRun , sqledititem, Dialogs, funcoes2, grids,
+  Classes, SysUtils, base, pythonRun , sqledititem, Dialogs,  grids,
   PythonEngine, FileUtil;
 
 
@@ -163,7 +163,7 @@ type
 
 implementation
 
-uses setproject;
+uses setproject, funcoes;
 
 function TNNTrainning.GeraSQLTrainning: String;
 var

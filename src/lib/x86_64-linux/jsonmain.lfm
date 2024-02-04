@@ -158,17 +158,6 @@ object frmmainJSON: TfrmmainJSON
         OnClick = mnSairClick
       end
     end
-    object mnTools: TMenuItem
-      Caption = 'Tools'
-      object mnConfig: TMenuItem
-        Caption = 'Config'
-        OnClick = mnConfigClick
-      end
-    end
-    object mnsobre: TMenuItem
-      Caption = 'About'
-      OnClick = mnsobreClick
-    end
   end
   object OpenDialog1: TOpenDialog
     Title = 'Open existing project'
