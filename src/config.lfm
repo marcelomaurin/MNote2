@@ -1,7 +1,7 @@
 object frmconfig: Tfrmconfig
-  Left = 2135
+  Left = 802
   Height = 385
-  Top = 1081
+  Top = 1932
   Width = 443
   Caption = 'Config'
   ClientHeight = 385

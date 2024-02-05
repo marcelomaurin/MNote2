@@ -1685,7 +1685,7 @@ begin
         begin
            frmToolsfalar := TfrmToolsfalar.create(self);
         end;
-        frmToolsfalar.show;
+        //frmToolsfalar.show;
         frmToolsfalar.edFalar.text := resposta;
         frmToolsfalar.Falar();
      end;

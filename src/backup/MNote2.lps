@@ -21,7 +21,7 @@
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
         <TopLine Value="1661"/>
-        <CursorPos X="33" Y="1664"/>
+        <CursorPos X="44" Y="1670"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -339,12 +339,6 @@
         <UsageCount Value="24"/>
       </Unit35>
       <Unit36>
-        <Filename Value="imgjson\funcoes2.pas"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos Y="27"/>
-        <UsageCount Value="22"/>
-      </Unit36>
-      <Unit37>
         <Filename Value="imgjson\nntrainning.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="NNTrainning"/>
@@ -352,8 +346,8 @@
         <TopLine Value="148"/>
         <CursorPos X="25" Y="166"/>
         <UsageCount Value="24"/>
-      </Unit37>
-      <Unit38>
+      </Unit36>
+      <Unit37>
         <Filename Value="imgjson\novo.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmNovo"/>
@@ -364,8 +358,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="24"/>
-      </Unit38>
-      <Unit39>
+      </Unit37>
+      <Unit38>
         <Filename Value="imgjson\pythonrun.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="PythonRun"/>
@@ -374,15 +368,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="24"/>
-      </Unit39>
-      <Unit40>
-        <Filename Value="imgjson\setimg.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="11"/>
-        <CursorPos X="5" Y="79"/>
-        <UsageCount Value="22"/>
-      </Unit40>
-      <Unit41>
+      </Unit38>
+      <Unit39>
         <Filename Value="imgjson\setproject.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="1"/>
@@ -390,8 +377,8 @@
         <CursorPos X="14" Y="141"/>
         <UsageCount Value="24"/>
         <Loaded Value="True"/>
-      </Unit41>
-      <Unit42>
+      </Unit39>
+      <Unit40>
         <Filename Value="imgjson\sobre.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="Form1"/>
@@ -401,8 +388,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="24"/>
-      </Unit42>
-      <Unit43>
+      </Unit40>
+      <Unit41>
         <Filename Value="imgjson\sqledititem.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="SqlEditItem"/>
@@ -411,8 +398,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="24"/>
-      </Unit43>
-      <Unit44>
+      </Unit41>
+      <Unit42>
         <Filename Value="imgjson\sqleditor.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmSQLEditor"/>
@@ -422,8 +409,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="24"/>
-      </Unit44>
-      <Unit45>
+      </Unit42>
+      <Unit43>
         <Filename Value="imgjson\sqlitem.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="SQLItem"/>
@@ -432,8 +419,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="24"/>
-      </Unit45>
-      <Unit46>
+      </Unit43>
+      <Unit44>
         <Filename Value="imgjson\trainning.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmTrainning"/>
@@ -443,600 +430,8 @@
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="24"/>
-      </Unit46>
-      <Unit47>
-        <Filename Value="imgjson\config2.pas"/>
-        <ComponentName Value="frmconfig2"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="17"/>
-        <CursorPos X="14" Y="17"/>
-        <UsageCount Value="21"/>
-      </Unit47>
-      <Unit48>
-        <Filename Value="classes\setbanco.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="217"/>
-        <CursorPos X="40" Y="224"/>
-        <UsageCount Value="133"/>
-      </Unit48>
-      <Unit49>
-        <Filename Value="classes\setmquery.pas"/>
-        <UnitName Value="setMQuery"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="2"/>
-        <CursorPos X="15" Y="14"/>
-        <UsageCount Value="133"/>
-      </Unit49>
-      <Unit50>
-        <Filename Value="classes\tabela.pas"/>
-        <UnitName Value="Tabela"/>
-        <UsageCount Value="133"/>
-      </Unit50>
-      <Unit51>
-        <Filename Value="classes\typedb.pas"/>
-        <UnitName Value="TypeDB"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos Y="11"/>
-        <UsageCount Value="133"/>
-      </Unit51>
-      <Unit52>
-        <Filename Value="mquery.pas"/>
-        <ComponentName Value="frmMQuery"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="568"/>
-        <CursorPos Y="577"/>
-        <UsageCount Value="127"/>
-      </Unit52>
-      <Unit53>
-        <Filename Value="chatgpt.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="19"/>
-        <CursorPos X="17" Y="30"/>
-        <UsageCount Value="18"/>
-      </Unit53>
-      <Unit54>
-        <Filename Value="C:\lazarus\components\synedit\synedit.pp"/>
-        <UnitName Value="SynEdit"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="156"/>
-        <CursorPos X="3" Y="163"/>
-        <UsageCount Value="13"/>
-      </Unit54>
-      <Unit55>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\synedit\synedit.pp"/>
-        <UnitName Value="SynEdit"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="2020"/>
-        <CursorPos Y="2035"/>
-        <UsageCount Value="25"/>
-      </Unit55>
-      <Unit56>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\graphics.pp"/>
-        <UnitName Value="Graphics"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="58"/>
-        <CursorPos X="3" Y="73"/>
-        <UsageCount Value="24"/>
-      </Unit56>
-      <Unit57>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\font.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="1215"/>
-        <CursorPos Y="1234"/>
-        <UsageCount Value="2"/>
-      </Unit57>
-      <Unit58>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\interfaces\win32\win32callback.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="2761"/>
-        <CursorPos Y="2776"/>
-        <UsageCount Value="10"/>
-      </Unit58>
-      <Unit59>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\customform.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="2285"/>
-        <CursorPos Y="2305"/>
-        <UsageCount Value="6"/>
-      </Unit59>
-      <Unit60>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\menuitem.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="71"/>
-        <CursorPos Y="87"/>
-        <UsageCount Value="17"/>
-      </Unit60>
-      <Unit61>
-        <Filename Value="main.lfm"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="88"/>
-        <CursorPos X="43" Y="103"/>
-        <UsageCount Value="2"/>
-        <DefaultSyntaxHighlighter Value="LFM"/>
-      </Unit61>
-      <Unit62>
-        <Filename Value="C:\lazarus\lcl\graphics.pp"/>
-        <UnitName Value="Graphics"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="227"/>
-        <CursorPos X="3" Y="248"/>
-        <UsageCount Value="9"/>
-      </Unit62>
-      <Unit63>
-        <Filename Value="C:\lazarus\components\synedit\syncompletion.pas"/>
-        <UnitName Value="SynCompletion"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="357"/>
-        <CursorPos X="3" Y="378"/>
-        <UsageCount Value="9"/>
-      </Unit63>
-      <Unit64>
-        <Filename Value="C:\lazarus\lcl\pairsplitter.pas"/>
-        <UnitName Value="PairSplitter"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="9"/>
-      </Unit64>
-      <Unit65>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\lclclasses.pp"/>
-        <UnitName Value="LCLClasses"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="138"/>
-        <CursorPos Y="160"/>
-        <UsageCount Value="3"/>
-      </Unit65>
-      <Unit66>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\widgetset\wslclclasses.pp"/>
-        <UnitName Value="WSLCLClasses"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="607"/>
-        <CursorPos Y="630"/>
-        <UsageCount Value="3"/>
-      </Unit66>
-      <Unit67>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\lazutils\laztracer.pas"/>
-        <UnitName Value="LazTracer"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="54"/>
-        <CursorPos Y="50"/>
-        <UsageCount Value="1"/>
-      </Unit67>
-      <Unit68>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\menus.pp"/>
-        <UnitName Value="Menus"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="258"/>
-        <CursorPos X="25" Y="286"/>
-        <UsageCount Value="5"/>
-      </Unit68>
-      <Unit69>
-        <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\objpas\classes\classesh.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="843"/>
-        <CursorPos X="3" Y="816"/>
-        <UsageCount Value="3"/>
-      </Unit69>
-      <Unit70>
-        <Filename Value="C:\fpcupdeluxe\fpcsrc\rtl\objpas\classes\classesh.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="1981"/>
-        <CursorPos X="25" Y="1992"/>
-        <UsageCount Value="4"/>
-      </Unit70>
-      <Unit71>
-        <Filename Value="C:\fpcupdeluxe\ccr\python4laz\python4lazarus\PythonEngine.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="232"/>
-        <UsageCount Value="10"/>
-      </Unit71>
-      <Unit72>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\interfaces\win32\win32object.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="406"/>
-        <CursorPos Y="415"/>
-        <UsageCount Value="10"/>
-      </Unit72>
-      <Unit73>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\pagecontrol.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="15"/>
-        <CursorPos Y="28"/>
-        <UsageCount Value="3"/>
-      </Unit73>
-      <Unit74>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\customnotebook.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="456"/>
-        <CursorPos Y="471"/>
-        <UsageCount Value="3"/>
-      </Unit74>
-      <Unit75>
-        <Filename Value="C:\fpcupdeluxe\ccr\python4laz\python4lazarus\PythonGUIInputOutput.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="191"/>
-        <CursorPos Y="203"/>
-        <UsageCount Value="8"/>
-      </Unit75>
-      <Unit76>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\stdctrls.pp"/>
-        <UnitName Value="StdCtrls"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="891"/>
-        <CursorPos X="3" Y="902"/>
-        <UsageCount Value="1"/>
-      </Unit76>
-      <Unit77>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\wincontrol.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="7539"/>
-        <CursorPos Y="7544"/>
-        <UsageCount Value="1"/>
-      </Unit77>
-      <Unit78>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\application.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="1375"/>
-        <CursorPos Y="1393"/>
-        <UsageCount Value="2"/>
-      </Unit78>
-      <Unit79>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\control.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="2945"/>
-        <CursorPos Y="2959"/>
-        <UsageCount Value="10"/>
-      </Unit79>
-      <Unit80>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\valedit.pas"/>
-        <UnitName Value="ValEdit"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="177"/>
-        <CursorPos X="14" Y="188"/>
-        <UsageCount Value="6"/>
-      </Unit80>
-      <Unit81>
-        <Filename Value="C:\fpcupdeluxe\ccr\python4laz\python4lazarus\VarPyth.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="663"/>
-        <CursorPos X="18" Y="667"/>
-        <UsageCount Value="5"/>
-      </Unit81>
-      <Unit82>
-        <Filename Value="C:\fpcupdeluxe\fpcsrc\rtl\inc\systemh.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="403"/>
-        <CursorPos X="12" Y="414"/>
-        <UsageCount Value="5"/>
-      </Unit82>
-      <Unit83>
-        <Filename Value="C:\fpcupdeluxe\fpcsrc\rtl\inc\objpash.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="180"/>
-        <CursorPos X="8" Y="201"/>
-        <UsageCount Value="1"/>
-      </Unit83>
-      <Unit84>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\lazutils\lazutf8.pas"/>
-        <UnitName Value="LazUTF8"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="10" Y="53"/>
-        <UsageCount Value="2"/>
-      </Unit84>
-      <Unit85>
-        <Filename Value="C:\fpcupdeluxe\ccr\extrasyn\SyneditHighlighters\synhighlighteradsp21xx.pas"/>
-        <UnitName Value="SynHighlighterADSP21xx"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="1045"/>
-        <CursorPos X="21" Y="1056"/>
-        <UsageCount Value="2"/>
-      </Unit85>
-      <Unit86>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\interfacebase.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="41"/>
-        <CursorPos Y="55"/>
-        <UsageCount Value="2"/>
-      </Unit86>
-      <Unit87>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\forms.pp"/>
-        <UnitName Value="Forms"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="1601"/>
-        <CursorPos X="25" Y="1593"/>
-        <UsageCount Value="2"/>
-      </Unit87>
-      <Unit88>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\synedit\synhighlighterjava.pas"/>
-        <UnitName Value="SynHighlighterJava"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="157"/>
-        <CursorPos X="14" Y="77"/>
-        <UsageCount Value="4"/>
-      </Unit88>
-      <Unit89>
-        <Filename Value="C:\fpcupdeluxe\fpcsrc\packages\fcl-json\src\fpjson.pp"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="684"/>
-        <CursorPos X="18" Y="695"/>
-        <UsageCount Value="2"/>
-      </Unit89>
-      <Unit90>
-        <Filename Value="C:\lazarus\lcl\dialogs.pp"/>
-        <UnitName Value="Dialogs"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="386"/>
-        <CursorPos X="8" Y="416"/>
-        <UsageCount Value="2"/>
-      </Unit90>
-      <Unit91>
-        <Filename Value="config.lfm"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="98"/>
-        <CursorPos X="34" Y="38"/>
-        <UsageCount Value="2"/>
-        <DefaultSyntaxHighlighter Value="LFM"/>
-      </Unit91>
-      <Unit92>
-        <Filename Value="..\..\migrador2\mquery2.pas"/>
-        <ComponentName Value="frmmquery2"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="58" Y="9"/>
-        <UsageCount Value="2"/>
-      </Unit92>
-      <Unit93>
-        <Filename Value="mquery2\mquery2.lfm"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="980"/>
-        <CursorPos X="54" Y="1007"/>
-        <UsageCount Value="6"/>
-        <DefaultSyntaxHighlighter Value="LFM"/>
-      </Unit93>
-      <Unit94>
-        <Filename Value="..\..\..\..\..\root\.lazarus\onlinepackagemanager\packages\zeosdbo\src\dbc\ZDbcMySqlUtils.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="300"/>
-        <CursorPos Y="312"/>
-        <UsageCount Value="9"/>
-      </Unit94>
-      <Unit95>
-        <Filename Value="..\..\..\..\..\root\.lazarus\onlinepackagemanager\packages\FileAssociation-master\fileassoc.pas"/>
-        <UnitName Value="FileAssoc"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="32" Y="9"/>
-        <UsageCount Value="7"/>
-      </Unit95>
-      <Unit96>
-        <Filename Value="..\..\porrada\Porrada\main.pas"/>
-        <HasResources Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="134"/>
-        <CursorPos X="43" Y="16"/>
-        <UsageCount Value="3"/>
-      </Unit96>
-      <Unit97>
-        <Filename Value="..\..\..\..\..\root\.lazarus\onlinepackagemanager\packages\lnet\lib\lnet.pp"/>
-        <UnitName Value="lNet"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="66"/>
-        <CursorPos X="14" Y="152"/>
-        <UsageCount Value="5"/>
-      </Unit97>
-      <Unit98>
-        <Filename Value="..\..\..\.lazarus\onlinepackagemanager\packages\lnet\lazaruspackage\lnetcomponents.pas"/>
-        <UnitName Value="lNetComponents"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="231"/>
-        <CursorPos X="3" Y="39"/>
-        <UsageCount Value="4"/>
-      </Unit98>
-      <Unit99>
-        <Filename Value="..\..\..\..\..\usr\share\fpcsrc\3.2.2\packages\fcl-web\src\base\fphttpclient.pp"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="177"/>
-        <CursorPos X="14" Y="257"/>
-        <UsageCount Value="4"/>
-      </Unit99>
-      <Unit100>
-        <Filename Value="C:\fpcupdeluxe\config_lazarus\onlinepackagemanager\packages\zeosdbo\src\plain\ZPlainLoader.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="240"/>
-        <CursorPos Y="250"/>
-        <UsageCount Value="4"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit100>
-      <Unit101>
-        <Filename Value="C:\fpcupdeluxe\config_lazarus\onlinepackagemanager\packages\zeosdbo\src\dbc\ZDbcMySqlUtils.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="298"/>
-        <CursorPos Y="308"/>
-        <UsageCount Value="4"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit101>
-      <Unit102>
-        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\components\synedit\synedit.pp"/>
-        <UnitName Value="SynEdit"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="310"/>
-        <CursorPos X="47" Y="7"/>
-        <UsageCount Value="4"/>
-      </Unit102>
-      <Unit103>
-        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\components\synedit\synedittypes.pp"/>
-        <UnitName Value="SynEditTypes"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="52"/>
-        <UsageCount Value="4"/>
-      </Unit103>
-      <Unit104>
-        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\components\synedit\syneditkeycmds.pp"/>
-        <UnitName Value="SynEditKeyCmds"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="4"/>
-      </Unit104>
-      <Unit105>
-        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\lcl\lcltype.pp"/>
-        <UnitName Value="LCLType"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="4"/>
-      </Unit105>
-      <Unit106>
-        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\components\synedit\synedithighlighter.pp"/>
-        <UnitName Value="SynEditHighlighter"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="155"/>
-        <CursorPos X="3" Y="140"/>
-        <UsageCount Value="4"/>
-      </Unit106>
-      <Unit107>
-        <Filename Value="..\..\..\..\..\usr\share\fpcsrc\3.2.2\packages\fcl-base\src\contnrs.pp"/>
-        <UnitName Value="Contnrs"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="13" Y="19"/>
-        <UsageCount Value="7"/>
-      </Unit107>
-      <Unit108>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\tagraph.pas"/>
-        <UnitName Value="TAGraph"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="25"/>
-        <CursorPos X="36" Y="28"/>
-        <UsageCount Value="9"/>
-      </Unit108>
-      <Unit109>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\tachartutils.pas"/>
-        <UnitName Value="TAChartUtils"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="19"/>
-        <UsageCount Value="9"/>
-      </Unit109>
-      <Unit110>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\tadrawutils.pas"/>
-        <UnitName Value="TADrawUtils"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="9"/>
-      </Unit110>
-      <Unit111>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\taseries.pas"/>
-        <UnitName Value="TASeries"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="303"/>
-        <CursorPos X="14" Y="318"/>
-        <UsageCount Value="27"/>
-      </Unit111>
-      <Unit112>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\customcombobox.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="975"/>
-        <CursorPos Y="995"/>
-        <UsageCount Value="8"/>
-      </Unit112>
-      <Unit113>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\talegend.pas"/>
-        <UnitName Value="TALegend"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="133"/>
-        <CursorPos X="51" Y="151"/>
-        <UsageCount Value="8"/>
-      </Unit113>
-      <Unit114>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\tatextelements.pas"/>
-        <UnitName Value="TATextElements"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="8"/>
-      </Unit114>
-      <Unit115>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\synedit\syneditmarks.pp"/>
-        <UnitName Value="SynEditMarks"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="17"/>
-        <CursorPos X="68" Y="32"/>
-        <UsageCount Value="8"/>
-      </Unit115>
-      <Unit116>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\tacustomseries.pas"/>
-        <UnitName Value="TACustomSeries"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="40"/>
-        <CursorPos X="45" Y="54"/>
-        <UsageCount Value="8"/>
-      </Unit116>
-      <Unit117>
-        <Filename Value="C:\fpcupdeluxe\fpcsrc\packages\fcl-db\src\base\db.pas"/>
-        <UnitName Value="DB"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="27"/>
-      </Unit117>
-      <Unit118>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\tatypes.pas"/>
-        <UnitName Value="TATypes"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="8"/>
-      </Unit118>
-      <Unit119>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\interfaces\win32\win32listsl.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="137"/>
-        <CursorPos Y="152"/>
-        <UsageCount Value="8"/>
-      </Unit119>
-      <Unit120>
-        <Filename Value="C:\fpcupdeluxe\lazarus\components\lazutils\graphtype.pp"/>
-        <UnitName Value="GraphType"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="93"/>
-        <CursorPos X="3" Y="42"/>
-        <UsageCount Value="24"/>
-      </Unit120>
-      <Unit121>
-        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\lclmessageglue.pas"/>
-        <UnitName Value="LCLMessageGlue"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="99"/>
-        <CursorPos Y="123"/>
-        <UsageCount Value="10"/>
-      </Unit121>
-      <Unit122>
-        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\components\synedit\syneditpointclasses.pas"/>
-        <UnitName Value="SynEditPointClasses"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="2823"/>
-        <CursorPos Y="2838"/>
-        <UsageCount Value="11"/>
-      </Unit122>
-      <Unit123>
-        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\lcl\interfaces\gtk2\gtk2proc.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="4147"/>
-        <CursorPos Y="4162"/>
-        <UsageCount Value="11"/>
-      </Unit123>
-      <Unit124>
-        <Filename Value="imgjson\frmnntrainning.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="74"/>
-        <CursorPos X="18" Y="88"/>
-        <UsageCount Value="10"/>
-      </Unit124>
-      <Unit125>
-        <Filename Value="..\..\..\.lazarus\onlinepackagemanager\packages\ATSynedit\atsynedit\atsynedit_adapter_gtk2ime.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="114"/>
-        <CursorPos X="5" Y="129"/>
-        <UsageCount Value="10"/>
-      </Unit125>
-      <Unit126>
-        <Filename Value="imgjson\config2.lfm"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="31"/>
-        <UsageCount Value="10"/>
-        <DefaultSyntaxHighlighter Value="LFM"/>
-      </Unit126>
-      <Unit127>
+      </Unit44>
+      <Unit45>
         <Filename Value="toolsfalar\toolsfalar.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmToolsfalar"/>
@@ -1048,6 +443,611 @@
         <UsageCount Value="22"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
+      </Unit45>
+      <Unit46>
+        <Filename Value="imgjson\funcoes2.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="27"/>
+        <UsageCount Value="22"/>
+      </Unit46>
+      <Unit47>
+        <Filename Value="imgjson\setimg.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="11"/>
+        <CursorPos X="5" Y="79"/>
+        <UsageCount Value="22"/>
+      </Unit47>
+      <Unit48>
+        <Filename Value="imgjson\config2.pas"/>
+        <ComponentName Value="frmconfig2"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="17"/>
+        <CursorPos X="14" Y="17"/>
+        <UsageCount Value="21"/>
+      </Unit48>
+      <Unit49>
+        <Filename Value="classes\setbanco.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="217"/>
+        <CursorPos X="40" Y="224"/>
+        <UsageCount Value="133"/>
+      </Unit49>
+      <Unit50>
+        <Filename Value="classes\setmquery.pas"/>
+        <UnitName Value="setMQuery"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2"/>
+        <CursorPos X="15" Y="14"/>
+        <UsageCount Value="133"/>
+      </Unit50>
+      <Unit51>
+        <Filename Value="classes\tabela.pas"/>
+        <UnitName Value="Tabela"/>
+        <UsageCount Value="133"/>
+      </Unit51>
+      <Unit52>
+        <Filename Value="classes\typedb.pas"/>
+        <UnitName Value="TypeDB"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="11"/>
+        <UsageCount Value="133"/>
+      </Unit52>
+      <Unit53>
+        <Filename Value="mquery.pas"/>
+        <ComponentName Value="frmMQuery"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="568"/>
+        <CursorPos Y="577"/>
+        <UsageCount Value="127"/>
+      </Unit53>
+      <Unit54>
+        <Filename Value="chatgpt.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="19"/>
+        <CursorPos X="17" Y="30"/>
+        <UsageCount Value="18"/>
+      </Unit54>
+      <Unit55>
+        <Filename Value="C:\lazarus\components\synedit\synedit.pp"/>
+        <UnitName Value="SynEdit"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="156"/>
+        <CursorPos X="3" Y="163"/>
+        <UsageCount Value="13"/>
+      </Unit55>
+      <Unit56>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\synedit\synedit.pp"/>
+        <UnitName Value="SynEdit"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2020"/>
+        <CursorPos Y="2035"/>
+        <UsageCount Value="25"/>
+      </Unit56>
+      <Unit57>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\graphics.pp"/>
+        <UnitName Value="Graphics"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="58"/>
+        <CursorPos X="3" Y="73"/>
+        <UsageCount Value="24"/>
+      </Unit57>
+      <Unit58>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\font.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1215"/>
+        <CursorPos Y="1234"/>
+        <UsageCount Value="2"/>
+      </Unit58>
+      <Unit59>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\interfaces\win32\win32callback.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2761"/>
+        <CursorPos Y="2776"/>
+        <UsageCount Value="10"/>
+      </Unit59>
+      <Unit60>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\customform.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2285"/>
+        <CursorPos Y="2305"/>
+        <UsageCount Value="6"/>
+      </Unit60>
+      <Unit61>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\menuitem.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="71"/>
+        <CursorPos Y="87"/>
+        <UsageCount Value="17"/>
+      </Unit61>
+      <Unit62>
+        <Filename Value="main.lfm"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="88"/>
+        <CursorPos X="43" Y="103"/>
+        <UsageCount Value="2"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit62>
+      <Unit63>
+        <Filename Value="C:\lazarus\lcl\graphics.pp"/>
+        <UnitName Value="Graphics"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="227"/>
+        <CursorPos X="3" Y="248"/>
+        <UsageCount Value="9"/>
+      </Unit63>
+      <Unit64>
+        <Filename Value="C:\lazarus\components\synedit\syncompletion.pas"/>
+        <UnitName Value="SynCompletion"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="357"/>
+        <CursorPos X="3" Y="378"/>
+        <UsageCount Value="9"/>
+      </Unit64>
+      <Unit65>
+        <Filename Value="C:\lazarus\lcl\pairsplitter.pas"/>
+        <UnitName Value="PairSplitter"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="9"/>
+      </Unit65>
+      <Unit66>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\lclclasses.pp"/>
+        <UnitName Value="LCLClasses"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="138"/>
+        <CursorPos Y="160"/>
+        <UsageCount Value="3"/>
+      </Unit66>
+      <Unit67>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\widgetset\wslclclasses.pp"/>
+        <UnitName Value="WSLCLClasses"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="607"/>
+        <CursorPos Y="630"/>
+        <UsageCount Value="3"/>
+      </Unit67>
+      <Unit68>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\lazutils\laztracer.pas"/>
+        <UnitName Value="LazTracer"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="54"/>
+        <CursorPos Y="50"/>
+        <UsageCount Value="1"/>
+      </Unit68>
+      <Unit69>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\menus.pp"/>
+        <UnitName Value="Menus"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="258"/>
+        <CursorPos X="25" Y="286"/>
+        <UsageCount Value="5"/>
+      </Unit69>
+      <Unit70>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\objpas\classes\classesh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="843"/>
+        <CursorPos X="3" Y="816"/>
+        <UsageCount Value="3"/>
+      </Unit70>
+      <Unit71>
+        <Filename Value="C:\fpcupdeluxe\fpcsrc\rtl\objpas\classes\classesh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1981"/>
+        <CursorPos X="25" Y="1992"/>
+        <UsageCount Value="4"/>
+      </Unit71>
+      <Unit72>
+        <Filename Value="C:\fpcupdeluxe\ccr\python4laz\python4lazarus\PythonEngine.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="232"/>
+        <UsageCount Value="10"/>
+      </Unit72>
+      <Unit73>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\interfaces\win32\win32object.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="406"/>
+        <CursorPos Y="415"/>
+        <UsageCount Value="10"/>
+      </Unit73>
+      <Unit74>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\pagecontrol.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="15"/>
+        <CursorPos Y="28"/>
+        <UsageCount Value="3"/>
+      </Unit74>
+      <Unit75>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\customnotebook.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="456"/>
+        <CursorPos Y="471"/>
+        <UsageCount Value="3"/>
+      </Unit75>
+      <Unit76>
+        <Filename Value="C:\fpcupdeluxe\ccr\python4laz\python4lazarus\PythonGUIInputOutput.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="191"/>
+        <CursorPos Y="203"/>
+        <UsageCount Value="8"/>
+      </Unit76>
+      <Unit77>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\stdctrls.pp"/>
+        <UnitName Value="StdCtrls"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="891"/>
+        <CursorPos X="3" Y="902"/>
+        <UsageCount Value="1"/>
+      </Unit77>
+      <Unit78>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\wincontrol.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="7539"/>
+        <CursorPos Y="7544"/>
+        <UsageCount Value="1"/>
+      </Unit78>
+      <Unit79>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\application.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1375"/>
+        <CursorPos Y="1393"/>
+        <UsageCount Value="2"/>
+      </Unit79>
+      <Unit80>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\control.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2945"/>
+        <CursorPos Y="2959"/>
+        <UsageCount Value="10"/>
+      </Unit80>
+      <Unit81>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\valedit.pas"/>
+        <UnitName Value="ValEdit"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="177"/>
+        <CursorPos X="14" Y="188"/>
+        <UsageCount Value="6"/>
+      </Unit81>
+      <Unit82>
+        <Filename Value="C:\fpcupdeluxe\ccr\python4laz\python4lazarus\VarPyth.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="663"/>
+        <CursorPos X="18" Y="667"/>
+        <UsageCount Value="5"/>
+      </Unit82>
+      <Unit83>
+        <Filename Value="C:\fpcupdeluxe\fpcsrc\rtl\inc\systemh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="403"/>
+        <CursorPos X="12" Y="414"/>
+        <UsageCount Value="5"/>
+      </Unit83>
+      <Unit84>
+        <Filename Value="C:\fpcupdeluxe\fpcsrc\rtl\inc\objpash.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="180"/>
+        <CursorPos X="8" Y="201"/>
+        <UsageCount Value="1"/>
+      </Unit84>
+      <Unit85>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\lazutils\lazutf8.pas"/>
+        <UnitName Value="LazUTF8"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="10" Y="53"/>
+        <UsageCount Value="2"/>
+      </Unit85>
+      <Unit86>
+        <Filename Value="C:\fpcupdeluxe\ccr\extrasyn\SyneditHighlighters\synhighlighteradsp21xx.pas"/>
+        <UnitName Value="SynHighlighterADSP21xx"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1045"/>
+        <CursorPos X="21" Y="1056"/>
+        <UsageCount Value="2"/>
+      </Unit86>
+      <Unit87>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\interfacebase.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="41"/>
+        <CursorPos Y="55"/>
+        <UsageCount Value="2"/>
+      </Unit87>
+      <Unit88>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\forms.pp"/>
+        <UnitName Value="Forms"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1601"/>
+        <CursorPos X="25" Y="1593"/>
+        <UsageCount Value="2"/>
+      </Unit88>
+      <Unit89>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\synedit\synhighlighterjava.pas"/>
+        <UnitName Value="SynHighlighterJava"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="157"/>
+        <CursorPos X="14" Y="77"/>
+        <UsageCount Value="4"/>
+      </Unit89>
+      <Unit90>
+        <Filename Value="C:\fpcupdeluxe\fpcsrc\packages\fcl-json\src\fpjson.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="684"/>
+        <CursorPos X="18" Y="695"/>
+        <UsageCount Value="2"/>
+      </Unit90>
+      <Unit91>
+        <Filename Value="C:\lazarus\lcl\dialogs.pp"/>
+        <UnitName Value="Dialogs"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="386"/>
+        <CursorPos X="8" Y="416"/>
+        <UsageCount Value="2"/>
+      </Unit91>
+      <Unit92>
+        <Filename Value="config.lfm"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="98"/>
+        <CursorPos X="34" Y="38"/>
+        <UsageCount Value="2"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit92>
+      <Unit93>
+        <Filename Value="..\..\migrador2\mquery2.pas"/>
+        <ComponentName Value="frmmquery2"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="58" Y="9"/>
+        <UsageCount Value="2"/>
+      </Unit93>
+      <Unit94>
+        <Filename Value="mquery2\mquery2.lfm"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="980"/>
+        <CursorPos X="54" Y="1007"/>
+        <UsageCount Value="6"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit94>
+      <Unit95>
+        <Filename Value="..\..\..\..\..\root\.lazarus\onlinepackagemanager\packages\zeosdbo\src\dbc\ZDbcMySqlUtils.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="300"/>
+        <CursorPos Y="312"/>
+        <UsageCount Value="9"/>
+      </Unit95>
+      <Unit96>
+        <Filename Value="..\..\..\..\..\root\.lazarus\onlinepackagemanager\packages\FileAssociation-master\fileassoc.pas"/>
+        <UnitName Value="FileAssoc"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="32" Y="9"/>
+        <UsageCount Value="7"/>
+      </Unit96>
+      <Unit97>
+        <Filename Value="..\..\porrada\Porrada\main.pas"/>
+        <HasResources Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="134"/>
+        <CursorPos X="43" Y="16"/>
+        <UsageCount Value="3"/>
+      </Unit97>
+      <Unit98>
+        <Filename Value="..\..\..\..\..\root\.lazarus\onlinepackagemanager\packages\lnet\lib\lnet.pp"/>
+        <UnitName Value="lNet"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="66"/>
+        <CursorPos X="14" Y="152"/>
+        <UsageCount Value="5"/>
+      </Unit98>
+      <Unit99>
+        <Filename Value="..\..\..\.lazarus\onlinepackagemanager\packages\lnet\lazaruspackage\lnetcomponents.pas"/>
+        <UnitName Value="lNetComponents"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="231"/>
+        <CursorPos X="3" Y="39"/>
+        <UsageCount Value="4"/>
+      </Unit99>
+      <Unit100>
+        <Filename Value="..\..\..\..\..\usr\share\fpcsrc\3.2.2\packages\fcl-web\src\base\fphttpclient.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="177"/>
+        <CursorPos X="14" Y="257"/>
+        <UsageCount Value="4"/>
+      </Unit100>
+      <Unit101>
+        <Filename Value="C:\fpcupdeluxe\config_lazarus\onlinepackagemanager\packages\zeosdbo\src\plain\ZPlainLoader.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="240"/>
+        <CursorPos Y="250"/>
+        <UsageCount Value="4"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit101>
+      <Unit102>
+        <Filename Value="C:\fpcupdeluxe\config_lazarus\onlinepackagemanager\packages\zeosdbo\src\dbc\ZDbcMySqlUtils.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="298"/>
+        <CursorPos Y="308"/>
+        <UsageCount Value="4"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit102>
+      <Unit103>
+        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\components\synedit\synedit.pp"/>
+        <UnitName Value="SynEdit"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="310"/>
+        <CursorPos X="47" Y="7"/>
+        <UsageCount Value="4"/>
+      </Unit103>
+      <Unit104>
+        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\components\synedit\synedittypes.pp"/>
+        <UnitName Value="SynEditTypes"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="52"/>
+        <UsageCount Value="4"/>
+      </Unit104>
+      <Unit105>
+        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\components\synedit\syneditkeycmds.pp"/>
+        <UnitName Value="SynEditKeyCmds"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="4"/>
+      </Unit105>
+      <Unit106>
+        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\lcl\lcltype.pp"/>
+        <UnitName Value="LCLType"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="4"/>
+      </Unit106>
+      <Unit107>
+        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\components\synedit\synedithighlighter.pp"/>
+        <UnitName Value="SynEditHighlighter"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="155"/>
+        <CursorPos X="3" Y="140"/>
+        <UsageCount Value="4"/>
+      </Unit107>
+      <Unit108>
+        <Filename Value="..\..\..\..\..\usr\share\fpcsrc\3.2.2\packages\fcl-base\src\contnrs.pp"/>
+        <UnitName Value="Contnrs"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="13" Y="19"/>
+        <UsageCount Value="7"/>
+      </Unit108>
+      <Unit109>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\tagraph.pas"/>
+        <UnitName Value="TAGraph"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="25"/>
+        <CursorPos X="36" Y="28"/>
+        <UsageCount Value="9"/>
+      </Unit109>
+      <Unit110>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\tachartutils.pas"/>
+        <UnitName Value="TAChartUtils"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="19"/>
+        <UsageCount Value="9"/>
+      </Unit110>
+      <Unit111>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\tadrawutils.pas"/>
+        <UnitName Value="TADrawUtils"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="9"/>
+      </Unit111>
+      <Unit112>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\taseries.pas"/>
+        <UnitName Value="TASeries"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="303"/>
+        <CursorPos X="14" Y="318"/>
+        <UsageCount Value="27"/>
+      </Unit112>
+      <Unit113>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\include\customcombobox.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="975"/>
+        <CursorPos Y="995"/>
+        <UsageCount Value="8"/>
+      </Unit113>
+      <Unit114>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\talegend.pas"/>
+        <UnitName Value="TALegend"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="133"/>
+        <CursorPos X="51" Y="151"/>
+        <UsageCount Value="8"/>
+      </Unit114>
+      <Unit115>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\tatextelements.pas"/>
+        <UnitName Value="TATextElements"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="8"/>
+      </Unit115>
+      <Unit116>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\synedit\syneditmarks.pp"/>
+        <UnitName Value="SynEditMarks"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="17"/>
+        <CursorPos X="68" Y="32"/>
+        <UsageCount Value="8"/>
+      </Unit116>
+      <Unit117>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\tacustomseries.pas"/>
+        <UnitName Value="TACustomSeries"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="40"/>
+        <CursorPos X="45" Y="54"/>
+        <UsageCount Value="8"/>
+      </Unit117>
+      <Unit118>
+        <Filename Value="C:\fpcupdeluxe\fpcsrc\packages\fcl-db\src\base\db.pas"/>
+        <UnitName Value="DB"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="27"/>
+      </Unit118>
+      <Unit119>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\tachart\tatypes.pas"/>
+        <UnitName Value="TATypes"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="8"/>
+      </Unit119>
+      <Unit120>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\interfaces\win32\win32listsl.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="137"/>
+        <CursorPos Y="152"/>
+        <UsageCount Value="8"/>
+      </Unit120>
+      <Unit121>
+        <Filename Value="C:\fpcupdeluxe\lazarus\components\lazutils\graphtype.pp"/>
+        <UnitName Value="GraphType"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="93"/>
+        <CursorPos X="3" Y="42"/>
+        <UsageCount Value="24"/>
+      </Unit121>
+      <Unit122>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\lclmessageglue.pas"/>
+        <UnitName Value="LCLMessageGlue"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="99"/>
+        <CursorPos Y="123"/>
+        <UsageCount Value="10"/>
+      </Unit122>
+      <Unit123>
+        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\components\synedit\syneditpointclasses.pas"/>
+        <UnitName Value="SynEditPointClasses"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2823"/>
+        <CursorPos Y="2838"/>
+        <UsageCount Value="11"/>
+      </Unit123>
+      <Unit124>
+        <Filename Value="..\..\..\..\..\usr\share\lazarus\3.0.0\lcl\interfaces\gtk2\gtk2proc.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="4147"/>
+        <CursorPos Y="4162"/>
+        <UsageCount Value="11"/>
+      </Unit124>
+      <Unit125>
+        <Filename Value="imgjson\frmnntrainning.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="74"/>
+        <CursorPos X="18" Y="88"/>
+        <UsageCount Value="10"/>
+      </Unit125>
+      <Unit126>
+        <Filename Value="..\..\..\.lazarus\onlinepackagemanager\packages\ATSynedit\atsynedit\atsynedit_adapter_gtk2ime.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="114"/>
+        <CursorPos X="5" Y="129"/>
+        <UsageCount Value="10"/>
+      </Unit126>
+      <Unit127>
+        <Filename Value="imgjson\config2.lfm"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="31"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit127>
       <Unit128>
         <Filename Value="toolsfalar\toolsfalar.lfm"/>
