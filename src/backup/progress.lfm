@@ -1,0 +1,27 @@
+object frmprogress: Tfrmprogress
+  Left = -1406
+  Height = 150
+  Top = 463
+  Width = 671
+  BorderStyle = bsDialog
+  Caption = 'Progress'
+  ClientHeight = 150
+  ClientWidth = 671
+  DesignTimePPI = 120
+  LCLVersion = '2.2.6.0'
+  object lbprogress: TLabel
+    Left = 304
+    Height = 20
+    Top = 87
+    Width = 70
+    Caption = 'lbprogress'
+    ParentColor = False
+  end
+  object pbProgress: TProgressBar
+    Left = 85
+    Height = 25
+    Top = 46
+    Width = 523
+    TabOrder = 0
+  end
+end

@@ -78,6 +78,11 @@ function PreparaJSON(const Value: String): String;
 procedure AdicionarLinhaAGrid(Grid: TStringGrid; Valores: array of string);
 procedure PopulaPropertys(aGrid: TStringGrid; aObject: TObject); //Tem que sair daqui
 procedure CriaJSON(ADataset: TDataSet; const AFileName: String);
+function JuntaPalavras(Texto: string): string;
+// Função para tratar nomes, também substitui espaços por sublinhados
+function JuntaNome(Nome: string): string;
+function UTF8ToANSI(const UTF8String: string): string;
+
 
 
 {$IFDEF WINDOWS}
@@ -118,6 +123,38 @@ var LastTickCount     : cardinal = 0;
     FLastIdleTime: Int64;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
+
+function UTF8ToANSI(const UTF8String: string): string;
+var
+  BOM: string;
+begin
+  // Define o BOM do UTF-8
+  BOM := #$EF#$BB#$BF;
+
+  // Verifica se a string começa com o BOM e remove-o
+  if Pos(BOM, UTF8String) = 1 then
+    Result := Copy(UTF8String, Length(BOM) + 1, MaxInt)
+  else
+    Result := UTF8String;
+
+  // Converte a string UTF-8 limpa para ANSI
+  Result := System.UTF8ToAnsi(Result);
+end;
+
+
+// Função para substituir espaços por sublinhados
+function JuntaPalavras(Texto: string): string;
+begin
+  // Substitui espaço por sublinhado
+  Result := StringReplace(Texto, ' ', '_', [rfReplaceAll]);
+end;
+
+// Função para tratar nomes, também substitui espaços por sublinhados
+function JuntaNome(Nome: string): string;
+begin
+  // Substitui espaço por sublinhado
+  Result := StringReplace(Nome, ' ', '_', [rfReplaceAll]);
+end;
 
 procedure CriaJSON(ADataset: TDataSet; const AFileName: String);
 var

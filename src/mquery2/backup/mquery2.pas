@@ -31,6 +31,7 @@ type
     btAnalise1: TButton;
     btBanco: TButton;
     btBanco1: TButton;
+    btImportCSV: TButton;
     btChart1: TButton;
     btcomparar: TButton;
     btcomparar1: TButton;
@@ -50,6 +51,7 @@ type
     Button4: TButton;
     ckGPT: TCheckBox;
     cbMake: TComboBox;
+    CSVDataset1: TCSVDataset;
     dbgridmy1: TDBGrid;
     dbnavmy1: TDBNavigator;
     dsmy: TDataSource;
@@ -137,6 +139,7 @@ type
     N1: TMenuItem;
     mnCriarSeq: TMenuItem;
     mnRefresh: TMenuItem;
+    OpenDialog1: TOpenDialog;
     Panel10: TPanel;
     Panel11: TPanel;
     Panel15: TPanel;
@@ -206,12 +209,14 @@ type
     zpostqry: TZReadOnlyQuery;
     zpostqry1: TZReadOnlyQuery;
     Zqrypost: TZQuery;
+    ZQryTransf: TZQuery;
     procedure btAnaliseClick(Sender: TObject);
     procedure btBancoClick(Sender: TObject);
     procedure btbenchmarkClick(Sender: TObject);
     procedure btChartClick(Sender: TObject);
     procedure btcompararClick(Sender: TObject);
     procedure btExecutarClick(Sender: TObject);
+    procedure btImportCSVClick(Sender: TObject);
     procedure btJSONClick(Sender: TObject);
     procedure btPermissaoChange(Sender: TObject);
     procedure btConectarMyClick(Sender: TObject);
@@ -244,6 +249,7 @@ type
     procedure MenuItem12Click(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem5Click(Sender: TObject);
+    procedure MenuItem6Click(Sender: TObject);
     procedure MenuItem8Click(Sender: TObject);
     procedure miCFunctionClick(Sender: TObject);
     procedure miChartClick(Sender: TObject);
@@ -324,6 +330,10 @@ type
     Function RectInRect(const aOuterRect, aInnerRect:TRect):Boolean;
     procedure QuestionSQLChat();
     procedure QuestionSQLEmbeleza();
+    procedure CriaTabela(NomeTabela: string; CSVDataSet: TCSVDataSet; ZQuery: TZQuery);
+    // Função que migra os campos do CSVDataSet para a tabela criada
+    procedure MigraCampos(NomeTabela: string; CSVDataSet: TCSVDataSet; ZQuery: TZQuery);
+
   end;
 
 var
@@ -459,6 +469,93 @@ begin
 
      //edChat.Text:= '';
      *)
+
+end;
+
+procedure Tfrmmquery2.CriaTabela(NomeTabela: string; CSVDataSet: TCSVDataSet;
+  ZQuery: TZQuery);
+var
+  SQLCreateTable: string;
+  i: Integer;
+  FieldDef: TFieldDef;
+begin
+  // Começar a construir a consulta SQL para criar a tabela
+  SQLCreateTable := ' CREATE TABLE ' + UTF8ToANSI(NomeTabela) + ' ( ';
+
+  // Percorrer os campos do CSVDataSet para construir a definição dos campos da tabela
+  for i := 0 to CSVDataSet.FieldDefs.Count - 1 do
+  begin
+    FieldDef := CSVDataSet.FieldDefs[i];
+
+    // Adicionar a definição do campo à consulta SQL
+    SQLCreateTable := SQLCreateTable +' '+ JuntaNome(UTF8ToANSI(FieldDef.Name)) + ' ';
+
+    // Definir o tipo de dados com base no tipo do campo do CSVDataSet
+    case FieldDef.DataType of
+      ftString:   SQLCreateTable := SQLCreateTable + ' VARCHAR(' + IntToStr(FieldDef.Size) + ') null ';
+      ftInteger:  SQLCreateTable := SQLCreateTable + ' INTEGER null ';
+      ftFloat:    SQLCreateTable := SQLCreateTable + ' FLOAT null ';
+      ftBoolean:  SQLCreateTable := SQLCreateTable + ' BOOLEAN null ';
+      // Adicione mais tipos conforme necessário
+    end;
+
+    // Se não for o último campo, adicione uma vírgula
+    if i < CSVDataSet.FieldDefs.Count - 1 then
+      SQLCreateTable := SQLCreateTable + ', ';
+  end;
+
+  // Finalizar a consulta SQL
+  SQLCreateTable := SQLCreateTable + ') ';
+
+  // Executar a consulta usando ZQuery
+  try
+    ZQuery.SQL.Text := SQLCreateTable;
+    ZQuery.ExecSQL;
+  except
+    on E: Exception do
+    begin
+      // Tratar exceções, como erros de execução do SQL
+      ShowMessage('Erro ao criar a tabela: ' + E.Message);
+    end;
+  end;
+end;
+
+procedure Tfrmmquery2.MigraCampos(NomeTabela: string; CSVDataSet: TCSVDataSet;
+  ZQuery: TZQuery);
+var
+  SQLInsert: string;
+  i: Integer;
+begin
+  // Abre o CSVDataSet se ainda não estiver aberto
+  if not CSVDataSet.Active then
+    CSVDataSet.Open;
+
+  // Itera por todos os registros no CSVDataSet
+  CSVDataSet.First;
+  while not CSVDataSet.EOF do
+  begin
+    // Começa a construir o comando SQL para inserir os dados
+    SQLInsert := 'INSERT INTO ' + UTF8ToANSI(NomeTabela) + ' VALUES (';
+
+    // Itera por todos os campos do registro atual e os adiciona ao comando SQL
+    for i := 0 to CSVDataSet.Fields.Count - 1 do
+    begin
+      // Aqui você precisa lidar com as aspas e os valores corretamente dependendo do tipo de dado
+      SQLInsert := SQLInsert + QuotedStr(UTF8ToANSI(CSVDataSet.Fields[i].AsString);
+
+      if i < CSVDataSet.Fields.Count - 1 then
+        SQLInsert := SQLInsert + ', ';
+    end;
+
+    // Finaliza o comando SQL
+    SQLInsert := SQLInsert + ');';
+
+    // Executa o comando para inserir os dados na tabela
+    ZQuery.SQL.Text := SQLInsert;
+    ZQuery.ExecSQL;
+    CSVDataset1.Next;
+  end;
+  CSVDataset1.close;
 
 end;
 
@@ -966,6 +1063,11 @@ begin
   end;
 end;
 
+procedure Tfrmmquery2.MenuItem6Click(Sender: TObject);
+begin
+
+end;
+
 procedure Tfrmmquery2.MenuItem8Click(Sender: TObject);
 begin
   pnBotton.Visible:= false;
@@ -1418,6 +1520,41 @@ begin
 
   end;
 
+end;
+
+procedure Tfrmmquery2.btImportCSVClick(Sender: TObject);
+var
+  tabela : string;
+begin
+  OpenDialog1.DefaultExt:='*.csv';
+  if(zconmysql.Connected) then
+  begin
+    if(OpenDialog1.Execute) then
+    begin
+         try
+           CSVDataset1.FileName:= OpenDialog1.FileName;
+           CSVDataset1.CSVOptions.Delimiter:=';';
+           CSVDataset1.CSVOptions.FirstLineAsFieldNames := true;
+           CSVDataset1.open;
+           tabela := InputBox('Table Create','table name:','newtable01');
+           if(tabela <> '') then
+           begin
+               CriaTabela(tabela,CSVDataSet1, ZQryTransf);
+               MigraCampos(tabela, CSVDataSet1,ZQryTransf);
+           end;
+         except
+         on E: Exception do
+           begin
+                // Trate o erro conforme necessário
+                ShowMessage('Erro ao carregar arquivo CSV: ' + E.Message);
+           end;
+         end;
+    end;
+  end
+  else
+  begin
+    ShowMessage('Database Mysql no connection!');
+  end;
 end;
 
 procedure Tfrmmquery2.btJSONClick(Sender: TObject);
