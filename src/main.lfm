@@ -1,7 +1,7 @@
 object frmMNote: TfrmMNote
   Left = 351
   Height = 592
-  Top = 1849
+  Top = 1479
   Width = 1172
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
