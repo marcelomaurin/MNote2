@@ -42,6 +42,7 @@ type
         FDebugScript : string;  //Script de Debug
         FCleanScript : string;  //Script de Limpeza
         FInstall : string;      //Script de Instalacao
+        FCompile : string;      //Script de Compilação
 
         FHostnameMy : String;
         FBancoMy : String;
@@ -88,6 +89,7 @@ type
         property DebugScript : string read FDebugScript write FDebugScript;
         property CleanScript : string read FCleanScript write FCleanScript;
         property Install : string read FInstall write FInstall;
+        property Compile : string read FCompile write FCompile;
         property Font : TFont read FFont write SetFont;
         property CHATGPT: String read FCHATGPT write SetCHATGPT;
         property DLLPath : String read FDllPath write SetDllPath;
@@ -140,6 +142,7 @@ begin
     FDebugScript :='';  //Script de Debug
     FCleanScript :='';  //Script de Limpeza
     FInstall :='';      //Script de Instalacao
+    FCompile :='';      //Script de Compilacao
     if FFont = nil then
     begin
          FFONT := TFont.create();
@@ -258,6 +261,11 @@ begin
     begin
       FInstall := RetiraInfo(arquivo.Strings[posicao]);
     end;
+    if  BuscaChave(arquivo,'COMPILESCRIPT:',posicao) then
+    begin
+      FCompile := RetiraInfo(arquivo.Strings[posicao]);
+    end;
+
     if  BuscaChave(arquivo,'FONT:',posicao) then
     begin
       StringToFont(RetiraInfo(arquivo.Strings[posicao]),FFONT);
@@ -392,6 +400,7 @@ begin
   arquivo.Append('DEBUGSCRIPT:'+FDebugScript);
   arquivo.Append('CLEANSCRIPT:'+FCleanScript);
   arquivo.Append('INSTALLSCRIPT:'+FInstall);
+  arquivo.Append('COMPILESCRIPT:'+FC);
   arquivo.Append('FONT:'+FontToString(FFONT));
   arquivo.Append('CHATGPT:'+FCHATGPT);
   arquivo.Append('DLLPATH:'+FDLLPATH);
@@ -408,7 +417,7 @@ begin
   arquivo.Append('USERNAMEPOST:'+FUsernamePOST);
   arquivo.Append('PASSWORDPOST:'+FPasswordPOST);
   arquivo.Append('SCHEMAPOST:'+FSchemaPost);
-  arquivo.Append('TOOLSFALAR:'+iif(FToolsFalar,'1';'0'));
+  arquivo.Append('TOOLSFALAR:'+iif(FToolsFalar,'1','0'));
   arquivo.SaveToFile(fpath+filename);
 end;
 

@@ -31,6 +31,7 @@ type
     meDialog: TSynEdit;
     MenuItem19: TMenuItem;
     MenuItem20: TMenuItem;
+    mnCompile: TMenuItem;
     miToolsFalar: TMenuItem;
     miIMGJSON: TMenuItem;
     mequestion: TMemo;

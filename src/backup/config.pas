@@ -19,6 +19,7 @@ type
     edCHATGPT: TFileNameEdit;
     edClean: TFileNameEdit;
     edDebug: TFileNameEdit;
+    edCompile: TFileNameEdit;
     edDLLPostPATH: TFileNameEdit;
     edDLLPATH: TFileNameEdit;
     edDLLMyPATH: TFileNameEdit;
@@ -32,6 +33,7 @@ type
     Label6: TLabel;
     Label7: TLabel;
     Label8: TLabel;
+    Label9: TLabel;
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
     TabSheet2: TTabSheet;
@@ -58,6 +60,7 @@ implementation
 
 procedure Tfrmconfig.btSaveClick(Sender: TObject);
 begin
+  FSetMain.Compile := edCompile.text;
   FSetMain.Install := edInstall.text;
   FSetMain.CleanScript:= edClean.text;
   FSetMain.RunScript:=edRun.text;
@@ -73,6 +76,7 @@ end;
 
 procedure Tfrmconfig.FormCreate(Sender: TObject);
 begin
+  edcompile.text := FSetMain.Install;
   edinstall.text := FSetMain.Install;
   edclean.text := FSetMain.CleanScript;
   edRun.text := FSetMain.RunScript;

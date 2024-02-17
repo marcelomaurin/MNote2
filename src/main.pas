@@ -13,7 +13,7 @@ uses
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar;
 
 
-const versao = '2.31';
+const versao = '2.32';
 
 type
 
@@ -31,6 +31,7 @@ type
     meDialog: TSynEdit;
     MenuItem19: TMenuItem;
     MenuItem20: TMenuItem;
+    mnCompile: TMenuItem;
     miToolsFalar: TMenuItem;
     miIMGJSON: TMenuItem;
     mequestion: TMemo;

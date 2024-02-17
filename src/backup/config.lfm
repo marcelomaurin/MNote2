@@ -1,7 +1,7 @@
 object frmconfig: Tfrmconfig
-  Left = 2135
+  Left = 726
   Height = 385
-  Top = 1081
+  Top = 1554
   Width = 443
   Caption = 'Config'
   ClientHeight = 385
@@ -132,6 +132,28 @@ object frmconfig: Tfrmconfig
         MaxLength = 0
         TabOrder = 3
         TextHint = 'Path + Filename Script Debug'
+      end
+      object edCompile: TFileNameEdit
+        Left = 6
+        Height = 34
+        Hint = 'Compile Script'
+        Top = 252
+        Width = 336
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 18
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 4
+        TextHint = 'Path + Filename Script Debug'
+      end
+      object Label9: TLabel
+        Left = 6
+        Height = 17
+        Top = 232
+        Width = 60
+        Caption = 'Compile:'
+        ParentColor = False
       end
     end
     object TabSheet2: TTabSheet

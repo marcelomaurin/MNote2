@@ -1843,7 +1843,8 @@ object frmMNote: TfrmMNote
       object mnPesqItem: TMenuItem
         Caption = 'Find'
         ImageIndex = 6
-        ShortCut = 114
+        ShortCut = 16454
+        ShortCutKey2 = 114
         OnClick = mnPesqItemClick
       end
       object miUndo: TMenuItem
@@ -1884,6 +1885,10 @@ object frmMNote: TfrmMNote
       object mninstall: TMenuItem
         Caption = 'INSTALL'
         OnClick = mninstallClick
+      end
+      object mnCompile: TMenuItem
+        Caption = 'Compile'
+        ShortCut = 8313
       end
     end
     object MenuItem12: TMenuItem
