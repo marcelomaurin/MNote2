@@ -740,7 +740,7 @@ begin
   begin
        Nome := ExtractFileName(Arquivo);
        DirName := ExtractFileDir(Arquivo);
-       FileName := Arquivo;
+       FileName := ExtractFileName(Arquivo);
        FileExt:= ExtractFileExt(Arquivo);
        //ItemType := AtribuiExt(FileExt);
        {#ifdef WINDOWS}
@@ -948,7 +948,53 @@ begin
              //pnResult.Visible:= false;
          end;
        end;
+
+
     end;
+    ti_CCP:
+    begin
+       filenamerun := FSetMain.RunScript;
+       if (filenamerun <> '') then
+       begin
+            {$IFDEF WINDOWS}
+            if(Callprg(filenamerun, '', Output)=true) then
+            begin
+                 //showmessage('Run program!!');
+                 MessageHint(Fsender,'Run script'+ filenamerun);
+                 //meResult.Lines.Text:= Output;
+                 //pnResult.Visible:= true;
+            end
+            else
+            begin
+                 //showmessage('Fail run!!');
+                 MessageHint(Fsender,'fail run script'+ filenamerun);
+                 //pnResult.Visible:= false;
+            end;
+            {$ENDIF}
+            {$IFDEF LINUX}
+            if(Callprg('/bin/bash',' -c '+#13+filenamerun, Output)=true) then
+            begin
+                 //showmessage('Run program!!');
+                 MessageHint(Fsender,'Run script'+ filenamerun);
+                 //meResult.Lines.Text:= Output;
+                 //pnResult.Visible:= true;
+            end
+            else
+            begin
+                 //showmessage('Fail run!!');
+                 MessageHint(Fsender,'fail run script'+ filenamerun);
+                 //pnResult.Visible:= false;
+            end;
+            {$ENDIF}
+
+       end
+       else
+       begin
+           MessageHint(Fsender,'Config RUN need!'+ filenamerun);
+           //pnResult.Visible:= false;
+       end;
+
+    end
     else
     begin
 

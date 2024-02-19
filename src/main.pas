@@ -165,6 +165,7 @@ type
     procedure miSelectCmdClick(Sender: TObject);
     procedure miToolsFalarClick(Sender: TObject);
     procedure mncleanClick(Sender: TObject);
+    procedure mnCompileClick(Sender: TObject);
     procedure mndebugClick(Sender: TObject);
     procedure mnHideResultClick(Sender: TObject);
     procedure mnidos2unixClick(Sender: TObject);
@@ -438,6 +439,8 @@ begin
       tb.PopupMenu := popFechar;
 
       item.Loadfile(arquivo);
+      //item.FileName:= ExtractFileName(arquivo);
+
       item.salvo := true;
 
       if FileGetAttr(arquivo) = faReadOnly then
@@ -1259,6 +1262,58 @@ begin
 
 end;
 
+procedure TfrmMNote.mnCompileClick(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+   I : NativeInt;
+   variavel : PPyObject;
+   variavelname : string;
+
+begin
+   mnSalvarClick(self); (*Salva antes de rodar*)
+   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+   meResult.Lines.clear;
+   item.Resultado := meResult;
+
+   item.Run();
+   syn := item.syn;
+   //pnResult.Visible:=true;
+   if (item.PythonCtrl.VarsCheck) then
+   begin
+      pnInspector.Visible:=true;
+   end;
+   if item.Error then
+   begin
+      syn.CaretY:= item.LinhaError;
+   end
+   else
+   begin
+     if (item.PythonCtrl.VarsCheck) then
+     begin
+         for I := 0 to item.PythonCtrl.VarListGlobal_Size -1  do
+         begin
+               //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
+               //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
+               //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
+               variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsGlobalKeys,I);
+               variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
+               vlGlobal.InsertRow(variavelname,'',true);
+         end;
+         for I := 0 to item.PythonCtrl.VarListLocal_Size -1  do
+         begin
+               //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
+               //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
+               //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
+               variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsLocalKeys,I);
+               variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
+               vlLocal.InsertRow(variavelname,'',true);
+         end;
+     end;
+   end;
+end;
+
 procedure TfrmMNote.mndebugClick(Sender: TObject);
 var
      Output : string;
@@ -1463,6 +1518,7 @@ begin
    item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
    meResult.Lines.clear;
    item.Resultado := meResult;
+
 
    item.Run();
    syn := item.syn;

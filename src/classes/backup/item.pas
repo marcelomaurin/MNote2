@@ -20,7 +20,7 @@ end;
 type
 TTypeItem  = (ti_NODEFINE, ti_E , ti_H , ti_CCP, ti_PAS, ti_Reg, ti_BAT,
            ti_CFG , ti_TXT, ti_SQL,ti_PY, ti_PHP, ti_JAVA, ti_JS, ti_HTML, ti_CSS,
-           ti_INO, ti_SHELL, ti_JSON, ti_ALL);
+           ti_INO, ti_SHELL, ti_ALL);
 TProjetoTipo = (pt_NODEFINE, pt_TEXT, pt_ProjetoRoot, pt_ProjetoSetup, pt_ProjetoSetupItem, pt_ProjetoFiles, pt_ProjetoDirFiles, pt_ProjetoFilesItem);
 TTipoInfo = (Name, Path);
 
@@ -740,7 +740,7 @@ begin
   begin
        Nome := ExtractFileName(Arquivo);
        DirName := ExtractFileDir(Arquivo);
-       FileName := Arquivo;
+       FileName := ExtractFileName(Arquivo);
        FileExt:= ExtractFileExt(Arquivo);
        //ItemType := AtribuiExt(FileExt);
        {#ifdef WINDOWS}
@@ -948,7 +948,53 @@ begin
              //pnResult.Visible:= false;
          end;
        end;
+
+
     end;
+    ti_CCP:
+    begin
+       filenamerun := FSetMain.RunScript;
+       if (filenamerun <> '') then
+       begin
+            {$IFDEF WINDOWS}
+            if(Callprg(filenamerun, '', Output)=true) then
+            begin
+                 //showmessage('Run program!!');
+                 MessageHint(Fsender,'Run script'+ filenamerun);
+                 //meResult.Lines.Text:= Output;
+                 //pnResult.Visible:= true;
+            end
+            else
+            begin
+                 //showmessage('Fail run!!');
+                 MessageHint(Fsender,'fail run script'+ filenamerun);
+                 //pnResult.Visible:= false;
+            end;
+            {$ENDIF}
+            {$IFDEF LINUX}
+            if(Callprg('/bin/bash',' -c '++filenamerun, Output)=true) then
+            begin
+                 //showmessage('Run program!!');
+                 MessageHint(Fsender,'Run script'+ filenamerun);
+                 //meResult.Lines.Text:= Output;
+                 //pnResult.Visible:= true;
+            end
+            else
+            begin
+                 //showmessage('Fail run!!');
+                 MessageHint(Fsender,'fail run script'+ filenamerun);
+                 //pnResult.Visible:= false;
+            end;
+            {$ENDIF}
+
+       end
+       else
+       begin
+           MessageHint(Fsender,'Config RUN need!'+ filenamerun);
+           //pnResult.Visible:= false;
+       end;
+
+    end
     else
     begin
 

@@ -98,7 +98,7 @@ function Callprg(filename: string; source: String; var Output: string): boolean;
 
 {$IFDEF LINUX}
 function RunBatch(const batch, Params: string; var Output : string): boolean;
-function Callprg(filename: string; source: String; var Output: string): boolean;
+function Callprg(FileName: string; Source: String; var Output: string): boolean;
 {$ENDIF}
 
 {$IFDEF Darwin}
@@ -573,11 +573,12 @@ end;
 
 
 {$IFDEF LINUX}
-function Callprg(filename: string; source: String; var Output: string): boolean;
+function Callprg(FileName: string; Source: String; var Output: string): boolean;
 var
   Process: TProcess;
+  BytesRead: longint;
+  Buffer: array[1..1024] of byte; // Buffer para armazenar os dados lidos
   OutputLine: string;
-  cont : integer;
 begin
   Result := False;
   Process := TProcess.Create(nil);
@@ -586,22 +587,20 @@ begin
     Process.Executable := FileName;
     Process.Parameters.AddStrings(Source);
 
-    Process.Options := [poUsePipes, poStdErrToOutPut];
+    //Process.Options := [poNewConsole, poUsePipes, poStdErrToOutPut]; // Executar com console
+    Process.Options := [poNewConsole, poUsePipes, poStderrToOutPut]; // Executar com console
+
     Process.Execute;
 
-    // Ler a saída do programa linha por linha
-    while Process.Running do
-    begin
-      Process.Output.Read(OutputLine, cont);
-      Output := Output + OutputLine;
-    end;
+    Output := Process.Output.ReadAnsiString;
 
-    Result := True;
+    Result := Process.ExitStatus = 0;
+
   finally
     Process.Free;
+    Result := Process.ExitStatus = 0; // Verifica se o processo foi executado com sucesso
   end;
 end;
-
 {$endif}
 
 {$IFDEF WINDOWS}

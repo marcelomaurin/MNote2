@@ -1889,6 +1889,7 @@ object frmMNote: TfrmMNote
       object mnCompile: TMenuItem
         Caption = 'Compile'
         ShortCut = 8313
+        OnClick = mnCompileClick
       end
     end
     object MenuItem12: TMenuItem
