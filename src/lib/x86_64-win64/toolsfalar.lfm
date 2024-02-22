@@ -1,92 +1,95 @@
 object frmToolsfalar: TfrmToolsfalar
-  Left = 821
-  Height = 130
-  Top = 1681
-  Width = 404
+  Left = 680
+  Height = 162
+  Top = 454
+  Width = 505
+  BorderStyle = bsDialog
   Caption = 'ToolsFalar'
-  ClientHeight = 130
-  ClientWidth = 404
-  LCLVersion = '3.0.0.3'
+  ClientHeight = 162
+  ClientWidth = 505
+  DesignTimePPI = 120
+  Position = poOwnerFormCenter
+  LCLVersion = '2.2.6.0'
   object btFalar: TButton
-    Left = 296
-    Height = 35
-    Top = 93
-    Width = 104
+    Left = 370
+    Height = 44
+    Top = 116
+    Width = 130
     Caption = 'Speak'
-    TabOrder = 0
     OnClick = btFalarClick
+    TabOrder = 0
   end
   object Shape1: TShape
     Left = 0
-    Height = 72
+    Height = 90
     Top = 0
-    Width = 404
+    Width = 505
     Align = alTop
   end
   object Label1: TLabel
-    Left = 8
-    Height = 17
-    Top = 6
-    Width = 17
+    Left = 10
+    Height = 20
+    Top = 8
+    Width = 15
     Caption = 'IP:'
     ParentColor = False
   end
   object edIP: TEdit
-    Left = 27
-    Height = 34
-    Top = 3
-    Width = 192
+    Left = 34
+    Height = 28
+    Top = 4
+    Width = 240
     TabOrder = 1
     Text = '127.0.0.1'
   end
   object Label2: TLabel
-    Left = 240
-    Height = 17
-    Top = 8
-    Width = 34
+    Left = 300
+    Height = 20
+    Top = 10
+    Width = 29
     Caption = 'Port:'
     ParentColor = False
   end
   object edPort: TEdit
-    Left = 273
-    Height = 34
-    Top = 3
-    Width = 80
+    Left = 341
+    Height = 28
+    Top = 4
+    Width = 100
+    OnChange = edPortChange
     TabOrder = 2
     Text = '8096'
-    OnChange = edPortChange
   end
   object btConect: TButton
-    Left = 176
-    Height = 25
-    Top = 40
-    Width = 75
+    Left = 220
+    Height = 31
+    Top = 50
+    Width = 94
     Caption = 'Conect'
-    TabOrder = 3
     OnClick = btConectClick
+    TabOrder = 3
   end
   object btDisconect: TButton
-    Left = 264
-    Height = 25
-    Top = 40
-    Width = 75
+    Left = 330
+    Height = 31
+    Top = 50
+    Width = 94
     Caption = 'Disconect'
-    TabOrder = 4
     OnClick = btDisconectClick
+    TabOrder = 4
   end
   object Label3: TLabel
-    Left = 10
-    Height = 17
-    Top = 78
-    Width = 45
+    Left = 12
+    Height = 20
+    Top = 98
+    Width = 43
     Caption = 'Speak:'
     ParentColor = False
   end
   object edFalar: TEdit
-    Left = 8
-    Height = 34
-    Top = 95
-    Width = 280
+    Left = 10
+    Height = 28
+    Top = 119
+    Width = 350
     TabOrder = 5
     Text = 'Wellcome to ToolsFalar'
   end
@@ -99,7 +102,7 @@ object frmToolsfalar: TfrmToolsfalar
     OnConnect = LTCPComponent1Connect
     Timeout = 0
     ReuseAddress = True
-    Left = 346
-    Top = 25
+    Left = 433
+    Top = 31
   end
 end

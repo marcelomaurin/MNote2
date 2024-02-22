@@ -1,7 +1,7 @@
 object frmmquery2: Tfrmmquery2
-  Left = 377
+  Left = 376
   Height = 675
-  Top = 294
+  Top = 235
   Width = 1008
   Caption = 'Query Tools'
   ClientHeight = 650

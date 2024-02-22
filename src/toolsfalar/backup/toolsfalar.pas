@@ -92,7 +92,7 @@ begin
   //ShowMessage('Recebeu a mensagem:');
 
   aSocket.GetMessage(info);
-  ShowMessage(info);
+  //ShowMessage(info);
 end;
 
 procedure TfrmToolsfalar.Falar();

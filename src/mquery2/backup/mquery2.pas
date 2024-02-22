@@ -541,7 +541,7 @@ begin
     for i := 0 to CSVDataSet.Fields.Count - 1 do
     begin
       // Aqui você precisa lidar com as aspas e os valores corretamente dependendo do tipo de dado
-      SQLInsert := SQLInsert + QuotedStr(UTF8ToANSI(CSVDataSet.Fields[i].AsString);
+      SQLInsert := SQLInsert + QuotedStr(UTF8ToANSI(CSVDataSet.Fields[i].AsString));
 
       if i < CSVDataSet.Fields.Count - 1 then
         SQLInsert := SQLInsert + ', ';

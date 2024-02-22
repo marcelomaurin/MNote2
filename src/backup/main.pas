@@ -439,7 +439,7 @@ begin
       tb.PopupMenu := popFechar;
 
       item.Loadfile(arquivo);
-      item.FileName:= ExtractFileName(arquivo);
+      //item.FileName:= ExtractFileName(arquivo);
 
       item.salvo := true;
 
