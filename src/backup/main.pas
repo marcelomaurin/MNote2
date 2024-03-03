@@ -10,7 +10,7 @@ uses
   setmain, TypeDB, folders, funcoes, LCLType, ValEdit, PairSplitter, chgtext,
   hint, registro, splash, setFolders, config, SynEditKeyCmds, PythonEngine,
   rxctrls, LogTreeView, uPoweredby, chatgpt, mquery2, porradawebapi,
-  SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar;
+  SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir;
 
 
 const versao = '2.32';
@@ -31,6 +31,7 @@ type
     meDialog: TSynEdit;
     MenuItem19: TMenuItem;
     MenuItem20: TMenuItem;
+    MenuItem21: TMenuItem;
     mnCompile: TMenuItem;
     miToolsFalar: TMenuItem;
     miIMGJSON: TMenuItem;
@@ -153,6 +154,7 @@ type
     procedure MenuItem18Click(Sender: TObject);
     procedure MenuItem19Click(Sender: TObject);
     procedure MenuItem20Click(Sender: TObject);
+    procedure MenuItem21Click(Sender: TObject);
     procedure MenuItem7Click(Sender: TObject);
     procedure miChatGPTClick(Sender: TObject);
     procedure micopyClick(Sender: TObject);
@@ -439,7 +441,7 @@ begin
       tb.PopupMenu := popFechar;
 
       item.Loadfile(arquivo);
-      item.FileName:= ExtractFileName(arquivo);
+      //item.FileName:= ExtractFileName(arquivo);
 
       item.salvo := true;
 
@@ -1137,6 +1139,15 @@ end;
 procedure TfrmMNote.MenuItem20Click(Sender: TObject);
 begin
   NewContext();
+end;
+
+procedure TfrmMNote.MenuItem21Click(Sender: TObject);
+begin
+  if (frmToolsOuvir= nil) then
+  begin
+       frmToolsOuvir := TfrmToolsOuvir.create(self);
+  end;
+  frmToolsFalar.show();
 end;
 
 procedure TfrmMNote.MenuItem7Click(Sender: TObject);

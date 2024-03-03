@@ -100,7 +100,7 @@
         <PackageName Value="LCL"/>
       </Item17>
     </RequiredPackages>
-    <Units Count="46">
+    <Units Count="47">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -324,6 +324,7 @@
         <Filename Value="imgjson/sobre.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit40>
       <Unit41>
@@ -355,6 +356,13 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit45>
+      <Unit46>
+        <Filename Value="toolsouvir/toolsouvir.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmToolsOuvir"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="ToolsOuvir"/>
+      </Unit46>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -364,7 +372,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="classes;mquery2;imgjson;toolsfalar"/>
+      <OtherUnitFiles Value="classes;mquery2;imgjson;toolsfalar;toolsouvir"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
