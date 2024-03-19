@@ -3,21 +3,30 @@ import numpy as np
 import json
 import sys
 
+
+inputs = None
+outputs = None
+
 def load_data(json_file):
+    Global inputs
+    Global outputs
     with open(json_file, 'r') as file:
         data = json.load(file)
+
     inputs = np.array([item['inputs'] for item in data['training_data']], dtype=np.float32)
     outputs = np.array([item['output'] for item in data['training_data']], dtype=np.float32)
     return inputs, outputs
 
 def train_and_save_model(inputs, outputs, model_file):
-    model = tf.keras.Sequential([
-        tf.keras.layers.Dense(100, activation='relu'),
-        tf.keras.layers.Dense(1, activation='sigmoid')
-    ])
+    model = tf.keras.Sequential()
+    modelo.add(tf.keras.layers.Dense(units=100, activation='relu',input_dim=inputs.shape[1]))
+    modelo.add(tf.keras.layers.Dropout(0.1))
+    modelo.add(tf.keras.layers.Dense(units=100, activation='relu'))
+    modelo.add(tf.keras.layers.Dropout(0.1))
+    modelo.add(tf.keras.layers.Dense(units=outputs.shape[1], activation='sigmoid'))
 
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-    model.fit(inputs, outputs, epochs=10)
+    model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
+    model.fit(inputs, outputs, epochs=100, batch_size=10, verbose=True)
 
     model.save(model_file)
 

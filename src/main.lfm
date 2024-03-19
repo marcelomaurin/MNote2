@@ -1928,6 +1928,10 @@ object frmMNote: TfrmMNote
         Caption = 'ToolsFalar'
         OnClick = miToolsFalarClick
       end
+      object MenuItem21: TMenuItem
+        Caption = 'ToolsOuvir'
+        OnClick = MenuItem21Click
+      end
       object Separator4: TMenuItem
         Caption = '-'
       end
