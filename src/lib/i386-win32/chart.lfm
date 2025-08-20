@@ -1,0 +1,166 @@
+object frmChart: TfrmChart
+  Left = 1039
+  Height = 519
+  Top = 325
+  Width = 729
+  Caption = 'Chart View'
+  ClientHeight = 519
+  ClientWidth = 729
+  DesignTimePPI = 120
+  Position = poMainFormCenter
+  LCLVersion = '2.2.6.0'
+  object pcChart: TPageControl
+    Left = 0
+    Height = 519
+    Top = 0
+    Width = 729
+    ActivePage = tsSetup
+    Align = alClient
+    TabIndex = 0
+    TabOrder = 0
+    object tsSetup: TTabSheet
+      Caption = 'Setup'
+      ClientHeight = 486
+      ClientWidth = 721
+      object Label19: TLabel
+        Left = 19
+        Height = 20
+        Top = 21
+        Width = 73
+        Caption = 'Type Chart:'
+        ParentColor = False
+      end
+      object cbTypeChart: TComboBox
+        Left = 17
+        Height = 28
+        Top = 40
+        Width = 293
+        ItemHeight = 20
+        Items.Strings = (
+          'None'
+          'Pie'
+          'Bar'
+          'Line'
+          'Manhattan'
+          'Constant Line'
+          ''
+        )
+        OnSelect = cbTypeChartSelect
+        TabOrder = 0
+        Text = 'cbTypeChart'
+      end
+      object cbGroupItem: TComboBox
+        Left = 19
+        Height = 28
+        Top = 99
+        Width = 293
+        ItemHeight = 20
+        Items.Strings = (
+          'None'
+          'Pie'
+          'Bar'
+        )
+        TabOrder = 1
+        Text = 'cbGroupItem'
+      end
+      object Label20: TLabel
+        Left = 19
+        Height = 20
+        Top = 80
+        Width = 78
+        Caption = 'Group Item:'
+        ParentColor = False
+      end
+      object Label21: TLabel
+        Left = 19
+        Height = 20
+        Top = 144
+        Width = 73
+        Caption = 'Item Value:'
+        ParentColor = False
+      end
+      object cbItemValue: TComboBox
+        Left = 19
+        Height = 28
+        Top = 163
+        Width = 293
+        ItemHeight = 20
+        Items.Strings = (
+          'None'
+          'Pie'
+          'Bar'
+        )
+        TabOrder = 2
+        Text = 'cbItemValue'
+      end
+      object btrefresh: TToggleBox
+        Left = 336
+        Height = 31
+        Top = 96
+        Width = 94
+        Caption = 'Refresh'
+        OnChange = btrefreshChange
+        TabOrder = 3
+      end
+      object btView: TToggleBox
+        Left = 19
+        Height = 31
+        Top = 272
+        Width = 295
+        Caption = 'View'
+        OnChange = btViewChange
+        TabOrder = 4
+      end
+      object Label22: TLabel
+        Left = 19
+        Height = 20
+        Top = 208
+        Width = 81
+        Caption = 'Item ValueY:'
+        ParentColor = False
+      end
+      object cbItemValueY: TComboBox
+        Left = 19
+        Height = 28
+        Top = 227
+        Width = 293
+        ItemHeight = 20
+        Items.Strings = (
+          'None'
+          'Pie'
+          'Bar'
+        )
+        TabOrder = 5
+        Text = 'cbItemValueY'
+      end
+    end
+    object tsChart: TTabSheet
+      Caption = 'Chart'
+      ClientHeight = 486
+      ClientWidth = 721
+      object Chart1: TChart
+        Left = 0
+        Height = 486
+        Top = 0
+        Width = 721
+        AxisList = <        
+          item
+            Marks.LabelBrush.Style = bsClear
+            Minors = <>
+            Title.LabelFont.Orientation = 900
+            Title.LabelBrush.Style = bsClear
+          end        
+          item
+            Alignment = calBottom
+            Marks.LabelBrush.Style = bsClear
+            Minors = <>
+            Title.LabelBrush.Style = bsClear
+          end>
+        Title.Text.Strings = (
+          'TAChart'
+        )
+        Align = alClient
+      end
+    end
+  end
+end

@@ -13,7 +13,7 @@ uses
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir;
 
 
-const versao = '2.32';
+const versao = '2.40';
 
 type
 
@@ -273,25 +273,21 @@ uses Sobre;
 
 
 
-function TfrmMNote.ExistFileOpen(Arquivo : string): boolean;
+function TfrmMNote.ExistFileOpen(Arquivo: string): boolean;
 var
-  resposta : boolean;
-  cont : integer;
-  syn : TSynEdit;
-  item : TItem;
+  i: Integer;
+  item: TItem;
+  alvo, atual: string;
 begin
-  resposta := false;
-  for cont:=0 to pgMain.PageCount-1 do
+  Result := False;
+  alvo := ExpandFileName(Arquivo);
+  for i := 0 to pgMain.PageCount - 1 do
   begin
-     item := TItem(pgMain.Pages[cont].Tag);
-
-     if (Arquivo=item.FileName) then
-     begin
-       resposta := true;
-     end;
+    item := TItem(pgMain.Pages[i].Tag);
+    atual := ExpandFileName(item.FileName);
+    if SameText(alvo, atual) then
+      Exit(True);
   end;
-  result := resposta;
-
 end;
 
 procedure TfrmMNote.synChange(Sender: TObject);
@@ -404,60 +400,43 @@ end;
 
 procedure TfrmMNote.Carregar(arquivo : String);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
-   item : TItem;
+  tb  : TTabSheet;
+  syn : TSynEdit;
+  item: TItem;
 begin
-  if FileExists(arquivo) then
+  if not FileExists(arquivo) then
   begin
-    if(not FileExists(arquivo)) then
-    begin
-        MessageHint(arquivo + ' not exits');
-    end
-    else
-    begin
-      tb := NovoItem();
-      item := Titem(tb.tag);
-      syn := item.syn;
-      try
-
-        syn.Lines.LoadFromFile(arquivo);
-
-        //item.ItemType := classificaTipo(arquivo);
-        except
-            on E: Exception do
-            begin
-              tb.Destroy;
-              MessageHint('File cannot be read:'+ E.Message);
-              exit;
-            end;
-
-        end;
-      end;
-
-
-      tb.tag := PtrInt(item);
-      tb.ImageIndex:=0;
-      tb.PopupMenu := popFechar;
-
-      item.Loadfile(arquivo);
-      //item.FileName:= ExtractFileName(arquivo);
-
-      item.salvo := true;
-
-      if FileGetAttr(arquivo) = faReadOnly then
-      begin
-          syn.ReadOnly:=true;
-          tb.Caption:= item.Nome;
-      end
-      else
-      begin
-           tb.Caption:= item.Nome;
-      end;
-      //CheckTipoArquivo(syn,arquivo, item);
-      pgMain.Refresh();
-
+    MessageHint(arquivo + ' not exists');
+    Exit;
   end;
+
+  tb := NovoItem();
+  item := TItem(tb.Tag);
+  syn  := item.syn;
+
+  try
+    syn.Lines.LoadFromFile(arquivo);
+  except
+    on E: Exception do
+    begin
+      tb.Free;
+      MessageHint('File cannot be read: ' + E.Message);
+      Exit;
+    end;
+  end;
+
+  tb.Tag        := PtrInt(item);
+  tb.ImageIndex := 0;
+  tb.PopupMenu  := popFechar;
+
+  item.Loadfile(arquivo);
+  item.Salvo := True;
+
+  if (FileGetAttr(arquivo) and faReadOnly) <> 0 then
+    syn.ReadOnly := True;
+
+  tb.Caption := item.Nome;
+  pgMain.Refresh;
 end;
 
 procedure TfrmMNote.CarregarArquivo(arquivo : string);
@@ -551,34 +530,20 @@ end;
 
 procedure TfrmMNote.CarregarParametros();
 var
-   parametros : integer;
-   info : string;
-   a : integer;
-   pesquisa : integer;
+  i: Integer;
+  p: string;
 begin
-  parametros := Application.ParamCount;
-  for a := 1 to parametros do
+  for i := 1 to ParamCount do
   begin
-      pesquisa := pos('--',Application.Params[a]);
-      if (pesquisa<>-1) then
-      begin
-        info := Application.Params[a];
-        if FileExists(info) then
-        begin
-          //MessageHint(info);
-          if not ExistFileOpen(info) then  //Verifica se existe essa aba ja
-          begin
-            Carregar(info);
-          end;
-          application.ProcessMessages;
-        end
-        else
-        begin
-          MessageHint(info+' file not found!');
-        end;
-      end;
+    p := ParamStr(i);
+    if FileExists(p) and (not ExistFileOpen(p)) then
+    begin
+      Carregar(p);
+      Application.ProcessMessages;
+    end;
   end;
 end;
+
 
 procedure TfrmMNote.CarregarOld();
 var
@@ -960,7 +925,8 @@ procedure TfrmMNote.edChatKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #13 then
   begin
-    FazPergunta();
+    Key := #0;            // não insere nova linha / não dá beep
+    FazPergunta;
   end;
 end;
 
@@ -1147,7 +1113,7 @@ begin
   begin
        frmToolsOuvir := TfrmToolsOuvir.create(self);
   end;
-  frmToolsFalar.show();
+  frmToolsOuvir.show();
 end;
 
 procedure TfrmMNote.MenuItem7Click(Sender: TObject);
@@ -1573,21 +1539,15 @@ end;
 
 procedure TfrmMNote.MenuItem4Click(Sender: TObject);
 begin
-
   if frmmquery2 = nil then
-  begin
-    frmmquery2 := TFrmMQuery2.create(self);
-  end;
-  if frmMQuery2.Showing then
-  begin
-    frmmquery2.hide();
-  end
-  else
-  begin
-    frmmquery2.show();
-  end;
+    frmmquery2 := Tfrmmquery2.Create(self);
 
+  if frmmquery2.Showing then
+    frmmquery2.Hide
+  else
+    frmmquery2.Show;
 end;
+
 
 procedure TfrmMNote.miConfigClick(Sender: TObject);
 begin
@@ -1637,13 +1597,17 @@ begin
 end;
 
 procedure TfrmMNote.mnDesktopCenterClick(Sender: TObject);
+var
+  WA: TRect;
 begin
-  frmMNote.top := (Screen.WorkAreaTop  - frmMNote.Height) DIV 2;
-  frmMNote.left := (Screen.WorkAreaLeft  - frmMNote.Width) DIV 2;
-  Fsetmain.posx:=Left;
-  Fsetmain.posy:=top;
+  WA := Screen.WorkAreaRect;
+  Left := WA.Left + (WA.Width  - Width)  div 2;
+  Top  := WA.Top  + (WA.Height - Height) div 2;
+
+  Fsetmain.posx := Left;
+  Fsetmain.posy := Top;
   Fsetmain.width := Width;
-  Fsetmain.Height:= Height;
+  Fsetmain.Height := Height;
 end;
 
 procedure TfrmMNote.mnCClick(Sender: TObject);
@@ -1732,66 +1696,59 @@ end;
 procedure TfrmMNote.QuestionChat();
 var
   resposta : string;
-  codigo : TCodigo;
-  item : TFonte;
-  i : integer;
+  codigo   : TCodigo;
+  item     : TFonte;
+  i        : integer;
 begin
+  if (FCHATGPT = nil) then
+    FCHATGPT := TCHATGPT.Create(self);
 
-     if(FCHATGPT = nil) then
-     begin
-         FCHATGPT := TCHATGPT.create(self);
-     end;
-     mequestion.Text := mequestion.Text + edChat.Text;
+  // contexto + pergunta atual
+  mequestion.Lines.Add(edChat.Text);
 
-     FCHATGPT.TOKEN:= FSetMain.CHATGPT;
-     FCHATGPT.SendQuestion(mequestion.Text);
-     //Armazena pergunta historica
-     resposta := FCHATGPT.Response;
-     if(FSetMain.ToolsFalar) then
-     begin
-        if (frmToolsfalar = nil) then
-        begin
-           frmToolsfalar := TfrmToolsfalar.create(self);
-        end;
-        //frmToolsfalar.show;
-        frmToolsfalar.edFalar.text := resposta;
-        frmToolsfalar.Falar();
-     end;
-     //Armazena no historico
-     meChatHist.Caption :=  meChatHist.Caption + #13+ #13+ 'Question: '+edChat.Text+#13;
-     meChatHist.Caption := meChatHist.Caption + 'Response: '+ resposta+#13;
-     meChatHist.Caption:=meChatHist.Caption+#13;
+  FCHATGPT.TOKEN := FSetMain.CHATGPT;
+  FCHATGPT.SendQuestion(mequestion.Text);
+  resposta := FCHATGPT.Response;
 
-     //Armazena no Dialogo
-     meDialog.Caption :=  'Question: '+edChat.Text+#13;
-     meDialog.Caption := meDialog.Caption + 'Response: '+ resposta+#13;
-     meDialog.Caption:=meDialog.Caption+#13;
+  if FSetMain.ToolsFalar then
+  begin
+    if (frmToolsfalar = nil) then
+      frmToolsfalar := TfrmToolsFalar.Create(self);
+    frmToolsfalar.edFalar.Text := resposta;
+    frmToolsfalar.Falar();
+  end;
 
-     //Captura o fonte
-     // Captura os blocos de código
-     codigo := TCodigo.create();
-     codigo.AnalisaTexto(resposta);
+  // histórico visual
+  meChatHist.Lines.Add(''); // separador
+  meChatHist.Lines.Add('Question: ' + edChat.Text);
+  meChatHist.Lines.Add('Response: ' + resposta);
 
+  // diálogo
+  meDialog.Lines.Clear;
+  meDialog.Lines.Add('Question: ' + edChat.Text);
+  meDialog.Lines.Add('Response: ' + resposta);
 
-      // Limpa o texto existente
-      meCodes.Clear;
-
-
-
-      // Itera por cada bloco de código capturado
-      for i := 0 to codigo.Count-1 do
+  // extrai blocos de código
+  meCodes.Lines.BeginUpdate;
+  try
+    meCodes.Lines.Clear;
+    codigo := TCodigo.Create;
+    try
+      codigo.AnalisaTexto(resposta);
+      for i := 0 to codigo.Count - 1 do
       begin
         item := TFonte(codigo.Items[i]);
-        // Aqui você pode adicionar o tipo e o código ao memo ou tratar conforme necessário
-        //meCodes.Lines.Add('Tipo: ' + item.Tipo);
-        meCodes.Lines.text := meCodes.Lines.text + item.codigo;
+        meCodes.Lines.Add(item.codigo);
+        meCodes.Lines.Add(''); // separador entre blocos
       end;
+    finally
+      codigo.Free;
+    end;
+  finally
+    meCodes.Lines.EndUpdate;
+  end;
 
-      // Se houver pelo menos um bloco de código, foca no componente meCodes
-      //if (codigo.Count > 0) then
-        //tsCode.SetFocus;
-
-     edChat.Text:= '';
+  edChat.Text := '';
 end;
 
 procedure TfrmMNote.mnfontClick(Sender: TObject);
@@ -1866,21 +1823,19 @@ end;
 
 procedure TfrmMNote.mnFecharClick(Sender: TObject);
 var
-   a : integer;
-   resultado : boolean;
-   syn : TSynEdit;
-   item : TItem;
-   tb :TTabSheet;
+  page: TTabSheet;
+  item: TItem;
 begin
-  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  syn := item.syn;
-  //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  //item := TItem(syn.tag);
+  if pgMain.ActivePage = nil then Exit;
 
-  pgMain.ActivePage.Hide;
-  pgMain.Pages[pgMain.ActivePageIndex].free;
-  //syn.Free;
-  item.Free;
+  page := pgMain.ActivePage;
+  item := TItem(page.Tag);
+
+  page.PageControl := nil; // desacopla da PageControl
+  page.Free;
+
+  if item <> nil then
+    item.Free;
 end;
 
 
@@ -1914,33 +1869,27 @@ begin
 end;
 
 
-procedure TfrmMNote.SalvarComo(tb :TTabSheet);
+procedure TfrmMNote.SalvarComo(tb: TTabSheet);
 var
-   syn : TSynEdit;
-   item : TItem;
-   arquivo : string;
+  item: TItem;
+  syn : TSynEdit;
 begin
-   //syn := TSynEdit(tb.Tag);
-   item := TItem(tb.Tag);
-   syn := item.syn;
-   //item := TItem(syn.tag);
-   arquivo := item.FileName;
-   if arquivo <> '' then
-   begin
-        SaveDialog1.InitialDir:= ExtractFilePath(arquivo);
-   end
-   else
-   begin
-      SaveDialog1.InitialDir:= ExtractFilePath(ApplicationName);
-   end;
-   if (SaveDialog1.Execute) then
-   begin
-        item.Savefile(SaveDialog1.FileName);
-        tb.Caption:= ExtractFileName(SaveDialog1.FileName);
-        item.FileName:= SaveDialog1.FileName;
-        item.salvo := false;
-        SalvarTab(tb);
-   end;
+  item := TItem(tb.Tag);
+  syn  := item.syn;
+
+  if item.FileName <> '' then
+    SaveDialog1.InitialDir := ExtractFilePath(item.FileName)
+  else
+    SaveDialog1.InitialDir := ExtractFilePath(Application.ExeName);
+
+  if SaveDialog1.Execute then
+  begin
+    item.Savefile(SaveDialog1.FileName);
+    tb.Caption := ExtractFileName(SaveDialog1.FileName);
+    item.FileName := SaveDialog1.FileName;
+    item.Salvo := False; // vai salvar já na sequência
+    SalvarTab(tb);
+  end;
 end;
 
 procedure TfrmMNote.SalvarTab(tb : TTabSheet);

@@ -47,58 +47,61 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="17">
+    <RequiredPackages Count="18">
       <Item1>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="LazUtils"/>
       </Item1>
       <Item2>
-        <PackageName Value="synuni"/>
+        <PackageName Value="lnetbase"/>
       </Item2>
       <Item3>
-        <PackageName Value="synfacilsyn"/>
+        <PackageName Value="synuni"/>
       </Item3>
       <Item4>
-        <PackageName Value="SynEditDsgn"/>
+        <PackageName Value="synfacilsyn"/>
       </Item4>
       <Item5>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="SynEditDsgn"/>
       </Item5>
       <Item6>
-        <PackageName Value="myexamplepackage"/>
+        <PackageName Value="SynEdit"/>
       </Item6>
       <Item7>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="myexamplepackage"/>
       </Item7>
       <Item8>
-        <PackageName Value="FCL"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item8>
       <Item9>
-        <PackageName Value="poweredby"/>
+        <PackageName Value="FCL"/>
       </Item9>
       <Item10>
-        <PackageName Value="industrial"/>
+        <PackageName Value="poweredby"/>
       </Item10>
       <Item11>
-        <PackageName Value="pkg_gifanim"/>
+        <PackageName Value="industrial"/>
       </Item11>
       <Item12>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="pkg_gifanim"/>
       </Item12>
       <Item13>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="zcomponent"/>
       </Item13>
       <Item14>
-        <PackageName Value="rxnew"/>
+        <PackageName Value="multiloglaz"/>
       </Item14>
       <Item15>
-        <PackageName Value="python4lazarus_package"/>
+        <PackageName Value="rxnew"/>
       </Item15>
       <Item16>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="python4lazarus_package"/>
       </Item16>
       <Item17>
-        <PackageName Value="LCL"/>
+        <PackageName Value="lnetvisual"/>
       </Item17>
+      <Item18>
+        <PackageName Value="LCL"/>
+      </Item18>
     </RequiredPackages>
     <Units Count="47">
       <Unit0>

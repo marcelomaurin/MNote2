@@ -13,8 +13,8 @@ uses
   SynGutter, SynGutterCodeFolding, TAGraph, LCLType, Grids, Buttons,
   PairSplitter, DBCtrls, DBGrids, finds, ZClasses, ZCollections, ZCompatibility,
   ZTokenizer, ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging, ZVariant,
-  ZPlainDriver, ZURL, TypeDB, triggers, item, funcoes, chart, chatgpt, codigo,
-  setmain;
+  ZPlainDriver, TypeDB, triggers, item, funcoes, chart, chatgpt, codigo,
+  setmain, ZDbcIntfs, math; //ZURL
 
 const
   sqltabela = 'Você poderia me fornecer a consulta SQL que deseja analisar? Assim que eu receber o SQL, irei extrair os nomes das tabelas envolvidas e gerar um código em JSON com esses nomes. A resposta será apresentada dentro de uma caixa de texto apropriada para cópia, Desta forma refaça a pergunta mesmo nao havendo certeza da resposta,claramente formatada como um código JSON:';
@@ -472,91 +472,71 @@ begin
 
 end;
 
-procedure Tfrmmquery2.CriaTabela(NomeTabela: string; CSVDataSet: TCSVDataSet;
-  ZQuery: TZQuery);
+procedure Tfrmmquery2.CriaTabela(NomeTabela: string; CSVDataSet: TCSVDataSet; ZQuery: TZQuery);
 var
   SQLCreateTable: string;
   i: Integer;
-  FieldDef: TFieldDef;
+  FD: TFieldDef;
+  sep: string = ', ';
 begin
-  // Começar a construir a consulta SQL para criar a tabela
-  SQLCreateTable := ' CREATE TABLE ' + UTF8ToANSI(NomeTabela) + ' ( ';
+  SQLCreateTable := 'CREATE TABLE ' + JuntaNome(NomeTabela) + ' (';
 
-  // Percorrer os campos do CSVDataSet para construir a definição dos campos da tabela
   for i := 0 to CSVDataSet.FieldDefs.Count - 1 do
   begin
-    FieldDef := CSVDataSet.FieldDefs[i];
+    FD := CSVDataSet.FieldDefs[i];
+    SQLCreateTable += JuntaNome(FD.Name) + ' ';
 
-    // Adicionar a definição do campo à consulta SQL
-    SQLCreateTable := SQLCreateTable +' '+ JuntaNome(UTF8ToANSI(FieldDef.Name)) + ' ';
-
-    // Definir o tipo de dados com base no tipo do campo do CSVDataSet
-    case FieldDef.DataType of
-      ftString:   SQLCreateTable := SQLCreateTable + ' VARCHAR(' + IntToStr(FieldDef.Size) + ') null ';
-      ftInteger:  SQLCreateTable := SQLCreateTable + ' INTEGER null ';
-      ftFloat:    SQLCreateTable := SQLCreateTable + ' FLOAT null ';
-      ftBoolean:  SQLCreateTable := SQLCreateTable + ' BOOLEAN null ';
-      // Adicione mais tipos conforme necessário
+    case FD.DataType of
+      ftString:  SQLCreateTable += 'VARCHAR(' + IntToStr(Max(FD.Size, 1)) + ')';
+      ftInteger: SQLCreateTable += 'INTEGER';
+      ftFloat:   SQLCreateTable += 'FLOAT';
+      ftBoolean: SQLCreateTable += 'BOOLEAN';
+    else
+      SQLCreateTable += 'TEXT';
     end;
 
-    // Se não for o último campo, adicione uma vírgula
     if i < CSVDataSet.FieldDefs.Count - 1 then
-      SQLCreateTable := SQLCreateTable + ', ';
+      SQLCreateTable += sep;
   end;
 
-  // Finalizar a consulta SQL
-  SQLCreateTable := SQLCreateTable + ') ';
+  SQLCreateTable += ');';
 
-  // Executar a consulta usando ZQuery
   try
     ZQuery.SQL.Text := SQLCreateTable;
     ZQuery.ExecSQL;
   except
     on E: Exception do
-    begin
-      // Tratar exceções, como erros de execução do SQL
       ShowMessage('Erro ao criar a tabela: ' + E.Message);
-    end;
   end;
 end;
 
-procedure Tfrmmquery2.MigraCampos(NomeTabela: string; CSVDataSet: TCSVDataSet;
-  ZQuery: TZQuery);
+procedure Tfrmmquery2.MigraCampos(NomeTabela: string; CSVDataSet: TCSVDataSet; ZQuery: TZQuery);
 var
-  SQLInsert: string;
+  SQLInsert, colVals: string;
   i: Integer;
 begin
-  // Abre o CSVDataSet se ainda não estiver aberto
   if not CSVDataSet.Active then
     CSVDataSet.Open;
 
-  // Itera por todos os registros no CSVDataSet
   CSVDataSet.First;
   while not CSVDataSet.EOF do
   begin
-    // Começa a construir o comando SQL para inserir os dados
-    SQLInsert := 'INSERT INTO ' + UTF8ToANSI(NomeTabela) + ' VALUES (';
-
-    // Itera por todos os campos do registro atual e os adiciona ao comando SQL
+    colVals := '';
     for i := 0 to CSVDataSet.Fields.Count - 1 do
     begin
-      // Aqui você precisa lidar com as aspas e os valores corretamente dependendo do tipo de dado
-      SQLInsert := SQLInsert + QuotedStr(UTF8ToANSI(CSVDataSet.Fields[i].AsString));
-
-      if i < CSVDataSet.Fields.Count - 1 then
-        SQLInsert := SQLInsert + ', ';
+      if i > 0 then
+        colVals += ', ';
+      colVals += QuotedStr(CSVDataSet.Fields[i].AsString);
     end;
 
-    // Finaliza o comando SQL
-    SQLInsert := SQLInsert + ');';
-
-    // Executa o comando para inserir os dados na tabela
+    SQLInsert := 'INSERT INTO ' + JuntaNome(NomeTabela) + ' VALUES (' + colVals + ');';
     ZQuery.SQL.Text := SQLInsert;
     ZQuery.ExecSQL;
-    CSVDataset1.Next;
-  end;
-  CSVDataset1.close;
 
+    CSVDataSet.Next;
+  end;
+
+  CSVDataSet.Close;
 end;
 
 
@@ -569,79 +549,59 @@ end;
 
 procedure Tfrmmquery2.ToggleBox2Change(Sender: TObject);
 var
-  nome : string;
+  usuario, senha: string;
 begin
   if zconpost.Connected then
   begin
-       nome := InputBox('Criação de usuario','Usuario:','username');
-       edSQL.text  := 'create user root with password '+#39+nome+#39+';';
-       zqrypost.sql.text := edSQL.text;
-       Zqrypost.ExecSQL;
+    usuario := InputBox('Criação de usuário', 'Usuário:', 'username');
+    senha   := InputBox('Criação de usuário', 'Senha:', 'secret');
+
+    edSQL.Text := Format('CREATE USER %s WITH PASSWORD %s;',
+                         [JuntaNome(usuario), QuotedStr(senha)]);
+    zqrypost.SQL.Text := edSQL.Text;
+    zqrypost.ExecSQL;
   end
   else
+    ShowMessage('Postgres não conectado!');
+end;
+
+function Tfrmmquery2.TrocarPalavra(Info, de, para: String): String;
+begin
+  Result := StringReplace(Info, de, para, [rfReplaceAll, rfIgnoreCase]);
+end;
+
+
+
+function Tfrmmquery2.FormataSQL(Info: string): string;
+// começa em 1 (linha 0 geralmente é header)
+var r: Integer;
+begin
+  // remove crases
+  Info := StringReplace(Info, '`', '', [rfReplaceAll]);
+
+  // quebra em palavras-chave
+  Info := TrocarPalavra(Info, 'FROM',     LineEnding + 'FROM');
+  Info := TrocarPalavra(Info, 'WHERE',    LineEnding + 'WHERE');
+  Info := TrocarPalavra(Info, 'SELECT',   LineEnding + 'SELECT');
+  Info := TrocarPalavra(Info, 'INSERT',   LineEnding + 'INSERT');
+  Info := TrocarPalavra(Info, 'UPDATE',   LineEnding + 'UPDATE');
+  Info := TrocarPalavra(Info, 'ORDER BY', LineEnding + 'ORDER BY');
+  Info := TrocarPalavra(Info, 'GROUP BY', LineEnding + 'GROUP BY');
+  Info := TrocarPalavra(Info, 'THEN',     'THEN' + LineEnding);
+  Info := TrocarPalavra(Info, 'ELSE',     LineEnding + 'ELSE' + LineEnding);
+  Info := TrocarPalavra(Info, 'BEGIN',    LineEnding + 'BEGIN' + LineEnding);
+  Info := TrocarPalavra(Info, 'END IF;',  LineEnding + 'END IF;' + LineEnding);
+  Info := TrocarPalavra(Info, 'END;',     LineEnding + 'END;' + LineEnding);
+
+  // aplica equivalências da grid, se houver
+  if Assigned(vlistequivalente) then
   begin
-     showmessage('Postgres não conectado!');
+
+    for r := 1 to vlistequivalente.RowCount - 1 do
+      Info := TrocarPalavra(Info, vlistequivalente.Cells[0, r], vlistequivalente.Cells[1, r]);
   end;
-end;
 
-function Tfrmmquery2.TrocarPalavra(Info : String; de: String; para : String): String;
-var
-  a : integer;
-  posicao : integer;
-  buffer : string;
-begin
- buffer := '';
- a:= 1;
- repeat
- begin
-    posicao := Pos(uppercase(de),uppercase(Info));
-    if (posicao>0) then
-    begin
-       buffer  := buffer + Copy(info,0,posicao-1)+para;
-       Info := Copy(Info,posicao+length(de),Length(info)-1);
-       a := posicao+5;
-    end
-    else
-    begin
-       buffer := buffer + Info;
-    end;
- end;
- until (posicao <= 0) ;
- result := buffer;
-end;
-
-
-function Tfrmmquery2.FormataSQL(Info : string): string;
-var
-  a : integer;
-  posicao : integer;
-  buffer : string;
-begin
- for a:= 0 to Length(info)-1 do
- begin
-    if Info[a]= ',' then
-    begin
-       info := Copy(info,0,a)+#13+#10+Copy(Info,a+1,Length(info)-1);
-    end;
- end;
- Info := TrocarPalavra(Info,'`','');
- Info := TrocarPalavra(Info, 'FROM',#13+#10+'FROM');
- Info := TrocarPalavra(Info, 'THEN','THEN'+#13+#10);
- Info := TrocarPalavra(Info, 'ELSE',#13+#10+'ELSE'+#13+#10);
- Info := TrocarPalavra(Info, 'BEGIN',#13+#10+'BEGIN'+#13+#10);
- Info := TrocarPalavra(Info, 'END;',#13+#10+'END;'+#13+#10);
- Info := TrocarPalavra(Info, 'END IF;',#13+#10'END IF;'+#13+#10);
- Info := TrocarPalavra(Info, 'WHERE',#13+#10+'WHERE');
- Info := TrocarPalavra(Info, 'SELECT',#13+#10+'SELECT');
- Info := TrocarPalavra(Info, 'INSERT',#13+#10+'INSERT');
- Info := TrocarPalavra(Info, 'UPDATE',#13+#10+'UPDATE');
- Info := TrocarPalavra(Info, 'ORDER BY',#13+#10+'ORDER BY');
- Info := TrocarPalavra(Info, 'GROUP BY',#13+#10+'GROUP BY');
- for a := 1 to vlistequivalente.RowCount do
- begin
-    Info := TrocarPalavra(Info,vlistequivalente.Cells[0,a],vlistequivalente.Cells[1,a] );
- end;
- result := Info;
+  Result := Info;
 end;
 
 procedure Tfrmmquery2.MontaCreateTrigger(Tabela : TTabela; posicao : integer);
@@ -745,61 +705,54 @@ end;
 
 function Tfrmmquery2.GeraSQL(Tabela: TTabela): string;
 var
-  Comando : string;
-  a : integer;
+  Comando: string;
+  a: Integer;
 begin
-  Comando := '--Criado por MQuery2 em '+datetostr(now)+#13+#10;
-  Comando := Comando + 'CREATE TABLE '+edSchemaPost.text+'.'+Tabela.Tablename+'('+#13+#10 ;
-  for a := 0 to tabela.fieldname.count-2 do
+  Comando := '--Criado por MQuery2 em ' + DateToStr(Now) + LineEnding;
+  Comando += 'CREATE TABLE ' + edSchemaPost.Text + '.' + Tabela.TableName + '(' + LineEnding;
+
+  // colunas
+  for a := 0 to Tabela.Count - 1 do
   begin
-    Comando := '   '+Comando + tabela.fieldname[a]+' '+ TipoConv(tabela,a)+','#13+#10 ;
+    if a > 0 then
+      Comando += ',' + LineEnding;
+    Comando += '  ' + Tabela.FieldName[a] + ' ' + TipoConv(Tabela, a);
   end;
-  Comando := Comando + tabela.fieldname[tabela.count-1]+' '+ TipoConv(tabela,tabela.count-1)+#13+#10;
+  Comando += LineEnding;
 
-
-  (*Criando definições de chave primaria*)
-  if (Tabela.chaves.primarykeys.Count<>0) then
+  // primary key
+  if Tabela.Chaves.PrimaryKeys.Count > 0 then
   begin
-         Comando := comando+', primary key (';
-         for a := 0 to tabela.chaves.primarykeys.count-2 do
-         begin
-            Comando := comando+ tabela.chaves.primarykeys[a]+',';
-         end;
-         Comando := comando + tabela.chaves.primarykeys[tabela.chaves.primarykeys.count-1];
-         Comando := comando+ ')' +#13+#10;
-  end;
-
-
-
-  (*Definição de contraint*)
-  if (Tabela.chaves.coinstraintname.Count<>0) then
-  begin
-    for a := 0 to tabela.chaves.coinstraintname.count-2 do
+    Comando += ', PRIMARY KEY (';
+    for a := 0 to Tabela.Chaves.PrimaryKeys.Count - 1 do
     begin
+      if a > 0 then Comando += ',';
+      Comando += Tabela.Chaves.PrimaryKeys[a];
+    end;
+    Comando += ')' + LineEnding;
+  end;
 
-       begin
-            Comando := comando+', constraint ('+tabela.chaves.coinstraintcolumn_name[a]+') ' +
-                       'references '+ tabela.chaves.coinstraint_Reference_Table_name[a]+'('+
-                       tabela.chaves.coinstraint_Reference_column_name[a] + ')'+ #13+#10;
-
-       end;
-       Comando := comando+', constraint ('+tabela.chaves.coinstraintcolumn_name[Tabela.chaves.coinstraintname.Count-1]+') ' +
-                  'references '+ tabela.chaves.coinstraint_Reference_Table_name[Tabela.chaves.coinstraintname.Count-1]+'('+
-                  tabela.chaves.coinstraint_Reference_column_name[Tabela.chaves.coinstraintname.Count-1] + ')'+ #13+#10;
-
+  // foreign keys (se houver pares válidos)
+  if Tabela.Chaves.CoinstraintName.Count > 0 then
+  begin
+    for a := 0 to Tabela.Chaves.CoinstraintName.Count - 1 do
+    begin
+      Comando += ', CONSTRAINT ' + Tabela.Chaves.CoinstraintName[a] +
+                 ' FOREIGN KEY (' + Tabela.Chaves.CoinstraintColumn_Name[a] + ')' +
+                 ' REFERENCES ' + Tabela.Chaves.Coinstraint_Reference_Table_Name[a] +
+                 '(' + Tabela.Chaves.Coinstraint_Reference_Column_Name[a] + ')' + LineEnding;
     end;
   end;
-  Comando := Comando+ ')'+#13+#10;
-  Comando := Comando+ ';'+#13+#10;
-  (*Criando comentarios*)
-  for a := 0 to tabela.fieldname.count-1 do
-  begin
-    if Tabela.fieldcomment[a]<>'' then
-        Comando := Comando + ' comment on column '+edSchemaPost.text+'.'+Tabela.Tablename+'.'+ tabela.fieldname[a]+ ' is '+#39+Tabela.fieldcomment[a]+#39+';'#13+#10;
 
-  end;
-  //Comando := Comando+ ';'+#13+#10;
-  result := Comando;
+  Comando += ');' + LineEnding;
+
+  // comentários
+  for a := 0 to Tabela.FieldName.Count - 1 do
+    if Tabela.FieldComment[a] <> '' then
+      Comando += 'COMMENT ON COLUMN ' + edSchemaPost.Text + '.' + Tabela.TableName + '.' +
+                 Tabela.FieldName[a] + ' IS ' + QuotedStr(Tabela.FieldComment[a]) + ';' + LineEnding;
+
+  Result := Comando;
 end;
 
 function Tfrmmquery2.TipoConv(Tabela : TTabela; Posicao: integer): String;
@@ -1388,21 +1341,19 @@ end;
 
 procedure Tfrmmquery2.btPermissaoChange(Sender: TObject);
 var
-  nome : string;
-  banco : string;
+  nome, banco: string;
 begin
   if zconpost.Connected then
   begin
-       banco := InputBox('Permissão de banco','Database:','database');
-       nome := InputBox('Permissão de banco','Usuario:','root');
-       edSQL.text  := 'grant ALL PRIVILES on database '+banco+' to '+nome+';';
-       zqrypost.sql.text := edSQL.text;
-       Zqrypost.ExecSQL;
+    banco := InputBox('Permissão de banco', 'Database:', 'database');
+    nome  := InputBox('Permissão de banco', 'Usuário:', 'root');
+    edSQL.Text := Format('GRANT ALL PRIVILEGES ON DATABASE %s TO %s;',
+                         [JuntaNome(banco), JuntaNome(nome)]);
+    zqrypost.SQL.Text := edSQL.Text;
+    zqrypost.ExecSQL;
   end
   else
-  begin
-     showmessage('Postgres não conectado!');
-  end;
+    ShowMessage('Postgres não conectado!');
 end;
 
 procedure Tfrmmquery2.btBancoClick(Sender: TObject);
@@ -1621,8 +1572,10 @@ begin
 
         zconpost.Disconnect;
         {$IFDEF WINDOWS}
-        zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'\libpq74.dll';
-        zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'\libmysql.dll';
+        //zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'libpq74.dll';
+        zconpost.LibraryLocation:= FSetMain.DLLPostPath;
+        //zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'libmysql.dll';
+        zconmysql.LibraryLocation:= FSetMain.DLLMyPath;
         {$ENDIF}
         {$IFDEF LINUX}
         zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libpq74.so';
@@ -1796,69 +1749,60 @@ end;
 
 procedure Tfrmmquery2.Button3Click(Sender: TObject);
 var
-  qntd : integer;
-  tvitem : ttreenode;
+  tvitem : TTreeNode;
+  isCreateTable, isCreateSequence: Boolean;
 begin
   try
-  pnErro.Visible:= false;
-  if zconpost.Connected then
-  begin
-      qntd := pos('create table',edSQL.lines.text);
-      if (qntd>0) then
-      begin
-        //tvitem := tvPost.Items.FindNodeWithText(tvMysql.Selected.text);
-        tvitem := posicaofieldsmy.FindNode(tvMysql.Selected.text);
+    pnErro.Visible := False;
 
-        if (tvitem  = nil) then
-        begin
-          zqrypost.close;
-          Zqrypost.SQL.Clear;
-          zqrypost.sql.text := edSQL.text;
-          zqrypost.Prepare;
-          Zqrypost.ExecSQL;
-        end
-         else
-        begin
-          Showmessage('Tabela Existe');
-        end;
-      end;
-      qntd := pos('create sequence ', edSQL.lines.text);
+    if zconpost.Connected then
+    begin
+      isCreateTable   := AnsiContainsText(edSQL.Lines.Text, 'create table');
+      isCreateSequence:= AnsiContainsText(edSQL.Lines.Text, 'create sequence');
 
-      if (qntd >= 0) then
+      if isCreateTable then
       begin
-        //tvitem := tvPost.Items.FindNodeWithText(tvMysql.Selected.text);
-        tvitem := posicaoSequencePost.FindNode(tvMysql.Selected.text);
-        if (tvitem  = nil) then
+        // verifica no tree do MySQL (você fazia isso), mantendo a lógica
+        tvitem := posicaofieldsmy.FindNode(tvMysql.Selected.Text);
+        if tvitem = nil then
         begin
-          zqrypost.close;
-          Zqrypost.SQL.Clear;
-          zqrypost.sql.text := edSQL.text;
+          zqrypost.Close;
+          zqrypost.SQL.Text := edSQL.Text;
           zqrypost.Prepare;
-          Zqrypost.ExecSQL;
+          zqrypost.ExecSQL;
         end
-         else
-        begin
-          Showmessage('Sequence Existe');
-        end;
+        else
+          ShowMessage('Tabela existe');
       end;
 
+      if isCreateSequence then
+      begin
+        tvitem := posicaoSequencePost.FindNode(tvMysql.Selected.Text);
+        if tvitem = nil then
+        begin
+          zqrypost.Close;
+          zqrypost.SQL.Text := edSQL.Text;
+          zqrypost.Prepare;
+          zqrypost.ExecSQL;
+        end
+        else
+          ShowMessage('Sequence existe');
+      end;
+    end;
 
-  end;
   except
-
-
     {$IFDEF DARWIN}
-    on E: Exception  do
+    on E: Exception do
     {$ELSE}
-    on E: EZSQLException  do
+    on E: Exception do
     {$ENDIF}
-
-     begin
-       pnErro.Visible:= true;
-       edErro.text := E.message;
-       processaErro(E.message);
-     end;
+    begin
+      pnErro.Visible := True;
+      edErro.Text := E.Message;
+      ProcessaErro(E.Message);
+    end;
   end;
+
   RefreshPost();
 end;
 
