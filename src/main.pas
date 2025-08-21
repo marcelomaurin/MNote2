@@ -254,7 +254,7 @@ type
   public
     { public declarations }
     function NovoItem():TTabSheet;
-    procedure MessageHint(info : string);
+
     function ExistFileOpen(Arquivo : string): boolean;
     procedure CarregarArquivo(arquivo : string);
     procedure NewContext();
@@ -388,13 +388,6 @@ end;
 
 
 
-procedure TfrmMNote.MessageHint(info: string);
-var
-  frmHint : TfrmHint;
-begin
-  frmHint := TfrmHint.create(self);
-  frmHint.messagehint(info);
-end;
 
 
 
@@ -575,10 +568,28 @@ end;
 procedure TfrmMNote.FormCreate(Sender: TObject);
 var
    filename: string;
+   plataforma: string;
 begin
+  // Define plataforma e arquitetura
+  {$IFDEF MSWINDOWS}
+    plataforma := 'Windows ';
+  {$ENDIF}
+  {$IFDEF LINUX}
+    plataforma := 'Linux ';
+  {$ENDIF}
+
+  {$IFDEF CPU64}
+    plataforma := plataforma + '64 bits';
+  {$ELSE}
+    plataforma := plataforma + '32 bits';
+  {$ENDIF}
+
   frmSplash := TfrmSplash.Create(self);
-  frmSplash.lbversao.Caption:= versao;
+  frmSplash.lbversao.Caption := versao + ' - ' + plataforma;
   frmSplash.show();
+  Application.ProcessMessages;
+  sleep(2000);
+
   filename := extractfilename(application.ExeName);
   if IsRun(filename) then
   begin
@@ -587,16 +598,16 @@ begin
       MessageHint('Assumindo funções MNote anterior!');
     end;
   end;
+
   if (FSetMain = nil) then
   begin
-        FsetMain := TsetMain.create();
+    FsetMain := TsetMain.Create();
   end;
-  CarregaContexto();
 
+  CarregaContexto();
 
   {$ifdef Darwin}
      //Nao faz nada
-
   {$else}
   (*
      for i := 1 to paramCount() do
@@ -609,12 +620,14 @@ begin
      end;
    *)
   {$endif}
+
   CarregarOld();
   CarregarParametros();
+
   frmRegistrar := TfrmRegistrar.Create(self);
   frmRegistrar.Identifica();
-
 end;
+
 
 procedure TfrmMNote.CarregaContexto();
 begin
@@ -1063,9 +1076,25 @@ begin
 end;
 
 procedure TfrmMNote.MenuItem10Click(Sender: TObject);
+var
+   plataforma : string;
 begin
-  frmSobre := TFrmsobre.create(self);
-  frmSobre.lbversao.Caption := versao;
+
+   // Define plataforma e arquitetura
+  {$IFDEF MSWINDOWS}
+    plataforma := 'Windows ';
+  {$ENDIF}
+  {$IFDEF LINUX}
+    plataforma := 'Linux ';
+  {$ENDIF}
+
+  {$IFDEF CPU64}
+    plataforma := plataforma + '64 bits';
+  {$ELSE}
+    plataforma := plataforma + '32 bits';
+  {$ENDIF}
+  frmSobre := TfrmSobre.Create(self);
+  frmSobre.lbversao.Caption := versao + ' - ' + plataforma;
   frmSobre.showmodal();
   frmSobre.destroy();
   frmSobre := nil;

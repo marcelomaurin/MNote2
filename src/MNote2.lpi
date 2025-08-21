@@ -300,6 +300,7 @@
         <Filename Value="imgjson/base.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="dmBase"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
       </Unit35>
       <Unit36>

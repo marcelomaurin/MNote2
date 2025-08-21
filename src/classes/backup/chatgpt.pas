@@ -10,7 +10,7 @@ uses
 
 { TCHATGPT }
 
- type TVersionChat = (VCT_GPT35TURBO, VCT_GPT40,VCT_GPT40_TURBO );
+ type TVersionChat = (VCT_GPT35TURBO, VCT_GPT40,VCT_GPT40_TURBO, VCT_GPT4o, VCT_GPTo3_mini, VCT_GPT41,VCT_GPT41_MINI, VCT_GPT5 );
 
  //Class to do connect with chatgpt
  type  TCHATGPT = class(TComponent)
@@ -18,8 +18,10 @@ uses
     FToken : String; //private variable to use chatgp
     FQuestion : String;
     FResponse : String;
+    FDev : String;
     FTipoChat : TVersionChat;
     FParams: TStrings;
+
     function RequestJson(LURL : String; token : string ; ASK : string) : String;
     function PegaMensagem(const JSON: string): string;
 
@@ -28,10 +30,12 @@ uses
     property Question : String read FQuestion;
     property Response : String read FResponse write FResponse;
     property TipoChat : TVersionChat read FTipoChat;
+    property Dev : String read FDev write FDev;
     function SendQuestion( ASK : String) : boolean;
 
     constructor create(AOwner: TComponent); override;
     destructor Destroy;
+    function TipoModelo: string;
 
 end;
 
@@ -39,90 +43,19 @@ implementation
 
 { TCHATGPT }
 
-(*
-
-function TCHATGPT.PegaMensagem(const JSON: string): string;
+function JsonEscape(const S: string): string;
 var
-  Data: TJSONData;
-  JsonObject, MessageObject: TJSONObject;
-  ChoicesArray: TJSONArray;
-  Parser: TJSONParser;
+  R: string;
 begin
-  // Cria um objeto TJSONParser a partir da string JSON
-  Parser := TJSONParser.Create(JSON);
-
-  try
-    // Faz o parsing do JSON
-    Data := Parser.Parse;
-
-    // Verifica se o objeto é um TJSONObject
-    if Data is TJSONObject then
-    begin
-      // Converte o objeto para um TJSONObject
-      JsonObject := TJSONObject(Data);
-
-      // Verifica se o campo "choices" existe
-      if JsonObject.IndexOfName('choices') >= 0 then
-      begin
-        // Obtém o array de escolhas (choices)
-        ChoicesArray := JsonObject.Arrays['choices'];
-
-        // Verifica se o array de escolhas existe e se possui elementos
-        if (ChoicesArray <> nil) and (ChoicesArray.Count > 0) then
-        begin
-          // Obtém o primeiro objeto de mensagem (message)
-          MessageObject := ChoicesArray.Objects[0].Objects['message'] as TJSONObject;
-
-          // Verifica se o objeto de mensagem existe
-          if MessageObject <> nil then
-          begin
-            // Verifica se o campo "content" existe no objeto de mensagem
-            //Response:{ "role" : "assistant", "content" : "Olá! Como posso ajudar?" }
-            if MessageObject.IndexOfName('content') >= 0 then
-            begin
-              // Obtém o valor do campo "content"
-              Result := MessageObject.Find('content').AsString;
-              //MessageObject.Get('content').AsString;
-            end
-            else
-            begin
-              // O campo "content" não existe, pega o conteúdo completo do objeto de mensagem
-              Result := MessageObject.AsJSON;
-            end;
-          end
-          else
-          begin
-            // O objeto de mensagem não existe, retorna uma string vazia ou lança uma exceção, conforme necessário
-            Result := '';
-          end;
-        end
-        else
-        begin
-          // O array de escolhas está vazio, retorna uma string vazia ou lança uma exceção, conforme necessário
-          Result := '';
-        end;
-      end
-      else if JsonObject.IndexOfName('content') >= 0 then
-      begin
-        // O campo "choices" não existe, mas o campo "content" existe no nível superior
-        Result := JsonObject.Get('content').AsString;
-      end
-      else
-      begin
-        // Resposta inválida, retorna uma string vazia ou lança uma exceção, conforme necessário
-        Result := '';
-      end;
-    end
-    else
-    begin
-      // Objeto JSON inválido, retorna uma string vazia ou lança uma exceção, conforme necessário
-      Result := '';
-    end;
-  finally
-    Parser.Free; // Libera a memória do objeto TJSONParser
-  end;
+  R := StringReplace(S, '\', '\\', [rfReplaceAll]);
+  R := StringReplace(R,   '"', '\"', [rfReplaceAll]);
+  R := StringReplace(R, #13#10, '\n', [rfReplaceAll]);
+  R := StringReplace(R, #10,    '\n', [rfReplaceAll]);
+  R := StringReplace(R, #13,    '\n', [rfReplaceAll]);
+  Result := R;
 end;
-  *)
+
+
 
 function TCHATGPT.PegaMensagem(const JSON: string): string;
 var
@@ -177,70 +110,60 @@ begin
 end;
 
 
-function TCHATGPT.RequestJson(LURL: string; token: string; ASK: string): string;
-
+function TCHATGPT.RequestJson(LURL: String; token: string; ASK: string): String;
 var
-  ClienteHTTP: TFPHttpClient;
-  Resposta : AnsiString;
-  LResponse: TStringStream;
-  formulario : string;
-  Params: string;
-  tipo: string;
+  ClienteHTTP : TFPHttpClient;
+  BodyStream  : TStringStream;
+  params      : string;
+  tipo        : string;
 begin
-  //Resposta := '';
-  Formulario := '' ;
+  // Seleção do modelo conforme teu enum
   case FTipoChat of
-       VCT_GPT35TURBO:
-          tipo := '"gpt-3.5-turbo"';
-       VCT_GPT40:
-          tipo := '"gpt-4"';
-       VCT_GPT40_TURBO:
-          tipo := '"gpt-4-turbo-preview"';
+    VCT_GPT35TURBO : tipo := 'gpt-3.5-turbo';         // (legado)
+    VCT_GPT40      : tipo := 'gpt-4';                 // (legado)
+    VCT_GPT40_TURBO: tipo := 'gpt-4-turbo-preview';   // (legado)
+    VCT_GPT4o      : tipo := 'gpt-4o';
+    VCT_GPTo3_mini : tipo := 'gpt-o3-mini';
+    VCT_GPT41      : tipo := 'gpt-4.1';
+    VCT_GPT41_MINI : tipo := 'gpt-4.1-mini';
+    VCT_GPT5       : tipo := 'gpt-5';
+  else
+    tipo := 'gpt-4.1-mini'; // padrão seguro
   end;
-  params :=  '{ "model": '+tipo +',' "messages": [{"role": "user", "content": "'+ASK +'"}]  }';
+
+  // JSON igual ao curl (developer + user)
+  params :=
+    '{' +
+    '  "model": "' + tipo + '",' +
+    '  "messages": [' +
+    '    {"role": "developer", "content": "' + JsonEscape(Fdev) + '"},' +
+    '    {"role": "user", "content": "' + JsonEscape(ASK) + '"}' +
+    '  ]' +
+    '}';
+
   ClienteHTTP := TFPHttpClient.Create(nil);
+  BodyStream  := TStringStream.Create(params, TEncoding.UTF8);
   try
-    LResponse := TStringStream.Create('');
-    ClienteHTTP.AddHeader('Content-Type', 'application/json;');
-    ClienteHTTP.AddHeader('Authorization',' Bearer ' + EncodeURLElement(token));
-    ClienteHTTP.RequestBody := TRawByteStringStream.Create(Params);
+    // Headers corretos (sem ; no content-type e sem EncodeURLElement no token)
+    ClienteHTTP.AddHeader('Content-Type', 'application/json');
+    ClienteHTTP.AddHeader('Authorization', 'Bearer ' + token);
+    ClienteHTTP.AllowRedirect   := True;
+    ClienteHTTP.KeepConnection  := True;
+    ClienteHTTP.RequestBody     := BodyStream;
+
     try
-            //resposta:= ClienteHTTP.SimpleFormPost(LURL, formulario);
-            resposta:=  ClienteHTTP.Post(LURL);
-     except on E: Exception do
-            //Writeln('Something bad happened: ' + E.Message);
-            //Resposta.read;
-     end;
+      Result := ClienteHTTP.Post(LURL);
+    except
+      on E: Exception do
+        Result := '{"error":"' + StringReplace(E.Message, '"', '\"', [rfReplaceAll]) + '"}';
+    end;
   finally
-
-      (*
-      {"id":"chatcmpl-7Lcq4Pi5m9sGZBLbH0VoXR0GOjgkh",
-      "object":"chat.completion","created":1685388540,
-      "model":"gpt-3.5-turbo-0301","usage":{"prompt_tokens":15,"completion_tokens":29,"total_tokens":44},"choices":[{"message":{"role":"assistant","content":"1, 2, 3, 4, 5, 6, 7, 8, 9, 10."},"finish_reason":"stop","index":0}]}
-      *)
-
-      Result := resposta;
-      ClienteHTTP.RequestBody.Free;
-      ClienteHTTP.Free;
-
-
-      //Resposta.Free;
-
+    BodyStream.Free;
+    ClienteHTTP.Free;
   end;
-
-
-      //Resposta := ClienteHTTP.ResponseText;
-      //Resposta:= ClienteHTTP.Get(LURL);
-    //finally
-    //  Dados.Free;
-   // end;
-  //finally
-  //  ClienteHTTP.Free;
-
-
-
 end;
 
+(*
 function TCHATGPT.SendQuestion(ASK: String): boolean;
 var
   LURL : String;
@@ -263,6 +186,37 @@ begin
      //FResponse := RequestJson2(LURL, FToken, JSON);
      result := resposta;
 end;
+*)
+
+function TCHATGPT.SendQuestion(ASK: String): boolean;
+
+var
+  LURL     : String;
+  JSONBody : String;
+  AUX      : String;
+  Modelo   : String;
+begin
+  Result := False;
+
+  LURL := 'https://api.openai.com/v1/chat/completions';
+ // Modelo := Trim(TipoModelo);
+ // if Modelo = '' then
+ //   Modelo := 'gpt-4.1-mini';
+
+
+
+  // Agora só com 3 parâmetros: URL, Token e JSONBody
+  AUX := RequestJson(LURL, FToken, JsonEscape(ASK));
+
+  try
+    FResponse := PegaMensagem(AUX);
+    Result := True;
+  except
+    FResponse := AUX; // devolve cru se o parser falhar
+  end;
+end;
+
+
 
 //Class Constructor
 constructor TCHATGPT.create(AOwner: TComponent);
@@ -270,7 +224,8 @@ constructor TCHATGPT.create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   //FTipoChat:= VCT_GPT35TURBO;
-  FTipoChat:= VCT_GPT40;
+  FTipoChat:= VCT_GPT41_MINI;
+  FDEV := 'Voce é um assistente.'
   //HTTPSend.Sock.SSL.SSLType := LT_TLSv1;
   //Self.IsUTF8 := False;
   FParams := TStringList.Create;
@@ -280,6 +235,29 @@ destructor TCHATGPT.Destroy;
 begin
     FParams.Free;
   inherited;
+end;
+
+function TCHATGPT.TipoModelo: string;
+var
+  tipo : string;
+begin
+   case FTipoChat of
+       VCT_GPT35TURBO:
+          tipo := '"gpt-3.5-turbo"';
+       VCT_GPT40:
+          tipo := '"gpt-4"';
+       VCT_GPT40_TURBO:
+          tipo := '"gpt-4-turbo-preview"';
+       VCT_GPT4o:
+          tipo := '"gpt-4o"';
+       VCT_GPTo3_mini:
+          tipo := '"gpt-o3-mini"';
+       VCT_GPT41:
+          tipo := '"gpt-4.1"';
+       VCT_GPT5:
+          tipo := '"gpt-5"';
+  end;
+  result := tipo;
 end;
 
 end.

@@ -30,11 +30,25 @@ type
 
   end;
 
+procedure MessageHint(info : string);
+
+var
+  frmHint : TfrmHint;
+
 
 implementation
 
 {$R *.lfm}
 uses main;
+
+
+
+procedure MessageHint(info: string);
+begin
+  frmHint := TfrmHint.create(frmMNote);
+  frmHint.messagehint(info);
+end;
+
 
 procedure TfrmHint.Timer1Timer(Sender: TObject);
 begin

@@ -76,7 +76,7 @@ end;
 
 procedure Tfrmconfig.FormCreate(Sender: TObject);
 begin
-  edcompile.text := FSetMain.Install;
+  edcompile.text := FSetMain.Compile;
   edinstall.text := FSetMain.Install;
   edclean.text := FSetMain.CleanScript;
   edRun.text := FSetMain.RunScript;

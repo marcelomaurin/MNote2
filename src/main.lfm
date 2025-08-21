@@ -1,41 +1,40 @@
 object frmMNote: TfrmMNote
-  Left = 199
-  Height = 740
-  Top = 191
-  Width = 1465
+  Left = -1647
+  Height = 592
+  Top = 140
+  Width = 1172
   BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
-  ClientHeight = 715
-  ClientWidth = 1465
-  DesignTimePPI = 120
+  ClientHeight = 592
+  ClientWidth = 1172
   Menu = MainMenu1
+  Position = poMainFormCenter
+  LCLVersion = '4.0.0.4'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
-  Position = poMainFormCenter
-  LCLVersion = '2.2.6.0'
   object Panel1: TPanel
     Left = 0
-    Height = 62
+    Height = 50
     Top = 0
-    Width = 1465
+    Width = 1172
     Align = alTop
     TabOrder = 0
   end
   object pnclient: TPanel
     Left = 0
-    Height = 522
-    Top = 62
-    Width = 1465
+    Height = 437
+    Top = 50
+    Width = 1172
     Align = alClient
-    ClientHeight = 522
-    ClientWidth = 1465
+    ClientHeight = 437
+    ClientWidth = 1172
     TabOrder = 1
     object pgMain: TPageControl
-      Left = 236
-      Height = 514
+      Left = 189
+      Height = 430
       Top = 1
-      Width = 748
+      Width = 598
       Align = alClient
       Images = ImageList1
       TabOrder = 0
@@ -43,141 +42,139 @@ object frmMNote: TfrmMNote
     object Splitter2: TSplitter
       Cursor = crVSplit
       Left = 1
-      Height = 6
-      Top = 515
-      Width = 1463
+      Height = 5
+      Top = 431
+      Width = 1170
       Align = alBottom
       ResizeAnchor = akBottom
     end
     object pnInspector: TPanel
       Left = 1
-      Height = 514
+      Height = 430
       Top = 1
-      Width = 229
+      Width = 183
       Align = alLeft
-      ClientHeight = 514
-      ClientWidth = 229
+      ClientHeight = 430
+      ClientWidth = 183
       TabOrder = 2
       Visible = False
       object pcInspector: TPageControl
         Left = 1
-        Height = 512
+        Height = 428
         Top = 1
-        Width = 227
+        Width = 181
         ActivePage = tsGlobal
         Align = alClient
         TabIndex = 0
         TabOrder = 0
         object tsGlobal: TTabSheet
           Caption = 'Global'
-          ClientHeight = 479
-          ClientWidth = 219
+          ClientHeight = 400
+          ClientWidth = 173
           object vlGlobal: TValueListEditor
             Left = 0
-            Height = 479
+            Height = 400
             Top = 0
-            Width = 219
+            Width = 173
             Align = alClient
-            FixedCols = 0
             RowCount = 2
             TabOrder = 0
             ColWidths = (
-              80
-              135
+              64
+              105
             )
           end
         end
         object tsLocal: TTabSheet
           Caption = 'Local'
-          ClientHeight = 479
-          ClientWidth = 219
+          ClientHeight = 400
+          ClientWidth = 173
           object vlLocal: TValueListEditor
             Left = 0
-            Height = 479
+            Height = 400
             Top = 0
-            Width = 219
+            Width = 173
             Align = alClient
-            FixedCols = 0
             RowCount = 2
             TabOrder = 0
             ColWidths = (
-              80
-              135
+              64
+              105
             )
           end
         end
       end
     end
     object Splitter1: TSplitter
-      Left = 984
-      Height = 514
+      Left = 787
+      Height = 430
       Top = 1
-      Width = 6
+      Width = 5
       Align = alRight
       ResizeAnchor = akRight
     end
     object pnChatGPT: TPanel
-      Left = 990
-      Height = 514
+      Left = 792
+      Height = 430
       Top = 1
-      Width = 474
+      Width = 379
       Align = alRight
       Caption = 'pnChatGPT'
-      ClientHeight = 514
-      ClientWidth = 474
+      ClientHeight = 430
+      ClientWidth = 379
       TabOrder = 4
       object pnChatGPT2: TPanel
         Left = 1
-        Height = 512
+        Height = 428
         Top = 1
-        Width = 472
+        Width = 377
         Align = alClient
-        ClientHeight = 512
-        ClientWidth = 472
+        ClientHeight = 428
+        ClientWidth = 377
         TabOrder = 0
         OnResize = pnChatGPT2Resize
         object Panel3: TPanel
           Left = 1
-          Height = 62
-          Top = 449
-          Width = 470
+          Height = 50
+          Top = 377
+          Width = 375
           Align = alBottom
-          ClientHeight = 62
-          ClientWidth = 470
+          ClientHeight = 50
+          ClientWidth = 375
           TabOrder = 0
           object edChat: TMemo
             Left = 1
-            Height = 60
+            Height = 48
             Top = 1
-            Width = 468
+            Width = 373
             Align = alClient
-            OnKeyPress = edChatKeyPress
             TabOrder = 0
+            OnKeyPress = edChatKeyPress
           end
         end
         object Splitter4: TSplitter
           Cursor = crVSplit
           Left = 1
-          Height = 6
-          Top = 443
-          Width = 470
+          Height = 5
+          Top = 372
+          Width = 375
           Align = alBottom
           ResizeAnchor = akBottom
         end
         object Panel2: TPanel
           Left = 1
-          Height = 32
+          Height = 26
           Top = 1
-          Width = 470
+          Width = 375
           Align = alTop
           Caption = 'OpenAI/CHATGPT'
           TabOrder = 2
         end
         object pnWait: TPanel
           Left = 1
-          Height = 42
-          Top = 401
-          Width = 470
+          Height = 34
+          Top = 338
+          Width = 375
           Align = alBottom
           Caption = 'Wait'
           TabOrder = 3
@@ -185,24 +182,24 @@ object frmMNote: TfrmMNote
         end
         object PageControl1: TPageControl
           Left = 1
-          Height = 368
-          Top = 33
-          Width = 470
+          Height = 311
+          Top = 27
+          Width = 375
           ActivePage = tsDialog
           Align = alClient
           TabIndex = 0
           TabOrder = 4
           object tsDialog: TTabSheet
             Caption = 'Dialog'
-            ClientHeight = 335
-            ClientWidth = 462
+            ClientHeight = 283
+            ClientWidth = 367
             inline meDialog: TSynEdit
               Left = 0
-              Height = 335
+              Height = 283
               Top = 0
-              Width = 462
+              Width = 367
               Align = alClient
-              Font.Height = 16
+              Font.Height = 13
               Font.Name = 'DejaVu Sans Mono'
               Font.Pitch = fpFixed
               Font.Quality = fqNonAntialiased
@@ -210,7 +207,7 @@ object frmMNote: TfrmMNote
               ParentFont = False
               PopupMenu = pmchatgpt
               TabOrder = 0
-              Gutter.Width = 68
+              Gutter.Width = 55
               Gutter.MouseActions = <>
               RightGutter.Width = 0
               RightGutter.MouseActions = <>
@@ -659,11 +656,13 @@ object frmMNote: TfrmMNote
               LineHighlightColor.Foreground = clNone
               inline SynLeftGutterPartList1: TSynGutterPartList
                 object SynGutterMarks1: TSynGutterMarks
-                  Width = 30
+                  Width = 24
                   MouseActions = <>
+                  MaxExtraMarksColums = 0
+                  Options = [sgmoDeDuplicateMarksOnOverflow]
                 end
                 object SynGutterLineNumber1: TSynGutterLineNumber
-                  Width = 17
+                  Width = 15
                   MouseActions = <>
                   MarkupInfo.Background = clBtnFace
                   MarkupInfo.Foreground = clNone
@@ -673,19 +672,18 @@ object frmMNote: TfrmMNote
                   LeadingZeros = False
                 end
                 object SynGutterChanges1: TSynGutterChanges
-                  Width = 5
+                  Width = 4
                   MouseActions = <>
                   ModifiedColor = 59900
                   SavedColor = clGreen
                 end
                 object SynGutterSeparator1: TSynGutterSeparator
-                  Width = 3
+                  Width = 2
                   MouseActions = <>
                   MarkupInfo.Background = clWhite
                   MarkupInfo.Foreground = clGray
                 end
                 object SynGutterCodeFolding1: TSynGutterCodeFolding
-                  Width = 13
                   MouseActions = <>
                   MarkupInfo.Background = clNone
                   MarkupInfo.Foreground = clGray
@@ -697,13 +695,13 @@ object frmMNote: TfrmMNote
           end
           object tsQuestion: TTabSheet
             Caption = 'Questions'
-            ClientHeight = 335
-            ClientWidth = 462
+            ClientHeight = 283
+            ClientWidth = 367
             object mequestion: TMemo
               Left = 0
-              Height = 335
+              Height = 283
               Top = 0
-              Width = 462
+              Width = 367
               Align = alClient
               Lines.Strings = (
                 ''
@@ -713,15 +711,15 @@ object frmMNote: TfrmMNote
           end
           object tsHistory: TTabSheet
             Caption = 'History'
-            ClientHeight = 335
-            ClientWidth = 462
+            ClientHeight = 283
+            ClientWidth = 367
             inline meChatHist: TSynEdit
               Left = 0
-              Height = 335
+              Height = 283
               Top = 0
-              Width = 462
+              Width = 367
               Align = alClient
-              Font.Height = 16
+              Font.Height = 13
               Font.Name = 'DejaVu Sans Mono'
               Font.Pitch = fpFixed
               Font.Quality = fqNonAntialiased
@@ -729,7 +727,7 @@ object frmMNote: TfrmMNote
               ParentFont = False
               PopupMenu = pmchatgpt
               TabOrder = 0
-              Gutter.Width = 68
+              Gutter.Width = 57
               Gutter.MouseActions = <>
               RightGutter.Width = 0
               RightGutter.MouseActions = <>
@@ -1178,11 +1176,13 @@ object frmMNote: TfrmMNote
               LineHighlightColor.Foreground = clNone
               inline SynLeftGutterPartList1: TSynGutterPartList
                 object SynGutterMarks1: TSynGutterMarks
-                  Width = 30
+                  Width = 24
                   MouseActions = <>
+                  MaxExtraMarksColums = 0
+                  Options = [sgmoDeDuplicateMarksOnOverflow]
                 end
                 object SynGutterLineNumber1: TSynGutterLineNumber
-                  Width = 17
+                  Width = 15
                   MouseActions = <>
                   MarkupInfo.Background = clBtnFace
                   MarkupInfo.Foreground = clNone
@@ -1192,19 +1192,18 @@ object frmMNote: TfrmMNote
                   LeadingZeros = False
                 end
                 object SynGutterChanges1: TSynGutterChanges
-                  Width = 5
+                  Width = 4
                   MouseActions = <>
                   ModifiedColor = 59900
                   SavedColor = clGreen
                 end
                 object SynGutterSeparator1: TSynGutterSeparator
-                  Width = 3
+                  Width = 2
                   MouseActions = <>
                   MarkupInfo.Background = clWhite
                   MarkupInfo.Foreground = clGray
                 end
                 object SynGutterCodeFolding1: TSynGutterCodeFolding
-                  Width = 13
                   MouseActions = <>
                   MarkupInfo.Background = clNone
                   MarkupInfo.Foreground = clGray
@@ -1216,15 +1215,15 @@ object frmMNote: TfrmMNote
           end
           object tsCode: TTabSheet
             Caption = 'Codes'
-            ClientHeight = 335
-            ClientWidth = 462
+            ClientHeight = 283
+            ClientWidth = 367
             inline meCodes: TSynEdit
               Left = 0
-              Height = 335
+              Height = 283
               Top = 0
-              Width = 462
+              Width = 367
               Align = alClient
-              Font.Height = 16
+              Font.Height = 13
               Font.Name = 'DejaVu Sans Mono'
               Font.Pitch = fpFixed
               Font.Quality = fqNonAntialiased
@@ -1232,7 +1231,7 @@ object frmMNote: TfrmMNote
               ParentFont = False
               PopupMenu = pmchatgpt
               TabOrder = 0
-              Gutter.Width = 68
+              Gutter.Width = 57
               Gutter.MouseActions = <>
               RightGutter.Width = 0
               RightGutter.MouseActions = <>
@@ -1681,11 +1680,13 @@ object frmMNote: TfrmMNote
               LineHighlightColor.Foreground = clNone
               inline SynLeftGutterPartList1: TSynGutterPartList
                 object SynGutterMarks1: TSynGutterMarks
-                  Width = 30
+                  Width = 24
                   MouseActions = <>
+                  MaxExtraMarksColums = 0
+                  Options = [sgmoDeDuplicateMarksOnOverflow]
                 end
                 object SynGutterLineNumber1: TSynGutterLineNumber
-                  Width = 17
+                  Width = 15
                   MouseActions = <>
                   MarkupInfo.Background = clBtnFace
                   MarkupInfo.Foreground = clNone
@@ -1695,19 +1696,18 @@ object frmMNote: TfrmMNote
                   LeadingZeros = False
                 end
                 object SynGutterChanges1: TSynGutterChanges
-                  Width = 5
+                  Width = 4
                   MouseActions = <>
                   ModifiedColor = 59900
                   SavedColor = clGreen
                 end
                 object SynGutterSeparator1: TSynGutterSeparator
-                  Width = 3
+                  Width = 2
                   MouseActions = <>
                   MarkupInfo.Background = clWhite
                   MarkupInfo.Foreground = clGray
                 end
                 object SynGutterCodeFolding1: TSynGutterCodeFolding
-                  Width = 13
                   MouseActions = <>
                   MarkupInfo.Background = clNone
                   MarkupInfo.Foreground = clGray
@@ -1721,29 +1721,29 @@ object frmMNote: TfrmMNote
       end
     end
     object Splitter3: TSplitter
-      Left = 230
-      Height = 514
+      Left = 184
+      Height = 430
       Top = 1
-      Width = 6
+      Width = 5
     end
   end
   object pnResult: TPanel
     Left = 0
-    Height = 131
-    Top = 584
-    Width = 1465
+    Height = 105
+    Top = 487
+    Width = 1172
     Align = alBottom
     Caption = 'pnResult'
-    ClientHeight = 131
-    ClientWidth = 1465
+    ClientHeight = 105
+    ClientWidth = 1172
     PopupMenu = pmResult
     TabOrder = 2
     Visible = False
     object meResult: TMemo
       Left = 1
-      Height = 129
+      Height = 103
       Top = 1
-      Width = 1463
+      Width = 1170
       Align = alClient
       PopupMenu = pmResult
       ReadOnly = True
@@ -1752,21 +1752,21 @@ object frmMNote: TfrmMNote
     end
     object lstFind: TListBox
       Left = 1
-      Height = 129
+      Height = 103
       Top = 1
-      Width = 1463
+      Width = 1170
       Align = alClient
       ItemHeight = 0
-      OnClick = lstFindClick
       PopupMenu = popFind
       TabOrder = 1
       Visible = False
+      OnClick = lstFindClick
     end
   end
   object MainMenu1: TMainMenu
     Images = ImageList1
-    Left = 40
-    Top = 8
+    Left = 32
+    Top = 6
     object MenuItem1: TMenuItem
       Caption = 'File'
       ImageIndex = 5
@@ -1994,17 +1994,17 @@ object frmMNote: TfrmMNote
     end
   end
   object OpenDialog1: TOpenDialog
-    Left = 200
-    Top = 10
+    Left = 160
+    Top = 8
   end
   object SaveDialog1: TSaveDialog
-    Left = 319
-    Top = 14
+    Left = 255
+    Top = 11
   end
   object popFechar: TPopupMenu
     Images = ImageList1
-    Left = 200
-    Top = 166
+    Left = 160
+    Top = 133
     object mnFechar: TMenuItem
       Caption = 'Fechar'
       ImageIndex = 0
@@ -2012,8 +2012,8 @@ object frmMNote: TfrmMNote
     end
   end
   object ImageList1: TImageList
-    Left = 270
-    Top = 220
+    Left = 216
+    Top = 176
     Bitmap = {
       4C7A1000000010000000100000002D0A00000000000078DAED9B0B7017C51DC7
       0F2484405089484C4102010D45C5E0D0C4060208D51290501095024DA350B448
@@ -2102,19 +2102,19 @@ object frmMNote: TfrmMNote
   end
   object ReplaceDialog1: TReplaceDialog
     Options = [frDown, frReplace, frReplaceAll, frHidePromptOnReplace]
-    Left = 474
-    Top = 31
+    Left = 379
+    Top = 25
   end
   object FontDialog1: TFontDialog
     MinFontSize = 0
     MaxFontSize = 0
-    Left = 319
-    Top = 151
+    Left = 255
+    Top = 121
   end
   object popSysEdit: TPopupMenu
     Images = ImageList1
-    Left = 440
-    Top = 270
+    Left = 352
+    Top = 216
     object mnAssociar: TMenuItem
       Caption = 'Associar'
       ImageIndex = 14
@@ -2743,13 +2743,13 @@ object frmMNote: TfrmMNote
     }
     Hint = 'MNote2 Little Editor'
     Visible = True
-    Left = 604
-    Top = 189
+    Left = 483
+    Top = 151
   end
   object PopupMenu1: TPopupMenu
     Images = ImageList1
-    Left = 530
-    Top = 189
+    Left = 424
+    Top = 151
     object mnFixar: TMenuItem
       Caption = 'Fix'
       OnClick = mnFixarClick
@@ -2764,28 +2764,28 @@ object frmMNote: TfrmMNote
     end
   end
   object popFind: TPopupMenu
-    Left = 160
-    Top = 360
+    Left = 128
+    Top = 288
     object MenuItem2: TMenuItem
       Caption = 'Esconder'
       OnClick = MenuItem2Click
     end
   end
   object pmResult: TPopupMenu
-    Left = 90
-    Top = 370
+    Left = 72
+    Top = 296
     object mnHideResult: TMenuItem
       Caption = 'Hide'
     end
   end
   object FindDialog1: TFindDialog
     OnFind = FindDialog1Find
-    Left = 649
-    Top = 15
+    Left = 519
+    Top = 12
   end
   object pmchatgpt: TPopupMenu
-    Left = 1216
-    Top = 196
+    Left = 973
+    Top = 157
     object MenuItem18: TMenuItem
       Caption = 'Limpar Tela'
       OnClick = MenuItem18Click

@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ShellCtrls,
-  ExtCtrls, Menus, StdCtrls, setfolders, funcoes;
+  ExtCtrls, Menus, StdCtrls, setfolders, funcoes, hint;
 
 type
 
@@ -121,12 +121,12 @@ begin
         pathfolder := edFolder.text+folder;
         if CreateDir(pathfolder) then
         begin
-          frmMNote.MessageHint('Folder '+pathfolder+ ' create successful!');
+          MessageHint('Folder '+pathfolder+ ' create successful!');
           ShellTreeView1.refresh;
         end
         else
         begin
-          frmMNote.MessageHint('Folder '+pathfolder+ ' create fail!');
+          MessageHint('Folder '+pathfolder+ ' create fail!');
         end;
 
    end;

@@ -1,45 +1,44 @@
 object dmBase: TdmBase
   OldCreateOrder = False
-  Height = 325
-  HorizontalOffset = 759
-  VerticalOffset = 400
-  Width = 416
-  PPI = 120
+  Height = 260
+  HorizontalOffset = -1041
+  VerticalOffset = 356
+  Width = 333
   object DataSource1: TDataSource
-    Left = 160
-    Top = 51
+    Left = 128
+    Top = 41
   end
   object zcon: TZConnection
     ControlsCodePage = cCP_UTF8
-    AutoEncodeStrings = True
     Properties.Strings = (
       'AutoEncodeStrings=ON'
       'controls_cp=CP_UTF8'
     )
     DesignConnection = True
+    DisableSavepoints = False
     Port = 0
     Database = 'localdb'
     User = 'root'
     Protocol = 'mysqld-5'
-    Left = 35
-    Top = 37
+    Left = 28
+    Top = 30
   end
   object zqryaux: TZQuery
     Connection = zcon
     Params = <>
-    Left = 328
-    Top = 56
+    Left = 262
+    Top = 45
   end
   object zqryaux1: TZQuery
     Connection = zcon
     Params = <>
-    Left = 328
-    Top = 136
+    Left = 262
+    Top = 109
   end
   object zqryaux2: TZQuery
     Connection = zcon
     Params = <>
-    Left = 328
-    Top = 216
+    Left = 262
+    Top = 173
   end
 end

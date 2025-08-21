@@ -44,9 +44,9 @@ object frmmquery2: Tfrmmquery2
     Height = 490
     Top = 50
     Width = 796
-    ActivePage = tspostgree
+    ActivePage = tsMysql
     Align = alClient
-    TabIndex = 2
+    TabIndex = 1
     TabOrder = 3
     object tsAbout: TTabSheet
       Caption = 'About'
@@ -87,9 +87,9 @@ object frmmquery2: Tfrmmquery2
           Height = 460
           Top = 1
           Width = 580
-          ActivePage = tbTools
+          ActivePage = tbConxao
           Align = alClient
-          TabIndex = 4
+          TabIndex = 0
           TabOrder = 0
           OnChange = PageControl1Change
           object tbConxao: TTabSheet
@@ -2043,7 +2043,7 @@ object frmmquery2: Tfrmmquery2
           'COALESCE'
           'CONVERT_FROM'
         )
-        ItemHeight = 12
+        ItemHeight = 15
         TabOrder = 1
       end
       object Label13: TLabel
@@ -2103,14 +2103,17 @@ object frmmquery2: Tfrmmquery2
     ControlsCodePage = cCP_UTF8
     Properties.Strings = (
       'AutoEncodeStrings=ON'
+      'RawStringEncoding=DB_CP'
     )
+    DesignConnection = True
     AfterConnect = zconpostAfterConnect
     DisableSavepoints = False
-    HostName = '127.0.0.1'
-    Port = 0
-    User = 'root'
+    HostName = '192.168.7.200'
+    Port = 5432
+    Database = 'SMSdb'
+    User = 'aplicacao'
     Protocol = 'postgresql'
-    LibraryLocation = '/Applications/Postgres.app/Contents/Versions/12/lib/libpq.5.12.dylib'
+    LibraryLocation = 'D:\projetos\maurinsoft\MNote2\libs\postgres\win32\libpq.dll'
     Left = 426
     Top = 187
   end

@@ -14,7 +14,7 @@ uses
   PairSplitter, DBCtrls, DBGrids, finds, ZClasses, ZCollections, ZCompatibility,
   ZTokenizer, ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging, ZVariant,
   ZPlainDriver, TypeDB, triggers, item, funcoes, chart, chatgpt, codigo,
-  setmain, ZDbcIntfs, math; //ZURL
+  setmain, ZDbcIntfs, math, hint; //ZURL
 
 const
   sqltabela = 'Você poderia me fornecer a consulta SQL que deseja analisar? Assim que eu receber o SQL, irei extrair os nomes das tabelas envolvidas e gerar um código em JSON com esses nomes. A resposta será apresentada dentro de uma caixa de texto apropriada para cópia, Desta forma refaça a pergunta mesmo nao havendo certeza da resposta,claramente formatada como um código JSON:';
@@ -333,7 +333,8 @@ type
     procedure CriaTabela(NomeTabela: string; CSVDataSet: TCSVDataSet; ZQuery: TZQuery);
     // Função que migra os campos do CSVDataSet para a tabela criada
     procedure MigraCampos(NomeTabela: string; CSVDataSet: TCSVDataSet; ZQuery: TZQuery);
-
+    function ConectPost: Boolean;
+    function ConectMy: Boolean;
   end;
 
 var
@@ -906,6 +907,13 @@ begin
 
   {$ENDIF}
 
+  //Carrega o contexto
+  edHostNamePost.Text :=FSetmain.HostnamePost;
+  edBancoPost.text := FSetmain.BancoPOST;
+  edusuarioPost.Text :=   FSetmain.UsernamePost;
+  edPasswrdPost.Text :=   FSetmain.PasswordPost;
+  edSchemaPost.text :=   FSetmain.SchemaPost;
+
 
   tvitem := TTreeNode.Create(tvPost.Items);
   tvitempost := tvpost.Items.AddObject(tvitem,'Postgres', pointer(ETDBBanco));
@@ -1301,42 +1309,98 @@ begin
 
 end;
 
+// ==== implementation ====
+
+function Tfrmmquery2.ConectMy: Boolean;
+begin
+  Result := False;
+
+  // Garante desconexão limpa
+  if zconmysql.Connected then
+    zconmysql.Disconnect;
+
+  {$IFDEF WINDOWS}
+  // Caminhos das DLLs
+  // Deixe o Postgres para o bloco do Postgres; aqui só MySQL:
+  // Se você já usa um path centralizado:
+  if (FSetMain <> nil) and (FSetMain.DLLMyPath <> '') then
+  begin
+    zconpost.LibraryLocation := FSetMain.DLLPostPath;
+    zconmysql.LibraryLocation := FSetMain.DLLMyPath;
+  end
+  else
+    zconmysql.LibraryLocation := ExtractFilePath(Application.ExeName) + 'libmysql.dll';
+  {$ENDIF}
+
+  {$IFDEF LINUX}
+  zconmysql.LibraryLocation := ExtractFilePath(Application.ExeName) + 'libs/linux64/libmysqlclient.so.21';
+  {$ENDIF}
+
+  // Parâmetros de conexão
+  zconmysql.Database := edBanco.Text;
+  zconmysql.HostName := edHostName.Text;
+  zconmysql.User     := edusuario.Text;
+  zconmysql.Password := edPasswrd.Text;
+  // Se usar porta: zconmysql.Port := StrToIntDef(edPortaMy.Text, 3306);
+
+  // Opcional: guardar no FSetMain (segue seu padrão)
+  if FSetMain <> nil then
+  begin
+    FSetMain.HostnameMy   := edHostName.Text;
+    FSetMain.BancoMy      := edBanco.Text;
+    FSetMain.UsernameMy   := edusuario.Text;
+    FSetMain.PasswordMy   := edPasswrd.Text;
+    // FSetMain.SchemaMy  := ''; // MySQL não usa schema como o Postgres (usa database)
+  end;
+
+  try
+    zconmysql.Connect;
+    Result := zconmysql.Connected;
+  except
+    on E: Exception do
+    begin
+      // Falha silenciosa, quem chama decide UI
+      Result := False;
+    end;
+  end;
+end;
+
 procedure Tfrmmquery2.btConectarMyClick(Sender: TObject);
 var
-  tvitem : TTreeNode;
+  tvitem: TTreeNode;
 begin
-   try
+  // Limpa nós anteriores
+  tvitemmy.DeleteChildren;
 
-        zconmysql.Disconnect;
-        {$IFDEF WINDOWS}
-        zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'libpq74.dll';
-        zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'libmysql.dll';
-        {$ENDIF}
-        {$IFDEF LINUX}
-        zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'libs/linux64/libpq74.so';
-        zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'libs/linux64/libmysqlclient.so.21';
-        {$ENDIF}
+  // Tenta conectar
+  if not ConectMy then
+  begin
+    MessageHint('Erro ao conectar no MySQL. Verifique host/usuário/senha/banco e a libmysql.');
+    Exit;
+  end;
 
-        zconmysql.Database := edBanco.text;
-        zconmysql.HostName := edHostName.Text;
-        zconmysql.User := edusuario.text;
-        zconmysql.Password := edPasswrd.Text;
-        zconmysql.Connect;
-        if zconmysql.Connected then
-        begin
-          tvitemmy.Text:= edBanco.text; //Muda para o banco de dados
-          tvitemmy.ImageIndex:=13;
-          posicaofieldsmy := tvMysql.Items.AddChildObject(tvitemmy, 'Tables', pointer(ETDTabelas));
-          posicaofieldsmy.ImageIndex:=15;
-          posicaoViewmy := tvMysql.Items.AddChildObject(tvitemmy, 'Views', pointer(ETDViews));
-          posicaoProceduremy := tvMysql.Items.AddChildObject(tvitemmy, 'Procedure', pointer(ETDProcedure));
-          posicaoFunctionmy := tvMysql.Items.AddChildObject(tvitemmy, 'Functions', pointer(ETDFunctions));
-          tvitem := TTreeNode.Create(tvMysql.items);
-          ListarTabelasMy();
-          ListarViewsMy();
-        end;
-    finally
+  try
+    // Conectado: monta a árvore
+    tvitem := TTreeNode.Create(tvMysql.Items); // para manter seu padrão de criação
+    tvitemmy.Text       := edBanco.Text;
+    tvitemmy.ImageIndex := 13;
+
+    posicaofieldsmy     := tvMysql.Items.AddChildObject(tvitemmy, 'Tables',    Pointer(ETDTabelas));
+    posicaofieldsmy.ImageIndex := 15;
+    posicaoViewmy       := tvMysql.Items.AddChildObject(tvitemmy, 'Views',     Pointer(ETDViews));
+    posicaoProceduremy  := tvMysql.Items.AddChildObject(tvitemmy, 'Procedure', Pointer(ETDProcedure));
+    posicaoFunctionmy   := tvMysql.Items.AddChildObject(tvitemmy, 'Functions', Pointer(ETDFunctions));
+
+    // Popular nós
+    ListarTabelasMy();
+    ListarViewsMy();
+  except
+    on E: Exception do
+    begin
+      MessageHint('Erro ao preparar estrutura do MySQL: ' + E.Message);
+      Exit;
     end;
+  end;
 end;
 
 procedure Tfrmmquery2.btPermissaoChange(Sender: TObject);
@@ -1560,49 +1624,97 @@ begin
   end;
 end;
 
-procedure Tfrmmquery2.RefreshPost();
-var
-  tvitem : TTreeNode;
+// Na seção implementation da mesma unit
+function Tfrmmquery2.ConectPost: Boolean;
 begin
-     tvitempost.DeleteChildren;
-     //ShapeCon.brush.color := clWhite;
-     SynSQLSyn2.TableNames.clear;
-     try
-        tvitem := TTreeNode.Create(tvPost.items);
+  Result := False;
 
-        zconpost.Disconnect;
-        {$IFDEF WINDOWS}
-        zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'libpq74.dll';
-        zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'libmysql.dll';
-        {$ENDIF}
-        {$IFDEF LINUX}
-        zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libpq74.so';
-        zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libmysqlclient.so.21';
-        {$ENDIF}
+  // Sempre começa desconectando
+  if zconpost.Connected then
+    zconpost.Disconnect;
 
-        zconpost.HostName := edHostNamePost.Text;
-        zconpost.User:= edusuarioPost.text;
-        zconpost.Password:= edPasswrdPost.Text;
-        zconpost.Connect;
-        if zconpost.Connected then
-        begin
-          tvitempost.Text:=edBancoPost.text;
-          tvitempost.ImageIndex:=13;
-          posicaofieldspost := tvPost.Items.AddChildObject(tvitemPost, 'tables',pointer(ETDTabelas));
-          posicaofieldspost.ImageIndex:=15;
-          posicaoSequencePost := tvPost.Items.AddChildObject(tvitemPost, 'Sequences',pointer(ETDTabelas));
-          posicaoViewPost := tvPost.Items.AddChildObject(tvitemPost, 'Views', pointer(ETDViews));
-          posicaoProcedurePost := tvPost.Items.AddChildObject(tvitemPost, 'Procedure', pointer(ETDProcedure));
-          posicaoFunctionPost := tvPost.Items.AddChildObject(tvitemPost, 'Functions', pointer(ETDFunctions));
+  {$IFDEF WINDOWS}
+  zconpost.LibraryLocation := FSetMain.DLLPostPath;
+  zconmysql.LibraryLocation := FSetMain.DLLMyPath;
+  {$ENDIF}
 
-          ListarTabelasPost();
-          BuscaSequence(zpostqry1, DBPostgres);
-          ListarViewsPost();
-          //ShapeCon.brush.color := clGreen;
-        end;
-    finally
+  {$IFDEF LINUX}
+  zconpost.LibraryLocation := ExtractFilePath(Application.ExeName) + '/libs/linux64/libpq74.so';
+  zconmysql.LibraryLocation := ExtractFilePath(Application.ExeName) + '/libs/linux64/libmysqlclient.so.21';
+  {$ENDIF}
+
+  // Credenciais / alvo
+  zconpost.HostName := edHostNamePost.Text;
+  zconpost.User     := edusuarioPost.Text;
+  zconpost.Password := edPasswrdPost.Text;
+  // Se você tiver o edit do DB/schema, preencha:
+  if Assigned(edBancoPost) then
+    zconpost.Database := edBancoPost.Text;
+
+  // Guarda no FSetMain (opcional, mas mantive seu fluxo)
+  FSetmain.HostnamePost  := edHostNamePost.Text;
+  FSETMAIN.SchemaPost    := edSchemaPost.text;
+  FSetmain.BancoPOST     := edBancoPost.Text;
+  FSetmain.UsernamePost  := edusuarioPost.Text;
+  FSetmain.PasswordPost  := edPasswrdPost.Text;
+  FSetMain.SalvaContexto(false);
+  // Se tiver um edit de schema, coloque aqui:
+  // FSetmain.SchemaPost := edSchemaPost.Text;
+
+  try
+    zconpost.Connect;
+    Result := zconpost.Connected;
+  except
+    on E: Exception do
+    begin
+      // Não dispara UI aqui — apenas falha silenciosa e retorna False
+      // A UI fica por conta do chamador (RefreshPost)
+      Result := False;
     end;
+  end;
 end;
+
+procedure Tfrmmquery2.RefreshPost;
+var
+  tvitem: TTreeNode;
+begin
+  tvitempost.DeleteChildren;
+  SynSQLSyn2.TableNames.Clear;
+
+  // Tenta conectar. Se falhar, avisa e sai.
+  if not ConectPost then
+  begin
+    MessageHint('Erro ao conectar no PostgreSQL. Verifique host/usuário/senha/banco e a libpq.');
+    Exit;
+  end;
+
+  try
+    // Conectado: monta a árvore/estruturas
+    tvitem := TTreeNode.Create(tvPost.Items); // mantém seu padrão
+    tvitempost.Text := edBancoPost.Text;
+    tvitempost.ImageIndex := 13;
+
+    posicaofieldspost    := tvPost.Items.AddChildObject(tvitemPost, 'tables',    Pointer(ETDTabelas));
+    posicaofieldspost.ImageIndex := 15;
+    posicaoSequencePost  := tvPost.Items.AddChildObject(tvitemPost, 'Sequences', Pointer(ETDTabelas));
+    posicaoViewPost      := tvPost.Items.AddChildObject(tvitemPost, 'Views',     Pointer(ETDViews));
+    posicaoProcedurePost := tvPost.Items.AddChildObject(tvitemPost, 'Procedure', Pointer(ETDProcedure));
+    posicaoFunctionPost  := tvPost.Items.AddChildObject(tvitemPost, 'Functions', Pointer(ETDFunctions));
+
+    // Popula nós
+    ListarTabelasPost();
+    BuscaSequence(zpostqry1, DBPostgres);
+    ListarViewsPost();
+  except
+    on E: Exception do
+    begin
+      MessageHint('Erro ao preparar estrutura do PostgreSQL: ' + E.Message);
+      Exit;
+    end;
+  end;
+end;
+
+
 
 procedure Tfrmmquery2.ChartView;
 begin

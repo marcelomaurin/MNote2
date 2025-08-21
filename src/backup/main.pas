@@ -575,10 +575,28 @@ end;
 procedure TfrmMNote.FormCreate(Sender: TObject);
 var
    filename: string;
+   plataforma: string;
 begin
+  // Define plataforma e arquitetura
+  {$IFDEF MSWINDOWS}
+    plataforma := 'Windows ';
+  {$ENDIF}
+  {$IFDEF LINUX}
+    plataforma := 'Linux ';
+  {$ENDIF}
+
+  {$IFDEF CPU64}
+    plataforma := plataforma + '64 bits';
+  {$ELSE}
+    plataforma := plataforma + '32 bits';
+  {$ENDIF}
+
   frmSplash := TfrmSplash.Create(self);
-  frmSplash.lbversao.Caption:= versao;
+  frmSplash.lbversao.Caption := versao + ' - ' + plataforma;
   frmSplash.show();
+  Application.ProcessMessages;
+  sleep(2000);
+
   filename := extractfilename(application.ExeName);
   if IsRun(filename) then
   begin
@@ -587,16 +605,16 @@ begin
       MessageHint('Assumindo funções MNote anterior!');
     end;
   end;
+
   if (FSetMain = nil) then
   begin
-        FsetMain := TsetMain.create();
+    FsetMain := TsetMain.Create();
   end;
-  CarregaContexto();
 
+  CarregaContexto();
 
   {$ifdef Darwin}
      //Nao faz nada
-
   {$else}
   (*
      for i := 1 to paramCount() do
@@ -609,12 +627,14 @@ begin
      end;
    *)
   {$endif}
+
   CarregarOld();
   CarregarParametros();
+
   frmRegistrar := TfrmRegistrar.Create(self);
   frmRegistrar.Identifica();
-
 end;
+
 
 procedure TfrmMNote.CarregaContexto();
 begin
@@ -1063,9 +1083,25 @@ begin
 end;
 
 procedure TfrmMNote.MenuItem10Click(Sender: TObject);
+var
+   plataforma : string;
 begin
-  frmSobre := TFrmsobre.create(self);
-  frmSobre.lbversao.Caption := versao;
+
+   // Define plataforma e arquitetura
+  {$IFDEF MSWINDOWS}
+    plataforma := 'Windows ';
+  {$ENDIF}
+  {$IFDEF LINUX}
+    plataforma := 'Linux ';
+  {$ENDIF}
+
+  {$IFDEF CPU64}
+    plataforma := plataforma + '64 bits';
+  {$ELSE}
+    plataforma := plataforma + '32 bits';
+  {$ENDIF}
+  frmSobre := TfrmSobre.Create(self);
+  frmSobre.lbversao.Caption := versao + ' - ' + plataforma;
   frmSobre.showmodal();
   frmSobre.destroy();
   frmSobre := nil;
@@ -1892,47 +1928,39 @@ begin
   end;
 end;
 
-procedure TfrmMNote.SalvarTab(tb : TTabSheet);
+procedure TfrmMNote.SalvarTab(tb: TTabSheet);
 var
-   syn : TSynEdit;
-   item : TItem;
-   arquivo : string;
+  item: TItem;
+  syn : TSynEdit;
 begin
-   //syn := TSynEdit(tb.Tag);
-   //item := TItem(pointer(syn.tag));
-   item := TItem(tb.Tag);
-   syn := item.syn;
-   arquivo := item.FileName;
-   if not (item.FileName = '') then
-   begin
-        if (item.salvo=false) then
-        begin
-             syn.Lines.SaveToFile(arquivo);
-        end;
-        //CheckTipoArquivo(syn,arquivo, item);
-   end
-   else
-   begin
-        SalvarComo(tb);
-   end;
+  item := TItem(tb.Tag);
+  syn  := item.syn;
 
+  if item.FileName = '' then
+  begin
+    SalvarComo(tb);
+    Exit;
+  end;
+
+  if not item.Salvo then
+  begin
+    syn.Lines.SaveToFile(item.FileName);
+    item.Salvo := True;
+  end;
 end;
 
 procedure TfrmMNote.mnSalvarClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   arquivo : string;
-   item : TItem;
+  tb   : TTabSheet;
+  item : TItem;
 begin
-   if (pgMain.ActivePage <> nil) then
-   begin
-      tb := pgMain.ActivePage;
-      item := TItem(tb.Tag);
+  if pgMain.ActivePage = nil then Exit;
 
-      arquivo := item.FileName;
-      SalvarTab(tb);
-      MessageHint('Saved in '+ arquivo);
-   end;
+  tb := pgMain.ActivePage;
+  item := TItem(tb.Tag);
+  SalvarTab(tb);
+  if item.FileName <> '' then
+    MessageHint('Saved in ' + item.FileName);
 end;
 
 procedure TfrmMNote.mnSalvarComoClick(Sender: TObject);
