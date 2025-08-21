@@ -44,9 +44,9 @@ object frmmquery2: Tfrmmquery2
     Height = 490
     Top = 50
     Width = 796
-    ActivePage = tsMysql
+    ActivePage = tsAbout
     Align = alClient
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 3
     object tsAbout: TTabSheet
       Caption = 'About'
@@ -2094,7 +2094,6 @@ object frmmquery2: Tfrmmquery2
     HostName = '127.0.0.1'
     Port = 0
     Database = 'mysql'
-    User = 'root'
     Protocol = 'mysql'
     Left = 424
     Top = 107
@@ -2248,7 +2247,7 @@ object frmmquery2: Tfrmmquery2
     Top = 520
   end
   object SynCompletion1: TSynCompletion
-    Position = 0
+    Position = -1
     LinesInWindow = 6
     OnPositionChanged = SynCompletion1PositionChanged
     SelectedColor = clHighlight

@@ -82,7 +82,7 @@ begin
   edRun.text := FSetMain.RunScript;
   edDebug.text := FSetMain.DebugScript;
   edCHATGPT.Text := FSetMain.CHATGPT;
-  edDLLPATH.text := FSetMain.DLLPath;
+  edDLLPATH.text := FSetMain.DLLPath;    //lib do python
   edDLLMyPATH.text := FSetMain.DLLMyPath;
   edDLLPostPATH.text := FSetMain.DLLPostPath;
   ckToolsFalar.Checked:= FSetMain.ToolsFalar;

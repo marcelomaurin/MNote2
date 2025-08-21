@@ -37,10 +37,7 @@ type
     mitrainning: TMenuItem;
     miQuery: TMenuItem;
     miClose: TMenuItem;
-    mnConfig: TMenuItem;
     mnNovo: TMenuItem;
-    mnsobre: TMenuItem;
-    mnTools: TMenuItem;
     mnSair: TMenuItem;
     OpenDialog1: TOpenDialog;
     PageControl1: TPageControl;
@@ -981,7 +978,7 @@ begin
      NewNNTrainning();
 end;
 
-procedure TfrmmainJSON.controlelog(Sender: TObject; const OutputLine: String);
+procedure TfrmmainJSON.controlelog(Sender: TObject; const OutputLine: UTF8String);
 begin
   frmnntrain.pnlog.Visible:=true;
   frmnntrain.melog.Append(outputline);

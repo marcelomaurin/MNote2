@@ -32,9 +32,9 @@ object frmconfig: Tfrmconfig
     Height = 339
     Top = 0
     Width = 443
-    ActivePage = TabSheet1
+    ActivePage = TabSheet3
     Align = alTop
-    TabIndex = 0
+    TabIndex = 2
     TabOrder = 2
     object TabSheet1: TTabSheet
       Caption = 'Scripts'

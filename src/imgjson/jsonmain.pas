@@ -110,7 +110,7 @@ type
     tvItem : TTreenode;
 
     selecttreenode : TTreeNode;
-    procedure controlelog(Sender: TObject; const OutputLine: String);
+    procedure controlelog(Sender: TObject; const OutputLine: UTF8String);
     procedure PopulaTV();
     procedure NewQuery();
     procedure NewNNTrainning();
@@ -978,11 +978,12 @@ begin
      NewNNTrainning();
 end;
 
-procedure TfrmmainJSON.controlelog(Sender: TObject; const OutputLine: String);
+procedure TfrmmainJSON.controlelog(Sender: TObject; const OutputLine: UTF8String);
 begin
-  frmnntrain.pnlog.Visible:=true;
-  frmnntrain.melog.Append(outputline);
+  frmnntrain.pnlog.Visible := True;
+  frmnntrain.melog.Append(OutputLine);
 end;
+
 
 
 

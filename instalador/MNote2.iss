@@ -42,6 +42,7 @@ Source: "D:\projetos\maurinsoft\MNote2\src\*.dci"; DestDir: "{app}"; Flags: igno
 Source: "D:\projetos\maurinsoft\MNote2\src\*.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\src\*.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\src\*.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\projetos\maurinsoft\MNote2\srvfalar.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\sample\gcc\hello.c"; DestDir: "{app}\sample\gcc\"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\sample\python\hello\hello.py"; DestDir: "{app}\sample\python\hello\"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\tools\windows\mingw-get-setup.exe"; DestDir: "{app}\tools\"; Flags: ignoreversion

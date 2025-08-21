@@ -99,7 +99,7 @@ object frmMNote: TfrmMNote
             TabOrder = 0
             ColWidths = (
               64
-              105
+              88
             )
           end
         end
@@ -727,7 +727,7 @@ object frmMNote: TfrmMNote
               ParentFont = False
               PopupMenu = pmchatgpt
               TabOrder = 0
-              Gutter.Width = 57
+              Gutter.Width = 55
               Gutter.MouseActions = <>
               RightGutter.Width = 0
               RightGutter.MouseActions = <>
@@ -1231,7 +1231,7 @@ object frmMNote: TfrmMNote
               ParentFont = False
               PopupMenu = pmchatgpt
               TabOrder = 0
-              Gutter.Width = 57
+              Gutter.Width = 55
               Gutter.MouseActions = <>
               RightGutter.Width = 0
               RightGutter.MouseActions = <>
@@ -1895,6 +1895,21 @@ object frmMNote: TfrmMNote
         OnClick = mnCompileClick
       end
     end
+    object MenuItem22: TMenuItem
+      Caption = 'Project'
+      object MenuItem23: TMenuItem
+        Caption = 'New Project'
+      end
+      object MenuItem24: TMenuItem
+        Caption = 'Open Project'
+      end
+      object MenuItem26: TMenuItem
+        Caption = 'Save Project'
+      end
+      object MenuItem25: TMenuItem
+        Caption = 'Close'
+      end
+    end
     object MenuItem12: TMenuItem
       Caption = 'Tools'
       ImageIndex = 11
@@ -2006,7 +2021,7 @@ object frmMNote: TfrmMNote
     Left = 160
     Top = 133
     object mnFechar: TMenuItem
-      Caption = 'Fechar'
+      Caption = 'Close'
       ImageIndex = 0
       OnClick = mnFecharClick
     end
@@ -2116,7 +2131,7 @@ object frmMNote: TfrmMNote
     Left = 352
     Top = 216
     object mnAssociar: TMenuItem
-      Caption = 'Associar'
+      Caption = 'Type'
       ImageIndex = 14
       object mnNone: TMenuItem
         Caption = 'None'
@@ -2142,7 +2157,7 @@ object frmMNote: TfrmMNote
       end
     end
     object mnFechar2: TMenuItem
-      Caption = 'Fechar'
+      Caption = 'Close'
       ImageIndex = 0
       OnClick = mnFechar2Click
     end
@@ -2767,7 +2782,7 @@ object frmMNote: TfrmMNote
     Left = 128
     Top = 288
     object MenuItem2: TMenuItem
-      Caption = 'Esconder'
+      Caption = 'Hide'
       OnClick = MenuItem2Click
     end
   end
@@ -2787,7 +2802,7 @@ object frmMNote: TfrmMNote
     Left = 973
     Top = 157
     object MenuItem18: TMenuItem
-      Caption = 'Limpar Tela'
+      Caption = 'Clear Screen'
       OnClick = MenuItem18Click
     end
     object MenuItem19: TMenuItem

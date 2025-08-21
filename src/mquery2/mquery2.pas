@@ -1310,7 +1310,6 @@ begin
 end;
 
 // ==== implementation ====
-
 function Tfrmmquery2.ConectMy: Boolean;
 begin
   Result := False;

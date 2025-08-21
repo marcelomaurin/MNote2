@@ -32,6 +32,11 @@ type
     MenuItem19: TMenuItem;
     MenuItem20: TMenuItem;
     MenuItem21: TMenuItem;
+    MenuItem22: TMenuItem;
+    MenuItem23: TMenuItem;
+    MenuItem24: TMenuItem;
+    MenuItem25: TMenuItem;
+    MenuItem26: TMenuItem;
     mnCompile: TMenuItem;
     miToolsFalar: TMenuItem;
     miIMGJSON: TMenuItem;
@@ -254,7 +259,7 @@ type
   public
     { public declarations }
     function NovoItem():TTabSheet;
-    procedure MessageHint(info : string);
+
     function ExistFileOpen(Arquivo : string): boolean;
     procedure CarregarArquivo(arquivo : string);
     procedure NewContext();
@@ -388,13 +393,6 @@ end;
 
 
 
-procedure TfrmMNote.MessageHint(info: string);
-var
-  frmHint : TfrmHint;
-begin
-  frmHint := TfrmHint.create(self);
-  frmHint.messagehint(info);
-end;
 
 
 
@@ -1519,59 +1517,174 @@ end;
 
 procedure TfrmMNote.mnrunClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
-   item : TItem;
-   I : NativeInt;
-   variavel : PPyObject;
-   variavelname : string;
+  tb: TTabSheet;
+  syn: TSynEdit;
+  item: TItem;
+  i, n: NativeInt;
+
+  // Python interop
+  gil: TPythonInterface.PyGILState_STATE;
+  keyObj: PPyObject;       // borrowed (PyList_GetItem)
+  valObj: PPyObject;       // borrowed (PyDict_GetItem)
+  reprObj: PPyObject;      // new ref (precisa DECREF)
+  globalsDict, localsDict: PPyObject; // borrowed (PyEval_GetGlobals/Locals)
+
+  // conversões
+  nameU, valU: UnicodeString;
+  nameS, valS: String;
+
+  procedure AddRowSafe(AList: TValueListEditor; const AKey, AValue: String);
+  begin
+    if Assigned(AList) then
+      AList.InsertRow(AKey, AValue, True);
+  end;
+
+  function InRangeY(ASyn: TSynEdit; AY: Integer): Boolean;
+  begin
+    Result := (ASyn <> nil) and (AY >= 1) and (AY <= ASyn.Lines.Count);
+  end;
 
 begin
-   mnSalvarClick(self); (*Salva antes de rodar*)
-   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-   meResult.Lines.clear;
-   item.Resultado := meResult;
+  // 1) Garantias básicas da aba/índice
+  if (pgMain = nil) or (pgMain.PageCount = 0) then Exit;
+  if (pgMain.ActivePageIndex < 0) or (pgMain.ActivePageIndex >= pgMain.PageCount) then Exit;
 
+  tb := pgMain.Pages[pgMain.ActivePageIndex];
+  if (tb = nil) or (tb.Tag = 0) then
+  begin
+    ShowMessage('Aba não está associada a um item válido.');
+    Exit;
+  end;
 
-   item.Run();
-   syn := item.syn;
-   //pnResult.Visible:=true;
-   if (item.PythonCtrl.VarsCheck) then
-   begin
-      pnInspector.Visible:=true;
-   end;
-   if item.Error then
-   begin
-      syn.CaretY:= item.LinhaError;
-   end
-   else
-   begin
-     if (item.PythonCtrl.VarsCheck) then
-     begin
-         for I := 0 to item.PythonCtrl.VarListGlobal_Size -1  do
-         begin
-               //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
-               //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
-               //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
-               variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsGlobalKeys,I);
-               variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
-               vlGlobal.InsertRow(variavelname,'',true);
-         end;
-         for I := 0 to item.PythonCtrl.VarListLocal_Size -1  do
-         begin
-               //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
-               //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
-               //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
-               variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsLocalKeys,I);
-               variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
-               vlLocal.InsertRow(variavelname,'',true);
-         end;
-     end;
+  item := TItem(tb.Tag);
+  if (item = nil) then
+  begin
+    ShowMessage('Item não encontrado.');
+    Exit;
+  end;
 
-   end;
+  // 2) Salva antes de rodar
+  try
+    mnSalvarClick(Self);
+  except
+    on E: Exception do
+    begin
+      ShowMessage('Falha ao salvar antes de executar: ' + E.Message);
+      Exit;
+    end;
+  end;
 
+  // 3) Preparação de UI
+  meResult.Lines.Clear;
+  item.Resultado := meResult;   // o runner escreve aqui
+  pnInspector.Visible := False; // só exibe após preencher
+  if Assigned(vlGlobal) then vlGlobal.Strings.Clear;
+  if Assigned(vlLocal)  then vlLocal.Strings.Clear;
 
+  // 4) Executa
+  item.Run;
+
+  // 5) Posiciona caret em caso de erro e encerra
+  syn := item.syn;
+  if item.Error then
+  begin
+    if InRangeY(syn, item.LinhaError) then
+      syn.CaretY := item.LinhaError;
+    Exit;
+  end;
+
+  // 6) Inspector de variáveis (opcional)
+  if (item.PythonCtrl <> nil) and item.PythonCtrl.VarsCheck then
+  begin
+    // Entra no GIL para chamadas na API C do Python
+    gil := item.PythonCtrl.PythonEngine.PyGILState_Ensure();
+    try
+      // Pega os dicionários (borrowed refs)
+      globalsDict := item.PythonCtrl.PythonEngine.PyEval_GetGlobals();
+      localsDict  := item.PythonCtrl.PythonEngine.PyEval_GetLocals();
+
+      // -------- Globais --------
+      n := item.PythonCtrl.VarListGlobal_Size;
+      for i := 0 to n - 1 do
+      begin
+        keyObj := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsGlobalKeys, i); // borrowed
+        if keyObj <> nil then
+        begin
+          // Nome
+          nameU := item.PythonCtrl.PythonEngine.PyUnicodeAsString(keyObj);
+          nameS := UTF8Encode(nameU);
+
+          // Valor: globals()[key] (borrowed)
+          valS := '';
+          if globalsDict <> nil then
+          begin
+            valObj := item.PythonCtrl.PythonEngine.PyDict_GetItem(globalsDict, keyObj); // borrowed
+            if valObj <> nil then
+            begin
+              reprObj := item.PythonCtrl.PythonEngine.PyObject_Repr(valObj); // new ref
+              try
+                if reprObj <> nil then
+                begin
+                  valU := item.PythonCtrl.PythonEngine.PyUnicodeAsString(reprObj);
+                  valS := UTF8Encode(valU);
+                end;
+              finally
+                if reprObj <> nil then
+                  item.PythonCtrl.PythonEngine.Py_DecRef(reprObj);
+              end;
+            end;
+          end;
+
+          AddRowSafe(vlGlobal, nameS, valS);
+        end;
+      end;
+
+      // -------- Locais --------
+      n := item.PythonCtrl.VarListLocal_Size;
+      for i := 0 to n - 1 do
+      begin
+        keyObj := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsLocalKeys, i); // borrowed
+        if keyObj <> nil then
+        begin
+          // Nome
+          nameU := item.PythonCtrl.PythonEngine.PyUnicodeAsString(keyObj);
+          nameS := UTF8Encode(nameU);
+
+          // Valor: locals()[key] (borrowed)
+          valS := '';
+          if localsDict <> nil then
+          begin
+            valObj := item.PythonCtrl.PythonEngine.PyDict_GetItem(localsDict, keyObj); // borrowed
+            if valObj <> nil then
+            begin
+              reprObj := item.PythonCtrl.PythonEngine.PyObject_Repr(valObj); // new ref
+              try
+                if reprObj <> nil then
+                begin
+                  valU := item.PythonCtrl.PythonEngine.PyUnicodeAsString(reprObj);
+                  valS := UTF8Encode(valU);
+                end;
+              finally
+                if reprObj <> nil then
+                  item.PythonCtrl.PythonEngine.Py_DecRef(reprObj);
+              end;
+            end;
+          end;
+
+          AddRowSafe(vlLocal, nameS, valS);
+        end;
+      end;
+
+    finally
+      item.PythonCtrl.PythonEngine.PyGILState_Release(gil);
+    end;
+
+    pnInspector.Visible := True;
+  end;
 end;
+
+
+
 
 procedure TfrmMNote.MenuItem4Click(Sender: TObject);
 begin
