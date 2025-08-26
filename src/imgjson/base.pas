@@ -24,7 +24,8 @@ type
     procedure Connect( Username : string; Password : string; hostname: string; Database: string);
     procedure loadlib(path : string);
     procedure Close();
-
+    function ConectaSQLite(const ArquivoDB: string): Boolean;
+    function SalvarDadosMaster(projeto : string; Proposito: string; target: string; database: integer): boolean;
 
   end;
 
@@ -56,6 +57,29 @@ end;
 procedure TdmBase.Close;
 begin
   zcon.Disconnect;
+end;
+
+function TdmBase.ConectaSQLite(const ArquivoDB: string): Boolean;
+begin
+  Result := False;
+  try
+    if zconlocal.Connected then
+      zconlocal.Disconnect;
+
+    zconlocal.Protocol := 'sqlite-3';
+    zconlocal.Database := ArquivoDB;
+    zconlocal.User := '';  // SQLite não usa usuário normalmente
+    zconlocal.Password := '';
+
+    zconlocal.Connect;
+    Result := zconlocal.Connected;
+  except
+    Result := False; // Se der erro, retorna False
+  end;
+end;
+
+function TdmBase.SalvarDadosMaster(projeto : string; Proposito: string; target: string; database: integer): boolean;
+begin
 end;
 
 

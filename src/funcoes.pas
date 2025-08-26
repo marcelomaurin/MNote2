@@ -94,6 +94,7 @@ function IsAdministrator: Boolean;
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
 function Callprg(filename: string; source: String; var Output: string): boolean;
+procedure CopiarArquivo(const Origem, Destino: string);
 {$ENDIF}
 
 {$IFDEF LINUX}
@@ -123,6 +124,36 @@ var LastTickCount     : cardinal = 0;
     FLastIdleTime: Int64;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
+
+procedure CopiarArquivo(const Origem, Destino: string);
+var
+  Fonte, Alvo: TFileStream;
+  PastaDestino: string;
+begin
+  try
+    PastaDestino := ExtractFileDir(Destino);
+    if not DirectoryExists(PastaDestino) then
+      ForceDirectories(PastaDestino);
+
+    if FileExists(Origem) then
+    begin
+      Fonte := TFileStream.Create(Origem, fmOpenRead);
+      try
+        Alvo := TFileStream.Create(Destino, fmCreate);
+        try
+          Alvo.CopyFrom(Fonte, Fonte.Size);
+        finally
+          Alvo.Free;
+        end;
+      finally
+        Fonte.Free;
+      end;
+    end;
+  except
+    on E: Exception do
+      ; // silencioso
+  end;
+end;
 
 function UTF8ToANSI(const UTF8String: string): string;
 var

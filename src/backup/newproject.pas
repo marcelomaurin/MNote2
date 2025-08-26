@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  EditBtn, ComCtrls;
+  EditBtn, ComCtrls, base, funcoes;
 
 type
 
@@ -58,8 +58,30 @@ implementation
 { TfrmNewProject }
 
 procedure TfrmNewProject.Button1Click(Sender: TObject);
+var
+  original : string;
+  destino : string;
 begin
+  {$IFDEF WINDOWS}
+  original := ExtractFilePath(Application.ExeName)+'db\projeto_padrao.db';
+  destino := deTarget.Text+'\'+edproject.Text+'.db';
+  {$ENDIF}
+  {$IFDEF LINUX}
+  original := ExtractFilePath(Application.ExeName)+'db/projeto_padrao.db';
+  destino := deTarget.Text+'/'+edproject.Text+'.db';
+  {$ENDIF}
+  if(FileExists(original)) then
+  begin
+    CopiarArquivo(original, destino);
 
+    if dmbase.ConectaSQLite(destino) then
+    begin
+      // Conectou com sucesso
+      dmbase.SalvarDadosMaster(edproject.text, edPropose.text, destino, cbDataBase.ItemIndex );
+    end;
+
+
+  end;
 end;
 
 end.

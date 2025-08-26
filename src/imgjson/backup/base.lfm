@@ -1,8 +1,8 @@
 object dmBase: TdmBase
   OldCreateOrder = False
   Height = 260
-  HorizontalOffset = -1041
-  VerticalOffset = 356
+  HorizontalOffset = 0
+  VerticalOffset = 533
   Width = 333
   object DataSource1: TDataSource
     Left = 128
@@ -40,5 +40,19 @@ object dmBase: TdmBase
     Params = <>
     Left = 262
     Top = 173
+  end
+  object zconlocal: TZConnection
+    ControlsCodePage = cCP_UTF8
+    DisableSavepoints = False
+    Port = 0
+    Protocol = 'sqlite'
+    Left = 55
+    Top = 185
+  end
+  object ZQuery1: TZQuery
+    Connection = zconlocal
+    Params = <>
+    Left = 136
+    Top = 184
   end
 end

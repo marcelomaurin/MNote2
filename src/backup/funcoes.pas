@@ -94,6 +94,7 @@ function IsAdministrator: Boolean;
 function RunAsAdmin(const Handle: Hwnd; const Path, Params: string): Boolean;
 function RunBatch(const Handle: Hwnd; const batch, Params: string): boolean;
 function Callprg(filename: string; source: String; var Output: string): boolean;
+procedure CopiarArquivo(const Origem, Destino: string);
 {$ENDIF}
 
 {$IFDEF LINUX}
@@ -123,6 +124,32 @@ var LastTickCount     : cardinal = 0;
     FLastIdleTime: Int64;
     FLastKernelTime: Int64;
     FLastUserTime: Int64;
+
+procedure CopiarArquivo(const Origem, Destino: string);
+var
+  PastaDestino: string;
+begin
+  try
+    {$IFDEF WINDOWS}
+    // Tratamento específico para Windows se precisar
+    {$ENDIF}
+    {$IFDEF LINUX}
+    // Tratamento específico para Linux se precisar
+    {$ENDIF}
+
+    // Garante que a pasta destino exista
+    PastaDestino := ExtractFileDir(Destino);
+    if not DirectoryExists(PastaDestino) then
+      ForceDirectories(PastaDestino);
+
+    // Copia o arquivo se existir
+    if FileExists(Origem) then
+      CopyFile(Origem, Destino);
+  except
+    on E: Exception do
+      ; // Silencioso
+  end;
+end;
 
 function UTF8ToANSI(const UTF8String: string): string;
 var
@@ -588,7 +615,7 @@ begin
     Process.Parameters.AddStrings(Source);
 
     //Process.Options := [poNewConsole, poUsePipes, poStdErrToOutPut]; // Executar com console
-    Process.Options := [poNoConsole, poUsePipes, poStderrToOutPut]; // Executar com console
+    Process.Options := [poNewConsole, poUsePipes, poStderrToOutPut]; // Executar com console
 
     Process.Execute;
 
