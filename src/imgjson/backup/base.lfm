@@ -43,9 +43,14 @@ object dmBase: TdmBase
   end
   object zconlocal: TZConnection
     ControlsCodePage = cCP_UTF8
+    Properties.Strings = (
+      'RawStringEncoding=DB_CP'
+    )
     DisableSavepoints = False
     Port = 0
+    Database = 'D:\projetos\maurinsoft\MNote2\src\db\projeto_padrao.db'
     Protocol = 'sqlite'
+    LibraryLocation = 'D:\projetos\maurinsoft\MNote2\sqlite\win32\sqlite3.dll'
     Left = 55
     Top = 185
   end

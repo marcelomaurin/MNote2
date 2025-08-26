@@ -1868,7 +1868,7 @@ begin
   FCHATGPT.TOKEN := FSetMain.CHATGPT;
   //FCHATGPT.SendQuestion(mequestion.Text);
   FCHATGPT.Dev:= 'Voce é um assistente pessoal e teve as seguintes perguntas anteriores: '+meChatHist.Text;
-  FCHATGPT.SendQuestion( mequestion.text);
+  FCHATGPT.SendQuestion( edChat.Text);
 
   resposta := FCHATGPT.Response;
 

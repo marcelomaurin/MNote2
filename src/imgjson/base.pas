@@ -24,8 +24,9 @@ type
     procedure Connect( Username : string; Password : string; hostname: string; Database: string);
     procedure loadlib(path : string);
     procedure Close();
-    function ConectaSQLite(const ArquivoDB: string): Boolean;
+    function ConectaSQLite(const ArquivoDB: string; biblioteca : string): Boolean;
     function SalvarDadosMaster(projeto : string; Proposito: string; target: string; database: integer): boolean;
+    procedure RegistraParam(Chave: string; Valor :string);
 
   end;
 
@@ -59,19 +60,19 @@ begin
   zcon.Disconnect;
 end;
 
-function TdmBase.ConectaSQLite(const ArquivoDB: string): Boolean;
+function TdmBase.ConectaSQLite(const ArquivoDB: string; biblioteca : string): Boolean;
 begin
   Result := False;
   try
     if zconlocal.Connected then
       zconlocal.Disconnect;
 
-    zconlocal.Protocol := 'sqlite-3';
+    zconlocal.Protocol := 'sqlite';
     zconlocal.Database := ArquivoDB;
     zconlocal.User := '';  // SQLite não usa usuário normalmente
     zconlocal.Password := '';
     {$IFDEF WINDOWS}
-     zconlocal.LibraryLocation:= ExtractFilePath(ApplicationName)+'libs\sqlite\win32\sqlite3.dll' ;
+     zconlocal.LibraryLocation:= biblioteca ;
     {$ENDIF}
     {$IFDEF LINUX}
     zconlocal.LibraryLocation:= ExtractFilePath(ApplicationName)+'libs/sqlite/lin32/sqlite3.so' ;
@@ -86,6 +87,15 @@ end;
 
 function TdmBase.SalvarDadosMaster(projeto : string; Proposito: string; target: string; database: integer): boolean;
 begin
+  RegistraParam('PROJETO',projeto);
+  RegistraParam('PROPOSITO',proposito);
+  RegistraParam('TARGET',target);
+  RegistraParam('DATABASETYPE',inttostr(database));
+end;
+
+procedure TdmBase.RegistraParam(Chave: string; Valor: string);
+begin
+
 end;
 
 

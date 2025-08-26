@@ -61,20 +61,33 @@ procedure TfrmNewProject.Button1Click(Sender: TObject);
 var
   original : string;
   destino : string;
+  biblioteca : string;
 begin
   {$IFDEF WINDOWS}
   original := ExtractFilePath(Application.ExeName)+'db\projeto_padrao.db';
   destino := deTarget.Text+'\'+edproject.Text+'.db';
+  if(pos('\src',ExtractFilePath(Application.ExeName))>0) then
+  begin
+    biblioteca := ExtractFilePath(Application.ExeName)+'..\libs\sqlite\win32\sqlite3.dll'
+  end
+  else
+  begin
+    biblioteca := ExtractFilePath(Application.ExeName)+'libs\sqlite\win32\sqlite3.dll'
+  end;
   {$ENDIF}
   {$IFDEF LINUX}
   original := ExtractFilePath(Application.ExeName)+'db/projeto_padrao.db';
   destino := deTarget.Text+'/'+edproject.Text+'.db';
   {$ENDIF}
+
   if(FileExists(original)) then
   begin
     CopiarArquivo(original, destino);
-
-    if dmbase.ConectaSQLite(destino) then
+    if (dmbase=nil) then
+    begin
+      dmbase := TdmBase.create(self);
+    end;
+    if dmbase.ConectaSQLite(destino, biblioteca) then
     begin
       // Conectou com sucesso
       dmbase.SalvarDadosMaster(edproject.text, edPropose.text, destino, cbDataBase.ItemIndex );
