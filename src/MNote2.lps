@@ -16,9 +16,8 @@
         <ComponentName Value="frmMNote"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
-        <TopLine Value="1896"/>
+        <TopLine Value="1917"/>
         <CursorPos X="37" Y="1871"/>
         <UsageCount Value="47"/>
         <Loaded Value="True"/>
@@ -284,9 +283,10 @@
         <ComponentName Value="dmBase"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="12"/>
         <TopLine Value="49"/>
-        <CursorPos Y="66"/>
+        <CursorPos Y="69"/>
         <UsageCount Value="47"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -387,7 +387,7 @@
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="6"/>
         <TopLine Value="56"/>
-        <CursorPos Y="77"/>
+        <CursorPos X="24" Y="69"/>
         <UsageCount Value="36"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -610,6 +610,20 @@
         <WatchKind Value="wpkWrite"/>
         <Source Value="newproject.pas"/>
         <Line Value="73"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="imgjson\base.pas"/>
+        <Line Value="66"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="imgjson\base.pas"/>
+        <Line Value="69"/>
       </Item>
     </BreakPoints>
   </Debugging>

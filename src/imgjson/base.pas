@@ -70,6 +70,12 @@ begin
     zconlocal.Database := ArquivoDB;
     zconlocal.User := '';  // SQLite não usa usuário normalmente
     zconlocal.Password := '';
+    {$IFDEF WINDOWS}
+     zconlocal.LibraryLocation:= ExtractFilePath(ApplicationName)+'libs\sqlite\win32\sqlite3.dll' ;
+    {$ENDIF}
+    {$IFDEF LINUX}
+    zconlocal.LibraryLocation:= ExtractFilePath(ApplicationName)+'libs/sqlite/lin32/sqlite3.so' ;
+    {$ENDIF}
 
     zconlocal.Connect;
     Result := zconlocal.Connected;
