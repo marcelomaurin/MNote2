@@ -47,61 +47,67 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="18">
+    <RequiredPackages Count="20">
       <Item1>
-        <PackageName Value="LazUtils"/>
+        <PackageName Value="IPEdit_pkg"/>
       </Item1>
       <Item2>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="zcomponentdesign"/>
       </Item2>
       <Item3>
-        <PackageName Value="synuni"/>
+        <PackageName Value="LazUtils"/>
       </Item3>
       <Item4>
-        <PackageName Value="synfacilsyn"/>
+        <PackageName Value="lnetbase"/>
       </Item4>
       <Item5>
-        <PackageName Value="SynEditDsgn"/>
+        <PackageName Value="synuni"/>
       </Item5>
       <Item6>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="synfacilsyn"/>
       </Item6>
       <Item7>
-        <PackageName Value="myexamplepackage"/>
+        <PackageName Value="SynEditDsgn"/>
       </Item7>
       <Item8>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="SynEdit"/>
       </Item8>
       <Item9>
-        <PackageName Value="FCL"/>
+        <PackageName Value="myexamplepackage"/>
       </Item9>
       <Item10>
-        <PackageName Value="poweredby"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item10>
       <Item11>
-        <PackageName Value="industrial"/>
+        <PackageName Value="FCL"/>
       </Item11>
       <Item12>
-        <PackageName Value="pkg_gifanim"/>
+        <PackageName Value="poweredby"/>
       </Item12>
       <Item13>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="industrial"/>
       </Item13>
       <Item14>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="pkg_gifanim"/>
       </Item14>
       <Item15>
-        <PackageName Value="rxnew"/>
+        <PackageName Value="zcomponent"/>
       </Item15>
       <Item16>
-        <PackageName Value="python4lazarus_package"/>
+        <PackageName Value="multiloglaz"/>
       </Item16>
       <Item17>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="rxnew"/>
       </Item17>
       <Item18>
-        <PackageName Value="LCL"/>
+        <PackageName Value="python4lazarus_package"/>
       </Item18>
+      <Item19>
+        <PackageName Value="lnetvisual"/>
+      </Item19>
+      <Item20>
+        <PackageName Value="LCL"/>
+      </Item20>
     </RequiredPackages>
     <Units Count="50">
       <Unit0>
@@ -371,6 +377,7 @@
         <Filename Value="newproject.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmNewProject"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit47>
       <Unit48>

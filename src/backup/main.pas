@@ -10,7 +10,8 @@ uses
   setmain, TypeDB, folders, funcoes, LCLType, ValEdit, PairSplitter, chgtext,
   hint, registro, splash, setFolders, config, SynEditKeyCmds, PythonEngine,
   rxctrls, LogTreeView, uPoweredby, chatgpt, mquery2, porradawebapi,
-  SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir;
+  SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir,
+  newproject;
 
 
 const versao = '2.40';
@@ -160,6 +161,7 @@ type
     procedure MenuItem19Click(Sender: TObject);
     procedure MenuItem20Click(Sender: TObject);
     procedure MenuItem21Click(Sender: TObject);
+    procedure MenuItem23Click(Sender: TObject);
     procedure MenuItem7Click(Sender: TObject);
     procedure miChatGPTClick(Sender: TObject);
     procedure micopyClick(Sender: TObject);
@@ -1150,6 +1152,14 @@ begin
   frmToolsOuvir.show();
 end;
 
+procedure TfrmMNote.MenuItem23Click(Sender: TObject);
+begin
+  frmNewProject := TfrmNewProject.create(self);
+  frmNewProject.ShowModal;
+  frmNewProject.free;
+  frmNewProject := nil;
+end;
+
 procedure TfrmMNote.MenuItem7Click(Sender: TObject);
 begin
 
@@ -1523,7 +1533,7 @@ var
   i, n: NativeInt;
 
   // Python interop
-  gil: TPythonInterface.PyGILState_STATE;
+  gil: PyGILState_STATE;
   keyObj: PPyObject;       // borrowed (PyList_GetItem)
   valObj: PPyObject;       // borrowed (PyDict_GetItem)
   reprObj: PPyObject;      // new ref (precisa DECREF)
@@ -1856,7 +1866,10 @@ begin
   mequestion.Lines.Add(edChat.Text);
 
   FCHATGPT.TOKEN := FSetMain.CHATGPT;
-  FCHATGPT.SendQuestion(mequestion.Text);
+  //FCHATGPT.SendQuestion(mequestion.Text);
+  FCHATGPT.Dev:= 'Voce é um assistente pessoal e teve as seguintes perguntas anteriores: '+meChatHist.Text;
+  FCHATGPT.SendQuestion( mequestion.text);
+
   resposta := FCHATGPT.Response;
 
   if FSetMain.ToolsFalar then
@@ -1864,7 +1877,14 @@ begin
     if (frmToolsfalar = nil) then
       frmToolsfalar := TfrmToolsFalar.Create(self);
     frmToolsfalar.edFalar.Text := resposta;
+    frmToolsfalar.edIP.text := FSetMain.IPFALAR;
+    frmToolsfalar.Conectar();
+    Application.ProcessMessages;
     frmToolsfalar.Falar();
+    //frmToolsfalar.Disconectar();
+    //frmToolsfalar.Free;
+    //frmToolsfalar := nil;
+
   end;
 
   // histórico visual

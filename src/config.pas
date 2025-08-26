@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, EditBtn,
-  ComCtrls, setmain;
+  ComCtrls, IPEdit, setmain;
 
 type
 
@@ -25,7 +25,9 @@ type
     edDLLMyPATH: TFileNameEdit;
     edInstall: TFileNameEdit;
     edRun: TFileNameEdit;
+    edIPFALAR: TIPEdit;
     Label1: TLabel;
+    lbIP: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
@@ -70,6 +72,7 @@ begin
   FSetMain.DLLPOSTPath:= edDLLPOSTPATH.text;
   FSetMain.CHATGPT:= edCHATGPT.text;
   FSetMain.ToolsFalar:=ckToolsFalar.Checked;
+  FSetMain.IPFALAR:= edIPFALAR.text;
   FSetMain.SalvaContexto(false);
   close;
 end;
@@ -86,6 +89,7 @@ begin
   edDLLMyPATH.text := FSetMain.DLLMyPath;
   edDLLPostPATH.text := FSetMain.DLLPostPath;
   ckToolsFalar.Checked:= FSetMain.ToolsFalar;
+  edIPFALAR.Text := FSetMain.IPFALAR;
 end;
 
 procedure Tfrmconfig.btCancelClick(Sender: TObject);

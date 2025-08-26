@@ -14,6 +14,7 @@ type
   TdmBase = class(TDataModule)
     DataSource1: TDataSource;
     zcon: TZConnection;
+    zconlocal: TZConnection;
     zqryaux: TZQuery;
     zqryaux1: TZQuery;
     zqryaux2: TZQuery;

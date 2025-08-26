@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  lNetComponents, lNet;
+  lNetComponents, lNet, strutils;
 
 type
 
@@ -26,10 +26,12 @@ type
     procedure LTCPComponent1Receive(aSocket: TLSocket);
     procedure Shape1ChangeBounds(Sender: TObject);
   private
-
+    lastfrase : string;
   public
+    frase : string;
     procedure Conectar();
     procedure Disconectar();
+
   end;
 
 var
@@ -62,12 +64,26 @@ end;
 procedure TfrmToolsOuvir.LTCPComponent1Receive(aSocket: TLSocket);
 var
    info : String;
+   posicao : integer;
 begin
   //ShowMessage('Recebeu a mensagem:');
-
+  info := '';
   aSocket.GetMessage(info);
-  frmMNote.edChat.text := info;
-  frmMNote.FazPergunta();
+  posicao := pos(frase,info);
+  if(posicao<>0) then
+  begin
+       if(lastfrase <> info) then
+       begin
+         lastfrase := info;
+         info := replacestr(info,frase, '');
+         frmmain.NewContext();
+         frmmain.pergunta := info;
+
+         frmmain.FazPergunta();
+       end;
+
+
+  end;
 
   //ShowMessage(info);
 end;

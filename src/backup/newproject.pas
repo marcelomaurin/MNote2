@@ -18,19 +18,30 @@ type
     btProcess: TButton;
     cbDataBase: TComboBox;
     deTarget: TDirectoryEdit;
+    edBancoPost: TEdit;
+    edHostNamePost: TEdit;
+    edPasswrdPost: TEdit;
     edproject: TEdit;
-    edPropose: TEdit;
+    edSchemaPost: TEdit;
+    edusuarioPost: TEdit;
     Image1: TImage;
     Label1: TLabel;
+    Label10: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
     Label5: TLabel;
+    Label6: TLabel;
+    Label7: TLabel;
+    Label8: TLabel;
+    Label9: TLabel;
+    edPropose: TMemo;
     mespec: TMemo;
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
     TabSheet2: TTabSheet;
     TabSheet3: TTabSheet;
+    procedure Button1Click(Sender: TObject);
   private
 
   public
@@ -43,6 +54,13 @@ var
 implementation
 
 {$R *.lfm}
+
+{ TfrmNewProject }
+
+procedure TfrmNewProject.Button1Click(Sender: TObject);
+begin
+
+end;
 
 end.
 

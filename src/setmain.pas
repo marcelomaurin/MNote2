@@ -55,6 +55,7 @@ type
         FPasswordPost : String;
         FSchemaPost: String;
         FToolsFalar : Boolean;
+        fIPFALAR : String;
 
 
         //filename : String;
@@ -106,6 +107,7 @@ type
         property PasswordPost : String read FPasswordPost write FPasswordPost;
         property SchemaPost: String read FSchemaPost write FSchemaPost;
         property ToolsFalar : Boolean read FToolsFalar write SetToolsFalar;
+        property IPFALAR : string read fIPFALAR write fIPFALAR;
   end;
 
   var
@@ -143,6 +145,8 @@ begin
     FCleanScript :='';  //Script de Limpeza
     FInstall :='';      //Script de Instalacao
     FCompile :='';      //Script de Compilacao
+
+    fIPFALAR := '127.0.0.1';
     if FFont = nil then
     begin
          FFONT := TFont.create();
@@ -327,6 +331,10 @@ begin
     begin
       FTOOLSFALAR := iif(RetiraInfo(arquivo.Strings[posicao])='0',false,true);
     end;
+    if  BuscaChave(arquivo,'IPFALAR:',posicao) then
+    begin
+      fIPFALAR := RetiraInfo(arquivo.Strings[posicao]);   ;
+    end;
 
 end;
 
@@ -411,6 +419,9 @@ begin
   arquivo.Append('BANCOMY:'+FBancoMy);
   arquivo.Append('USERNAMEMY:'+FUsernameMy);
   arquivo.Append('PASSWORDMY:'+FPasswordMy);
+
+  arquivo.Append('IPFALAR:'+fIPFALAR);
+
 
   arquivo.Append('HOSTNAMEPOST:'+FHostnamePOST);
   arquivo.Append('BANCOPOST:'+FBancoPOST);

@@ -185,9 +185,9 @@ object frmMNote: TfrmMNote
           Height = 311
           Top = 27
           Width = 375
-          ActivePage = tsDialog
+          ActivePage = tsHistory
           Align = alClient
-          TabIndex = 0
+          TabIndex = 2
           TabOrder = 4
           object tsDialog: TTabSheet
             Caption = 'Dialog'
@@ -1899,6 +1899,7 @@ object frmMNote: TfrmMNote
       Caption = 'Project'
       object MenuItem23: TMenuItem
         Caption = 'New Project'
+        OnClick = MenuItem23Click
       end
       object MenuItem24: TMenuItem
         Caption = 'Open Project'

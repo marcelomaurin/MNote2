@@ -1,12 +1,12 @@
 object frmToolsOuvir: TfrmToolsOuvir
-  Left = 330
+  Left = 533
   Height = 169
-  Top = 1436
+  Top = 514
   Width = 529
   Caption = 'frmToolsOuvir'
   ClientHeight = 169
   ClientWidth = 529
-  LCLVersion = '3.0.0.3'
+  LCLVersion = '3.2.0.0'
   object Shape1: TShape
     Left = 0
     Height = 72

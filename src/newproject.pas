@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  EditBtn, ComCtrls;
+  EditBtn, ComCtrls, base;
 
 type
 
@@ -22,7 +22,6 @@ type
     edHostNamePost: TEdit;
     edPasswrdPost: TEdit;
     edproject: TEdit;
-    edPropose: TEdit;
     edSchemaPost: TEdit;
     edusuarioPost: TEdit;
     Image1: TImage;
@@ -36,11 +35,13 @@ type
     Label7: TLabel;
     Label8: TLabel;
     Label9: TLabel;
+    edPropose: TMemo;
     mespec: TMemo;
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
     TabSheet2: TTabSheet;
     TabSheet3: TTabSheet;
+    procedure Button1Click(Sender: TObject);
   private
 
   public
@@ -53,6 +54,13 @@ var
 implementation
 
 {$R *.lfm}
+
+{ TfrmNewProject }
+
+procedure TfrmNewProject.Button1Click(Sender: TObject);
+begin
+
+end;
 
 end.
 
