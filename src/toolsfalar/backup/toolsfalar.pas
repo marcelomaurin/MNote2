@@ -127,8 +127,8 @@ begin
 
     if( LTCPComponent1.Connected) then
     begin
-      Disconectar();
-      Application.ProcessMessages;
+      //Disconectar();
+      //Application.ProcessMessages;
     end;
 
 

@@ -16,6 +16,7 @@ type
     btSave: TButton;
     btCancel: TButton;
     ckToolsFalar: TCheckBox;
+    ckToolsOuvir: TCheckBox;
     edCHATGPT: TFileNameEdit;
     edClean: TFileNameEdit;
     edDebug: TFileNameEdit;
@@ -24,6 +25,7 @@ type
     edDLLPATH: TFileNameEdit;
     edDLLMyPATH: TFileNameEdit;
     edInstall: TFileNameEdit;
+    edIPOuvir: TIPEdit;
     edRun: TFileNameEdit;
     edIPFALAR: TIPEdit;
     Label1: TLabel;
@@ -36,11 +38,13 @@ type
     Label7: TLabel;
     Label8: TLabel;
     Label9: TLabel;
+    lbIP1: TLabel;
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
     TabSheet2: TTabSheet;
     TabSheet3: TTabSheet;
     TabSheet4: TTabSheet;
+    tsToolsOuvir: TTabSheet;
     tsFalar: TTabSheet;
     procedure btCancelClick(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
@@ -72,7 +76,9 @@ begin
   FSetMain.DLLPOSTPath:= edDLLPOSTPATH.text;
   FSetMain.CHATGPT:= edCHATGPT.text;
   FSetMain.ToolsFalar:=ckToolsFalar.Checked;
+  FSetMain.ToolsOuvir:=ckToolsOuvir.Checked;
   FSetMain.IPFALAR:= edIPFALAR.text;
+  FSetMain.IPOUVIR:= edIPOUVIR.text;
   FSetMain.SalvaContexto(false);
   close;
 end;
@@ -89,7 +95,9 @@ begin
   edDLLMyPATH.text := FSetMain.DLLMyPath;
   edDLLPostPATH.text := FSetMain.DLLPostPath;
   ckToolsFalar.Checked:= FSetMain.ToolsFalar;
+  ckToolsOuvir.Checked:= FSetMain.ToolsOuvir;
   edIPFALAR.Text := FSetMain.IPFALAR;
+  edIPOUVIR.Text := FSetMain.IPOUVIR;
 end;
 
 procedure Tfrmconfig.btCancelClick(Sender: TObject);

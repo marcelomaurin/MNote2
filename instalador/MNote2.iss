@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "MNote2"
-#define MyAppVersion "2.40"
+#define MyAppVersion "2.42"
 #define MyAppPublisher "Maurinsoft"
 #define MyAppURL "http://maurinsoft.com.br"
 #define MyAppExeName "MNote2.exe"
@@ -24,7 +24,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\MEDIT2
 DisableProgramGroupPage=yes
 OutputDir=D:\projetos\maurinsoft\MNote2\bin
-OutputBaseFilename=win_MNote2_40
+OutputBaseFilename=win_MNote2_42
 SetupIconFile=D:\projetos\maurinsoft\MNote2\src\MNote2.ico
 Compression=lzma
 SolidCompression=yes
@@ -42,16 +42,18 @@ Source: "D:\projetos\maurinsoft\MNote2\src\*.dci"; DestDir: "{app}"; Flags: igno
 Source: "D:\projetos\maurinsoft\MNote2\src\*.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\src\*.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\src\*.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\srvfalar.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\sample\gcc\hello.c"; DestDir: "{app}\sample\gcc\"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\sample\python\hello\hello.py"; DestDir: "{app}\sample\python\hello\"; Flags: ignoreversion
-Source: "D:\projetos\maurinsoft\MNote2\tools\windows\mingw-get-setup.exe"; DestDir: "{app}\tools\"; Flags: ignoreversion
+;Source: "D:\projetos\maurinsoft\MNote2\tools\windows\mingw-get-setup.exe"; DestDir: "{app}\tools\"; Flags: ignoreversion
+Source: "D:\projetos\maurinsoft\MNote2\tools\windows\srvFalar_1.4.exe"; DestDir: "{app}\tools\"; Flags: ignoreversion
+;Source: "D:\projetos\maurinsoft\MNote2\tools\windows\psqlodbc_x86.msi"; DestDir: "{app}\tools\"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\libs\sqlite\win32\*.*"; DestDir: "{app}\libs\sqlite\win32\"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\libs\sqlite\win64\*.*"; DestDir: "{app}\libs\sqlite\win64\"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\libs\postgres\win32\*.*"; DestDir: "{app}\libs\postgres\win32\"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\libs\postgres\win64\*.*"; DestDir: "{app}\libs\postgres\win64\"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\libs\mysql\win32\*.*"; DestDir: "{app}\libs\mysql\win32\"; Flags: ignoreversion
 Source: "D:\projetos\maurinsoft\MNote2\libs\mysql\win64\*.*"; DestDir: "{app}\libs\mysql\win64\"; Flags: ignoreversion
+;Source: "D:\projetos\maurinsoft\MNote2\libs\ssl\win32\*.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "D:\projetos\maurinsoft\MNote2\src\libs\win64\libmysql64.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
@@ -61,7 +63,8 @@ Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\tools\mingw-get-setup.exe"; Description: "{cm:LaunchProgram,{#StringChange("C Compiler", '&', '&&')}}"; Flags: nowait postinstall skipifsilent  runascurrentuser 
+Filename: "{app}\tools\srvFalar_1.4.exe"; Description: "{cm:LaunchProgram,{#StringChange("C Compiler", '&', '&&')}}"; Flags: nowait postinstall skipifsilent  runascurrentuser 
+;Filename: "{app}\tools\mingw-get-setup.exe"; Description: "{cm:LaunchProgram,{#StringChange("C Compiler", '&', '&&')}}"; Flags: nowait postinstall skipifsilent  runascurrentuser 
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent  runascurrentuser 
 
 

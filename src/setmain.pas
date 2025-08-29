@@ -11,7 +11,7 @@ interface
 uses
   Classes, SysUtils, funcoes, graphics;
 
-const filename = 'Setmain.cfg';
+const filename = 'mnote.cfg';
 
 
 type
@@ -55,7 +55,9 @@ type
         FPasswordPost : String;
         FSchemaPost: String;
         FToolsFalar : Boolean;
+        FToolsOuvir : Boolean;
         fIPFALAR : String;
+        fIPOUVIR : String;
 
 
         //filename : String;
@@ -107,7 +109,9 @@ type
         property PasswordPost : String read FPasswordPost write FPasswordPost;
         property SchemaPost: String read FSchemaPost write FSchemaPost;
         property ToolsFalar : Boolean read FToolsFalar write SetToolsFalar;
+        property ToolsOuvir : Boolean read FToolsOuvir write FToolsOuvir;
         property IPFALAR : string read fIPFALAR write fIPFALAR;
+        property IPOUVIR : string read fIPOUVIR write fIPOUVIR;
   end;
 
   var
@@ -147,13 +151,17 @@ begin
     FCompile :='';      //Script de Compilacao
 
     fIPFALAR := '127.0.0.1';
+    fIPOUVIR := '127.0.0.1';
     if FFont = nil then
     begin
          FFONT := TFont.create();
-
     end;
+    FFONT.Name := 'Courier New';
+    FFont.Size := 12;          // Define o tamanho
+
     FCHATGPT:=''; //CHATGPT TOKEN
     FToolsFalar := false;
+    FToolsOuvir := false;
 
 end;
 
@@ -331,9 +339,18 @@ begin
     begin
       FTOOLSFALAR := iif(RetiraInfo(arquivo.Strings[posicao])='0',false,true);
     end;
+    if  BuscaChave(arquivo,'TOOLSOUVIR:',posicao) then
+    begin
+      FTOOLSOUVIR := iif(RetiraInfo(arquivo.Strings[posicao])='0',false,true);
+    end;
+
     if  BuscaChave(arquivo,'IPFALAR:',posicao) then
     begin
       fIPFALAR := RetiraInfo(arquivo.Strings[posicao]);   ;
+    end;
+    if  BuscaChave(arquivo,'IPOUVIR:',posicao) then
+    begin
+      fIPOUVIR := RetiraInfo(arquivo.Strings[posicao]);   ;
     end;
 
 end;
@@ -341,43 +358,28 @@ end;
 
 procedure TSetMain.IdentificaArquivo(flag: boolean);
 begin
-  //filename := 'Work'+ FormatDateTime('ddmmyy',now())+'.cfg';
-  {$ifdef Darwin}
-    //Nao testado ainda
-    Fpath :=GetAppConfigDir(false);
-    if not(FileExists(FPATH)) then
-    begin
-      createdir(fpath);
-    end;
+  {$IFDEF DARWIN}
+  FPath := IncludeTrailingPathDelimiter(GetAppConfigDir(False));
   {$ENDIF}
   {$IFDEF LINUX}
-      //Fpath :='/home/';
-      //Fpath := GetUserDir()
-      Fpath :=GetAppConfigDir(false);
-      if not(FileExists(FPATH)) then
-      begin
-         createdir(fpath);
-      end;
+  FPath := IncludeTrailingPathDelimiter(GetAppConfigDir(False));
   {$ENDIF}
   {$IFDEF WINDOWS}
-      Fpath :=GetAppConfigDir(false);
-      if not(FileExists(FPATH)) then
-      begin
-         createdir(fpath);
-      end;
+  FPath := IncludeTrailingPathDelimiter(GetAppConfigDir(False));
   {$ENDIF}
-  if (FileExists(fpath+filename)) then
+
+  if not DirectoryExists(FPath) then
+    CreateDir(FPath);
+
+  if FileExists(FPath + filename) then
   begin
-    arquivo.LoadFromFile(fpath+filename);
+    arquivo.LoadFromFile(FPath + filename);
     CarregaContexto();
   end
   else
-  begin
-    default();
-    //SalvaContexto(false);
-  end;
-
+    Default();
 end;
+
 
 //Metodo construtor
 constructor TSetMain.create();
@@ -390,10 +392,11 @@ end;
 
 procedure TSetMain.SalvaContexto(flag: boolean);
 begin
-  if (flag) then
-  begin
-    IdentificaArquivo(false);
-  end;
+  if flag then
+    IdentificaArquivo(False);
+
+  if not DirectoryExists(FPath) then
+    CreateDir(FPath);
   //filename := 'Work'+ FormatDateTime('ddmmyy',now())+'.cfg';
   arquivo.Clear;
   arquivo.Append('DEVICE:'+iif(ckdevice,'1','0'));
@@ -421,6 +424,7 @@ begin
   arquivo.Append('PASSWORDMY:'+FPasswordMy);
 
   arquivo.Append('IPFALAR:'+fIPFALAR);
+  arquivo.Append('IPOUVIR:'+fIPOUVIR);
 
 
   arquivo.Append('HOSTNAMEPOST:'+FHostnamePOST);
@@ -429,6 +433,7 @@ begin
   arquivo.Append('PASSWORDPOST:'+FPasswordPOST);
   arquivo.Append('SCHEMAPOST:'+FSchemaPost);
   arquivo.Append('TOOLSFALAR:'+iif(FToolsFalar,'1','0'));
+  arquivo.Append('TOOLSOUVIR:'+iif(FToolsOuvir,'1','0'));
   arquivo.SaveToFile(fpath+filename);
 end;
 

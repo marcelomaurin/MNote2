@@ -14,7 +14,7 @@ uses
   newproject;
 
 
-const versao = '2.41';
+const versao = '2.42';
 
 type
 
@@ -1024,6 +1024,15 @@ begin
     end;
     frmToolsfalar.Conectar();
   end;
+  if(Fsetmain.ToolsOuvir) then
+  begin
+    if(frmToolsOuvir= nil) then
+    begin
+       frmToolsOuvir := TfrmToolsOuvir.create(self);
+    end;
+    frmToolsOuvir.Conectar();
+  end;
+
 end;
 
 procedure TfrmMNote.lstFindChangeBounds(Sender: TObject);

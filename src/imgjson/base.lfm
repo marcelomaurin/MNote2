@@ -1,25 +1,29 @@
 object dmBase: TdmBase
   OldCreateOrder = False
   Height = 260
-  HorizontalOffset = 0
-  VerticalOffset = 533
+  HorizontalOffset = -1416
+  VerticalOffset = 407
   Width = 333
   object DataSource1: TDataSource
     Left = 128
     Top = 41
   end
   object zcon: TZConnection
-    ControlsCodePage = cCP_UTF8
+    ControlsCodePage = cDynamic
     Properties.Strings = (
       'AutoEncodeStrings=ON'
       'controls_cp=CP_UTF8'
+      'RawStringEncoding=DB_CP'
     )
     DesignConnection = True
     DisableSavepoints = False
-    Port = 0
-    Database = 'localdb'
-    User = 'root'
-    Protocol = 'mysqld-5'
+    HostName = '192.168.7.200'
+    Port = 5432
+    Database = 'smsdb'
+    User = 'aplicacao'
+    Password = 'Secretaria@Saude'
+    Protocol = 'postgresql'
+    LibraryLocation = 'D:\projetos\maurinsoft\MNote2\libs\postgres\win64\libpq.dll'
     Left = 28
     Top = 30
   end
@@ -42,7 +46,7 @@ object dmBase: TdmBase
     Top = 173
   end
   object zconlocal: TZConnection
-    ControlsCodePage = cCP_UTF8
+    ControlsCodePage = cDynamic
     Properties.Strings = (
       'RawStringEncoding=DB_CP'
     )
@@ -54,7 +58,7 @@ object dmBase: TdmBase
     Left = 55
     Top = 185
   end
-  object ZQuery1: TZQuery
+  object qryauxlocal: TZQuery
     Connection = zconlocal
     Params = <>
     Left = 136

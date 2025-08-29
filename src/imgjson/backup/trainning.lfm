@@ -1,40 +1,39 @@
 object frmTrainning: TfrmTrainning
-  Left = 409
-  Height = 419
+  Left = 4249
+  Height = 335
   Top = 157
-  Width = 677
+  Width = 542
   Caption = 'NN Trainning'
-  ClientHeight = 419
-  ClientWidth = 677
-  DesignTimePPI = 120
-  LCLVersion = '2.2.6.0'
+  ClientHeight = 335
+  ClientWidth = 542
+  LCLVersion = '4.0.0.4'
   object Panel1: TPanel
     Left = 0
-    Height = 63
-    Top = 356
-    Width = 677
+    Height = 50
+    Top = 285
+    Width = 542
     Align = alBottom
     TabOrder = 0
   end
   object PageControl1: TPageControl
     Left = 0
-    Height = 356
+    Height = 285
     Top = 0
-    Width = 677
-    ActivePage = tsDados
+    Width = 542
+    ActivePage = TabSheet1
     Align = alClient
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 1
     object TabSheet1: TTabSheet
       Caption = 'Type Trainning'
-      ClientHeight = 323
-      ClientWidth = 669
+      ClientHeight = 257
+      ClientWidth = 534
       object ComboBox1: TComboBox
-        Left = 336
-        Height = 28
-        Top = 144
-        Width = 189
-        ItemHeight = 20
+        Left = 269
+        Height = 23
+        Top = 115
+        Width = 151
+        ItemHeight = 15
         ItemIndex = 0
         Items.Strings = (
           'None'
@@ -45,18 +44,18 @@ object frmTrainning: TfrmTrainning
         Text = 'None'
       end
       object Label1: TLabel
-        Left = 336
-        Height = 20
-        Top = 120
-        Width = 99
+        Left = 269
+        Height = 15
+        Top = 96
+        Width = 79
         Caption = 'Type Trainning:'
         ParentColor = False
       end
       object Image1: TImage
-        Left = 17
-        Height = 238
-        Top = 50
-        Width = 303
+        Left = 14
+        Height = 190
+        Top = 40
+        Width = 242
         Picture.Data = {
           07544269746D617036004000424D360040000000000036000000280000000004
           0000000400000100200000000000000040006400000064000000000000000000
@@ -131138,7 +131137,7 @@ object frmTrainning: TfrmTrainning
       end
     end
     object tsDados: TTabSheet
-      Caption = 'tsDados'
+      Caption = 'Dates'
     end
   end
 end

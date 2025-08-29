@@ -1,15 +1,15 @@
 object frmMNote: TfrmMNote
-  Left = -1647
+  Left = -1709
   Height = 592
-  Top = 140
+  Top = 189
   Width = 1172
-  BorderStyle = bsDialog
   Caption = 'MNote2 - Maurin Notepad'
   ClientHeight = 592
   ClientWidth = 1172
   Menu = MainMenu1
   Position = poMainFormCenter
   LCLVersion = '4.0.0.4'
+  Visible = True
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
@@ -123,6 +123,7 @@ object frmMNote: TfrmMNote
       ClientHeight = 430
       ClientWidth = 379
       TabOrder = 4
+      Visible = False
       object pnChatGPT2: TPanel
         Left = 1
         Height = 428
@@ -185,9 +186,9 @@ object frmMNote: TfrmMNote
           Height = 311
           Top = 27
           Width = 375
-          ActivePage = tsHistory
+          ActivePage = tsDialog
           Align = alClient
-          TabIndex = 2
+          TabIndex = 0
           TabOrder = 4
           object tsDialog: TTabSheet
             Caption = 'Dialog'
@@ -636,6 +637,7 @@ object frmMNote: TfrmMNote
               MouseTextActions = <>
               MouseSelActions = <>
               VisibleSpecialChars = [vscSpace, vscTabAtLast]
+              ScrollBars = ssAutoBoth
               SelectedColor.BackPriority = 50
               SelectedColor.ForePriority = 50
               SelectedColor.FramePriority = 50

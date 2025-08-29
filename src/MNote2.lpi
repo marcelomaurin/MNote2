@@ -25,7 +25,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="2"/>
       <MinorVersionNr Value="26"/>
-      <BuildNr Value="1"/>
+      <BuildNr Value="2"/>
       <Language Value="0416"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -47,67 +47,70 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="20">
+    <RequiredPackages Count="21">
       <Item1>
-        <PackageName Value="IPEdit_pkg"/>
+        <PackageName Value="indylaz"/>
       </Item1>
       <Item2>
-        <PackageName Value="zcomponentdesign"/>
+        <PackageName Value="IPEdit_pkg"/>
       </Item2>
       <Item3>
-        <PackageName Value="LazUtils"/>
+        <PackageName Value="zcomponentdesign"/>
       </Item3>
       <Item4>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="LazUtils"/>
       </Item4>
       <Item5>
-        <PackageName Value="synuni"/>
+        <PackageName Value="lnetbase"/>
       </Item5>
       <Item6>
-        <PackageName Value="synfacilsyn"/>
+        <PackageName Value="synuni"/>
       </Item6>
       <Item7>
-        <PackageName Value="SynEditDsgn"/>
+        <PackageName Value="synfacilsyn"/>
       </Item7>
       <Item8>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="SynEditDsgn"/>
       </Item8>
       <Item9>
-        <PackageName Value="myexamplepackage"/>
+        <PackageName Value="SynEdit"/>
       </Item9>
       <Item10>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="myexamplepackage"/>
       </Item10>
       <Item11>
-        <PackageName Value="FCL"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item11>
       <Item12>
-        <PackageName Value="poweredby"/>
+        <PackageName Value="FCL"/>
       </Item12>
       <Item13>
-        <PackageName Value="industrial"/>
+        <PackageName Value="poweredby"/>
       </Item13>
       <Item14>
-        <PackageName Value="pkg_gifanim"/>
+        <PackageName Value="industrial"/>
       </Item14>
       <Item15>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="pkg_gifanim"/>
       </Item15>
       <Item16>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="zcomponent"/>
       </Item16>
       <Item17>
-        <PackageName Value="rxnew"/>
+        <PackageName Value="multiloglaz"/>
       </Item17>
       <Item18>
-        <PackageName Value="python4lazarus_package"/>
+        <PackageName Value="rxnew"/>
       </Item18>
       <Item19>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="python4lazarus_package"/>
       </Item19>
       <Item20>
-        <PackageName Value="LCL"/>
+        <PackageName Value="lnetvisual"/>
       </Item20>
+      <Item21>
+        <PackageName Value="LCL"/>
+      </Item21>
     </RequiredPackages>
     <Units Count="50">
       <Unit0>
@@ -357,6 +360,7 @@
         <Filename Value="imgjson/trainning.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmTrainning"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit44>
       <Unit45>

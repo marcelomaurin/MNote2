@@ -149,6 +149,8 @@ begin
     ClienteHTTP.AddHeader('Authorization', 'Bearer ' + token);
     ClienteHTTP.AllowRedirect   := True;
     ClienteHTTP.KeepConnection  := True;
+    ClienteHTTP.IOTimeout      := 30000; // 30s
+    ClienteHTTP.ConnectTimeout := 15000; // 15s
     ClienteHTTP.RequestBody     := BodyStream;
 
     try
@@ -189,32 +191,31 @@ end;
 *)
 
 function TCHATGPT.SendQuestion(ASK: String): boolean;
-
 var
-  LURL     : String;
-  JSONBody : String;
-  AUX      : String;
-  Modelo   : String;
+  LURL, AUX: String;
 begin
   Result := False;
-
   LURL := 'https://api.openai.com/v1/chat/completions';
- // Modelo := Trim(TipoModelo);
- // if Modelo = '' then
- //   Modelo := 'gpt-4.1-mini';
+  AUX := RequestJson(LURL, FSetMain. Token, JsonEscape(ASK));
 
-
-
-  // Agora só com 3 parâmetros: URL, Token e JSONBody
-  AUX := RequestJson(LURL, FToken, JsonEscape(ASK));
+  // Se a resposta já vier com {"error":...}, devolve e sai
+  if Pos('"error"', AUX) > 0 then
+  begin
+    FResponse := AUX;
+    Exit(False);
+  end;
 
   try
     FResponse := PegaMensagem(AUX);
-    Result := True;
+    Result := (Trim(FResponse) <> '');
+    if not Result then
+      FResponse := AUX; // devolve cru se parsing não achou "choices"
   except
-    FResponse := AUX; // devolve cru se o parser falhar
+    FResponse := AUX;
+    Result := False;
   end;
 end;
+
 
 
 
@@ -225,7 +226,7 @@ begin
   inherited Create(AOwner);
   //FTipoChat:= VCT_GPT35TURBO;
   FTipoChat:= VCT_GPT41_MINI;
-  FDEV := 'Voce é um assistente.'
+  FDEV := 'Voce é um assistente.';
   //HTTPSend.Sock.SSL.SSLType := LT_TLSv1;
   //Self.IsUTF8 := False;
   FParams := TStringList.Create;
@@ -238,27 +239,21 @@ begin
 end;
 
 function TCHATGPT.TipoModelo: string;
-var
-  tipo : string;
 begin
-   case FTipoChat of
-       VCT_GPT35TURBO:
-          tipo := '"gpt-3.5-turbo"';
-       VCT_GPT40:
-          tipo := '"gpt-4"';
-       VCT_GPT40_TURBO:
-          tipo := '"gpt-4-turbo-preview"';
-       VCT_GPT4o:
-          tipo := '"gpt-4o"';
-       VCT_GPTo3_mini:
-          tipo := '"gpt-o3-mini"';
-       VCT_GPT41:
-          tipo := '"gpt-4.1"';
-       VCT_GPT5:
-          tipo := '"gpt-5"';
+  case FTipoChat of
+    VCT_GPT35TURBO:   Result := '"gpt-3.5-turbo"';
+    VCT_GPT40:        Result := '"gpt-4"';
+    VCT_GPT40_TURBO:  Result := '"gpt-4-turbo-preview"';
+    VCT_GPT4o:        Result := '"gpt-4o"';
+    VCT_GPTo3_mini:   Result := '"gpt-o3-mini"';
+    VCT_GPT41:        Result := '"gpt-4.1"';
+    VCT_GPT41_MINI:   Result := '"gpt-4.1-mini"';
+    VCT_GPT5:         Result := '"gpt-5"';
+  else
+    Result := '"gpt-4.1-mini"';
   end;
-  result := tipo;
 end;
+
 
 end.
 

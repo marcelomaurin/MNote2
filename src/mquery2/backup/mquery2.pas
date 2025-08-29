@@ -14,7 +14,7 @@ uses
   PairSplitter, DBCtrls, DBGrids, finds, ZClasses, ZCollections, ZCompatibility,
   ZTokenizer, ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging, ZVariant,
   ZPlainDriver, TypeDB, triggers, item, funcoes, chart, chatgpt, codigo,
-  setmain, ZDbcIntfs, math, hint; //ZURL
+  setmain, ZDbcIntfs, math, hint, Variants, LConvEncoding; //ZURL
 
 const
   sqltabela = 'Você poderia me fornecer a consulta SQL que deseja analisar? Assim que eu receber o SQL, irei extrair os nomes das tabelas envolvidas e gerar um código em JSON com esses nomes. A resposta será apresentada dentro de uma caixa de texto apropriada para cópia, Desta forma refaça a pergunta mesmo nao havendo certeza da resposta,claramente formatada como um código JSON:';
@@ -31,8 +31,9 @@ type
     btAnalise1: TButton;
     btBanco: TButton;
     btBanco1: TButton;
+    btChart: TButton;
+    btChartPost: TButton;
     btImportCSV: TButton;
-    btChart1: TButton;
     btcomparar: TButton;
     btcomparar1: TButton;
     btConectarMy: TButton;
@@ -44,26 +45,26 @@ type
     btExecutar: TButton;
     btExecute: TButton;
     btJSON: TButton;
-    btChart: TButton;
     btAnalise: TButton;
     btPermissao1: TToggleBox;
+    btIAPost: TButton;
     Button3: TButton;
-    Button4: TButton;
-    ckGPT: TCheckBox;
     cbMake: TComboBox;
+    ckGPT: TCheckBox;
     CSVDataset1: TCSVDataset;
-    dbgridmy1: TDBGrid;
-    dbnavmy1: TDBNavigator;
-    dsmy: TDataSource;
     dbgridmy: TDBGrid;
+    dbgridpost: TDBGrid;
     dbnavmy: TDBNavigator;
+    dbnavpost: TDBNavigator;
+    dsmy: TDataSource;
+    dspos: TDataSource;
     edBanco: TEdit;
     edBancoPost: TEdit;
     edErro: TMemo;
     edErro1: TMemo;
     edHostName: TEdit;
     edHostNamePost: TEdit;
-    edLog1: TMemo;
+    edLogPost: TMemo;
     edPesqMy: TEdit;
     edSchemaPost: TEdit;
     edLog: TMemo;
@@ -71,7 +72,7 @@ type
     edPasswrdPost: TEdit;
     edPesqPost: TEdit;
     edSQL: TSynEdit;
-    edSQL1: TSynEdit;
+    edSQLPost: TSynEdit;
     edusuario: TEdit;
     edusuarioPost: TEdit;
     FindDialog1: TFindDialog;
@@ -82,7 +83,6 @@ type
     Label11: TLabel;
     Label12: TLabel;
     Label13: TLabel;
-    Label14: TLabel;
     Label15: TLabel;
     Label16: TLabel;
     Label17: TLabel;
@@ -107,16 +107,28 @@ type
     lstfind: TListBox;
     lstfind1: TListBox;
     MainMenu1: TMainMenu;
+    meIA: TMemo;
     MenuItem1: TMenuItem;
+    dropPost: TMenuItem;
+    Separator2: TMenuItem;
+    miIA: TMenuItem;
+    miCNewEdit1: TMenuItem;
+    miDependencias: TMenuItem;
+    miEmbelezar1: TMenuItem;
+    miFont1: TMenuItem;
+    miOcultar: TMenuItem;
+    miRelacionamentos: TMenuItem;
+    miGrupoTabelas: TMenuItem;
+    mnCriaDicionario: TMenuItem;
+    mnDicionario: TMenuItem;
+    miDescricaoPost: TMenuItem;
     miEmbelezar: TMenuItem;
     miChart: TMenuItem;
     miCNewEdit: TMenuItem;
     MenuItem11: TMenuItem;
-    MenuItem12: TMenuItem;
     midrop: TMenuItem;
     miselect: TMenuItem;
     miCreate: TMenuItem;
-    miOcultarPost: TMenuItem;
     miCFunction: TMenuItem;
     miCTrigger: TMenuItem;
     mnLTrigger: TMenuItem;
@@ -142,7 +154,16 @@ type
     OpenDialog1: TOpenDialog;
     Panel10: TPanel;
     Panel11: TPanel;
-    Panel15: TPanel;
+    pnIAbotton: TPanel;
+    pnSQL: TPanel;
+    pnIA: TPanel;
+    pmDatabaseMy: TPopupMenu;
+    pmTabelasPost: TPopupMenu;
+    pnsqlpost: TPanel;
+    Panel2: TPanel;
+    Panel3: TPanel;
+    Panel5: TPanel;
+    Panel6: TPanel;
     pgMain: TPageControl;
     pgMysql: TPageControl;
     Panel13: TPanel;
@@ -153,7 +174,7 @@ type
     Panel8: TPanel;
     Panel9: TPanel;
     pgbar: TProgressBar;
-    pmTabelaMy: TPopupMenu;
+    pmTabelasMy: TPopupMenu;
     pnBotton: TPanel;
     pnBotton1: TPanel;
     pnErro: TPanel;
@@ -161,11 +182,13 @@ type
     pnlProgresso: TPanel;
     popSeq: TPopupMenu;
     popMenu: TPopupMenu;
-    popSQL: TPopupMenu;
+    popSQLMy: TPopupMenu;
     popfind: TPopupMenu;
     popmenuTrigger: TPopupMenu;
-    pmTabelasMy: TPopupMenu;
     pmTabelaPost: TPopupMenu;
+    pmDatabasePost: TPopupMenu;
+    pmTabelaMy: TPopupMenu;
+    popSQLPost: TPopupMenu;
     PopupMenuTblPost: TPopupMenu;
     SaveDialog1: TSaveDialog;
     Separator1: TMenuItem;
@@ -173,15 +196,15 @@ type
     SpeedButton2: TSpeedButton;
     SpeedButton3: TSpeedButton;
     Splitter1: TSplitter;
-    Splitter2: TSplitter;
     Splitter3: TSplitter;
     Splitter4: TSplitter;
     Splitter5: TSplitter;
+    Splitter6: TSplitter;
     SynCompletion1: TSynCompletion;
     SynPluginSyncroEdit1: TSynPluginSyncroEdit;
     SynSQLSyn2: TSynSQLSyn;
     TabSheet1: TTabSheet;
-    TabSheet2: TTabSheet;
+    tsGridPostgres: TTabSheet;
     TabSheet3: TTabSheet;
     TabSheet4: TTabSheet;
     ToggleBox3: TToggleBox;
@@ -214,8 +237,11 @@ type
     procedure btBancoClick(Sender: TObject);
     procedure btbenchmarkClick(Sender: TObject);
     procedure btChartClick(Sender: TObject);
+    procedure btChartPostClick(Sender: TObject);
     procedure btcompararClick(Sender: TObject);
+    procedure btExecutar1Click(Sender: TObject);
     procedure btExecutarClick(Sender: TObject);
+    procedure btIAPostClick(Sender: TObject);
     procedure btImportCSVClick(Sender: TObject);
     procedure btJSONClick(Sender: TObject);
     procedure btPermissaoChange(Sender: TObject);
@@ -246,6 +272,7 @@ type
     procedure FindDialog1Find(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure lstfindClick(Sender: TObject);
+    procedure dropPostClick(Sender: TObject);
     procedure MenuItem12Click(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem5Click(Sender: TObject);
@@ -256,17 +283,22 @@ type
     procedure miCNewEditClick(Sender: TObject);
     procedure miCreateClick(Sender: TObject);
     procedure miCTriggerClick(Sender: TObject);
+    procedure miDescricaoPostClick(Sender: TObject);
     procedure midropClick(Sender: TObject);
     procedure miEmbelezarClick(Sender: TObject);
     procedure miEsconderClick(Sender: TObject);
     procedure miFontClick(Sender: TObject);
+    procedure miIAClick(Sender: TObject);
     procedure miMostrarClick(Sender: TObject);
     procedure miBenchmarkClick(Sender: TObject);
     procedure MenuItem9Click(Sender: TObject);
     procedure miNovaPesquisaClick(Sender: TObject);
+    procedure miOcultarClick(Sender: TObject);
     procedure miOcultarPostClick(Sender: TObject);
+    procedure miRelacionamentosClick(Sender: TObject);
     procedure miselectClick(Sender: TObject);
     procedure mnCriarSeqClick(Sender: TObject);
+    procedure mnDicionarioClick(Sender: TObject);
     procedure mnFonteClick(Sender: TObject);
     procedure mnLTriggerClick(Sender: TObject);
     procedure mnRefreshClick(Sender: TObject);
@@ -280,7 +312,7 @@ type
     procedure ToggleBox2Change(Sender: TObject);
     procedure tvMysqlChange(Sender: TObject; Node: TTreeNode);
     procedure tvMysqlClick(Sender: TObject);
-    function GeraSQL(Tabela : TTabela): string;
+    function GeraSQLMy(Tabela : TTabela): string;
     function TipoConv(Tabela : TTabela; Posicao: integer): String;
     procedure tvPostChange(Sender: TObject; Node: TTreeNode);
     procedure tvPostClick(Sender: TObject);
@@ -295,6 +327,10 @@ type
     posicaofieldspost : TTreeNode;
     tvitemPost : TTreeNode;
     tvitemMy : TTreeNode;
+    tvDatabasePost : TTreeNode;
+    tvDatabaseMy : TTreeNode;
+    tvTablePost : TTreeNode;
+    tvTableMy : TTreeNode;
     posicaoViewmy : TTreeNode;
     posicaoProceduremy : TTreeNode;
     posicaoFunctionmy : TTreeNode;
@@ -318,23 +354,33 @@ type
     function FormataSQL(Info : string): string;
     function TrocarPalavra(Info : String; de: String; para : String): String;
     procedure setSelLength(var textComponent:TSynEdit; newValue:integer);
-    procedure Analise(SQL : String);
+    procedure Analisemy(SQL : String);
+    procedure Analisepost(SQL : String);
   public
+    procedure ChartView; overload;
+    procedure ChartView(AType: TChartCommType); overload;
+
     procedure RefreshPost();
-    procedure ChartView();
+    procedure RefreshMy();
     procedure Pesquisar(sender: TObject);
     procedure ProcessaErro(message : string);
     function RectIsEmpty(const aRect:TRect):Boolean;
     function ToRect(const aTopLeft, aBottomRight:TPoint):TRect; overload;
     function ToRect(const aTop, aLeft, aBottom, aRight : LongInt):TRect; overload;
     Function RectInRect(const aOuterRect, aInnerRect:TRect):Boolean;
-    procedure QuestionSQLChat();
+    procedure QuestionSQLChatMy();
+    procedure QuestionSQLChatPost();
     procedure QuestionSQLEmbeleza();
     procedure CriaTabela(NomeTabela: string; CSVDataSet: TCSVDataSet; ZQuery: TZQuery);
     // Função que migra os campos do CSVDataSet para a tabela criada
     procedure MigraCampos(NomeTabela: string; CSVDataSet: TCSVDataSet; ZQuery: TZQuery);
     function ConectPost: Boolean;
     function ConectMy: Boolean;
+    function DescreveTabelaIAPost(tabela : string): string;
+    function DescreveTabelaIAMy(const tabela: string): string;
+    function CriaDicionarioPost(const ATargetFile: string): string;
+    function CriaListaDependenciasPost(const outFile: string): string;
+    function QuestionarSQLPost(const pergunta, deps, ddl: string): string;
   end;
 
 var
@@ -349,7 +395,33 @@ uses benchmark, main;
 { TForm1 }
 
 
-procedure Tfrmmquery2.QuestionSQLChat();
+procedure Tfrmmquery2.ChartView;
+var
+  t: TChartCommType;
+begin
+  // comportamento padrão: detectar o ativo
+  if Assigned(zpostqry1) and zpostqry1.Active then
+    t := ccPostgres
+  else if Assigned(zmyqry2) and zmyqry2.Active then
+    t := ccMySQL
+  else
+  begin
+    ShowMessage('Nenhum resultado ativo para plotar.');
+    Exit;
+  end;
+  ChartView(t);
+end;
+
+procedure Tfrmmquery2.ChartView(AType: TChartCommType);
+begin
+  if (frmChart = nil) then
+    frmChart := TfrmChart.Create(self);
+
+  frmChart.CommType := AType;  // <<— aqui o chart define o dataset internamente
+  frmChart.Show;
+end;
+
+procedure Tfrmmquery2.QuestionSQLChatMy();
 var
   resposta : string;
   codigo : TCodigo;
@@ -387,6 +459,46 @@ begin
 
     end;
 end;
+
+procedure Tfrmmquery2.QuestionSQLChatPost();
+var
+  resposta : string;
+  codigo : TCodigo;
+  item : TFonte;
+  i : integer;
+  tabelaList: TStringList;
+begin
+    tabelaList := TStringList.create();
+    frmMNote.NewContext();
+    frmMNote.edChat.text := sqltabela + edSQLPost.text+' faça em uma caixa de texto';
+    frmMNote.FazPergunta();
+    if (frmMNote.meCodes.text<>'') then
+    begin
+      resposta := frmMNote.meCodes.text;
+
+     //Captura o fonte
+     // Captura os blocos de código
+     codigo := TCodigo.create();
+     codigo.AnalisaTexto(resposta);
+
+
+     try
+        // Itera por cada bloco de código capturado
+        for i := 0 to codigo.Count-1 do
+        begin
+          item := TFonte(codigo.Items[i]);
+          // Chama a função CapturaTabela
+          tabelaList := CapturaJSONTabela(item.codigo);
+
+          lbTables.Items.AddStrings(tabelaList);
+        end;
+     finally
+        tabelaList.Free;
+     end;
+
+    end;
+end;
+
 
 procedure Tfrmmquery2.QuestionSQLEmbeleza;
 var
@@ -566,7 +678,8 @@ begin
     ShowMessage('Postgres não conectado!');
 end;
 
-function Tfrmmquery2.TrocarPalavra(Info, de, para: String): String;
+function Tfrmmquery2.TrocarPalavra(Info: String; de: String; para: String
+  ): String;
 begin
   Result := StringReplace(Info, de, para, [rfReplaceAll, rfIgnoreCase]);
 end;
@@ -604,6 +717,8 @@ begin
 
   Result := Info;
 end;
+
+
 
 procedure Tfrmmquery2.MontaCreateTrigger(Tabela : TTabela; posicao : integer);
 begin
@@ -649,8 +764,8 @@ begin
        //edSQL.Text:= Node.Text;
        if Node.data <> nil then
        begin
-           //edsql.Text:= GeraSQL(TTabela(Node.Data))
-           tvMysql.PopupMenu := pmTabelaMy;
+           //edsql.Text:= GeraSQLMy(TTabela(Node.Data))
+           tvMysql.PopupMenu := pmTabelasMy;
        end
        else
          edsql.Text:= 'no data';
@@ -704,7 +819,7 @@ begin
 
 end;
 
-function Tfrmmquery2.GeraSQL(Tabela: TTabela): string;
+function Tfrmmquery2.GeraSQLMy(Tabela: TTabela): string;
 var
   Comando: string;
   a: Integer;
@@ -835,33 +950,57 @@ var
   tv : TTreenode;
 begin
    tv := posicaofieldspost.FindNode(nome);
+
    if (tv <> nil) then
    begin
       tvPost.Select(tv);
-   end
-   else
-   begin
-     showmessage('Nao encontrado');
    end;
+
 end;
 
 
 procedure Tfrmmquery2.tvPostChange(Sender: TObject; Node: TTreeNode);
 begin
-  if Node <> nil then
+  if(node = tvDatabasePost) then
   begin
-    procuraTVMysql(Node.Text);
-    tvPost.PopupMenu := PopupMenuTblPost;
+      tvPost.PopupMenu := pmDatabasePost;
   end
   else
   begin
-    tvPost.PopupMenu := nil;
-  end;
+    if(node = tvTablePost) then
+    begin
+        //procuraTVMysql(Node.Text);
+        ProcuraTVPost(Node.Text);
+        //tvPost.PopupMenu := PopupMenuTblPost;
+        tvPost.PopupMenu :=  pmTabelasPost;
+    end
+    else
+    begin
+        if (node <> nil) then
+        begin
+           //Tabela
+           if(node.ImageIndex= 14) then
+           begin
+             tvPost.PopupMenu :=  pmTabelaPost;
+           end
+           else
+           begin
+             tvPost.PopupMenu := nil;
+           end;
+        end
+        else
+        begin
+             tvPost.PopupMenu := nil;
+        end;
+    end;
 
+  end;
+  (*
   if (Node = posicaofieldspost) then
   begin
     tvPost.PopupMenu :=  pmTabelaPost;
   end;
+  *)
 
 end;
 
@@ -927,11 +1066,17 @@ begin
 textComponent.SelEnd:=textComponent.SelStart+newValue ;
 end;
 
-procedure Tfrmmquery2.Analise(SQL: String);
+procedure Tfrmmquery2.Analisemy(SQL: String);
 begin
    lbTables.Items.Clear;
-   QuestionSQLChat();
+   QuestionSQLChatMy();
    //lbTables.Items := PegaTabelas(sql);
+end;
+
+procedure Tfrmmquery2.Analisepost(SQL: String);
+begin
+   lbTables.Items.Clear;
+   QuestionSQLChatPost();
 end;
 
 procedure Tfrmmquery2.lstfindClick(Sender: TObject);
@@ -961,6 +1106,35 @@ begin
 
     end;
 
+end;
+
+procedure Tfrmmquery2.dropPostClick(Sender: TObject);
+var
+  item : TTreeNode;
+  tvPai : TTreeNode;
+  tvAvo : TTreeNode;
+  schema, tableName: string;
+begin
+  item  := tvPost.Selected;
+  if item = nil then Exit;
+
+  tvPai := item.Parent;
+  tvAvo := nil;
+  if tvPai <> nil then
+    tvAvo := tvPai.Parent;
+
+  tableName := item.Text;
+
+  // se tiver schema definido, usa
+  if Trim(edSchemaPost.Text) <> '' then
+    schema := edSchemaPost.Text + '.'
+  else
+    schema := '';
+
+  edSQL.Clear;
+  edSQL.Lines.Text := '';
+  edSQL.Lines.Append('DROP TABLE IF EXISTS ' + schema + tableName + ' CASCADE;');
+  pcPostgree.ActivePage := tbSQL;
 end;
 
 procedure Tfrmmquery2.MenuItem12Click(Sender: TObject);
@@ -1083,7 +1257,7 @@ end;
 
 procedure Tfrmmquery2.miCreateClick(Sender: TObject);
 begin
-  edsql.Text:= GeraSQL(TTabela(tvMysql.Selected.Data))
+  edsql.Text:= GeraSQLMy(TTabela(tvMysql.Selected.Data))
 end;
 
 procedure Tfrmmquery2.miCTriggerClick(Sender: TObject);
@@ -1109,6 +1283,16 @@ begin
    edsql.text := ' FOR EACH ROW ';
    edsql.text := 'execute function fnc_'+tabela.triggers.Triggername[posicao]+'();';
 
+end;
+
+procedure Tfrmmquery2.miDescricaoPostClick(Sender: TObject);
+var
+item : ttreenode;
+begin
+  item := tvPost.Selected;
+
+  edSQLPost.Text:= DescreveTabelaIAPost(item.Text);
+  pcPostgree.ActivePage := tsSQLPostgreSQL;
 end;
 
 procedure Tfrmmquery2.midropClick(Sender: TObject);
@@ -1151,6 +1335,11 @@ begin
 
 end;
 
+procedure Tfrmmquery2.miIAClick(Sender: TObject);
+begin
+  pnIA.Visible:=not pnIA.Visible;
+end;
+
 procedure Tfrmmquery2.miMostrarClick(Sender: TObject);
 begin
   Show;
@@ -1176,7 +1365,7 @@ begin
   end;
 end;
 
-procedure Tfrmmquery2.miOcultarPostClick(Sender: TObject);
+procedure Tfrmmquery2.miOcultarClick(Sender: TObject);
 var
    a : integer;
 begin
@@ -1187,6 +1376,29 @@ begin
       tvPost.items[a].Collapse(true);
     end;
   end;
+end;
+
+procedure Tfrmmquery2.miOcultarPostClick(Sender: TObject);
+begin
+
+end;
+
+procedure Tfrmmquery2.miRelacionamentosClick(Sender: TObject);
+var
+  baseDir, fileName: string;
+begin
+  {$IFDEF WINDOWS}
+  // AppData (config do app). Se preferir Roaming, use APPDATA.
+  baseDir := GetAppConfigDir(False);
+  {$ELSE}
+  baseDir := GetUserDir;
+  {$ENDIF}
+
+  ForceDirectories(baseDir);
+  fileName := IncludeTrailingPathDelimiter(baseDir) + 'dependencias_post.sql';
+
+  edSQLPost.Text := CriaListaDependenciasPost(fileName);
+  ShowMessage('Dependências salvas em:' + LineEnding + fileName);
 end;
 
 procedure Tfrmmquery2.miselectClick(Sender: TObject);
@@ -1229,6 +1441,27 @@ begin
 
   pgMain.ActivePage := tbSQL;
   edSql.SetFocus;
+end;
+
+procedure Tfrmmquery2.mnDicionarioClick(Sender: TObject);
+var
+  baseDir, fileName: string;
+begin
+  {$IFDEF WINDOWS}
+  // AppData do usuário (pasta de configuração da aplicação)
+  baseDir := GetAppConfigDir(False);      // ex.: C:\Users\<user>\AppData\Local\<AppName>\
+  {$ELSE}
+  // Linux/macOS: pasta do usuário
+  baseDir := GetUserDir;                  // ex.: /home/<user>/
+  {$ENDIF}
+
+  ForceDirectories(baseDir);
+  fileName := IncludeTrailingPathDelimiter(baseDir) + 'dicionario.sql';
+
+  // injeta o caminho por parâmetro
+  edSQLPost.Text := CriaDicionarioPost(fileName);
+
+  ShowMessage('Dicionário salvo em:' + LineEnding + fileName);
 end;
 
 procedure Tfrmmquery2.mnFonteClick(Sender: TObject);
@@ -1294,8 +1527,8 @@ end;
 
 procedure Tfrmmquery2.SpeedButton2Click(Sender: TObject);
 begin
-  IF (vlistequivalente.RowCount<1) THEN
-     vlistequivalente.RowCount:= vlistequivalente.RowCount-1;
+  if (vlistequivalente.RowCount > 1) then
+    vlistequivalente.RowCount := vlistequivalente.RowCount - 1;
 end;
 
 procedure Tfrmmquery2.SynCompletion1PositionChanged(Sender: TObject);
@@ -1324,7 +1557,6 @@ begin
   // Se você já usa um path centralizado:
   if (FSetMain <> nil) and (FSetMain.DLLMyPath <> '') then
   begin
-    zconpost.LibraryLocation := FSetMain.DLLPostPath;
     zconmysql.LibraryLocation := FSetMain.DLLMyPath;
   end
   else
@@ -1340,6 +1572,8 @@ begin
   zconmysql.HostName := edHostName.Text;
   zconmysql.User     := edusuario.Text;
   zconmysql.Password := edPasswrd.Text;
+
+
   // Se usar porta: zconmysql.Port := StrToIntDef(edPortaMy.Text, 3306);
 
   // Opcional: guardar no FSetMain (segue seu padrão)
@@ -1364,7 +1598,167 @@ begin
   end;
 end;
 
-procedure Tfrmmquery2.btConectarMyClick(Sender: TObject);
+function Tfrmmquery2.DescreveTabelaIAPost(tabela: string): string;
+var
+  createSQL: TStringList;
+  schema, colName, dataType, typeStr, isNullable, colDefault: string;
+  charLen, numPrec, numScale: Integer;
+  hasCharLen, hasNumPrec, hasNumScale: Boolean;
+  pkCols: TStringList;
+  i: Integer;
+begin
+  Result := '';
+
+  if not zconpost.Connected then
+    Exit;
+
+  schema := Trim(edSchemaPost.Text);
+  if schema = '' then
+    schema := 'public';
+
+  // Colunas + metadados (tamanho, precisão, default, nulidade)
+  Zqrypost.Close;
+  Zqrypost.SQL.Text :=
+    'SELECT column_name, data_type, ' +
+    '       character_maximum_length, numeric_precision, numeric_scale, ' +
+    '       is_nullable, column_default ' +
+    'FROM information_schema.columns ' +
+    'WHERE table_schema = ' + QuotedStr(schema) + ' AND table_name = ' + QuotedStr(tabela) + ' ' +
+    'ORDER BY ordinal_position';
+  Zqrypost.Open;
+
+  if Zqrypost.IsEmpty then
+    Exit; // tabela não encontrada
+
+  // Primary Key (ordem correta)
+  pkCols := TStringList.Create;
+  pkCols.Sorted := False;
+  try
+    zpostqry1.Close;
+    zpostqry1.SQL.Text :=
+      'SELECT kcu.column_name ' +
+      'FROM information_schema.table_constraints tc ' +
+      'JOIN information_schema.key_column_usage kcu ' +
+      '  ON kcu.constraint_name = tc.constraint_name ' +
+      ' AND kcu.table_schema = tc.table_schema ' +
+      ' AND kcu.table_name   = tc.table_name ' +
+      'WHERE tc.table_schema = :schema ' +
+      '  AND tc.table_name   = :tbl ' +
+      '  AND tc.constraint_type = ''PRIMARY KEY'' ' +
+      'ORDER BY kcu.ordinal_position';
+    zpostqry1.ParamByName('schema').AsString := schema;
+    zpostqry1.ParamByName('tbl').AsString    := tabela;
+    zpostqry1.Open;
+    while not zpostqry1.EOF do
+    begin
+      pkCols.Add(zpostqry1.FieldByName('column_name').AsString);
+      zpostqry1.Next;
+    end;
+
+    // Montagem do CREATE
+    createSQL := TStringList.Create;
+    try
+      createSQL.Add('CREATE TABLE ' + schema + '.' + tabela + ' (');
+
+      Zqrypost.First;
+      i := 0;
+      while not Zqrypost.EOF do
+      begin
+        colName    := Zqrypost.FieldByName('column_name').AsString;
+        dataType   := Zqrypost.FieldByName('data_type').AsString;
+        isNullable := Zqrypost.FieldByName('is_nullable').AsString;
+        if not Zqrypost.FieldByName('column_default').IsNull then
+          colDefault := Zqrypost.FieldByName('column_default').AsString
+        else
+          colDefault := '';
+
+        hasCharLen := not Zqrypost.FieldByName('character_maximum_length').IsNull;
+        if hasCharLen then
+          charLen := Zqrypost.FieldByName('character_maximum_length').AsInteger;
+
+        hasNumPrec := not Zqrypost.FieldByName('numeric_precision').IsNull;
+        if hasNumPrec then
+          numPrec := Zqrypost.FieldByName('numeric_precision').AsInteger;
+
+        hasNumScale := not Zqrypost.FieldByName('numeric_scale').IsNull;
+        if hasNumScale then
+          numScale := Zqrypost.FieldByName('numeric_scale').AsInteger;
+
+        // Normaliza tipo com tamanho/precisão quando aplicável
+        if SameText(dataType, 'character varying') then
+        begin
+          if hasCharLen then typeStr := Format('VARCHAR(%d)', [charLen]) else typeStr := 'VARCHAR';
+        end
+        else if SameText(dataType, 'character') then
+        begin
+          if hasCharLen then typeStr := Format('CHAR(%d)', [charLen]) else typeStr := 'CHAR';
+        end
+        else if SameText(dataType, 'numeric') or SameText(dataType, 'decimal') then
+        begin
+          if hasNumPrec then
+          begin
+            if hasNumScale then
+              typeStr := Format('NUMERIC(%d,%d)', [numPrec, numScale])
+            else
+              typeStr := Format('NUMERIC(%d)', [numPrec]);
+          end
+          else
+            typeStr := 'NUMERIC';
+        end
+        else if SameText(dataType, 'timestamp without time zone') then typeStr := 'TIMESTAMP'
+        else if SameText(dataType, 'timestamp with time zone')  then typeStr := 'TIMESTAMPTZ'
+        else if SameText(dataType, 'time without time zone')    then typeStr := 'TIME'
+        else if SameText(dataType, 'time with time zone')       then typeStr := 'TIMETZ'
+        else if SameText(dataType, 'double precision')          then typeStr := 'DOUBLE PRECISION'
+        else if SameText(dataType, 'integer')                   then typeStr := 'INTEGER'
+        else if SameText(dataType, 'bigint')                    then typeStr := 'BIGINT'
+        else if SameText(dataType, 'smallint')                  then typeStr := 'SMALLINT'
+        else if SameText(dataType, 'boolean')                   then typeStr := 'BOOLEAN'
+        else if SameText(dataType, 'text')                      then typeStr := 'TEXT'
+        else if SameText(dataType, 'date')                      then typeStr := 'DATE'
+        else if SameText(dataType, 'bytea')                     then typeStr := 'BYTEA'
+        else
+          typeStr := UpperCase(dataType);
+
+        // vírgula na linha anterior (exceto primeira)
+        if i > 0 then
+          createSQL[createSQL.Count-1] := createSQL[createSQL.Count-1] + ',';
+
+        // linha da coluna
+        createSQL.Add('  ' + colName + ' ' + typeStr);
+
+        // DEFAULT (usa expressão exatamente como no catálogo)
+        if colDefault <> '' then
+          createSQL[createSQL.Count-1] := createSQL[createSQL.Count-1] + ' DEFAULT ' + colDefault;
+
+        // NOT NULL
+        if SameText(isNullable, 'NO') then
+          createSQL[createSQL.Count-1] := createSQL[createSQL.Count-1] + ' NOT NULL';
+
+        Inc(i);
+        Zqrypost.Next;
+      end;
+
+      // PRIMARY KEY
+      if pkCols.Count > 0 then
+      begin
+        createSQL[createSQL.Count-1] := createSQL[createSQL.Count-1] + ',';
+        createSQL.Add('  CONSTRAINT ' + tabela + '_pkey PRIMARY KEY (' +
+                      StringReplace(pkCols.CommaText, ',', ', ', [rfReplaceAll]) + ')');
+      end;
+
+      createSQL.Add(');');
+
+      Result := createSQL.Text;
+    finally
+      createSQL.Free;
+    end;
+  finally
+    pkCols.Free;
+  end;
+end;
+
+procedure Tfrmmquery2.RefreshMy();
 var
   tvitem: TTreeNode;
 begin
@@ -1402,6 +1796,12 @@ begin
   end;
 end;
 
+procedure Tfrmmquery2.btConectarMyClick(Sender: TObject);
+begin
+  refreshMy();
+end;
+
+
 procedure Tfrmmquery2.btPermissaoChange(Sender: TObject);
 var
   nome, banco: string;
@@ -1438,7 +1838,7 @@ end;
 
 procedure Tfrmmquery2.btAnaliseClick(Sender: TObject);
 begin
-   Analise(edSQL.Lines.Text);
+   AnaliseMy(edSQL.Lines.Text);
 end;
 
 procedure Tfrmmquery2.btbenchmarkClick(Sender: TObject);
@@ -1448,7 +1848,12 @@ end;
 
 procedure Tfrmmquery2.btChartClick(Sender: TObject);
 begin
-  ChartView();
+  ChartView(ccMySQL);   // força Postgres
+end;
+
+procedure Tfrmmquery2.btChartPostClick(Sender: TObject);
+begin
+    ChartView(ccPostgres);      // força MySQL
 end;
 
 procedure Tfrmmquery2.btcompararClick(Sender: TObject);
@@ -1513,10 +1918,37 @@ begin
    ShowMessage('Finalizou a pesquisa!');
 end;
 
+procedure Tfrmmquery2.btExecutar1Click(Sender: TObject);
+begin
+  try
+    zpostqry1.close;
+    zpostqry1.sql.text := edSQLPost.Lines.Text;
+
+
+    dspos.DataSet := zpostqry1;
+    edlog.Append('SQL OPEN:'+edSQLPost.Lines.Text);
+    dbnavpost.DataSource := dspos;
+    dbgridpost.DataSource := dspos;
+
+    zpostqry1.Prepare;
+    zpostqry1.open;
+    pcPostgree.ActivePage := tsGridPostgres;
+
+  except
+     on E: Exception do
+     begin
+          edLog.Append('Error:'+e.message);
+          ShowMessage('Error:'+e.message);
+     end;
+
+  end;
+end;
+
 procedure Tfrmmquery2.btExecutarClick(Sender: TObject);
 begin
   try
-    zmyqry2.sql.text := edSQL.Lines.Text;
+    //zpostqry1.sql.text := edSQL.Lines.Text;
+   zmyqry2.sql.text := edSQL.Lines.Text;    ;
 
     dsmy.DataSet := zmyqry2;
     edlog.Append('SQL OPEN:'+edSQL.Lines.Text);
@@ -1524,6 +1956,7 @@ begin
     dbgridmy.DataSource := dsmy;
 
     zmyqry2.Open;
+    //zpostqry1.open;
     pgMysql.ActivePage := tsgrid;
   except
      on E: Exception do
@@ -1533,6 +1966,20 @@ begin
      end;
 
   end;
+
+end;
+
+procedure Tfrmmquery2.btIAPostClick(Sender: TObject);
+var
+  deps, ddl, sqlIA: string;
+begin
+  // Se preferir, passe strings vazias e a função monta internamente
+  deps  := CriaListaDependenciasPost('');
+  ddl   := CriaDicionarioPost('');
+  sqlIA := QuestionarSQLPost(meIA.text, deps, ddl);
+  edSQLPost.Text := sqlIA;
+  edLogPost.Append('Question:'+meIA.text);
+  edLogPost.Append('Return:'+sqlIA);
 
 end;
 
@@ -1606,13 +2053,13 @@ end;
 procedure Tfrmmquery2.btExecuteClick(Sender: TObject);
 begin
     try
-    zmyqry2.sql.text := edSQL.Lines.Text;
+    zpostqry.sql.text := edSQLPost.Lines.Text;
 
     dsmy.DataSet := nil;
-    dbnavmy.DataSource := nil;
-    dbgridmy.DataSource := nil;
-    edLog.Append('SQL Execute:'+edSQL.Lines.Text);
-    zmyqry2.ExecSQL;
+    dbnavpost.DataSource := nil;
+    dbgridpost.DataSource := nil;
+    edLog.Append('SQL Execute:'+edSQLPost.Lines.Text);
+    zpostqry.ExecSQL;
 
   except
      on E: Exception do
@@ -1633,8 +2080,10 @@ begin
     zconpost.Disconnect;
 
   {$IFDEF WINDOWS}
-  zconpost.LibraryLocation := FSetMain.DLLPostPath;
-  zconmysql.LibraryLocation := FSetMain.DLLMyPath;
+  if (FSetMain <> nil) and (FSetMain.DLLPostPath <> '') then
+    zconpost.LibraryLocation := FSetMain.DLLPostPath
+  else
+    zconpost.LibraryLocation := ExtractFilePath(Application.ExeName) + 'libpq74.dll';
   {$ENDIF}
 
   {$IFDEF LINUX}
@@ -1692,13 +2141,15 @@ begin
     tvitem := TTreeNode.Create(tvPost.Items); // mantém seu padrão
     tvitempost.Text := edBancoPost.Text;
     tvitempost.ImageIndex := 13;
+    tvDatabasePost := tvitemPost;  //Atribui para o database post
 
-    posicaofieldspost    := tvPost.Items.AddChildObject(tvitemPost, 'tables',    Pointer(ETDTabelas));
+    posicaofieldspost    := tvPost.Items.AddChildObject(tvDatabasePost, 'tables',    Pointer(ETDTabelas));
     posicaofieldspost.ImageIndex := 15;
-    posicaoSequencePost  := tvPost.Items.AddChildObject(tvitemPost, 'Sequences', Pointer(ETDTabelas));
-    posicaoViewPost      := tvPost.Items.AddChildObject(tvitemPost, 'Views',     Pointer(ETDViews));
-    posicaoProcedurePost := tvPost.Items.AddChildObject(tvitemPost, 'Procedure', Pointer(ETDProcedure));
-    posicaoFunctionPost  := tvPost.Items.AddChildObject(tvitemPost, 'Functions', Pointer(ETDFunctions));
+    tvTablePost := posicaofieldspost; //Atribui para as tabelas
+    posicaoSequencePost  := tvPost.Items.AddChildObject(tvDatabasePost, 'Sequences', Pointer(ETDTabelas));
+    posicaoViewPost      := tvPost.Items.AddChildObject(tvDatabasePost, 'Views',     Pointer(ETDViews));
+    posicaoProcedurePost := tvPost.Items.AddChildObject(tvDatabasePost, 'Procedure', Pointer(ETDProcedure));
+    posicaoFunctionPost  := tvPost.Items.AddChildObject(tvDatabasePost, 'Functions', Pointer(ETDFunctions));
 
     // Popula nós
     ListarTabelasPost();
@@ -1715,14 +2166,6 @@ end;
 
 
 
-procedure Tfrmmquery2.ChartView;
-begin
-  if (frmChart=nil) then
-  begin
-    frmChart := TfrmChart.create(self);
-  end;
-  frmChart.show();
-end;
 
 procedure Tfrmmquery2.Pesquisar(sender: TObject);
 Var
@@ -2229,6 +2672,490 @@ begin
 
   end;
 end;
+
+function Tfrmmquery2.DescreveTabelaIAMy(const tabela: string) : string;
+var
+  createSQL: TStringList;
+  colName, dataType, isNullable, defVal, extra: string;
+  charLen: Variant;
+  numPrec, numScale: Variant;
+  firstCol: Boolean;
+  pkCols: TStringList;
+
+  function NeedsQuoting(const S: string): Boolean;
+  var
+    V: Double;
+  begin
+    // Não cita NULL, CURRENT_TIMESTAMP, expressões e números
+    if (S = '') then Exit(False);
+    if SameText(S, 'NULL') then Exit(False);
+    if SameText(S, 'CURRENT_TIMESTAMP') then Exit(False);
+    if Pos('(', S) > 0 then Exit(False);      // ex: (current_timestamp())
+    if TryStrToFloat(S, V) then Exit(False);  // numérico
+    Result := True;
+  end;
+
+  function MyTypeWithLen(const baseType: string; const charLen, numPrec, numScale: Variant): string;
+  begin
+    // Monta o tipo com (len) ou (prec,scale) quando aplicável
+    Result := baseType;
+    if SameText(baseType, 'varchar') or SameText(baseType, 'char') then
+    begin
+      if not VarIsNull(charLen) and (VarIsNumeric(charLen) or VarIsType(charLen, varInteger)) then
+        Result := baseType + '(' + VarToStr(charLen) + ')';
+    end
+    else if SameText(baseType, 'decimal') or SameText(baseType, 'numeric') then
+    begin
+      if not VarIsNull(numPrec) then
+      begin
+        Result := baseType + '(' + VarToStr(numPrec);
+        if not VarIsNull(numScale) then
+          Result := Result + ',' + VarToStr(numScale);
+        Result := Result + ')';
+      end;
+    end;
+  end;
+
+begin
+  if not zconmysql.Connected then
+  begin
+    ShowMessage('MySQL não conectado!');
+    Exit;
+  end;
+
+  // 1) Colunas
+  zmyqry.Close;
+  zmyqry.SQL.Text :=
+    'SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, ' +
+    '       NUMERIC_PRECISION, NUMERIC_SCALE, IS_NULLABLE, COLUMN_DEFAULT, EXTRA ' +
+    'FROM information_schema.COLUMNS ' +
+    'WHERE TABLE_SCHEMA = :db AND TABLE_NAME = :tbl ' +
+    'ORDER BY ORDINAL_POSITION';
+  zmyqry.ParamByName('db').AsString  := edBanco.Text;
+  zmyqry.ParamByName('tbl').AsString := tabela;
+  zmyqry.Open;
+
+  if zmyqry.IsEmpty then
+  begin
+    ShowMessage('Tabela "' + tabela + '" não encontrada em ' + edBanco.Text + '.');
+    Exit;
+  end;
+
+  // 2) Primary key
+  pkCols := TStringList.Create;
+  pkCols.Sorted := False; // manter ordem
+  try
+    zmyqry1.Close;
+    zmyqry1.SQL.Text :=
+      'SELECT k.COLUMN_NAME ' +
+      'FROM information_schema.TABLE_CONSTRAINTS tc ' +
+      'JOIN information_schema.KEY_COLUMN_USAGE k ' +
+      '  ON k.CONSTRAINT_NAME = tc.CONSTRAINT_NAME ' +
+      ' AND k.TABLE_SCHEMA = tc.TABLE_SCHEMA ' +
+      ' AND k.TABLE_NAME = tc.TABLE_NAME ' +
+      'WHERE tc.TABLE_SCHEMA = :db ' +
+      '  AND tc.TABLE_NAME   = :tbl ' +
+      '  AND tc.CONSTRAINT_TYPE = ''PRIMARY KEY'' ' +
+      'ORDER BY k.ORDINAL_POSITION';
+    zmyqry1.ParamByName('db').AsString  := edBanco.Text;
+    zmyqry1.ParamByName('tbl').AsString := tabela;
+    zmyqry1.Open;
+
+    while not zmyqry1.EOF do
+    begin
+      pkCols.Add(zmyqry1.FieldByName('COLUMN_NAME').AsString);
+      zmyqry1.Next;
+    end;
+
+    // 3) Monta o CREATE
+    createSQL := TStringList.Create;
+    try
+      createSQL.Add('CREATE TABLE `' + edBanco.Text + '`.`' + tabela + '` (');
+
+      firstCol := True;
+      zmyqry.First;
+      while not zmyqry.EOF do
+      begin
+        colName   := zmyqry.FieldByName('COLUMN_NAME').AsString;
+        dataType  := zmyqry.FieldByName('DATA_TYPE').AsString;
+        charLen   := zmyqry.FieldByName('CHARACTER_MAXIMUM_LENGTH').Value;
+        numPrec   := zmyqry.FieldByName('NUMERIC_PRECISION').Value;
+        numScale  := zmyqry.FieldByName('NUMERIC_SCALE').Value;
+        isNullable:= zmyqry.FieldByName('IS_NULLABLE').AsString; // 'YES'/'NO'
+        defVal    := zmyqry.FieldByName('COLUMN_DEFAULT').AsString; // pode vir vazio
+        extra     := zmyqry.FieldByName('EXTRA').AsString; // ex: auto_increment
+
+        // normaliza tipo com tamanhos
+        dataType := MyTypeWithLen(LowerCase(dataType), charLen, numPrec, numScale);
+
+        // vírgula separadora
+        if not firstCol then
+          createSQL[createSQL.Count-1] := createSQL[createSQL.Count-1] + ',';
+        firstCol := False;
+
+        // linha da coluna
+        createSQL.Add(Format('  `%s` %s', [colName, UpperCase(dataType)]));
+
+        // NOT NULL / NULL
+        if SameText(isNullable, 'NO') then
+          createSQL[createSQL.Count-1] := createSQL[createSQL.Count-1] + ' NOT NULL'
+        else
+          createSQL[createSQL.Count-1] := createSQL[createSQL.Count-1] + ' NULL';
+
+        // DEFAULT
+        if defVal <> '' then
+        begin
+          if NeedsQuoting(defVal) then
+            createSQL[createSQL.Count-1] := createSQL[createSQL.Count-1] + ' DEFAULT ' + QuotedStr(defVal)
+          else
+            createSQL[createSQL.Count-1] := createSQL[createSQL.Count-1] + ' DEFAULT ' + defVal;
+        end;
+
+        // AUTO_INCREMENT etc
+        if Pos('auto_increment', LowerCase(extra)) > 0 then
+          createSQL[createSQL.Count-1] := createSQL[createSQL.Count-1] + ' AUTO_INCREMENT';
+
+        zmyqry.Next;
+      end;
+
+      // PRIMARY KEY
+      if pkCols.Count > 0 then
+      begin
+        createSQL[createSQL.Count-1] := createSQL[createSQL.Count-1] + ','; // vírgula da última coluna
+        createSQL.Add('  PRIMARY KEY (' +
+          StringReplace('`' + StringReplace(pkCols.CommaText, ',', '`,`', [rfReplaceAll]) + '`', '``', '`', [rfReplaceAll]) +
+          ')');
+      end;
+
+      createSQL.Add(') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;');
+
+      // Mostra no editor principal de SQL do MySQL
+      //edSQL.Text := createSQL.Text;
+      //pgMysql.ActivePage := tbSQL;
+      result := createSQL.Text;
+    finally
+      createSQL.Free;
+    end;
+  finally
+    pkCols.Free;
+  end;
+end;
+
+function Tfrmmquery2.CriaDicionarioPost(const ATargetFile: string): string;
+var
+  outSQL        : TStringList;
+  schema        : string;
+  tblNode       : TTreeNode;
+  tblName       : string;
+  targetAbsPath : string;
+  targetDir     : string;
+begin
+  Result := '';
+
+  if not zconpost.Connected then
+  begin
+    ShowMessage('PostgreSQL não conectado.');
+    Exit;
+  end;
+
+  // Garante que o tree esteja carregado
+  if (posicaofieldspost = nil) or (posicaofieldspost.GetFirstChild = nil) then
+    RefreshPost;
+
+  if (posicaofieldspost = nil) or (posicaofieldspost.GetFirstChild = nil) then
+  begin
+    ShowMessage('Nenhuma tabela encontrada no tvPost.');
+    Exit;
+  end;
+
+  schema := Trim(edSchemaPost.Text);
+  if schema = '' then schema := 'public';
+
+  outSQL := TStringList.Create;
+  try
+    outSQL.Add('-- =========================================');
+    outSQL.Add('-- Dicionário de dados gerado pelo MQuery2');
+    outSQL.Add('-- ' + FormatDateTime('yyyy-mm-dd hh:nn:ss', Now));
+    outSQL.Add('-- Database: ' + Trim(edBancoPost.Text) + ' | Schema: ' + schema);
+    outSQL.Add('-- =========================================');
+    outSQL.Add('');
+
+    // 1) Varrer as tabelas NO TREE (tvPost -> posicaofieldspost)
+    tblNode := posicaofieldspost.GetFirstChild;
+    while tblNode <> nil do
+    begin
+      tblName := tblNode.Text;
+      outSQL.Add('-- ' + tblName);
+
+      // 2) Gerar o CREATE de cada tabela
+      outSQL.Add(DescreveTabelaIAPost(tblName));
+      outSQL.Add('');
+
+      tblNode := tblNode.GetNextSibling;
+    end;
+
+    // 3) Salvar no arquivo passado por PARÂMETRO
+    targetAbsPath := ExpandFileName(ATargetFile);
+    targetDir     := ExtractFilePath(targetAbsPath);
+    if targetDir <> '' then
+      ForceDirectories(targetDir);
+    if(ATargetFile  <>'') then
+    begin
+      outSQL.SaveToFile(targetAbsPath);
+      edLog.Append('Dicionário gerado em: ' + targetAbsPath);
+    end;
+    Result := outSQL.Text;
+  finally
+    outSQL.Free;
+  end;
+end;
+
+function Tfrmmquery2.CriaListaDependenciasPost(const outFile: string): string;
+var
+  outTxt          : TStringList;
+  schema          : string;
+  nodeTable       : TTreeNode;
+  childTable      : string;
+
+  lastConstraint  : string;
+  curConstraint   : string;
+  parentTable     : string;
+
+  childCols       : TStringList;
+  parentCols      : TStringList;
+begin
+  Result := '';
+
+  if not zconpost.Connected then
+  begin
+    ShowMessage('PostgreSQL não conectado!');
+    Exit;
+  end;
+
+  if posicaofieldspost = nil then
+  begin
+    ShowMessage('Estrutura de tabelas não carregada (posicaofieldspost = nil). Atualize a árvore do Postgres.');
+    Exit;
+  end;
+
+  schema := Trim(edSchemaPost.Text);
+  if schema = '' then schema := 'public';
+
+  outTxt := TStringList.Create;
+  childCols  := TStringList.Create;
+  parentCols := TStringList.Create;
+  try
+    outTxt.Add('-- =========================================');
+    outTxt.Add('-- Lista de dependências (FK) - PostgreSQL');
+    outTxt.Add('-- Database: ' + Trim(edBancoPost.Text) + ' | Schema: ' + schema);
+    outTxt.Add('-- Gerado em: ' + FormatDateTime('yyyy-mm-dd hh:nn:ss', Now));
+    outTxt.Add('-- Formato: TabelaFilha (colunas) depende da TabelaPai (colunas)');
+    outTxt.Add('-- =========================================');
+    outTxt.Add('');
+
+    // Percorre os nós de "tables" no tvPost
+    nodeTable := posicaofieldspost.GetFirstChild;
+    while nodeTable <> nil do
+    begin
+      // cada filho direto de posicaofieldspost é uma tabela
+      childTable := nodeTable.Text;
+
+      // Consulta todas as FKs da tabela, agrupando por constraint
+      zpostqry1.Close;
+      zpostqry1.SQL.Text :=
+        'SELECT tc.constraint_name, ' +
+        '       kcu.column_name       AS child_col, ' +
+        '       ccu.table_name        AS parent_table, ' +
+        '       ccu.column_name       AS parent_col ' +
+        'FROM information_schema.table_constraints tc ' +
+        'JOIN information_schema.key_column_usage kcu ' +
+        '  ON kcu.constraint_name = tc.constraint_name ' +
+        ' AND kcu.table_schema    = tc.table_schema ' +
+        'JOIN information_schema.constraint_column_usage ccu ' +
+        '  ON ccu.constraint_name = tc.constraint_name ' +
+        ' AND ccu.table_schema    = tc.table_schema ' +
+        'WHERE tc.constraint_type = ''FOREIGN KEY'' ' +
+        '  AND tc.table_schema    = :schema ' +
+        '  AND tc.table_name      = :tbl ' +
+        'ORDER BY tc.constraint_name, kcu.ordinal_position';
+      zpostqry1.ParamByName('schema').AsString := schema;
+      zpostqry1.ParamByName('tbl').AsString    := childTable;
+      zpostqry1.Open;
+
+      if not zpostqry1.IsEmpty then
+      begin
+        lastConstraint := '';
+        childCols.Clear;
+        parentCols.Clear;
+        parentTable := '';
+
+        zpostqry1.First;
+        while not zpostqry1.EOF do
+        begin
+          curConstraint := zpostqry1.FieldByName('constraint_name').AsString;
+
+          // Mudou de constraint? imprime a anterior agrupada
+          if (lastConstraint <> '') and (curConstraint <> lastConstraint) then
+          begin
+            outTxt.Add(Format('%s (%s) depende da %s (%s);',
+              [childTable,
+               StringReplace(childCols.CommaText, ',', ', ', [rfReplaceAll]),
+               parentTable,
+               StringReplace(parentCols.CommaText, ',', ', ', [rfReplaceAll])]));
+            childCols.Clear;
+            parentCols.Clear;
+          end;
+
+          // Acumula colunas da constraint atual
+          parentTable := zpostqry1.FieldByName('parent_table').AsString;
+          childCols.Add(zpostqry1.FieldByName('child_col').AsString);
+          parentCols.Add(zpostqry1.FieldByName('parent_col').AsString);
+
+          lastConstraint := curConstraint;
+          zpostqry1.Next;
+        end;
+
+        // flush final da última constraint
+        if (lastConstraint <> '') and (childCols.Count > 0) then
+        begin
+          outTxt.Add(Format('%s (%s) depende da %s (%s);',
+            [childTable,
+             StringReplace(childCols.CommaText, ',', ', ', [rfReplaceAll]),
+             parentTable,
+             StringReplace(parentCols.CommaText, ',', ', ', [rfReplaceAll])]));
+        end;
+
+        outTxt.Add(''); // linha em branco após cada tabela
+      end;
+
+      nodeTable := nodeTable.GetNextSibling;
+    end;
+
+    Result := outTxt.Text;
+
+    if outFile <> '' then
+    begin
+      ForceDirectories(ExtractFileDir(outFile));
+      outTxt.SaveToFile(outFile);
+      edLog.Append('Dependências (FK) salvas em: ' + outFile);
+    end;
+
+  finally
+    parentCols.Free;
+    childCols.Free;
+    outTxt.Free;
+  end;
+end;
+
+function Tfrmmquery2.QuestionarSQLPost(const pergunta, deps, ddl: string): string;
+
+  function StripCodeFences(const S: string): string;
+  var
+    R: string;
+    p1, p2: SizeInt;
+  begin
+    R := S;
+    p1 := Pos('```', R);
+    if p1 > 0 then
+    begin
+      Delete(R, 1, p1 + 2);
+      if (Length(R) >= 3) and (LowerCase(Copy(R, 1, 3)) = 'sql') then
+        Delete(R, 1, 3);
+      p2 := RPos('```', R);
+      if p2 > 0 then
+        R := Copy(R, 1, p2 - 1);
+    end;
+    Result := Trim(R);
+  end;
+
+  // opcional: ASCII 7-bit estrito
+  function ToASCII7(const S: AnsiString): AnsiString;
+  var i: SizeInt;
+  begin
+    Result := S;
+    for i := 1 to Length(Result) do
+      if Ord(Result[i]) > 127 then
+        Result[i] := '?';
+  end;
+
+var
+  ctxDeps, ctxDDL, ask, outSQL: string;
+  outAnsi: AnsiString; // <<— importante: AnsiString para manter bytes ANSI
+    baseSchema: string;
+begin
+  Result := '';
+
+
+  if not zconpost.Connected then
+  begin
+    ShowMessage('PostgreSQL não conectado!');
+    Exit;
+  end;
+
+  if FCHATGPT = nil then
+    FCHATGPT := TCHATGPT.Create(Self);
+
+  if Trim(FSetMain.CHATGPT) = '' then
+  begin
+    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+    Exit;
+  end;
+
+  if Trim(deps) = '' then
+    ctxDeps := CriaListaDependenciasPost('') else ctxDeps := deps;
+
+  if Trim(ddl) = '' then
+    ctxDDL := CriaDicionarioPost('') else ctxDDL := ddl;
+
+  baseSchema := Trim(edSchemaPost.Text);
+  if baseSchema = '' then baseSchema := 'public';
+
+  FCHATGPT.Dev :=
+    'Você é um assistente SQL para PostgreSQL.' + LineEnding +
+    'REGRAS:' + LineEnding +
+    '1) Responda SOMENTE com SQL válido, sem explicações ou comentários.' + LineEnding +
+    '2) Use exatamente os nomes de schema/tabela/coluna informados.' + LineEnding +
+    '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
+    '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
+    '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
+
+  ask :=
+    'Pergunta do usuário:' + LineEnding +
+    pergunta + LineEnding + LineEnding +
+    '--- CONTEXTO: DEPENDÊNCIAS (FK) ---' + LineEnding +
+    ctxDeps + LineEnding + LineEnding +
+    '--- CONTEXTO: DDL COMPLETO DAS TABELAS ---' + LineEnding +
+    ctxDDL + LineEnding + LineEnding +
+    'Gere APENAS o SQL final (um único bloco).';
+
+  FCHATGPT.TOKEN := FSetMain.CHATGPT;
+
+  if FCHATGPT.SendQuestion(ask) then
+  begin
+    outSQL := StripCodeFences(FCHATGPT.Response);
+  end
+  else
+  begin
+    outSQL := StripCodeFences(FCHATGPT.Response);
+  end;
+  if FCHATGPT.SendQuestion(ask) then
+    outSQL := StripCodeFences(FCHATGPT.Response)
+  else
+    outSQL := StripCodeFences(FCHATGPT.Response);
+
+  // ===== conversão UTF-8 -> ANSI da página de código do sistema =====
+  outAnsi := UTF8ToAnsi(outSQL);        // cross-platform (usa code page do sistema)
+
+  // Se você quiser CP1252 especificamente (ex.: Windows pt-BR), use:
+  // outAnsi := UTF8ToCP1252(outSQL);
+
+  // Se quiser ASCII 7-bit estrito, descomente:
+  // outAnsi := ToASCII7(outAnsi);
+
+  // Retorna como string (ASCII/ANSI apenas tem chars <=127/255, então é seguro)
+  Result := String(outAnsi);
+end;
+
 
 
 end.

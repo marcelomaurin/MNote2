@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  PopupNotifier, lNetComponents, lNet;
+  lNetComponents, lNet, IdHTTP, IdSSLOpenSSL, IdSSLOpenSSLHeaders, IdSSL,
+  IdCompressionIntercept;
 
 type
 
@@ -16,6 +17,9 @@ type
     Button1: TButton;
     edNome: TEdit;
     edEmail: TEdit;
+    IdCompressionIntercept1: TIdCompressionIntercept;
+    IdHTTP1: TIdHTTP;
+    IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -83,7 +87,7 @@ end;
 procedure TfrmRegistrar.LTCPComponent1Connect(aSocket: TLSocket);
 var
   resultado : string;
-begin
+  begin
   if (INFO <> '') then
   begin
     aSocket.SendMessage(INFO);
@@ -97,7 +101,7 @@ begin
   aSocket.GetMessage(retorno);
 
   //ShowMessage(retorno);
-  //frmlog.Log('Recebeu retorno do socket:'+copy(retorno,1,10));
+  //frmlog.RegistraLog('Recebeu retorno do socket:'+copy(retorno,1,10));
 end;
 
 procedure TfrmRegistrar.Memo1Change(Sender: TObject);
@@ -111,19 +115,29 @@ begin
 end;
 
 procedure TfrmRegistrar.Identifica();
+var
+  resposta : string;
 begin
-  if(LTCPComponent1.Connected) then
-  begin
-       LTCPComponent1.Disconnect(true);
-       sleep(1000);
+  {$IFDEF MSWINDOWS}
+  //IdOpenSSLSetLibSSL(ExtractFilePath(ParamStr(0)) + 'libssl-1_0-x64.dll');
+  //IdOpenSSLSetLibCrypto(ExtractFilePath(ParamStr(0)) + 'libcrypto-1_0-x64.dll');
+  {$ENDIF}
+  {$IFDEF LINUX}
+  IdOpenSSLSetLibSSL('/usr/lib/x86_64-linux-gnu/libssl.so.1.0.0');
+  IdOpenSSLSetLibCrypto('/usr/lib/x86_64-linux-gnu/libcrypto.so.1.0.0');
+  {$ENDIF}
+
+  try
+    IdSSLIOHandlerSocketOpenSSL1.SSLOptions.Method := sslvTLSv1_2;
+    IdSSLIOHandlerSocketOpenSSL1.SSLOptions.Mode   := sslmUnassigned;
+
+    IdHTTP1.IOHandler := IdSSLIOHandlerSocketOpenSSL1;
+    resposta := IdHTTP1.Get('https://maurinsoft.com.br/ws/register/iconnected.php');
+    //ShowMessage(resposta);
+  except
+    on E: Exception do
+      ShowMessage('Erro ao conectar: ' + E.Message);
   end;
-
-  INFO :=  'GET /ws/register/iconfila.php?tipo=5 HTTP/1.0'+#13+#10+
-           'Connection: close'+#13+#10+
-            #13+#10;
-
-
-  LTCPComponent1.Connect('maurinsoft.com.br',8082);
 end;
 
 end.
