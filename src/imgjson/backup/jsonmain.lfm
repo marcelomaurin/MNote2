@@ -1,16 +1,16 @@
 object frmmainJSON: TfrmmainJSON
-  Left = 400
+  Left = -1441
   Height = 480
-  Top = 1134
+  Top = 229
   Width = 759
   Caption = 'Sistema de treinamento de Redes Neurais'
   ClientHeight = 480
   ClientWidth = 759
   Menu = MainMenu1
+  Position = poMainFormCenter
+  LCLVersion = '4.0.0.4'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  Position = poMainFormCenter
-  LCLVersion = '3.0.0.3'
   object pnPrincipal: TPanel
     Left = 0
     Height = 480
@@ -57,30 +57,30 @@ object frmmainJSON: TfrmmainJSON
         TabOrder = 2
         object tsTreeview: TTabSheet
           Caption = 'Arvore'
-          ClientHeight = 357
-          ClientWidth = 226
+          ClientHeight = 360
+          ClientWidth = 228
           object TreeView1: TTreeView
             Left = 0
-            Height = 357
+            Height = 360
             Top = 0
-            Width = 226
+            Width = 228
             Align = alClient
             Images = ImageList1
             ReadOnly = True
             TabOrder = 0
-            OnChanging = TreeView1Changing
             Options = [tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
+            OnChanging = TreeView1Changing
           end
         end
         object tspropriedades: TTabSheet
           Caption = 'Propriedades'
-          ClientHeight = 357
-          ClientWidth = 226
+          ClientHeight = 360
+          ClientWidth = 228
           object StringGrid1: TStringGrid
             Left = 0
-            Height = 357
+            Height = 360
             Top = 0
-            Width = 226
+            Width = 228
             Align = alClient
             ColCount = 2
             Columns = <            
@@ -157,17 +157,6 @@ object frmmainJSON: TfrmmainJSON
         ImageIndex = 7
         OnClick = mnSairClick
       end
-    end
-    object mnTools: TMenuItem
-      Caption = 'Tools'
-      object mnConfig: TMenuItem
-        Caption = 'Config'
-        OnClick = mnConfigClick
-      end
-    end
-    object mnsobre: TMenuItem
-      Caption = 'About'
-      OnClick = mnsobreClick
     end
   end
   object OpenDialog1: TOpenDialog

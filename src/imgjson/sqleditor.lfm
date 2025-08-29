@@ -1,116 +1,115 @@
 object frmSQLEditor: TfrmSQLEditor
   Left = 580
-  Height = 434
+  Height = 347
   Top = 238
-  Width = 542
+  Width = 434
   Caption = 'SQL Editor'
-  ClientHeight = 434
-  ClientWidth = 542
-  DesignTimePPI = 120
-  OnCreate = FormCreate
+  ClientHeight = 347
+  ClientWidth = 434
   ParentBiDiMode = False
   ParentFont = True
   PopupMode = pmAuto
   Position = poMainFormCenter
-  LCLVersion = '2.2.6.0'
+  LCLVersion = '4.0.0.4'
+  OnCreate = FormCreate
   object Panel1: TPanel
     Left = 0
-    Height = 63
+    Height = 50
     Top = 0
-    Width = 542
+    Width = 434
     Align = alTop
-    ClientHeight = 63
-    ClientWidth = 542
+    ClientHeight = 50
+    ClientWidth = 434
     TabOrder = 0
     object Label1: TLabel
-      Left = 14
-      Height = 20
-      Top = 7
-      Width = 44
+      Left = 11
+      Height = 15
+      Top = 6
+      Width = 36
       Caption = 'Nome:'
       ParentColor = False
     end
     object edNome: TEdit
-      Left = 14
-      Height = 28
-      Top = 31
-      Width = 434
+      Left = 11
+      Height = 23
+      Top = 25
+      Width = 347
       TabOrder = 0
     end
   end
   object Panel2: TPanel
     Left = 0
-    Height = 63
-    Top = 371
-    Width = 542
+    Height = 50
+    Top = 297
+    Width = 434
     Align = alBottom
-    ClientHeight = 63
-    ClientWidth = 542
+    ClientHeight = 50
+    ClientWidth = 434
     TabOrder = 1
     object btSalvar: TButton
-      Left = 416
-      Height = 31
-      Top = 16
-      Width = 94
+      Left = 333
+      Height = 25
+      Top = 13
+      Width = 75
       Caption = 'Save'
-      OnClick = btSalvarClick
       TabOrder = 0
+      OnClick = btSalvarClick
     end
     object btCancel: TButton
-      Left = 296
-      Height = 31
-      Top = 16
-      Width = 94
+      Left = 237
+      Height = 25
+      Top = 13
+      Width = 75
       Caption = 'Cancel'
-      OnClick = btCancelClick
       TabOrder = 1
+      OnClick = btCancelClick
     end
     object btexecuta: TButton
-      Left = 28
-      Height = 31
-      Top = 16
-      Width = 94
+      Left = 22
+      Height = 25
+      Top = 13
+      Width = 75
       Caption = 'Execute'
-      OnClick = btexecutaClick
       TabOrder = 2
+      OnClick = btexecutaClick
     end
   end
   object pngrid: TPanel
     Left = 0
-    Height = 308
-    Top = 63
-    Width = 542
+    Height = 247
+    Top = 50
+    Width = 434
     Align = alClient
-    ClientHeight = 308
-    ClientWidth = 542
+    ClientHeight = 247
+    ClientWidth = 434
     TabOrder = 2
     object PageControl1: TPageControl
       Left = 1
-      Height = 306
+      Height = 245
       Top = 1
-      Width = 540
+      Width = 432
       ActivePage = tsEdit
       Align = alClient
       TabIndex = 0
       TabOrder = 0
       object tsEdit: TTabSheet
         Caption = 'Edit'
-        ClientHeight = 273
-        ClientWidth = 532
+        ClientHeight = 217
+        ClientWidth = 424
         inline SynEdit1: TSynEdit
           Left = 0
-          Height = 273
+          Height = 217
           Top = 0
-          Width = 532
+          Width = 424
           Align = alClient
-          Font.Height = -13
+          Font.Height = -10
           Font.Name = 'Courier New'
           Font.Pitch = fpFixed
           Font.Quality = fqNonAntialiased
           ParentColor = False
           ParentFont = False
           TabOrder = 0
-          Gutter.Width = 68
+          Gutter.Width = 53
           Gutter.MouseActions = <>
           RightGutter.Width = 0
           RightGutter.MouseActions = <>
@@ -559,11 +558,13 @@ object frmSQLEditor: TfrmSQLEditor
           LineHighlightColor.Foreground = clNone
           inline SynLeftGutterPartList1: TSynGutterPartList
             object SynGutterMarks1: TSynGutterMarks
-              Width = 30
+              Width = 24
               MouseActions = <>
+              MaxExtraMarksColums = 0
+              Options = [sgmoDeDuplicateMarksOnOverflow]
             end
             object SynGutterLineNumber1: TSynGutterLineNumber
-              Width = 17
+              Width = 13
               MouseActions = <>
               MarkupInfo.Background = clBtnFace
               MarkupInfo.Foreground = clNone
@@ -573,19 +574,18 @@ object frmSQLEditor: TfrmSQLEditor
               LeadingZeros = False
             end
             object SynGutterChanges1: TSynGutterChanges
-              Width = 5
+              Width = 4
               MouseActions = <>
               ModifiedColor = 59900
               SavedColor = clGreen
             end
             object SynGutterSeparator1: TSynGutterSeparator
-              Width = 3
+              Width = 2
               MouseActions = <>
               MarkupInfo.Background = clWhite
               MarkupInfo.Foreground = clGray
             end
             object SynGutterCodeFolding1: TSynGutterCodeFolding
-              Width = 13
               MouseActions = <>
               MarkupInfo.Background = clNone
               MarkupInfo.Foreground = clGray
@@ -597,22 +597,22 @@ object frmSQLEditor: TfrmSQLEditor
       end
       object tsGrid: TTabSheet
         Caption = 'Grid'
-        ClientHeight = 273
-        ClientWidth = 532
+        ClientHeight = 217
+        ClientWidth = 424
         object Panel4: TPanel
           Left = 0
-          Height = 63
+          Height = 50
           Top = 0
-          Width = 532
+          Width = 424
           Align = alTop
-          ClientHeight = 63
-          ClientWidth = 532
+          ClientHeight = 50
+          ClientWidth = 424
           TabOrder = 0
           object DBNavigator1: TDBNavigator
-            Left = 42
-            Height = 31
-            Top = 18
-            Width = 301
+            Left = 34
+            Height = 25
+            Top = 14
+            Width = 241
             BevelOuter = bvNone
             ChildSizing.EnlargeHorizontal = crsScaleChilds
             ChildSizing.EnlargeVertical = crsScaleChilds
@@ -620,8 +620,8 @@ object frmSQLEditor: TfrmSQLEditor
             ChildSizing.ShrinkVertical = crsScaleChilds
             ChildSizing.Layout = cclLeftToRightThenTopToBottom
             ChildSizing.ControlsPerLine = 100
-            ClientHeight = 31
-            ClientWidth = 301
+            ClientHeight = 25
+            ClientWidth = 241
             DataSource = dssql
             Options = []
             TabOrder = 0
@@ -629,9 +629,9 @@ object frmSQLEditor: TfrmSQLEditor
         end
         object DBGrid1: TDBGrid
           Left = 0
-          Height = 210
-          Top = 63
-          Width = 532
+          Height = 167
+          Top = 50
+          Width = 424
           Align = alClient
           Color = clWindow
           Columns = <>
@@ -642,14 +642,13 @@ object frmSQLEditor: TfrmSQLEditor
     end
   end
   object qrysql: TZReadOnlyQuery
-    Connection = dmBase.zcon
     Params = <>
-    Left = 240
-    Top = 192
+    Left = 192
+    Top = 154
   end
   object dssql: TDataSource
     DataSet = qrysql
-    Left = 185
-    Top = 192
+    Left = 148
+    Top = 154
   end
 end

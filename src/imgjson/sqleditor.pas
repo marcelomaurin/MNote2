@@ -71,6 +71,7 @@ end;
 
 procedure TfrmSQLEditor.btexecutaClick(Sender: TObject);
 begin
+  (*
   if (dmBase.zcon.Connected) then
   begin
       qrysql.close;
@@ -88,6 +89,7 @@ begin
   begin
     showmessage('Sem conexão com o banco!');
   end;
+  *)
 end;
 
 end.

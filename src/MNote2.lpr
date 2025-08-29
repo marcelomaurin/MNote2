@@ -12,7 +12,7 @@ uses
   {$ifndef Darwin}
   folders, mquery2, pesquisar, triggers, view, Views, benchmark, porradawebapi,
   chart,config, config2, funcoes, setmain, sobre, jsonmain, about, base, NNTrainning,
-  Novo, PythonRun, setproject, SqlEditItem, sqleditor, SQLItem, trainning, 
+  Novo, PythonRun, setproject, SQLItem, trainning,
 newproject, uProjetoDB, sqlite_db
   {$ENDIF}
   ;

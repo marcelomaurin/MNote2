@@ -1099,9 +1099,9 @@ object frmmquery2: Tfrmmquery2
           Height = 690
           Top = 1
           Width = 951
-          ActivePage = tsSQLPostgreSQL
+          ActivePage = tsSetupPostres
           Align = alClient
-          TabIndex = 1
+          TabIndex = 0
           TabOrder = 0
           object tsSetupPostres: TTabSheet
             Caption = 'PostgreSql Connection'
@@ -2330,7 +2330,7 @@ object frmmquery2: Tfrmmquery2
     Top = 520
   end
   object SynCompletion1: TSynCompletion
-    Position = 0
+    Position = -1
     LinesInWindow = 6
     OnPositionChanged = SynCompletion1PositionChanged
     SelectedColor = clHighlight
@@ -6079,8 +6079,8 @@ object frmmquery2: Tfrmmquery2
     Top = 400
   end
   object pmDatabasePost: TPopupMenu
-    Left = 272
-    Top = 304
+    Left = 248
+    Top = 504
     object mnDicionario: TMenuItem
       Caption = 'Create Dictionary'
       OnClick = mnDicionarioClick

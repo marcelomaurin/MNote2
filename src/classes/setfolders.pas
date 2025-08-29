@@ -32,6 +32,7 @@ type
         FLastFiles : String;
         FPATH : string;
         FDefaultfolder : string;
+
         FHeight : integer;
         FWidth : integer;
         //filename : String;

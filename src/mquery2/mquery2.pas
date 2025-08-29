@@ -381,6 +381,7 @@ type
     function CriaDicionarioPost(const ATargetFile: string): string;
     function CriaListaDependenciasPost(const outFile: string): string;
     function QuestionarSQLPost(const pergunta, deps, ddl: string): string;
+    function ValidaConexao(TipoBanco: Integer ): Boolean;
   end;
 
 var
@@ -1020,9 +1021,9 @@ begin
   tvitemmy := tvMysql.Items.AddObject(tvitem,'mysql', pointer(ETDBBanco));
   tvitemmy.ImageIndex:=-1;
   {$IFDEF WINDOWS}
-  zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'\libpq74.dll';
+  zconpost.LibraryLocation:= FSetMain.DLLPostPath;
 
-  zconmysql.LibraryLocation:= ExtractFilePath(application.exename) +'\libmysql.dll';
+  zconmysql.LibraryLocation:= FSetMain.DLLMyPath;
   {$ENDIF}
   {$IFDEF LINUX}
   //zconpost.LibraryLocation:= ExtractFilePath(application.exename) +'/libs/linux64/libpq74.so';
@@ -3156,7 +3157,78 @@ begin
   Result := String(outAnsi);
 end;
 
+function Tfrmmquery2.ValidaConexao(TipoBanco : Integer ): Boolean;
+var
+  Q: TZQuery;
+  Proto: string;
+  conexao : boolean;
+begin
 
+
+  // 2) configura e registra a conexão no zconlocal
+  Result := False;
+  try
+    //if zconlocal.Connected then
+    //  zconlocal.Disconnect;
+
+    case TipoBanco of
+      0: Proto := 'mysql';       // ajuste para 'mysql-8' se você usa client 8.x
+      1: Proto := 'postgresql';  // ajuste p/ 'postgresql-12' etc. se preferir
+    else
+      raise Exception.Create('DATABASETYPE inválido. Use 0=MySQL ou 1=Postgres.');
+    end;
+
+    // 3) aplica schema se for Postgres e informado
+    if (TipoBanco = 1) and (Trim(FSetMain.SchemaPost) <> '') then
+    begin
+      Q := TZQuery.Create(nil);
+      try
+        Q.Connection := zconpost;
+        Q.SQL.Text := 'SET search_path TO ' + FSetMain.SchemaPost;
+        Q.ExecSQL;
+      finally
+        Q.Free;
+      end;
+    end;
+
+    conexao := false;
+    if (frmmquery2= nil) then
+    begin
+       frmmquery2 := Tfrmmquery2.create(self);
+    end;
+    if (TipoBanco=0) then //Mysql
+    begin
+        //FSetMain.BancoMy:=;
+
+    end;
+
+    if (TipoBanco=1) then
+    begin
+
+
+        frmmquery2.edHostNamePost.text := FSetMain.HostnamePost;
+        frmmquery2.edSchemaPost.text := FSetMain.SchemaPost;
+        frmmquery2.edBancoPost.text := FSetMain.BancoPOST;
+        frmmquery2.edusuarioPost.text :=  FSetMain.UsernamePost;
+        frmmquery2.edPasswrdPost.text := FSetMain.PasswordPost;
+        conexao := frmmquery2.ConectPost;
+        //conexao := mquery2.refreshPost;
+
+    end;
+    Result := conexao;
+
+
+
+  except
+    on E: Exception do
+    begin
+      // se quiser, faça log do E.Message
+      Result := False;
+
+
+    end;
+  end;
+end;
 
 end.
 

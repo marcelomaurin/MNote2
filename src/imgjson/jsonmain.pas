@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Menus, StdCtrls,
   About, setimg, config, EditBtn, ExtCtrls, ComCtrls, Grids,
-  setproject, Novo, funcoes, base, sqleditor, sqlEditItem, NNTrainning,
+  setproject, Novo, funcoes, sqleditor, sqlEditItem, NNTrainning,
   frmnntrainning, PythonEngine;
 
 
@@ -799,6 +799,7 @@ procedure TfrmmainJSON.CarregaDatabase();
 var
   filename : string;
 begin
+  (*
   if (dmBase =nil) then
   begin
     try
@@ -840,12 +841,14 @@ begin
        showmessage('Falha na conexao!');
     end;
   end;
+  *)
 end;
 
 procedure TfrmmainJSON.CarregaNN();
 var
   filename : string;
 begin
+  (*
   if (dmBase =nil) then
   begin
     try
@@ -856,6 +859,7 @@ begin
        showmessage('Falha na conexao!');
     end;
   end;
+  *)
 end;
 
 function TfrmmainJSON.AbreProjeto: boolean;

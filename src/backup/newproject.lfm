@@ -13,11 +13,11 @@ object frmNewProject: TfrmNewProject
     Height = 358
     Top = 0
     Width = 507
-    ActivePage = TabSheet1
+    ActivePage = tsProject
     Align = alClient
     TabIndex = 0
     TabOrder = 0
-    object TabSheet1: TTabSheet
+    object tsProject: TTabSheet
       Caption = 'Project Master'
       ClientHeight = 330
       ClientWidth = 499
@@ -6399,7 +6399,7 @@ object frmNewProject: TfrmNewProject
         TabOrder = 4
       end
     end
-    object TabSheet2: TTabSheet
+    object tsSpec: TTabSheet
       Caption = 'Project Spec'
       ClientHeight = 330
       ClientWidth = 499
@@ -6424,9 +6424,10 @@ object frmNewProject: TfrmNewProject
         Width = 75
         Caption = 'Next'
         TabOrder = 1
+        OnClick = Button2Click
       end
     end
-    object TabSheet3: TTabSheet
+    object tsDatabase: TTabSheet
       Caption = 'Database:'
       ClientHeight = 330
       ClientWidth = 499
@@ -6437,6 +6438,7 @@ object frmNewProject: TfrmNewProject
         Width = 75
         Caption = 'Process'
         TabOrder = 0
+        OnClick = btProcessClick
       end
       object Label6: TLabel
         Left = 24

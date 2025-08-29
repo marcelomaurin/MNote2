@@ -1,10 +1,10 @@
 object frmmquery2: Tfrmmquery2
-  Left = -1528
-  Height = 646
-  Top = 226
+  Left = -3329
+  Height = 770
+  Top = 195
   Width = 1172
   Caption = 'Query Tools'
-  ClientHeight = 646
+  ClientHeight = 770
   ClientWidth = 1172
   Menu = MainMenu1
   Position = poMainFormCenter
@@ -21,22 +21,22 @@ object frmmquery2: Tfrmmquery2
   end
   object Splitter3: TSplitter
     Left = 0
-    Height = 596
+    Height = 720
     Top = 50
     Width = 5
   end
   object pgMain: TPageControl
     Left = 5
-    Height = 596
+    Height = 720
     Top = 50
     Width = 1167
-    ActivePage = tsAbout
+    ActivePage = tspostgree
     Align = alClient
-    TabIndex = 0
+    TabIndex = 2
     TabOrder = 2
     object tsAbout: TTabSheet
       Caption = 'About'
-      ClientHeight = 568
+      ClientHeight = 692
       ClientWidth = 1159
       object Label11: TLabel
         Left = 416
@@ -57,20 +57,20 @@ object frmmquery2: Tfrmmquery2
     end
     object tsMysql: TTabSheet
       Caption = 'Mysql'
-      ClientHeight = 568
+      ClientHeight = 692
       ClientWidth = 1159
       object Panel4: TPanel
         Left = 206
-        Height = 568
+        Height = 692
         Top = 0
         Width = 953
         Align = alClient
-        ClientHeight = 568
+        ClientHeight = 692
         ClientWidth = 953
         TabOrder = 0
         object pgMysql: TPageControl
           Left = 1
-          Height = 566
+          Height = 690
           Top = 1
           Width = 951
           ActivePage = tbConxao
@@ -80,7 +80,7 @@ object frmmquery2: Tfrmmquery2
           OnChange = PageControl1Change
           object tbConxao: TTabSheet
             Caption = 'Mysql Connection'
-            ClientHeight = 538
+            ClientHeight = 662
             ClientWidth = 943
             object btConectarMy: TButton
               Left = 296
@@ -192,11 +192,11 @@ object frmmquery2: Tfrmmquery2
           end
           object tbSQL: TTabSheet
             Caption = 'SQL'
-            ClientHeight = 538
+            ClientHeight = 662
             ClientWidth = 943
             inline edSQL: TSynEdit
               Left = 0
-              Height = 368
+              Height = 492
               Top = 0
               Width = 943
               Align = alClient
@@ -677,7 +677,7 @@ object frmmquery2: Tfrmmquery2
             object Panel13: TPanel
               Left = 0
               Height = 41
-              Top = 497
+              Top = 621
               Width = 943
               Align = alBottom
               ClientHeight = 41
@@ -749,7 +749,7 @@ object frmmquery2: Tfrmmquery2
             object pnBotton: TPanel
               Left = 0
               Height = 50
-              Top = 447
+              Top = 571
               Width = 943
               Align = alBottom
               ClientHeight = 50
@@ -772,7 +772,7 @@ object frmmquery2: Tfrmmquery2
               Cursor = crVSplit
               Left = 0
               Height = 5
-              Top = 442
+              Top = 566
               Width = 943
               Align = alBottom
               ResizeAnchor = akBottom
@@ -780,7 +780,7 @@ object frmmquery2: Tfrmmquery2
             object pnErro: TPanel
               Left = 0
               Height = 74
-              Top = 368
+              Top = 492
               Width = 943
               Align = alBottom
               ClientHeight = 74
@@ -802,7 +802,7 @@ object frmmquery2: Tfrmmquery2
           end
           object tsgrid: TTabSheet
             Caption = 'Grid'
-            ClientHeight = 538
+            ClientHeight = 662
             ClientWidth = 943
             object btJSON: TButton
               Left = 704
@@ -815,17 +815,17 @@ object frmmquery2: Tfrmmquery2
             end
             object Panel2: TPanel
               Left = 0
-              Height = 488
+              Height = 612
               Top = 50
               Width = 943
               Align = alClient
               Caption = 'Panel2'
-              ClientHeight = 488
+              ClientHeight = 612
               ClientWidth = 943
               TabOrder = 1
               object dbgridmy: TDBGrid
                 Left = 1
-                Height = 486
+                Height = 610
                 Top = 1
                 Width = 941
                 Align = alClient
@@ -888,11 +888,11 @@ object frmmquery2: Tfrmmquery2
           end
           object tbLog: TTabSheet
             Caption = 'Log'
-            ClientHeight = 538
+            ClientHeight = 662
             ClientWidth = 943
             object edLog: TMemo
               Left = 0
-              Height = 538
+              Height = 662
               Top = 0
               Width = 943
               Align = alClient
@@ -901,7 +901,7 @@ object frmmquery2: Tfrmmquery2
           end
           object tbTools: TTabSheet
             Caption = 'tools'
-            ClientHeight = 538
+            ClientHeight = 662
             ClientWidth = 943
             object ToggleBox2: TToggleBox
               Left = 15
@@ -960,7 +960,7 @@ object frmmquery2: Tfrmmquery2
           end
           object TabSheet1: TTabSheet
             Caption = 'syntactic analysis'
-            ClientHeight = 538
+            ClientHeight = 662
             ClientWidth = 943
             object Label19: TLabel
               Left = 10
@@ -991,16 +991,16 @@ object frmmquery2: Tfrmmquery2
       end
       object Panel10: TPanel
         Left = 0
-        Height = 568
+        Height = 692
         Top = 0
         Width = 201
         Align = alLeft
-        ClientHeight = 568
+        ClientHeight = 692
         ClientWidth = 201
         TabOrder = 1
         object tvMysql: TTreeView
           Left = 1
-          Height = 541
+          Height = 665
           Top = 26
           Width = 199
           Align = alClient
@@ -1033,27 +1033,27 @@ object frmmquery2: Tfrmmquery2
       end
       object Splitter1: TSplitter
         Left = 201
-        Height = 568
+        Height = 692
         Top = 0
         Width = 5
       end
     end
     object tspostgree: TTabSheet
       Caption = 'Postgree'
-      ClientHeight = 568
+      ClientHeight = 692
       ClientWidth = 1159
       object Panel8: TPanel
         Left = 0
-        Height = 568
+        Height = 692
         Top = 0
         Width = 201
         Align = alLeft
-        ClientHeight = 568
+        ClientHeight = 692
         ClientWidth = 201
         TabOrder = 0
         object tvPost: TTreeView
           Left = 1
-          Height = 541
+          Height = 665
           Top = 26
           Width = 199
           Align = alClient
@@ -1086,26 +1086,26 @@ object frmmquery2: Tfrmmquery2
       end
       object Panel14: TPanel
         Left = 206
-        Height = 568
+        Height = 692
         Top = 0
         Width = 953
         Align = alClient
         Caption = 'Panel14'
-        ClientHeight = 568
+        ClientHeight = 692
         ClientWidth = 953
         TabOrder = 1
         object pcPostgree: TPageControl
           Left = 1
-          Height = 566
+          Height = 690
           Top = 1
           Width = 951
-          ActivePage = tsSetupPostres
+          ActivePage = tsSQLPostgreSQL
           Align = alClient
-          TabIndex = 0
+          TabIndex = 1
           TabOrder = 0
           object tsSetupPostres: TTabSheet
             Caption = 'PostgreSql Connection'
-            ClientHeight = 538
+            ClientHeight = 662
             ClientWidth = 943
             object edHostNamePost: TEdit
               Left = 24
@@ -1200,13 +1200,13 @@ object frmmquery2: Tfrmmquery2
           end
           object tsSQLPostgreSQL: TTabSheet
             Caption = 'SQL'
-            ClientHeight = 538
+            ClientHeight = 662
             ClientWidth = 943
             object Splitter5: TSplitter
               Cursor = crVSplit
               Left = 0
               Height = 5
-              Top = 442
+              Top = 566
               Width = 943
               Align = alBottom
               ResizeAnchor = akBottom
@@ -1214,7 +1214,7 @@ object frmmquery2: Tfrmmquery2
             object pnBotton1: TPanel
               Left = 0
               Height = 50
-              Top = 447
+              Top = 571
               Width = 943
               Align = alBottom
               ClientHeight = 50
@@ -1236,7 +1236,7 @@ object frmmquery2: Tfrmmquery2
             object pnErro1: TPanel
               Left = 0
               Height = 74
-              Top = 368
+              Top = 492
               Width = 943
               Align = alBottom
               ClientHeight = 74
@@ -1258,7 +1258,7 @@ object frmmquery2: Tfrmmquery2
             object pnsqlpost: TPanel
               Left = 0
               Height = 41
-              Top = 497
+              Top = 621
               Width = 943
               Align = alBottom
               ClientHeight = 41
@@ -1330,7 +1330,7 @@ object frmmquery2: Tfrmmquery2
             object pnIA: TPanel
               Left = 0
               Height = 162
-              Top = 206
+              Top = 330
               Width = 943
               Align = alBottom
               ClientHeight = 162
@@ -1367,16 +1367,16 @@ object frmmquery2: Tfrmmquery2
             end
             object pnSQL: TPanel
               Left = 0
-              Height = 206
+              Height = 330
               Top = 0
               Width = 943
               Align = alClient
-              ClientHeight = 206
+              ClientHeight = 330
               ClientWidth = 943
               TabOrder = 5
               inline edSQLPost: TSynEdit
                 Left = 1
-                Height = 204
+                Height = 328
                 Top = 1
                 Width = 941
                 Align = alClient
@@ -1858,7 +1858,7 @@ object frmmquery2: Tfrmmquery2
           end
           object tsGridPostgres: TTabSheet
             Caption = 'Grid'
-            ClientHeight = 538
+            ClientHeight = 662
             ClientWidth = 943
             object btJSON1: TButton
               Left = 614
@@ -1871,17 +1871,17 @@ object frmmquery2: Tfrmmquery2
             end
             object Panel5: TPanel
               Left = 0
-              Height = 488
+              Height = 612
               Top = 50
               Width = 943
               Align = alClient
               Caption = 'Panel5'
-              ClientHeight = 488
+              ClientHeight = 612
               ClientWidth = 943
               TabOrder = 1
               object dbgridpost: TDBGrid
                 Left = 1
-                Height = 486
+                Height = 610
                 Top = 1
                 Width = 941
                 Align = alClient
@@ -1929,11 +1929,11 @@ object frmmquery2: Tfrmmquery2
           end
           object TabSheet3: TTabSheet
             Caption = 'Log'
-            ClientHeight = 538
+            ClientHeight = 662
             ClientWidth = 943
-            object edLog1: TMemo
+            object edLogPost: TMemo
               Left = 0
-              Height = 538
+              Height = 662
               Top = 0
               Width = 943
               Align = alClient
@@ -1942,7 +1942,7 @@ object frmmquery2: Tfrmmquery2
           end
           object TabSheet4: TTabSheet
             Caption = 'Tools'
-            ClientHeight = 538
+            ClientHeight = 662
             ClientWidth = 943
             object btBanco1: TButton
               Left = 15
@@ -1985,14 +1985,14 @@ object frmmquery2: Tfrmmquery2
       end
       object Splitter6: TSplitter
         Left = 201
-        Height = 568
+        Height = 692
         Top = 0
         Width = 5
       end
     end
     object TabSheet7: TTabSheet
       Caption = 'Setup'
-      ClientHeight = 568
+      ClientHeight = 692
       ClientWidth = 1159
       object Label12: TLabel
         Left = 8
@@ -6079,8 +6079,8 @@ object frmmquery2: Tfrmmquery2
     Top = 400
   end
   object pmDatabasePost: TPopupMenu
-    Left = 272
-    Top = 304
+    Left = 248
+    Top = 504
     object mnDicionario: TMenuItem
       Caption = 'Create Dictionary'
       OnClick = mnDicionarioClick

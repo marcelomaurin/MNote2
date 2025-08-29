@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Menus, StdCtrls,
   About, setimg, config, EditBtn, ExtCtrls, ComCtrls, Grids,
-  setproject, Novo, funcoes, base, sqleditor, sqlEditItem, NNTrainning,
+  setproject, Novo, funcoes, sqleditor, sqlEditItem, NNTrainning,
   frmnntrainning, PythonEngine;
 
 
@@ -110,7 +110,7 @@ type
     tvItem : TTreenode;
 
     selecttreenode : TTreeNode;
-    procedure controlelog(Sender: TObject; const OutputLine: String);
+    procedure controlelog(Sender: TObject; const OutputLine: UTF8String);
     procedure PopulaTV();
     procedure NewQuery();
     procedure NewNNTrainning();
@@ -799,6 +799,7 @@ procedure TfrmmainJSON.CarregaDatabase();
 var
   filename : string;
 begin
+  (*
   if (dmBase =nil) then
   begin
     try
@@ -840,6 +841,7 @@ begin
        showmessage('Falha na conexao!');
     end;
   end;
+  *)
 end;
 
 procedure TfrmmainJSON.CarregaNN();
@@ -980,9 +982,10 @@ end;
 
 procedure TfrmmainJSON.controlelog(Sender: TObject; const OutputLine: UTF8String);
 begin
-  frmnntrain.pnlog.Visible:=true;
-  frmnntrain.melog.Append(outputline);
+  frmnntrain.pnlog.Visible := True;
+  frmnntrain.melog.Append(OutputLine);
 end;
+
 
 
 

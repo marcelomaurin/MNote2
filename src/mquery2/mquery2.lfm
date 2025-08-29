@@ -30,9 +30,9 @@ object frmmquery2: Tfrmmquery2
     Height = 720
     Top = 50
     Width = 1167
-    ActivePage = tsAbout
+    ActivePage = tspostgree
     Align = alClient
-    TabIndex = 0
+    TabIndex = 2
     TabOrder = 2
     object tsAbout: TTabSheet
       Caption = 'About'
@@ -1099,9 +1099,9 @@ object frmmquery2: Tfrmmquery2
           Height = 690
           Top = 1
           Width = 951
-          ActivePage = TabSheet4
+          ActivePage = tsSQLPostgreSQL
           Align = alClient
-          TabIndex = 4
+          TabIndex = 1
           TabOrder = 0
           object tsSetupPostres: TTabSheet
             Caption = 'PostgreSql Connection'
@@ -6079,8 +6079,8 @@ object frmmquery2: Tfrmmquery2
     Top = 400
   end
   object pmDatabasePost: TPopupMenu
-    Left = 272
-    Top = 304
+    Left = 248
+    Top = 504
     object mnDicionario: TMenuItem
       Caption = 'Create Dictionary'
       OnClick = mnDicionarioClick

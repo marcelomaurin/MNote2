@@ -59,7 +59,7 @@ procedure TfrmSQLEditor.FormCreate(Sender: TObject);
 begin
   flgsalvar:= false;
   SynEdit1.Lines.clear;
-  PageControl1.ActivePageIndex:=;
+  PageControl1.ActivePageIndex:=0;
 
 end;
 

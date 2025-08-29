@@ -7,11 +7,13 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, tachartlazaruspkg, synuni, rxnew, pkg_gifanim, zcomponent, main, ToolsOuvir
+  Forms, tachartlazaruspkg, synuni, rxnew, pkg_gifanim, indylaz, zcomponent,
+  main, ToolsOuvir,
   {$ifndef Darwin}
   folders, mquery2, pesquisar, triggers, view, Views, benchmark, porradawebapi,
   chart,config, config2, funcoes, setmain, sobre, jsonmain, about, base, NNTrainning,
-  Novo, PythonRun, setproject, SqlEditItem, sqleditor, SQLItem, trainning
+  Novo, PythonRun, setproject, SqlEditItem, SQLItem, trainning,
+newproject, uProjetoDB, sqlite_db
   {$ENDIF}
   ;
 

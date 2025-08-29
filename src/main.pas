@@ -14,7 +14,7 @@ uses
   newproject;
 
 
-const versao = '2.42';
+const versao = '2.43';
 
 type
 

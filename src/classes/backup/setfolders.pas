@@ -77,9 +77,9 @@ begin
     fixar:=false;
     stay:=false;
     {$IFDEF WINDOWS}
-    FDefaultfolder:= ExtractFilePath(application.ExeName);
+    FDefaultfolder:= 'c:';
     {$ELSE}
-    FDefaultfolder:= ExtractFilePath(application.ExeName);
+    FDefaultfolder:= '/';
     {$ENDIF}
 end;
 

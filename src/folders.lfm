@@ -1,108 +1,197 @@
 object frmFolders: TfrmFolders
-  Left = 608
-  Height = 722
-  Top = 164
-  Width = 948
+  Left = -1678
+  Height = 652
+  Top = 214
+  Width = 1011
   AutoSize = True
   Caption = 'Folders'
-  ClientHeight = 722
-  ClientWidth = 948
-  DesignTimePPI = 120
+  ClientHeight = 652
+  ClientWidth = 1011
   DoubleBuffered = True
-  OnCreate = FormCreate
-  OnDestroy = FormDestroy
-  OnShow = FormShow
   ParentBiDiMode = False
   ParentDoubleBuffered = False
   Position = poMainFormCenter
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '4.0.0.4'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnShow = FormShow
   object Panel2: TPanel
-    Left = 256
-    Height = 722
+    Left = 205
+    Height = 652
     Top = 0
-    Width = 692
+    Width = 806
     Align = alClient
-    ClientHeight = 722
-    ClientWidth = 692
+    ClientHeight = 652
+    ClientWidth = 806
     TabOrder = 0
-    object Panel3: TPanel
+    object PageControl1: TPageControl
       Left = 1
-      Height = 152
+      Height = 650
       Top = 1
-      Width = 690
-      Align = alTop
-      ClientHeight = 152
-      ClientWidth = 690
-      TabOrder = 0
-      object edFolder: TEdit
-        Left = 1
-        Height = 28
-        Top = 109
-        Width = 680
-        Anchors = [akTop, akLeft, akRight]
-        OnKeyPress = edFolderKeyPress
-        TabOrder = 0
-        Text = 'edFolder'
-      end
-    end
-    object ShellListView1: TShellListView
-      Left = 1
-      Height = 568
-      Top = 153
-      Width = 690
+      Width = 804
+      ActivePage = tsIA
       Align = alClient
-      Color = clDefault
-      PopupMenu = PopupMenu1
-      ReadOnly = True
-      TabOrder = 1
-      ObjectTypes = [otNonFolders]
-      ShellTreeView = ShellTreeView1
+      TabIndex = 1
+      TabOrder = 0
+      object tsFolders: TTabSheet
+        Caption = 'Folders'
+        ClientHeight = 622
+        ClientWidth = 796
+        object Panel3: TPanel
+          Left = 0
+          Height = 122
+          Top = 0
+          Width = 796
+          Align = alTop
+          ClientHeight = 122
+          ClientWidth = 796
+          TabOrder = 0
+          object edFolder: TEdit
+            Left = 1
+            Height = 23
+            Top = 87
+            Width = 788
+            Anchors = [akTop, akLeft, akRight]
+            TabOrder = 0
+            Text = 'edFolder'
+            OnKeyPress = edFolderKeyPress
+          end
+        end
+        object ShellListView1: TShellListView
+          Left = 0
+          Height = 500
+          Top = 122
+          Width = 796
+          Align = alClient
+          Color = clDefault
+          PopupMenu = PopupMenu1
+          TabOrder = 1
+          ShellTreeView = ShellTreeView1
+        end
+      end
+      object tsIA: TTabSheet
+        Caption = 'IA'
+        ClientHeight = 622
+        ClientWidth = 796
+        object Panel4: TPanel
+          Left = 0
+          Height = 50
+          Top = 0
+          Width = 796
+          Align = alTop
+          TabOrder = 0
+        end
+        object Panel5: TPanel
+          Left = 0
+          Height = 158
+          Top = 464
+          Width = 796
+          Align = alBottom
+          ClientHeight = 158
+          ClientWidth = 796
+          TabOrder = 1
+          object btScanner: TButton
+            Left = 16
+            Height = 25
+            Top = 15
+            Width = 75
+            Caption = 'Scanner'
+            TabOrder = 0
+            OnClick = btScannerClick
+          end
+          object btIA: TButton
+            Left = 696
+            Height = 25
+            Top = 15
+            Width = 75
+            Caption = 'ASK'
+            TabOrder = 1
+            OnClick = btIAClick
+          end
+        end
+        object Panel6: TPanel
+          Left = 0
+          Height = 206
+          Top = 50
+          Width = 796
+          Align = alTop
+          Caption = 'Panel6'
+          ClientHeight = 206
+          ClientWidth = 796
+          TabOrder = 2
+          object meLog: TMemo
+            Left = 1
+            Height = 204
+            Top = 1
+            Width = 794
+            Align = alClient
+            Lines.Strings = (
+              'meLog'
+            )
+            TabOrder = 0
+          end
+        end
+        object mePergunta: TMemo
+          Left = 0
+          Height = 208
+          Top = 256
+          Width = 796
+          Align = alClient
+          Lines.Strings = (
+            'mePergunta'
+          )
+          TabOrder = 3
+        end
+      end
     end
   end
   object Panel1: TPanel
     Left = 0
-    Height = 722
+    Height = 652
     Top = 0
-    Width = 250
+    Width = 200
     Align = alLeft
-    ClientHeight = 722
-    ClientWidth = 250
+    ClientHeight = 652
+    ClientWidth = 200
     TabOrder = 1
     object ShellTreeView1: TShellTreeView
       Left = 1
-      Height = 720
+      Height = 650
       Top = 1
-      Width = 248
+      Width = 198
       Align = alClient
-      FileSortType = fstNone
       PopupMenu = PopupMenu2
-      ReadOnly = True
       TabOrder = 0
+      Options = [tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
+      ShellListView = ShellListView1
       OnChange = ShellTreeView1Change
       OnChanging = ShellTreeView1Changing
       OnGetSelectedIndex = ShellTreeView1GetSelectedIndex
-      Options = [tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
-      ObjectTypes = [otFolders]
-      ShellListView = ShellListView1
     end
   end
   object Splitter1: TSplitter
-    Left = 250
-    Height = 722
+    Left = 200
+    Height = 652
     Top = 0
-    Width = 6
+    Width = 5
   end
   object PopupMenu1: TPopupMenu
-    Left = 429
-    Top = 226
+    Left = 343
+    Top = 181
     object MenuItem1: TMenuItem
       Caption = 'Open file'
       OnClick = MenuItem1Click
     end
+    object Separator2: TMenuItem
+      Caption = '-'
+    end
+    object MenuItem3: TMenuItem
+      Caption = 'Scanning Dir'
+    end
   end
   object PopupMenu2: TPopupMenu
-    Left = 51
-    Top = 108
+    Left = 41
+    Top = 86
     object MenuItem2: TMenuItem
       Caption = 'Set Default'
       OnClick = MenuItem2Click

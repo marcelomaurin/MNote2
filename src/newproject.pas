@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  EditBtn, ComCtrls, base, funcoes, hint;
+  EditBtn, ComCtrls, base, funcoes, hint, setmain;
 
 type
 
@@ -59,6 +59,8 @@ implementation
 
 { TfrmNewProject }
 
+uses mquery2;
+
 procedure TfrmNewProject.Button1Click(Sender: TObject);
 var
   original, destino, biblioteca, basePath: string;
@@ -66,11 +68,19 @@ begin
   // validações mínimas
   if Trim(deTarget.Text) = '' then
   begin
+    if(frmhint= nil) then
+    begin
+      frmhint := TfrmHint.create(self);
+    end;
     frmHint.MessageHint('Selecione a pasta de destino.');
     Exit;
   end;
   if Trim(edproject.Text) = '' then
   begin
+    if(frmhint= nil) then
+    begin
+      frmhint := TfrmHint.create(self);
+    end;
     frmHint.MessageHint('Informe o nome do projeto.');
     Exit;
   end;
@@ -94,6 +104,10 @@ begin
 
   if not FileExists(original) then
   begin
+    if(frmhint= nil) then
+    begin
+      frmhint := TfrmHint.create(self);
+    end;
     frmHint.MessageHint('Arquivo de base não encontrado: ' + original);
     Exit;
   end;
@@ -106,6 +120,10 @@ begin
   except
     on E: Exception do
     begin
+      if(frmhint= nil) then
+      begin
+        frmhint := TfrmHint.create(self);
+      end;
       frmHint.MessageHint('Falha ao copiar o arquivo: ' + E.Message);
       Exit;
     end;
@@ -120,6 +138,10 @@ begin
     PageControl1.ActivePage := tsSpec;
   end
   else
+    if(frmhint= nil) then
+    begin
+      frmhint := TfrmHint.create(self);
+    end;
     frmHint.MessageHint('Não foi possível conectar ao SQLite.');
 end;
 
@@ -133,30 +155,60 @@ begin
   if(edHostNamePost.Text<>'') then
   begin
     dmbase.RegistraParam('HOSTNAME',edHostNamePost.Text);
-
+    if(cbDataBase.ItemIndex=1) then
+    begin
+       FSetMain.HostnamePost:=edHostNamePost.Text;
+    end;
   end;
   if(edSchemaPost.Text<>'') then
   begin
     dmbase.RegistraParam('SCHEMA',edSchemaPost.Text);
+    if(cbDataBase.ItemIndex=1) then
+    begin
+        FSetMain.SchemaPost:=edSchemaPost.Text;
+    end;
   end;
   if(edBancoPost.Text<>'') then
   begin
     dmbase.RegistraParam('DATABASE',edBancoPost.Text);
+    if(cbDataBase.ItemIndex=1) then
+    begin
+      FSetMain.BancoPOST:= edBancoPost.Text;
+    end;
   end;
   if(edusuarioPost.Text<>'') then
   begin
     dmbase.RegistraParam('USER',edusuarioPost.Text);
+    if(cbDataBase.ItemIndex=1) then
+    begin
+      FSetMain.UsernamePost:= edusuarioPost.Text;
+    end;
   end;
   if(edPasswrdPost.Text<>'') then
   begin
     dmbase.RegistraParam('PASSWORD',edPasswrdPost.Text);
+    if(cbDataBase.ItemIndex=1) then
+    begin
+      FSetMain.PasswordPost:= edPasswrdPost.Text;
+    end;
   end;
-  if (ValidaConexao()) then
+  FSetMain.Defaultfolder:= deTarget.text;
+  FSetMain.Project:=  IncludeTrailingPathDelimiter(deTarget.Text) + edproject.Text + '.db'; ;
+  if( frmmquery2 = nil) then
   begin
+      frmmquery2 := Tfrmmquery2.CREATE(self);
+  end;
+  if (frmmquery2.ValidaConexao(cbDataBase.ItemIndex)) then
+  begin
+     FSetMain.SalvaContexto(false);
      close;
   end
   else
   begin
+    if(frmhint= nil) then
+    begin
+      frmhint := TfrmHint.create(self);
+    end;
     frmHint.MessageHint('Conexão inválida');
   end;
 end;
@@ -171,9 +223,21 @@ begin
     end;
     dmbase.RegistraParam('SPEC',mespec.Text);
     PageControl1.ActivePage := tsDatabase;
+    if (cbDataBase.ItemIndex=1) then
+    begin
+        edHostNamePost.text := FSetMain.HostnamePost;
+        edSchemaPost.text := FSetMain.SchemaPost;
+        edBancoPost.text := FSetMain.BancoPOST;
+        edusuarioPost.text :=  FSetMain.UsernamePost;
+        edPasswrdPost.text := FSetMain.PasswordPost;
+    end;
   end
   else
   begin
+    if(frmhint= nil) then
+    begin
+      frmhint := TfrmHint.create(self);
+    end;
     frmHint.MessageHint('Spec not found');
   end;
 end;
@@ -190,14 +254,32 @@ begin
   if (dbType <> 0) and (dbType <> 1) then
     dbType := 1;
 
-  Result := dmBase.ValidaConexao(
-    edHostNamePost.Text,  // Host
-    edSchemaPost.Text,    // Schema (PG opcional)
-    edBancoPost.Text,     // Database
-    edusuarioPost.Text,   // User
-    edPasswrdPost.Text,   // Password
-    dbType                // 0=mysql, 1=postgres
-  );
+  // 1) grava os parâmetros (os não vazios) + DATABASETYPE sempre
+  try
+    if Trim(edHostNamePost.Text) <> ''  then
+    begin
+         dmBase.RegistraParam('HOSTNAME', edHostNamePost.Text);
+         //fsetmain.HostnamePost:= edHostNamePost.Text;
+    end;
+    if Trim(edSchemaPost.Text)   <> ''  then
+    begin
+      dmBase.RegistraParam('SCHEMA', edSchemaPost.Text);
+      //FSetMain.SchemaPost:= edSchemaPost.Text;
+    end;
+    if Trim(edBancoPost.Text) <> ''  then dmBase.RegistraParam('DATABASE', edBancoPost.Text);
+    if Trim(edusuarioPost.Text) <> ''  then dmBase.RegistraParam('USER', edusuarioPost.Text);
+    if Trim(edPasswrdPost.Text) <> ''  then dmBase.RegistraParam('PASSWORD', edPasswrdPost.Text);
+    dmBase.RegistraParam('DATABASETYPE', IntToStr(cbDataBase.ItemIndex));
+  except
+    Exit(False);
+  end;
+
+  if(frmmquery2=nil) then
+  begin
+    frmmquery2 := Tfrmmquery2.create(self);
+  end;
+
+  Result := frmmquery2.ValidaConexao( dbType   );
 end;
 
 end.

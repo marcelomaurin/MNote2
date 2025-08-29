@@ -25,7 +25,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="2"/>
       <MinorVersionNr Value="26"/>
-      <BuildNr Value="1"/>
+      <BuildNr Value="2"/>
       <Language Value="0416"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -47,69 +47,72 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="20">
+    <RequiredPackages Count="21">
       <Item1>
-        <PackageName Value="IPEdit_pkg"/>
+        <PackageName Value="indylaz"/>
       </Item1>
       <Item2>
-        <PackageName Value="zcomponentdesign"/>
+        <PackageName Value="IPEdit_pkg"/>
       </Item2>
       <Item3>
-        <PackageName Value="LazUtils"/>
+        <PackageName Value="zcomponentdesign"/>
       </Item3>
       <Item4>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="LazUtils"/>
       </Item4>
       <Item5>
-        <PackageName Value="synuni"/>
+        <PackageName Value="lnetbase"/>
       </Item5>
       <Item6>
-        <PackageName Value="synfacilsyn"/>
+        <PackageName Value="synuni"/>
       </Item6>
       <Item7>
-        <PackageName Value="SynEditDsgn"/>
+        <PackageName Value="synfacilsyn"/>
       </Item7>
       <Item8>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="SynEditDsgn"/>
       </Item8>
       <Item9>
-        <PackageName Value="myexamplepackage"/>
+        <PackageName Value="SynEdit"/>
       </Item9>
       <Item10>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="myexamplepackage"/>
       </Item10>
       <Item11>
-        <PackageName Value="FCL"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item11>
       <Item12>
-        <PackageName Value="poweredby"/>
+        <PackageName Value="FCL"/>
       </Item12>
       <Item13>
-        <PackageName Value="industrial"/>
+        <PackageName Value="poweredby"/>
       </Item13>
       <Item14>
-        <PackageName Value="pkg_gifanim"/>
+        <PackageName Value="industrial"/>
       </Item14>
       <Item15>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="pkg_gifanim"/>
       </Item15>
       <Item16>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="zcomponent"/>
       </Item16>
       <Item17>
-        <PackageName Value="rxnew"/>
+        <PackageName Value="multiloglaz"/>
       </Item17>
       <Item18>
-        <PackageName Value="python4lazarus_package"/>
+        <PackageName Value="rxnew"/>
       </Item18>
       <Item19>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="python4lazarus_package"/>
       </Item19>
       <Item20>
-        <PackageName Value="LCL"/>
+        <PackageName Value="lnetvisual"/>
       </Item20>
+      <Item21>
+        <PackageName Value="LCL"/>
+      </Item21>
     </RequiredPackages>
-    <Units Count="50">
+    <Units Count="47">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -164,231 +167,216 @@
         <ResourceBaseClass Value="Form"/>
       </Unit9>
       <Unit10>
-        <Filename Value="classes/setfolders.pas"/>
+        <Filename Value="Manifest.manifest"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="setFolders"/>
       </Unit10>
       <Unit11>
-        <Filename Value="Manifest.manifest"/>
+        <Filename Value="Manifest.rc"/>
         <IsPartOfProject Value="True"/>
       </Unit11>
       <Unit12>
-        <Filename Value="Manifest.rc"/>
-        <IsPartOfProject Value="True"/>
-      </Unit12>
-      <Unit13>
         <Filename Value="chgtext.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmchgtext"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit13>
-      <Unit14>
+      </Unit12>
+      <Unit13>
         <Filename Value="setchgtext.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit14>
-      <Unit15>
+      </Unit13>
+      <Unit14>
         <Filename Value="hint.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmHint"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit15>
-      <Unit16>
+      </Unit14>
+      <Unit15>
         <Filename Value="registro.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmRegistrar"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit16>
-      <Unit17>
+      </Unit15>
+      <Unit16>
         <Filename Value="splash.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmSplash"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit17>
-      <Unit18>
+      </Unit16>
+      <Unit17>
         <Filename Value="config.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmconfig"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit18>
-      <Unit19>
+      </Unit17>
+      <Unit18>
         <Filename Value="setlstbnc.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Setlstbnc"/>
-      </Unit19>
-      <Unit20>
+      </Unit18>
+      <Unit19>
         <Filename Value="classes/chatgpt.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit20>
-      <Unit21>
+      </Unit19>
+      <Unit20>
         <Filename Value="mquery2/mquery2.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmmquery2"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit21>
-      <Unit22>
+      </Unit20>
+      <Unit21>
         <Filename Value="mquery2/pesquisar.lfm"/>
         <IsPartOfProject Value="True"/>
-      </Unit22>
-      <Unit23>
+      </Unit21>
+      <Unit22>
         <Filename Value="mquery2/pesquisar.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmPesquisar"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit23>
-      <Unit24>
+      </Unit22>
+      <Unit23>
         <Filename Value="mquery2/tabela.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Tabela"/>
-      </Unit24>
-      <Unit25>
+      </Unit23>
+      <Unit24>
         <Filename Value="mquery2/triggers.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit25>
-      <Unit26>
+      </Unit24>
+      <Unit25>
         <Filename Value="mquery2/typedb.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="TypeDB"/>
-      </Unit26>
-      <Unit27>
+      </Unit25>
+      <Unit26>
         <Filename Value="mquery2/view.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit27>
-      <Unit28>
+      </Unit26>
+      <Unit27>
         <Filename Value="mquery2/views.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Views"/>
-      </Unit28>
-      <Unit29>
+      </Unit27>
+      <Unit28>
         <Filename Value="mquery2/benchmark.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmBenchmark"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit29>
-      <Unit30>
+      </Unit28>
+      <Unit29>
         <Filename Value="porradawebapi.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmporradawebapi"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit30>
-      <Unit31>
+      </Unit29>
+      <Unit30>
         <Filename Value="codigo.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit31>
-      <Unit32>
+      </Unit30>
+      <Unit31>
         <Filename Value="chart.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmChart"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit32>
-      <Unit33>
+      </Unit31>
+      <Unit32>
         <Filename Value="imgjson/jsonmain.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmmainJSON"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit33>
-      <Unit34>
+      </Unit32>
+      <Unit33>
         <Filename Value="imgjson/about.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmAbout"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit34>
-      <Unit35>
+      </Unit33>
+      <Unit34>
         <Filename Value="imgjson/base.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="dmBase"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
-      </Unit35>
-      <Unit36>
+      </Unit34>
+      <Unit35>
         <Filename Value="imgjson/nntrainning.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="NNTrainning"/>
-      </Unit36>
-      <Unit37>
+      </Unit35>
+      <Unit36>
         <Filename Value="imgjson/novo.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmNovo"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Novo"/>
-      </Unit37>
-      <Unit38>
+      </Unit36>
+      <Unit37>
         <Filename Value="imgjson/pythonrun.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="PythonRun"/>
-      </Unit38>
-      <Unit39>
+      </Unit37>
+      <Unit38>
         <Filename Value="imgjson/setproject.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit39>
-      <Unit40>
+      </Unit38>
+      <Unit39>
         <Filename Value="imgjson/sobre.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit40>
-      <Unit41>
-        <Filename Value="imgjson/sqledititem.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="SqlEditItem"/>
-      </Unit41>
-      <Unit42>
-        <Filename Value="imgjson/sqleditor.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="frmSQLEditor"/>
-        <ResourceBaseClass Value="Form"/>
-      </Unit42>
-      <Unit43>
+      </Unit39>
+      <Unit40>
         <Filename Value="imgjson/sqlitem.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="SQLItem"/>
-      </Unit43>
-      <Unit44>
+      </Unit40>
+      <Unit41>
         <Filename Value="imgjson/trainning.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmTrainning"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit44>
-      <Unit45>
+      </Unit41>
+      <Unit42>
         <Filename Value="toolsfalar/toolsfalar.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmToolsfalar"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit45>
-      <Unit46>
+      </Unit42>
+      <Unit43>
         <Filename Value="toolsouvir/toolsouvir.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmToolsOuvir"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ToolsOuvir"/>
-      </Unit46>
-      <Unit47>
+      </Unit43>
+      <Unit44>
         <Filename Value="newproject.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmNewProject"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit47>
-      <Unit48>
+      </Unit44>
+      <Unit45>
         <Filename Value="uprojetodb.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="uProjetoDB"/>
-      </Unit48>
-      <Unit49>
+      </Unit45>
+      <Unit46>
         <Filename Value="sqlite_db.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit49>
+      </Unit46>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -59,6 +59,9 @@ type
         fIPFALAR : String;
         fIPOUVIR : String;
 
+        FDefaultfolder : string;
+        FProject : string;
+
 
         //filename : String;
         procedure SetDevice(const Value : Boolean);
@@ -112,6 +115,8 @@ type
         property ToolsOuvir : Boolean read FToolsOuvir write FToolsOuvir;
         property IPFALAR : string read fIPFALAR write fIPFALAR;
         property IPOUVIR : string read fIPOUVIR write fIPOUVIR;
+        property Defaultfolder : string read FDefaultfolder write FDefaultfolder;
+        property Project : string read FProject write FProject;
   end;
 
   var
@@ -162,6 +167,8 @@ begin
     FCHATGPT:=''; //CHATGPT TOKEN
     FToolsFalar := false;
     FToolsOuvir := false;
+    FDefaultfolder := '';
+    FProject:= '';
 
 end;
 
@@ -352,6 +359,14 @@ begin
     begin
       fIPOUVIR := RetiraInfo(arquivo.Strings[posicao]);   ;
     end;
+    if  BuscaChave(arquivo,'DEFAULTFOLDER:',posicao) then
+    begin
+      FDefaultfolder := RetiraInfo(arquivo.Strings[posicao]);   ;
+    end;
+    if  BuscaChave(arquivo,'PROJECT:',posicao) then
+    begin
+      FProject := RetiraInfo(arquivo.Strings[posicao]);   ;
+    end;
 
 end;
 
@@ -434,6 +449,9 @@ begin
   arquivo.Append('SCHEMAPOST:'+FSchemaPost);
   arquivo.Append('TOOLSFALAR:'+iif(FToolsFalar,'1','0'));
   arquivo.Append('TOOLSOUVIR:'+iif(FToolsOuvir,'1','0'));
+  arquivo.Append('DEFAULTFOLDER:'+FDefaultfolder);
+  arquivo.Append('PROJECT:'+FPROJECT);
+
   arquivo.SaveToFile(fpath+filename);
 end;
 
