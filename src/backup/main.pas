@@ -11,10 +11,10 @@ uses
   hint, registro, splash, setFolders, config, SynEditKeyCmds, PythonEngine,
   rxctrls, LogTreeView, uPoweredby, chatgpt, mquery2, porradawebapi,
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir,
-  newproject;
+  newproject, uProjetoDB;
 
 
-const versao = '2.42';
+const versao = '2.44';
 
 type
 
@@ -576,6 +576,8 @@ procedure TfrmMNote.FormCreate(Sender: TObject);
 var
    filename: string;
    plataforma: string;
+   biblioteca : string;
+   basePath : string;
 begin
   // Define plataforma e arquitetura
   {$IFDEF MSWINDOWS}
@@ -609,6 +611,31 @@ begin
   if (FSetMain = nil) then
   begin
     FsetMain := TsetMain.Create();
+  end;
+  basePath := ExtractFileDir(Application.ExeName);
+  {$IFDEF WINDOWS}
+
+  if (Pos('\src', basePath) > 0) then
+    biblioteca := basePath + '..\libs\sqlite\win32\sqlite3.dll'
+  else
+    biblioteca := basePath + 'libs\sqlite\win32\sqlite3.dll';
+  {$ENDIF}
+
+  {$IFDEF LINUX}
+
+  biblioteca := basePath + 'libs/linux64/libsqlite3.so';
+  {$ENDIF}
+
+
+  if(FSetMain.Project<>'') then
+  begin
+     ProjetoDB := TProjetoDB.create(self);
+     ProjetoDB.CarregarProjeto(FSetMain.Project,biblioteca);
+  end;
+
+  if(frmHint= nil) then
+  begin
+    frmHint := TfrmHint.create(self);
   end;
 
   CarregaContexto();

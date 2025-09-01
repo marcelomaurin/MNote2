@@ -192,7 +192,15 @@ begin
       FSetMain.PasswordPost:= edPasswrdPost.Text;
     end;
   end;
-  FSetMain.Defaultfolder:= deTarget.text;
+  if(deTarget.Text<>'') then
+  begin
+    dmbase.RegistraParam('DEFAULTFOLDER',deTarget.Text);
+    if(cbDataBase.ItemIndex=1) then
+    begin
+      FSetMain.Defaultfolder:= deTarget.text;
+    end;
+  end;
+
   FSetMain.Project:=  IncludeTrailingPathDelimiter(deTarget.Text) + edproject.Text + '.db'; ;
   if( frmmquery2 = nil) then
   begin

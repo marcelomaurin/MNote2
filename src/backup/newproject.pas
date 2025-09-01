@@ -1,257 +1,162 @@
-unit newproject;
+unit uProjetoDB;
 
 {$mode ObjFPC}{$H+}
 
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  EditBtn, ComCtrls, base, funcoes, hint, setmain;
+  Classes, SysUtils, sqlite_db;
 
 type
-
-  { TfrmNewProject }
-
-  TfrmNewProject = class(TForm)
-    Button1: TButton;
-    Button2: TButton;
-    btProcess: TButton;
-    cbDataBase: TComboBox;
-    deTarget: TDirectoryEdit;
-    edBancoPost: TEdit;
-    edHostNamePost: TEdit;
-    edPasswrdPost: TEdit;
-    edproject: TEdit;
-    edSchemaPost: TEdit;
-    edusuarioPost: TEdit;
-    Image1: TImage;
-    Label1: TLabel;
-    Label10: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
-    Label6: TLabel;
-    Label7: TLabel;
-    Label8: TLabel;
-    Label9: TLabel;
-    edPropose: TMemo;
-    mespec: TMemo;
-    PageControl1: TPageControl;
-    tsProject: TTabSheet;
-    tsSpec: TTabSheet;
-    tsDatabase: TTabSheet;
-    procedure btProcessClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+  { TProjetoDB }
+  TProjetoDB = class(TComponent)
   private
+    FNome: string;
+    FDBPath: string;
+    FDescricao: string;
+    FAlvoPath: string;
 
+    FDb: TSQLiteDb;
+    FIsOpen: Boolean;
+
+    procedure CheckDmBaseConnected;
+    function ReadParamValue(const AKey: string): string;
+    procedure LoadMetaFromProjetoDB; // tenta ler projeto_meta; se falhar, usa params
   public
-     function ValidaConexao(): boolean;
-  end;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
 
-var
-  frmNewProject: TfrmNewProject;
+    // Lê "database" da tabela params (RegistraParam) e abre o SQLite apontado, carregando os campos
+    procedure CarregarProjeto;
+
+    // Fecha o SQLite aberto (se houver)
+    procedure FecharProjeto;
+
+    // Somente leitura
+    property IsOpen: Boolean read FIsOpen;
+    property Db: TSQLiteDb read FDb;
+
+    // Metadados do projeto (carregados do banco alvo)
+    property Nome: string read FNome;
+    property DBPath: string read FDBPath;
+    property Descricao: string read FDescricao;
+    property AlvoPath: string read FAlvoPath;
+  end;
 
 implementation
 
-{$R *.lfm}
+uses
+  ZDataset, // TZQuery
+  // Ajuste o nome da unit que declara TdmBase/dmBase se for diferente de "base"
+  base;
 
-{ TfrmNewProject }
+{ TProjetoDB }
 
-uses mquery2;
-
-procedure TfrmNewProject.Button1Click(Sender: TObject);
-var
-  original, destino, biblioteca, basePath: string;
+constructor TProjetoDB.Create(AOwner: TComponent);
 begin
-  // validações mínimas
-  if Trim(deTarget.Text) = '' then
-  begin
-    frmHint.MessageHint('Selecione a pasta de destino.');
-    Exit;
-  end;
-  if Trim(edproject.Text) = '' then
-  begin
-    frmHint.MessageHint('Informe o nome do projeto.');
-    Exit;
-  end;
+  inherited Create(AOwner);
+  FDb := TSQLiteDb.Create(Self);
+  FIsOpen := False;
+  FNome := '';
+  FDescricao := '';
+  FAlvoPath := '';
+  FDBPath := '';
+end;
 
-  basePath := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+destructor TProjetoDB.Destroy;
+begin
+  FecharProjeto;
+  inherited Destroy;
+end;
 
-  {$IFDEF WINDOWS}
-  original   := basePath + 'db\projeto_padrao.db';
-  destino    := IncludeTrailingPathDelimiter(deTarget.Text) + edproject.Text + '.db';
-  if (Pos('\src', basePath) > 0) then
-    biblioteca := basePath + '..\libs\sqlite\win32\sqlite3.dll'
-  else
-    biblioteca := basePath + 'libs\sqlite\win32\sqlite3.dll';
-  {$ENDIF}
+procedure TProjetoDB.CheckDmBaseConnected;
+begin
+  if (dmBase = nil) or (dmBase.zconlocal = nil) or (not dmBase.zconlocal.Connected) then
+    raise Exception.Create('Conexão principal (dmBase.zconlocal) não está conectada.');
+end;
 
-  {$IFDEF LINUX}
-  original   := basePath + 'db/projeto_padrao.db';
-  destino    := IncludeTrailingPathDelimiter(deTarget.Text) + edproject.Text + '.db';
-  biblioteca := basePath + 'libs/linux64/libsqlite3.so';
-  {$ENDIF}
-
-  if not FileExists(original) then
-  begin
-    frmHint.MessageHint('Arquivo de base não encontrado: ' + original);
-    Exit;
-  end;
-
-  if not DirectoryExists(ExtractFileDir(destino)) then
-    ForceDirectories(ExtractFileDir(destino));
-
+function TProjetoDB.ReadParamValue(const AKey: string): string;
+var
+  Q: TZQuery;
+begin
+  Result := '';
+  CheckDmBaseConnected;
+  Q := TZQuery.Create(Self);
   try
-    CopiarArquivo(original, destino);
-  except
-    on E: Exception do
-    begin
-      frmHint.MessageHint('Falha ao copiar o arquivo: ' + E.Message);
+    Q.Connection := dmBase.zconlocal;
+    Q.SQL.Text :=
+      'SELECT valor FROM params '+
+      'WHERE chave = :chave COLLATE NOCASE '+
+      'LIMIT 1';
+    Q.ParamByName('chave').AsString := AKey;
+    Q.Open;
+    if not Q.EOF then
+      Result := Q.Fields[0].AsString;
+  finally
+    Q.Free;
+  end;
+end;
+
+procedure TProjetoDB.LoadMetaFromProjetoDB;
+var
+  Row: TStrings;
+  ok: Boolean;
+begin
+  // Tenta ler da tabela projeto_meta (id=1)
+  ok := FDb.QueryRow(
+    'SELECT nome, descricao, alvo_path FROM projeto_meta WHERE id=1',
+    [], [], Row
+  );
+
+  if ok then
+  begin
+    try
+      FNome      := Row.Values['nome'];
+      FDescricao := Row.Values['descricao'];
+      FAlvoPath  := Row.Values['alvo_path'];
       Exit;
+    finally
+      Row.Free;
     end;
   end;
 
-  if dmBase = nil then
-    dmBase := TdmBase.Create(Self);
-
-  if dmBase.ConectaSQLite(destino, biblioteca) then
-  begin
-    dmBase.SalvarDadosMaster(edproject.Text, edPropose.Text, destino, cbDataBase.ItemIndex);
-    PageControl1.ActivePage := tsSpec;
-  end
-  else
-    frmHint.MessageHint('Não foi possível conectar ao SQLite.');
+  // Fallback: usa params da conexão principal (caso projeto_meta não exista)
+  FNome      := ReadParamValue('PROJETO');
+  FDescricao := ReadParamValue('PROPOSITO');
+  FAlvoPath  := ReadParamValue('TARGET');
 end;
 
-procedure TfrmNewProject.btProcessClick(Sender: TObject);
-begin
-  if (dmbase=nil) then
-  begin
-      dmbase := TdmBase.create(self);
-  end;
-
-  if(edHostNamePost.Text<>'') then
-  begin
-    dmbase.RegistraParam('HOSTNAME',edHostNamePost.Text);
-    if(cbDataBase.ItemIndex=1) then
-    begin
-       FSetMain.HostnamePost:=edHostNamePost.Text;
-    end;
-  end;
-  if(edSchemaPost.Text<>'') then
-  begin
-    dmbase.RegistraParam('SCHEMA',edSchemaPost.Text);
-    if(cbDataBase.ItemIndex=1) then
-    begin
-        FSetMain.SchemaPost:=edSchemaPost.Text;
-    end;
-  end;
-  if(edBancoPost.Text<>'') then
-  begin
-    dmbase.RegistraParam('DATABASE',edBancoPost.Text);
-    if(cbDataBase.ItemIndex=1) then
-    begin
-      FSetMain.BancoPOST:= edBancoPost.Text;
-    end;
-  end;
-  if(edusuarioPost.Text<>'') then
-  begin
-    dmbase.RegistraParam('USER',edusuarioPost.Text);
-    if(cbDataBase.ItemIndex=1) then
-    begin
-      FSetMain.UsernamePost:= edusuarioPost.Text;
-    end;
-  end;
-  if(edPasswrdPost.Text<>'') then
-  begin
-    dmbase.RegistraParam('PASSWORD',edPasswrdPost.Text);
-    if(cbDataBase.ItemIndex=1) then
-    begin
-      FSetMain.PasswordPost:= edPasswrdPost.Text;
-    end;
-  end;
-  FSetMain.Defaultfolder:= deTarget.text;
-  FSetMain.Project:=  IncludeTrailingPathDelimiter(deTarget.Text) + edproject.Text + '.db'; ;
-  if( frmmquery2 = nil) then
-  begin
-      frmmquery2 := Tfrmmquery2.CREATE(self);
-  end;
-  if (frmmquery2.ValidaConexao(cbDataBase.ItemIndex)) then
-  begin
-     FSetMain.SalvaContexto(false);
-     close;
-  end
-  else
-  begin
-    frmHint.MessageHint('Conexão inválida');
-  end;
-end;
-
-procedure TfrmNewProject.Button2Click(Sender: TObject);
-begin
-  if(mespec.text <> '') then
-  begin
-    if (dmbase=nil) then
-    begin
-      dmbase := TdmBase.create(self);
-    end;
-    dmbase.RegistraParam('SPEC',mespec.Text);
-    PageControl1.ActivePage := tsDatabase;
-    if (cbDataBase.ItemIndex=1) then
-    begin
-        edHostNamePost.text := FSetMain.HostnamePost;
-        edSchemaPost.text := FSetMain.SchemaPost;
-        edBancoPost.text := FSetMain.BancoPOST;
-        edusuarioPost.text :=  FSetMain.UsernamePost;
-        edPasswrdPost.text := FSetMain.PasswordPost;
-    end;
-  end
-  else
-  begin
-    frmHint.MessageHint('Spec not found');
-  end;
-end;
-
-function TfrmNewProject.ValidaConexao(): boolean;
+procedure TProjetoDB.CarregarProjeto;
 var
-  dbType: Integer;
+  dbFromParams: string;
 begin
-  if (dmBase = nil) then
-    dmBase := TdmBase.Create(Self);
+  // 1) Descobre o caminho do banco a partir de params.database
+  dbFromParams := ReadParamValue('database');
+  if Trim(dbFromParams) = '' then
+    raise Exception.Create('Parâmetro "database" não encontrado na tabela params.');
 
-  // 0 = MySQL, 1 = Postgres (defaulta para 1 se inválido)
-  dbType := cbDataBase.ItemIndex;
-  if (dbType <> 0) and (dbType <> 1) then
-    dbType := 1;
+  if not FileExists(dbFromParams) then
+    raise Exception.CreateFmt('Arquivo SQLite não encontrado: %s', [dbFromParams]);
 
-  // 1) grava os parâmetros (os não vazios) + DATABASETYPE sempre
+  // 2) Abre o SQLite alvo
+  FecharProjeto; // caso já tenha algo aberto
+  FDb.Open(dbFromParams);
+  // Se sua classe sqlite_db tiver ApplyPragmas, você pode chamar aqui; mantive enxuto
+  FDBPath := dbFromParams;
+  FIsOpen := True;
+
+  // 3) Lê metadados (projeto_meta) ou faz fallback via params
+  LoadMetaFromProjetoDB;
+end;
+
+procedure TProjetoDB.FecharProjeto;
+begin
+  if not FIsOpen then Exit;
   try
-    if Trim(edHostNamePost.Text) <> ''  then
-    begin
-         dmBase.RegistraParam('HOSTNAME', edHostNamePost.Text);
-         //fsetmain.HostnamePost:= edHostNamePost.Text;
-    end;
-    if Trim(edSchemaPost.Text)   <> ''  then
-    begin
-      dmBase.RegistraParam('SCHEMA', edSchemaPost.Text);
-      //FSetMain.SchemaPost:= edSchemaPost.Text;
-    end;
-    if Trim(edBancoPost.Text) <> ''  then dmBase.RegistraParam('DATABASE', edBancoPost.Text);
-    if Trim(edusuarioPost.Text) <> ''  then dmBase.RegistraParam('USER', edusuarioPost.Text);
-    if Trim(edPasswrdPost.Text) <> ''  then dmBase.RegistraParam('PASSWORD', edPasswrdPost.Text);
-    dmBase.RegistraParam('DATABASETYPE', IntToStr(cbDataBase.ItemIndex));
-  except
-    Exit(False);
+    FDb.Close;
+  finally
+    FIsOpen := False;
   end;
-
-  if(frmmquery2=nil) then
-  begin
-    frmmquery2 := Tfrmmquery2.create(self);
-  end;
-
-  Result := frmmquery2.ValidaConexao( dbType   );
 end;
 
 end.

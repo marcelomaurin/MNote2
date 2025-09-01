@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ShellCtrls,
   ExtCtrls, Menus, StdCtrls, funcoes, hint, setmain, chatgpt,  Types,
-  StrUtils, LConvEncoding;
+  StrUtils, LConvEncoding, base, DateUtils, LazFileUtils;
 
 type
 
@@ -17,6 +17,8 @@ type
     btScanner: TButton;
     btIA: TButton;
     edFolder: TEdit;
+    Label1: TLabel;
+    lbName: TLabel;
     meLog: TMemo;
     mePergunta: TMemo;
     MenuItem1: TMenuItem;
@@ -27,6 +29,8 @@ type
     Panel4: TPanel;
     Panel5: TPanel;
     Panel6: TPanel;
+    pnScanner: TPanel;
+    pbScanning: TProgressBar;
     Separator2: TMenuItem;
     miDelete: TMenuItem;
     mirefresh: TMenuItem;
@@ -51,6 +55,7 @@ type
     procedure MenuItem1Click(Sender: TObject);
     procedure CarregaContexto();
     procedure MenuItem2Click(Sender: TObject);
+    procedure MenuItem3Click(Sender: TObject);
     procedure miCreatedirClick(Sender: TObject);
     procedure miDeleteClick(Sender: TObject);
     procedure mirefreshClick(Sender: TObject);
@@ -62,6 +67,8 @@ type
 
   public
     function Scanner(const Root: string): TStringList;
+    procedure AtualizaProjeto;  // << NOVA
+
   end;
 
 var
@@ -97,6 +104,27 @@ begin
 
   Fsetmain.Defaultfolder:= ShellTreeView1.Path;
   FSetMain.SalvaContexto(false);
+end;
+
+procedure TfrmFolders.MenuItem3Click(Sender: TObject);
+var
+  tree: TStringList;
+begin
+  meLog.Clear;
+  if(FSetMain.Project<>'') then
+  begin
+      // grava no SQLite
+      AtualizaProjeto;
+  end;
+  // mostra a árvore
+  tree := Scanner(edFolder.Text);
+  try
+    meLog.Lines.Assign(tree);
+    meLog.Lines.Add('');
+    meLog.Lines.Add(Format('Total de linhas: %d', [tree.Count]));
+  finally
+    tree.Free;
+  end;
 end;
 
 procedure TfrmFolders.miCreatedirClick(Sender: TObject);
@@ -391,7 +419,7 @@ begin
 
     // sistema (instruções fixas para a IA)
     Dev :=
-      'Voce é uma IA de respostas sintéticas, sua tarefa é responder de forma direta. .' + LineEnding;
+      'Voce é uma IA de respostas sintéticas, sua tarefa é responder de forma direta. .' + LineEnding+
       'Responda de forma concisa e estruturada.';
 
     // mensagem do usuário com a árvore e (opcional) trechos
@@ -435,6 +463,124 @@ end;
 procedure TfrmFolders.FormShow(Sender: TObject);
 begin
 
+end;
+
+procedure TfrmFolders.AtualizaProjeto;
+
+
+
+  // converte data de modificação para epoch (segundos)
+  function FileMTimeUTC_OrNow(const FullPath: string): Int64;
+  var
+    dt: TDateTime;
+  begin
+    // FileAge retorna localtime; usamos DateUtils para converter
+    if FileAge(FullPath, dt) then
+      Result := DateTimeToUnix(dt)
+    else
+      Result := DateTimeToUnix(Now);
+  end;
+
+
+  // varre recursivamente o filesystem gravando na tabela fs
+  procedure IndexDir(const DirPath: string; const ParentId: Integer);
+  var
+    SR: TSearchRec;
+    code: Integer;
+    subId: Integer;
+    childName, full: string;
+    isDir: Boolean;
+  begin
+
+
+    code := FindFirst(IncludeTrailingPathDelimiter(DirPath) + '*', faAnyFile, SR);
+    try
+      while code = 0 do
+      begin
+        if (SR.Name <> '.') and (SR.Name <> '..') then
+        begin
+          isDir   := (SR.Attr and faDirectory) <> 0;
+          childName := SR.Name;
+          full      := IncludeTrailingPathDelimiter(DirPath) + childName;
+
+          if isDir then
+          begin
+            lbName.Caption:= childName;
+            pbScanning.Position:= pbScanning.Position + 1;
+            Application.ProcessMessages;
+
+            subId := dmbase.EnsureDirUnderParent(ParentId, childName, FileMTimeUTC_OrNow(full));
+            IndexDir(full, subId);
+          end
+          else
+          begin
+            dmbase.UpsertFile(ParentId, childName, full);
+          end;
+        end;
+        code := FindNext(SR);
+      end;
+    finally
+      FindClose(SR);
+
+
+    end;
+  end;
+
+var
+  RootFSId: Integer;
+  RootPath: string;
+begin
+  pnScanner.Visible:= true;
+  Application.ProcessMessages;
+  //meLog.Lines.Add('Iniciando indexação no SQLite...');
+  frmHint.MessageHint('Iniciando indexação no SQLite...');
+  if(dmBase = nil) then
+  begin
+    dmBase := Tdmbase.create(self);
+  end;
+
+  if not dmBase.zconlocal.Connected then
+  begin
+
+    //meLog.Lines.Add('*** SQLite não conectado (dmBase.zconlocal).');
+    if(FSetMain.Project= '') then
+    begin
+      frmHint.MessageHint('*** SQLite não conectado (dmBase.zconlocal).');
+      Exit;
+    end
+    else
+    begin
+
+    end;
+  end;
+  dmbase.DeleteFS; //Apaga base de dados anterior
+  RootPath := Trim(FSetMain.DefaultFolder);
+  if (RootPath = '') or (not DirectoryExists(RootPath)) then
+  begin
+    //meLog.Lines.Add('*** Pasta inválida: ' + RootPath);
+    frmHint.MessageHint('*** Pasta inválida: ' + RootPath);
+    Exit;
+  end;
+
+  // transação (opcional, acelera bastante)
+  dmBase.zconlocal.AutoCommit := False;
+  try
+    RootFSId := dmbase.EnsureRootId; // cria “/” se precisar
+    IndexDir(RootPath, RootFSId);
+    dmBase.zconlocal.Commit;
+    //meLog.Lines.Add('Indexação concluída com sucesso.');
+    frmHint.MessageHint('Indexação concluída com sucesso.');
+  except
+    on E: Exception do
+    begin
+      dmBase.zconlocal.Rollback;
+      //meLog.Lines.Add('*** Falha na indexação: ' + E.Message);
+      frmHint.MessageHint('*** Falha na indexação: ' + E.Message);
+    end;
+  end;
+  dmBase.zconlocal.AutoCommit := True;
+  pnScanner.Visible:= false;
+  Application.ProcessMessages;
 end;
 
 end.

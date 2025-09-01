@@ -2,7 +2,7 @@ object dmBase: TdmBase
   OldCreateOrder = False
   Height = 260
   HorizontalOffset = 159
-  VerticalOffset = 1042
+  VerticalOffset = 676
   Width = 333
   object DataSource1: TDataSource
     Left = 128

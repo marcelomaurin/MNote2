@@ -5,7 +5,7 @@ unit uProjetoDB;
 interface
 
 uses
-  Classes, SysUtils, sqlite_db;
+  Classes, SysUtils, sqlite_db, base, hint, funcoes, setmain ;
 
 type
   { TProjetoDB }
@@ -19,30 +19,31 @@ type
     FDb: TSQLiteDb;
     FIsOpen: Boolean;
 
-    procedure EnsureDirsForFile(const AFile: string);
-    procedure EnsureSchema; // usa somente chamadas de FDb
-    procedure LoadMetaFromDB;
-    procedure SaveMetaToDB;
-    procedure CheckOpen;
+    function TableExists(const ATable: string): Boolean;
+    procedure LoadMetaFromProjetoMeta; // lê projeto_meta se existir
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    procedure NovoProjeto(const ANome, ADBPath, ADescricao, AAlvoPath: string);
-    procedure CarregarProjeto(const ADBPath: string);
-    procedure SalvarProjeto;
+    // Abre o banco informado (ex.: 'C:\meusprojetos\meubanco.db')
+    procedure CarregarProjeto(const ADBPath: string; dll : string);
+
+    // Fecha o banco (se aberto)
     procedure FecharProjeto;
 
-    // Propriedades
-    property Nome: string read FNome write FNome;
-    property DBPath: string read FDBPath;
-    property Descricao: string read FDescricao write FDescricao;
-    property AlvoPath: string read FAlvoPath write FAlvoPath;
-
-    // Estado e acesso a DB (somente leitura)
+    // Somente leitura
     property IsOpen: Boolean read FIsOpen;
     property Db: TSQLiteDb read FDb;
+
+    // Metadados (se carregados de projeto_meta)
+    property Nome: string read FNome;
+    property DBPath: string read FDBPath;
+    property Descricao: string read FDescricao;
+    property AlvoPath: string read FAlvoPath;
   end;
+
+  var
+    ProjetoDB : TProjetoDB;
 
 implementation
 
@@ -53,6 +54,12 @@ begin
   inherited Create(AOwner);
   FDb := TSQLiteDb.Create(Self);
   FIsOpen := False;
+  FNome := '';
+  FDescricao := '';
+  FAlvoPath := '';
+  FDBPath := '';
+  if (dmBase = nil) then
+    dmBase := TdmBase.Create(Self);
 end;
 
 destructor TProjetoDB.Destroy;
@@ -61,127 +68,101 @@ begin
   inherited Destroy;
 end;
 
-procedure TProjetoDB.EnsureDirsForFile(const AFile: string);
-var
-  Dir: string;
-begin
-  Dir := ExtractFilePath(AFile);
-  if (Dir <> '') and (not DirectoryExists(Dir)) then
-    if not ForceDirectories(Dir) then
-      raise Exception.CreateFmt('Não foi possível criar a pasta: %s', [Dir]);
-end;
-
-procedure TProjetoDB.CheckOpen;
-begin
-  if not FIsOpen then
-    raise Exception.Create('Projeto não está aberto.');
-end;
-
-procedure TProjetoDB.EnsureSchema;
-begin
-  // Toda I/O passa pela FDb
-  FDb.ExecSQL(
-    'CREATE TABLE IF NOT EXISTS projeto_meta ('+
-    '  id INTEGER PRIMARY KEY CHECK (id = 1), '+
-    '  nome TEXT NOT NULL, '+
-    '  descricao TEXT, '+
-    '  alvo_path TEXT, '+
-    '  versao_schema INTEGER NOT NULL DEFAULT 1, '+
-    '  criado_em TEXT NOT NULL, '+
-    '  atualizado_em TEXT NOT NULL '+
-    ');'
-  );
-
-  FDb.ExecSQL(
-    'INSERT INTO projeto_meta (id, nome, descricao, alvo_path, versao_schema, criado_em, atualizado_em) '+
-    'SELECT 1, "Novo Projeto", "", "", 1, datetime("now"), datetime("now") '+
-    'WHERE NOT EXISTS (SELECT 1 FROM projeto_meta WHERE id=1);'
-  );
-
-  FDb.Commit;
-end;
-
-procedure TProjetoDB.LoadMetaFromDB;
+function TProjetoDB.TableExists(const ATable: string): Boolean;
 var
   Row: TStrings;
 begin
-  if not FDb.QueryRow('SELECT nome, descricao, alvo_path FROM projeto_meta WHERE id=1', [], [], Row) then
-    raise Exception.Create('projeto_meta vazio. Banco inconsistente.');
-  try
-    FNome      := Row.Values['nome'];
-    FDescricao := Row.Values['descricao'];
-    FAlvoPath  := Row.Values['alvo_path'];
-  finally
+  Result := False;
+  if not FIsOpen then Exit;
+  if FDb.QueryRow(
+       'SELECT name FROM sqlite_master WHERE type = ''table'' AND name = :n LIMIT 1',
+       ['n'], [ATable], Row) then
+  begin
     Row.Free;
+    Result := True;
   end;
 end;
 
-procedure TProjetoDB.SaveMetaToDB;
+procedure TProjetoDB.LoadMetaFromProjetoMeta;
+
+  // --- helpers locais ---
+  function TableExistsLocal(const ATable: string): Boolean;
+  var
+    Row: TStrings;
+  begin
+    Result := False;
+    if not FIsOpen then Exit;
+    if FDb.QueryRow(
+         'SELECT name FROM sqlite_master '+
+         'WHERE type = ''table'' AND name = :n LIMIT 1',
+         ['n'], [ATable], Row) then
+    begin
+      Row.Free;
+      Result := True;
+    end;
+  end;
+
+
+
+var
+  Row: TStrings;
+  ok: Boolean;
+  v: string;
+
 begin
-  FDb.ExecSQLParams(
-    'UPDATE projeto_meta SET '+
-    '  nome=:nome, descricao=:desc, alvo_path=:alvo, atualizado_em=datetime("now") '+
-    'WHERE id=1',
-    ['nome','desc','alvo'],
-    [FNome, FDescricao, FAlvoPath]
-  );
-  FDb.Commit;
+  FIsOpen:= dmBase.zconlocal.Connected;
+  if not FIsOpen then
+    raise Exception.Create('Projeto não está aberto.');
+
+
+
+    v := dmbase.GetParam('HOSTNAME');
+    if v <> '' then FSetMain.HostnamePost := v;
+
+    v := dmbase.GetParam('SCHEMA');
+    if v <> '' then FSetMain.SchemaPost := v;
+
+    v := dmbase.GetParam('DATABASE');
+    if v <> '' then FSetMain.BancoPOST := v;
+
+    v := dmbase.GetParam('USER');
+    if v <> '' then FSetMain.UsernamePost := v;
+
+    v := dmbase.GetParam('PASSWORD');
+    if v <> '' then FSetMain.PasswordPost := v;
+
+    v := dmbase.GetParam('DEFAULTFOLDER');
+    if v <> '' then FSetMain.Defaultfolder := v;
+
+    // (opcional) project: se existir na tabela usa; senão, usa o próprio DB aberto
+    v := dmbase.GetParam('PROJECT');
+    if v <> '' then
+      FSetMain.Project := v
+    else if FDBPath <> '' then
+      FSetMain.Project := FDBPath;
+
 end;
 
-procedure TProjetoDB.NovoProjeto(const ANome, ADBPath, ADescricao, AAlvoPath: string);
+procedure TProjetoDB.CarregarProjeto(const ADBPath: string; dll : string);
+var
+  original, destino, biblioteca, basePath: string;
 begin
-  FecharProjeto;
+  if dmbase.ConectaSQLite(ADBPath,dll )then
+  begin
+    // tenta ler metadados
+    LoadMetaFromProjetoMeta;
+  end;
 
-  if Trim(ADBPath) = '' then
-    raise Exception.Create('Informe um caminho de arquivo SQLite válido.');
-
-  EnsureDirsForFile(ADBPath);
-
-  FDb.Open(ADBPath);
-  FDb.ApplyPragmas;
-  EnsureSchema;
-
-  FDBPath    := ADBPath;
-  FNome      := ANome;
-  FDescricao := ADescricao;
-  FAlvoPath  := AAlvoPath;
-
-  SaveMetaToDB;
-  FIsOpen := True;
-end;
-
-procedure TProjetoDB.CarregarProjeto(const ADBPath: string);
-begin
-  FecharProjeto;
-
-  if (Trim(ADBPath) = '') or (not FileExists(ADBPath)) then
-    raise Exception.CreateFmt('Arquivo SQLite não encontrado: %s', [ADBPath]);
-
-  FDb.Open(ADBPath);
-  FDb.ApplyPragmas;
-  EnsureSchema;   // caso seja um banco antigo
-  LoadMetaFromDB;
-
-  FDBPath := ADBPath;
-  FIsOpen := True;
-end;
-
-procedure TProjetoDB.SalvarProjeto;
-begin
-  CheckOpen;
-  SaveMetaToDB;
 end;
 
 procedure TProjetoDB.FecharProjeto;
 begin
   if not FIsOpen then Exit;
   try
-    FDb.Commit;
-  except
-    // ignora
+    FDb.Close;
+  finally
+    FIsOpen := False;
   end;
-  FDb.Close;
-  FIsOpen := False;
 end;
 
 end.

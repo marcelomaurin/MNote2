@@ -1,7 +1,7 @@
 object frmFolders: TfrmFolders
-  Left = -1678
+  Left = -1344
   Height = 652
-  Top = 214
+  Top = 189
   Width = 1011
   AutoSize = True
   Caption = 'Folders'
@@ -29,9 +29,9 @@ object frmFolders: TfrmFolders
       Height = 650
       Top = 1
       Width = 804
-      ActivePage = tsIA
+      ActivePage = tsFolders
       Align = alClient
-      TabIndex = 1
+      TabIndex = 0
       TabOrder = 0
       object tsFolders: TTabSheet
         Caption = 'Folders'
@@ -67,6 +67,38 @@ object frmFolders: TfrmFolders
           PopupMenu = PopupMenu1
           TabOrder = 1
           ShellTreeView = ShellTreeView1
+        end
+        object pnScanner: TPanel
+          Left = 176
+          Height = 97
+          Top = 240
+          Width = 440
+          ClientHeight = 97
+          ClientWidth = 440
+          TabOrder = 2
+          Visible = False
+          object pbScanning: TProgressBar
+            Left = 24
+            Height = 20
+            Top = 48
+            Width = 400
+            Max = 100000
+            TabOrder = 0
+          end
+          object Label1: TLabel
+            Left = 56
+            Height = 15
+            Top = 24
+            Width = 61
+            Caption = 'Scanning ...'
+          end
+          object lbName: TLabel
+            Left = 136
+            Height = 15
+            Top = 24
+            Width = 42
+            Caption = 'lbName'
+          end
         end
       end
       object tsIA: TTabSheet
@@ -187,6 +219,7 @@ object frmFolders: TfrmFolders
     end
     object MenuItem3: TMenuItem
       Caption = 'Scanning Dir'
+      OnClick = MenuItem3Click
     end
   end
   object PopupMenu2: TPopupMenu
