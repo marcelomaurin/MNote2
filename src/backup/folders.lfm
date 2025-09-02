@@ -221,6 +221,13 @@ object frmFolders: TfrmFolders
       Caption = 'Scanning Dir'
       OnClick = MenuItem3Click
     end
+    object Separator3: TMenuItem
+      Caption = '-'
+    end
+    object miAnalisaArquivo: TMenuItem
+      Caption = 'Analisa Arquivo'
+      OnClick = miAnalisaArquivoClick
+    end
   end
   object PopupMenu2: TPopupMenu
     Left = 41

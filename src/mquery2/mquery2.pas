@@ -14,7 +14,7 @@ uses
   PairSplitter, DBCtrls, DBGrids, finds, ZClasses, ZCollections, ZCompatibility,
   ZTokenizer, ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging, ZVariant,
   ZPlainDriver, TypeDB, triggers, item, funcoes, chart, chatgpt, codigo,
-  setmain, ZDbcIntfs, math, hint, Variants, LConvEncoding; //ZURL
+  setmain, ZDbcIntfs, math, hint, Variants, LConvEncoding, base; //ZURL
 
 const
   sqltabela = 'Você poderia me fornecer a consulta SQL que deseja analisar? Assim que eu receber o SQL, irei extrair os nomes das tabelas envolvidas e gerar um código em JSON com esses nomes. A resposta será apresentada dentro de uma caixa de texto apropriada para cópia, Desta forma refaça a pergunta mesmo nao havendo certeza da resposta,claramente formatada como um código JSON:';
@@ -297,6 +297,7 @@ type
     procedure miOcultarPostClick(Sender: TObject);
     procedure miRelacionamentosClick(Sender: TObject);
     procedure miselectClick(Sender: TObject);
+    procedure mnCriaDicionarioClick(Sender: TObject);
     procedure mnCriarSeqClick(Sender: TObject);
     procedure mnDicionarioClick(Sender: TObject);
     procedure mnFonteClick(Sender: TObject);
@@ -1420,6 +1421,11 @@ begin
   //edSql.SetFocus;
 
 
+
+end;
+
+procedure Tfrmmquery2.mnCriaDicionarioClick(Sender: TObject);
+begin
 
 end;
 
@@ -2850,8 +2856,12 @@ var
   tblName       : string;
   targetAbsPath : string;
   targetDir     : string;
+  sql : string;
 begin
   Result := '';
+  if(dmbase = nil) then
+       dmbase := Tdmbase.create(self);
+  dmbase.DeleteTabelas();
 
   if not zconpost.Connected then
   begin
@@ -2887,12 +2897,20 @@ begin
     begin
       tblName := tblNode.Text;
       outSQL.Add('-- ' + tblName);
-
+      SQL := DescreveTabelaIAPost(tblName);
       // 2) Gerar o CREATE de cada tabela
-      outSQL.Add(DescreveTabelaIAPost(tblName));
+      outSQL.Add(SQL);
       outSQL.Add('');
 
+      //Verifica se tem projeto
+      if(FSetMain.Project<>'') then
+      begin
+        if(dmbase = nil) then
+            dmbase := tdmbase.create(self);
+        dmbase.RegistraTabela(tblName, '', SQL);
+      end;
       tblNode := tblNode.GetNextSibling;
+
     end;
 
     // 3) Salvar no arquivo passado por PARÂMETRO

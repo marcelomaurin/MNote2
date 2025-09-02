@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ShellCtrls,
   ExtCtrls, Menus, StdCtrls, funcoes, hint, setmain, chatgpt,  Types,
-  StrUtils, LConvEncoding, base, DateUtils, LazFileUtils;
+  StrUtils, LConvEncoding, base, DateUtils, LazFileUtils, fpjson, jsonparser;
 
 type
 
@@ -20,6 +20,8 @@ type
     Label1: TLabel;
     lbName: TLabel;
     meLog: TMemo;
+    miAnalisaArquivo: TMenuItem;
+    Separator3: TMenuItem;
     mePergunta: TMemo;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
@@ -56,6 +58,7 @@ type
     procedure CarregaContexto();
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
+    procedure miAnalisaArquivoClick(Sender: TObject);
     procedure miCreatedirClick(Sender: TObject);
     procedure miDeleteClick(Sender: TObject);
     procedure mirefreshClick(Sender: TObject);
@@ -68,7 +71,8 @@ type
   public
     function Scanner(const Root: string): TStringList;
     procedure AtualizaProjeto;  // << NOVA
-
+    procedure AnalisaFonte(const Fonte: string);
+    procedure RegistraTabelas(Fonte: string; json : string);
   end;
 
 var
@@ -127,6 +131,47 @@ begin
   end;
 end;
 
+procedure TfrmFolders.miAnalisaArquivoClick(Sender: TObject);
+var
+  dir, nome, arquivo: string;
+begin
+  if (ShellListView1.Selected = nil) then
+  begin
+    MessageHint('Selecione um arquivo na lista.');
+    Exit;
+  end;
+
+  // diretório atual (você já sincroniza edFolder com o ShellTreeView)
+  dir  := edFolder.Text;
+  nome := ShellListView1.Selected.Caption;
+
+  arquivo := IncludeTrailingPathDelimiter(dir) + nome;
+
+  // fallback: alguns temas retornam melhor pelo GetNamePath
+  if (not FileExists(arquivo)) and Assigned(ShellListView1.Selected) then
+  begin
+    try
+      arquivo := ShellListView1.Selected.GetNamePath; // se disponível no seu Lazarus
+    except
+      // ignora
+    end;
+  end;
+
+  if DirectoryExists(arquivo) then
+  begin
+    MessageHint('Selecione um arquivo (não uma pasta).');
+    Exit;
+  end;
+
+  if not FileExists(arquivo) then
+  begin
+    MessageHint('Arquivo não encontrado: ' + arquivo);
+    Exit;
+  end;
+
+  AnalisaFonte(arquivo);
+end;
+
 procedure TfrmFolders.miCreatedirClick(Sender: TObject);
 var
   folder : string;
@@ -165,11 +210,11 @@ begin
         (*
       if RemoveDir( pathfolder) then
       begin
-          frmMNote.MessageHint('Folder '+pathfolder+ ' deleted successful!');
+          MessageHint('Folder '+pathfolder+ ' deleted successful!');
       end
       else
       begin
-          frmMNote.MessageHint('Folder '+pathfolder+ ' deleted fail!');
+          MessageHint('Folder '+pathfolder+ ' deleted fail!');
       end;
       *)
   end;
@@ -508,8 +553,10 @@ procedure TfrmFolders.AtualizaProjeto;
             lbName.Caption:= childName;
             pbScanning.Position:= pbScanning.Position + 1;
             Application.ProcessMessages;
-
-            subId := dmbase.EnsureDirUnderParent(ParentId, childName, FileMTimeUTC_OrNow(full));
+            if isDir then
+               subId := dmbase.EnsureDirUnderParent(ParentId, DirPath, FileMTimeUTC_OrNow(full))
+            else
+              subId := dmbase.EnsureDirUnderParent(ParentId, childName, FileMTimeUTC_OrNow(full));
             IndexDir(full, subId);
           end
           else
@@ -533,7 +580,8 @@ begin
   pnScanner.Visible:= true;
   Application.ProcessMessages;
   //meLog.Lines.Add('Iniciando indexação no SQLite...');
-  frmHint.MessageHint('Iniciando indexação no SQLite...');
+
+  MessageHint('Iniciando indexação no SQLite...');
   if(dmBase = nil) then
   begin
     dmBase := Tdmbase.create(self);
@@ -545,7 +593,8 @@ begin
     //meLog.Lines.Add('*** SQLite não conectado (dmBase.zconlocal).');
     if(FSetMain.Project= '') then
     begin
-      frmHint.MessageHint('*** SQLite não conectado (dmBase.zconlocal).');
+
+      MessageHint('*** SQLite não conectado (dmBase.zconlocal).');
       Exit;
     end
     else
@@ -558,7 +607,8 @@ begin
   if (RootPath = '') or (not DirectoryExists(RootPath)) then
   begin
     //meLog.Lines.Add('*** Pasta inválida: ' + RootPath);
-    frmHint.MessageHint('*** Pasta inválida: ' + RootPath);
+
+    MessageHint('*** Pasta inválida: ' + RootPath);
     Exit;
   end;
 
@@ -569,19 +619,308 @@ begin
     IndexDir(RootPath, RootFSId);
     dmBase.zconlocal.Commit;
     //meLog.Lines.Add('Indexação concluída com sucesso.');
-    frmHint.MessageHint('Indexação concluída com sucesso.');
+
+
+    MessageHint('Indexação concluída com sucesso.');
   except
     on E: Exception do
     begin
       dmBase.zconlocal.Rollback;
       //meLog.Lines.Add('*** Falha na indexação: ' + E.Message);
-      frmHint.MessageHint('*** Falha na indexação: ' + E.Message);
+
+      MessageHint('*** Falha na indexação: ' + E.Message);
     end;
   end;
   dmBase.zconlocal.AutoCommit := True;
   pnScanner.Visible:= false;
   Application.ProcessMessages;
 end;
+
+procedure TfrmFolders.AnalisaFonte(const Fonte: string);
+
+  function LoadTextLimited(const Path: string; const MaxBytes: Integer): string;
+  var
+    FS: TFileStream;
+    Buf: RawByteString;
+  begin
+    Result := '';
+    if not FileExists(Path) then Exit;
+    FS := TFileStream.Create(Path, fmOpenRead or fmShareDenyNone);
+    try
+      if FS.Size > MaxBytes then
+        SetLength(Buf, MaxBytes)
+      else
+        SetLength(Buf, FS.Size);
+      if Length(Buf) > 0 then
+      begin
+        FS.ReadBuffer(Pointer(Buf)^, Length(Buf));
+        Result := UTF8ToString(Buf); // tenta decodificar como UTF-8
+        if Result = '' then
+          Result := String(Buf);
+      end;
+    finally
+      FS.Free;
+    end;
+  end;
+
+  function AddLineNumbers(const S: string): string;
+  var
+    SL: TStringList;
+    i: Integer;
+  begin
+    SL := TStringList.Create;
+    try
+      SL.Text := S;
+      for i := 0 to SL.Count-1 do
+        SL[i] := Format('%6d | %s', [i+1, SL[i]]);
+      Result := SL.Text;
+    finally
+      SL.Free;
+    end;
+  end;
+
+  function GuessLanguageByExt(const Ext: string): string;
+  begin
+    case LowerCase(Ext) of
+      '.pas', '.pp', '.lpr':   Exit('pascal/delphi');
+      '.lfm':                  Exit('lazarus-form');
+      '.sql':                  Exit('sql');
+      '.py':                   Exit('python');
+      '.js':                   Exit('javascript');
+      '.ts':                   Exit('typescript');
+      '.json':                 Exit('json');
+      '.ini', '.cfg':          Exit('ini');
+      '.yml', '.yaml':         Exit('yaml');
+      '.php':                  Exit('php');
+      '.java':                 Exit('java');
+      '.cs':                   Exit('csharp');
+      '.c', '.h':              Exit('c');
+      '.cpp', '.hpp', '.cc':   Exit('cpp');
+    else
+      Exit('texto');
+    end;
+  end;
+
+var
+  FCHATGPT: TCHATGPT;
+  Src, SrcNum: string;
+  DevMsg, Ask, Resp: string;
+  MaxBytes: Integer;
+  Ext, Linguagem: string;
+  Parser: TJSONParser;
+  Data: TJSONData;
+  Beautified: string;
+begin
+  FCHATGPT := nil;
+  meLog.Clear;
+  meLog.Lines.Add('Analisando: ' + Fonte);
+
+  MaxBytes := 200 * 1024; // 200 KB de limite para não estourar tokens
+  Src := LoadTextLimited(Fonte, MaxBytes);
+  if Src = '' then
+  begin
+    MessageHint('Arquivo vazio ou não foi possível ler.');
+    Exit;
+  end;
+
+  Ext := ExtractFileExt(Fonte);
+  Linguagem := GuessLanguageByExt(Ext);
+  SrcNum := AddLineNumbers(Src);
+
+  // DEV: contrato de saída em JSON (sem exemplo)
+  DevMsg :=
+    'Você é um analisador de código.' + LineEnding +
+    'Responda ESTRITAMENTE em JSON válido UTF-8. ' +
+    'Não use markdown, não escreva nada fora do JSON e não inclua comentários.' + LineEnding;
+
+
+  // ASK: contexto + pedido
+  Ask :=
+    'ARQUIVO: ' + ExtractFileName(Fonte) + LineEnding +
+    'CAMINHO: ' + Fonte + LineEnding +
+    'LINGUAGEM (estimada): ' + Linguagem + LineEnding +
+    LineEnding +
+    '--- CÓDIGO COM LINHAS ---' + LineEnding +
+    SrcNum + LineEnding +
+    '--- FIM ---' + LineEnding +
+    LineEnding +
+    'TAREFA:' + LineEnding +
+    '- Gere SOMENTE o JSON no formato fonte, lista de tabelas usadas ou relacionadas no fonte. ' + LineEnding +
+    '- Identifique as tabelas usadas(tabela_usada).' + LineEnding +
+    '- Identifique as tabelas relacionadas(tabela_relacionada) .' + LineEnding +
+    '- Faça um resumo do que é feito em poucas linhas, caso tenha regras de negócio priorize no resumo.(resumo).' + LineEnding +
+    '- Mostre os fontes que estão sendo chamados neste fonte (fontes_vinculados).' + LineEnding +
+    '- NUNCA inclua markdown, rótulos, ou texto fora do JSON.';
+
+  if (FCHATGPT = nil) then
+    FCHATGPT := TCHATGPT.Create(Self);
+  try
+    if Trim(FSetMain.CHATGPT) = '' then
+    begin
+      ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+      Exit;
+    end;
+
+    FCHATGPT.TOKEN := FSetMain.CHATGPT;             // seu token
+    FCHATGPT.Dev   := DevMsg;                        // sistema
+    // (opcional) Chat.Response := '';          // limpeza
+    if FCHATGPT.SendQuestion(Ask) then
+      Resp := FCHATGPT.Response
+    else
+      Resp := FCHATGPT.Response; // em caso de erro, vem o JSON de erro da RequestJson
+  finally
+    FCHATGPT.Free;
+  end;
+
+  // tenta embelezar o JSON; se falhar, mostra bruto
+  Beautified := '';
+  try
+    Parser := TJSONParser.Create(Resp);
+    try
+      Data := Parser.Parse;
+      try
+        Beautified := Data.FormatJSON([], 2); // identação de 2 espaços
+
+        //Registra Tabelas
+        RegistraTabelas(Fonte,Beautified);
+      finally
+        Data.Free;
+      end;
+    finally
+      Parser.Free;
+    end;
+  except
+    // ignore
+  end;
+
+
+
+end;
+
+procedure TfrmFolders.RegistraTabelas(Fonte: string; json: string);
+var
+  Clean: string;
+  p1, p2: SizeInt;
+  Parser: TJSONParser;
+  Data: TJSONData;
+  Obj: TJSONObject;
+  SLUsadas, SLRelacionadas, SLFontes: TStringList;
+  Resumo: string;
+  i: Integer;
+  caminho : string;
+  arquivo : string;
+  extensao : string;
+  iddir , id : integer;
+
+  procedure ReplaceDebugMarkers(var S: string);
+  begin
+    // Remove prefixos do tipo “$08296158^: ” pegando do primeiro “{” até o último “}”
+    p1 := Pos('{', S);
+    p2 := RPos('}', S); // requer StrUtils
+    if (p1 > 0) and (p2 >= p1) then
+      S := Copy(S, p1, p2 - p1 + 1);
+
+    // Converte marcadores do depurador para quebras reais
+    if Pos('#$0', S) > 0 then
+    begin
+      S := StringReplace(S, '''#$0D#$0A''', LineEnding, [rfReplaceAll]);
+      S := StringReplace(S, '#$0D#$0A', LineEnding, [rfReplaceAll]);
+      S := StringReplace(S, '#$0D', #13, [rfReplaceAll]);
+      S := StringReplace(S, '#$0A', #10, [rfReplaceAll]);
+    end;
+  end;
+
+  procedure FillListFromArray(const Key: string; L: TStrings);
+  var
+    A: TJSONArray;
+    j: Integer;
+  begin
+    L.Clear;
+    if not Obj.Find(Key, A) then Exit;
+    if A = nil then Exit;
+    for j := 0 to A.Count - 1 do
+      if A.Items[j].JSONType = jtString then
+        L.Add(A.Strings[j]);
+  end;
+
+begin
+  caminho := ExtractFilePath(Fonte);
+  if (caminho <> '') and (caminho[Length(caminho)] in ['/', '\']) then
+     Delete(caminho, Length(caminho), 1);
+  arquivo := ExtractFileName(fonte);
+  extensao:= ExtractFileExt(fonte);
+
+  // 1) Sanitiza entrada
+  Clean := json;
+  ReplaceDebugMarkers(Clean);
+
+  // 2) Parse JSON
+  Parser := TJSONParser.Create(Clean);
+  try
+    Data := Parser.Parse;
+    try
+      if Data.JSONType <> jtObject then
+        raise Exception.Create('JSON raiz não é objeto.');
+      Obj := TJSONObject(Data);
+
+      // 3) Extrai campos
+      SLUsadas        := TStringList.Create;
+      SLRelacionadas  := TStringList.Create;
+      SLFontes        := TStringList.Create;
+      try
+        FillListFromArray('tabela_usada',        SLUsadas);
+        FillListFromArray('tabela_relacionada',  SLRelacionadas);
+        FillListFromArray('fontes_vinculados',   SLFontes);
+        Resumo := Obj.Get('resumo', '');
+
+        // 4) (Exemplo) Exibe no log — troque aqui pelo que quiser fazer com as listas
+        meLog.Lines.Add('--- Resultado de ' + ExtractFileName(Fonte) + ' ---');
+        meLog.Lines.Add('resumo: ' + Resumo);
+
+        meLog.Lines.Add('tabela_usada:');
+        for i := 0 to SLUsadas.Count-1 do meLog.Lines.Add('  - ' + SLUsadas[i]);
+
+        meLog.Lines.Add('tabela_relacionada:');
+        for i := 0 to SLRelacionadas.Count-1 do meLog.Lines.Add('  - ' + SLRelacionadas[i]);
+
+        meLog.Lines.Add('fontes_vinculados:');
+        for i := 0 to SLFontes.Count-1 do meLog.Lines.Add('  - ' + SLFontes[i]);
+
+        //Busca o id do diretorio
+        iddir := dmbase.Buscafs_IDpeloDiretorio(caminho);
+        if (iddir<>0) then
+        begin
+            id := dmbase.Buscafs_IDpeloNome (iddir, arquivo);
+            if (id <> 0) then
+            begin
+              dmbase.AtualizarResumo(id, Resumo);
+            end;
+        end;
+
+
+
+
+
+        // 👉 Ou já persistir nas suas tabelas (fs_tabelas / tabelas):
+        // - descobrir fs_id a partir de Fonte (na sua tabela fs)
+        // - garantir tabela_id em `tabelas` (criando se faltar)
+        // - para cada item SLUsadas/SLRelacionadas, chamar RegistraRelacaoFsTabela(fs_id, tabela_id)
+      finally
+        SLUsadas.Free;
+        SLRelacionadas.Free;
+        SLFontes.Free;
+      end;
+
+    finally
+      Data.Free;
+    end;
+  except
+    on E: Exception do
+      MessageHint('Falha ao parsear JSON: ' + E.Message);
+  end;
+  Parser.Free;
+end;
+
 
 end.
 

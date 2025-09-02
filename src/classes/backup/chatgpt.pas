@@ -196,7 +196,7 @@ var
 begin
   Result := False;
   LURL := 'https://api.openai.com/v1/chat/completions';
-  AUX := RequestJson(LURL, FSetMain. Token, JsonEscape(ASK));
+  AUX := RequestJson(LURL, FToken, JsonEscape(ASK));
 
   // Se a resposta já vier com {"error":...}, devolve e sai
   if Pos('"error"', AUX) > 0 then

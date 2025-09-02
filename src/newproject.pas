@@ -72,7 +72,7 @@ begin
     begin
       frmhint := TfrmHint.create(self);
     end;
-    frmHint.MessageHint('Selecione a pasta de destino.');
+    MessageHint('Selecione a pasta de destino.');
     Exit;
   end;
   if Trim(edproject.Text) = '' then
@@ -81,7 +81,7 @@ begin
     begin
       frmhint := TfrmHint.create(self);
     end;
-    frmHint.MessageHint('Informe o nome do projeto.');
+    MessageHint('Informe o nome do projeto.');
     Exit;
   end;
 
@@ -108,7 +108,7 @@ begin
     begin
       frmhint := TfrmHint.create(self);
     end;
-    frmHint.MessageHint('Arquivo de base não encontrado: ' + original);
+    MessageHint('Arquivo de base não encontrado: ' + original);
     Exit;
   end;
 
@@ -124,7 +124,7 @@ begin
       begin
         frmhint := TfrmHint.create(self);
       end;
-      frmHint.MessageHint('Falha ao copiar o arquivo: ' + E.Message);
+      MessageHint('Falha ao copiar o arquivo: ' + E.Message);
       Exit;
     end;
   end;
@@ -142,7 +142,7 @@ begin
     begin
       frmhint := TfrmHint.create(self);
     end;
-    frmHint.MessageHint('Não foi possível conectar ao SQLite.');
+    MessageHint('Não foi possível conectar ao SQLite.');
 end;
 
 procedure TfrmNewProject.btProcessClick(Sender: TObject);
@@ -217,7 +217,7 @@ begin
     begin
       frmhint := TfrmHint.create(self);
     end;
-    frmHint.MessageHint('Conexão inválida');
+    MessageHint('Conexão inválida');
   end;
 end;
 
@@ -246,7 +246,7 @@ begin
     begin
       frmhint := TfrmHint.create(self);
     end;
-    frmHint.MessageHint('Spec not found');
+    MessageHint('Spec not found');
   end;
 end;
 

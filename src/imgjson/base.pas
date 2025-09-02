@@ -34,6 +34,11 @@ type
     function EnsureRootId: Integer;
     function GetParam(const AKey: string): string;
     procedure DeleteFS();
+    procedure DeleteTabelas();
+    procedure RegistraTabela(tabela, database, script: string);
+    function Buscafs_IDpeloDiretorio(const Caminho: string): Integer;
+    function Buscafs_IDpeloNome( iddir : integer; Nome: string): Integer;
+    procedure AtualizarResumo(id : integer; Resumo: string);
 
   end;
 
@@ -89,6 +94,45 @@ begin
   qryauxlocal.ExecSQL;
 
 end;
+
+procedure TdmBase.DeleteTabelas();
+begin
+  qryauxlocal.close;
+  qryauxlocal.sql.text := 'delete from tabelas ';
+  qryauxlocal.ExecSQL;
+end;
+
+procedure TdmBase.RegistraTabela(tabela, database, script: string);
+begin
+  if (zconlocal = nil) or (not zconlocal.Connected) then Exit;
+
+  // Tenta atualizar (caso já exista o par database+tabela)
+  qryauxlocal.Close;
+  qryauxlocal.SQL.Clear;
+  qryauxlocal.SQL.Text :=
+    'UPDATE tabelas '+
+    '   SET script = :scr, atualizado_em = datetime(''now'') '+
+    ' WHERE "database" = :db AND tabela = :tab';
+  qryauxlocal.ParamByName('scr').AsString := script;
+  qryauxlocal.ParamByName('db').AsString  := database;
+  qryauxlocal.ParamByName('tab').AsString := tabela;
+  qryauxlocal.ExecSQL;
+
+  // Se não atualizou nada, insere
+  if qryauxlocal.RowsAffected = 0 then
+  begin
+    qryauxlocal.Close;
+    qryauxlocal.SQL.Clear;
+    qryauxlocal.SQL.Text :=
+      'INSERT INTO tabelas ("database", tabela, script, criado_em, atualizado_em) '+
+      'VALUES (:db, :tab, :scr, datetime(''now''), datetime(''now''))';
+    qryauxlocal.ParamByName('db').AsString  := database;
+    qryauxlocal.ParamByName('tab').AsString := tabela;
+    qryauxlocal.ParamByName('scr').AsString := script;
+    qryauxlocal.ExecSQL;
+  end;
+end;
+
 
 
 procedure TdmBase.loadlib(path: string);
@@ -318,6 +362,69 @@ begin
     Q.Free;
   end;
 end;
+
+
+function TdmBase.Buscafs_IDpeloDiretorio(const Caminho: string): Integer;
+begin
+  Result := 0;
+  if (zconlocal = nil) or (not zconlocal.Connected) or (Trim(Caminho) = '') then Exit;
+
+  qryauxlocal.Close;
+  qryauxlocal.SQL.Clear;
+  qryauxlocal.SQL.Text :=
+    'SELECT id '+
+    '  FROM fs '+
+    ' WHERE nome = :n  and diretorio = 1 '+
+    ' ORDER BY diretorio ASC, id DESC ' + // prefere arquivo (0) antes de diretório (1)
+    ' LIMIT 1';
+  qryauxlocal.ParamByName('n').AsString := caminho;
+  qryauxlocal.Open;
+  try
+    if not qryauxlocal.EOF then
+      Result := qryauxlocal.FieldByName('id').AsInteger;
+  finally
+    qryauxlocal.Close;
+  end;
+end;
+
+function TdmBase.Buscafs_IDpeloNome( iddir : integer; Nome: string): Integer;
+begin
+  Result := 0;
+  if (zconlocal = nil) or (not zconlocal.Connected) or (Trim(Nome) = '') then Exit;
+
+  qryauxlocal.Close;
+  qryauxlocal.SQL.Clear;
+  qryauxlocal.SQL.Text :=
+    'SELECT id '+
+    '  FROM fs '+
+    ' WHERE nome = :n  and id_pai = :m '+
+    ' LIMIT 1';
+  qryauxlocal.ParamByName('n').AsString := Nome;
+  qryauxlocal.ParamByName('m').Asinteger := iddir;
+  qryauxlocal.Open;
+  try
+    if not qryauxlocal.EOF then
+      Result := qryauxlocal.FieldByName('id').AsInteger;
+  finally
+    qryauxlocal.Close;
+  end;
+end;
+
+procedure TdmBase.AtualizarResumo(id: integer; Resumo: string);
+begin
+  if (zconlocal = nil) or (not zconlocal.Connected) then Exit;
+
+  qryauxlocal.Close;
+  qryauxlocal.SQL.Clear;
+  qryauxlocal.SQL.Text :=
+    'UPDATE fs '+
+    '   SET resumo = :res '+
+    ' WHERE id = :id';
+  qryauxlocal.ParamByName('res').AsString := Resumo;
+  qryauxlocal.ParamByName('id').AsInteger := id;
+  qryauxlocal.ExecSQL;
+end;
+
 
 
 end.

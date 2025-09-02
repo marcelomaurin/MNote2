@@ -114,56 +114,73 @@ function TCHATGPT.RequestJson(LURL: String; token: string; ASK: string): String;
 var
   ClienteHTTP : TFPHttpClient;
   BodyStream  : TStringStream;
-  params      : string;
   tipo        : string;
+  root, mSys, mUser: TJSONObject;
+  msgs: TJSONArray;
+  payload: string;
 begin
-  // Seleção do modelo conforme teu enum
+  // Seleção do modelo
   case FTipoChat of
-    VCT_GPT35TURBO : tipo := 'gpt-3.5-turbo';         // (legado)
-    VCT_GPT40      : tipo := 'gpt-4';                 // (legado)
-    VCT_GPT40_TURBO: tipo := 'gpt-4-turbo-preview';   // (legado)
+    VCT_GPT35TURBO : tipo := 'gpt-3.5-turbo';
+    VCT_GPT40      : tipo := 'gpt-4';
+    VCT_GPT40_TURBO: tipo := 'gpt-4-turbo-preview';
     VCT_GPT4o      : tipo := 'gpt-4o';
     VCT_GPTo3_mini : tipo := 'gpt-o3-mini';
     VCT_GPT41      : tipo := 'gpt-4.1';
     VCT_GPT41_MINI : tipo := 'gpt-4.1-mini';
     VCT_GPT5       : tipo := 'gpt-5';
   else
-    tipo := 'gpt-4.1-mini'; // padrão seguro
+    tipo := 'gpt-4.1-mini';
   end;
 
-  // JSON igual ao curl (developer + user)
-  params :=
-    '{' +
-    '  "model": "' + tipo + '",' +
-    '  "messages": [' +
-    '    {"role": "developer", "content": "' + JsonEscape(Fdev) + '"},' +
-    '    {"role": "user", "content": "' + JsonEscape(ASK) + '"}' +
-    '  ]' +
-    '}';
+  // Monta JSON com fpjson (sem escapar manualmente)
+  root := TJSONObject.Create;
+  try
+    root.Add('model', tipo);
+
+    msgs := TJSONArray.Create;
+    root.Add('messages', msgs);
+
+    mSys := TJSONObject.Create;
+    mSys.Add('role', 'system');    // ✔ role suportada
+    mSys.Add('content', FDev);
+    msgs.Add(mSys);
+
+    mUser := TJSONObject.Create;
+    mUser.Add('role', 'user');
+    mUser.Add('content', ASK);     // ✔ sem JsonEscape
+    msgs.Add(mUser);
+
+    payload := root.AsJSON;
+  finally
+    root.Free; // payload já é uma cópia
+  end;
 
   ClienteHTTP := TFPHttpClient.Create(nil);
-  BodyStream  := TStringStream.Create(params, TEncoding.UTF8);
+  BodyStream  := TStringStream.Create(payload, TEncoding.UTF8);
   try
-    // Headers corretos (sem ; no content-type e sem EncodeURLElement no token)
     ClienteHTTP.AddHeader('Content-Type', 'application/json');
+    ClienteHTTP.AddHeader('Accept', 'application/json');
     ClienteHTTP.AddHeader('Authorization', 'Bearer ' + token);
     ClienteHTTP.AllowRedirect   := True;
     ClienteHTTP.KeepConnection  := True;
-    ClienteHTTP.IOTimeout      := 30000; // 30s
-    ClienteHTTP.ConnectTimeout := 15000; // 15s
+    ClienteHTTP.IOTimeout       := 30000;
+    ClienteHTTP.ConnectTimeout  := 15000;
     ClienteHTTP.RequestBody     := BodyStream;
 
     try
       Result := ClienteHTTP.Post(LURL);
     except
       on E: Exception do
-        Result := '{"error":"' + StringReplace(E.Message, '"', '\"', [rfReplaceAll]) + '"}';
+        Result := Format('{"error":{"message":"%s"}}',
+                  [StringReplace(E.Message, '"', '\"', [rfReplaceAll])]);
     end;
   finally
     BodyStream.Free;
     ClienteHTTP.Free;
   end;
 end;
+
 
 (*
 function TCHATGPT.SendQuestion(ASK: String): boolean;
@@ -196,9 +213,10 @@ var
 begin
   Result := False;
   LURL := 'https://api.openai.com/v1/chat/completions';
-  AUX := RequestJson(LURL, FToken, JsonEscape(ASK));
 
-  // Se a resposta já vier com {"error":...}, devolve e sai
+  // ❌ NÃO use JsonEscape aqui — RequestJson já monta JSON correto
+  AUX := RequestJson(LURL, FToken, ASK);
+
   if Pos('"error"', AUX) > 0 then
   begin
     FResponse := AUX;
@@ -209,7 +227,7 @@ begin
     FResponse := PegaMensagem(AUX);
     Result := (Trim(FResponse) <> '');
     if not Result then
-      FResponse := AUX; // devolve cru se parsing não achou "choices"
+      FResponse := AUX;
   except
     FResponse := AUX;
     Result := False;

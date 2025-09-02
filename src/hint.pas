@@ -47,6 +47,7 @@ procedure MessageHint(info: string);
 begin
   frmHint := TfrmHint.create(frmMNote);
   frmHint.messagehint(info);
+
 end;
 
 

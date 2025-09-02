@@ -1,7 +1,7 @@
 object frmmquery2: Tfrmmquery2
-  Left = -3329
+  Left = 283
   Height = 770
-  Top = 195
+  Top = 118
   Width = 1172
   Caption = 'Query Tools'
   ClientHeight = 770
@@ -1099,9 +1099,9 @@ object frmmquery2: Tfrmmquery2
           Height = 690
           Top = 1
           Width = 951
-          ActivePage = tsSetupPostres
+          ActivePage = tsSQLPostgreSQL
           Align = alClient
-          TabIndex = 0
+          TabIndex = 1
           TabOrder = 0
           object tsSetupPostres: TTabSheet
             Caption = 'PostgreSql Connection'
@@ -2255,8 +2255,8 @@ object frmmquery2: Tfrmmquery2
     end
   end
   object popSeq: TPopupMenu
-    Left = 352
-    Top = 360
+    Left = 272
+    Top = 288
     object mnCriarSeq: TMenuItem
       Caption = 'Migrar Sequência'
       OnClick = mnCriarSeqClick
@@ -2357,8 +2357,8 @@ object frmmquery2: Tfrmmquery2
     end
   end
   object popSQLMy: TPopupMenu
-    Left = 488
-    Top = 144
+    Left = 272
+    Top = 216
     object miFont: TMenuItem
       Caption = 'Fonte'
       OnClick = miFontClick
@@ -6091,6 +6091,7 @@ object frmmquery2: Tfrmmquery2
     Top = 360
     object mnCriaDicionario: TMenuItem
       Caption = 'Make Dictionary'
+      OnClick = mnCriaDicionarioClick
     end
   end
   object pmTabelaMy: TPopupMenu
@@ -6116,7 +6117,7 @@ object frmmquery2: Tfrmmquery2
     end
   end
   object popSQLPost: TPopupMenu
-    Left = 432
+    Left = 272
     Top = 152
     object miFont1: TMenuItem
       Caption = 'Fonte'
