@@ -47,70 +47,73 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="21">
+    <RequiredPackages Count="22">
       <Item1>
-        <PackageName Value="indylaz"/>
+        <PackageName Value="pkSalesSwitch"/>
       </Item1>
       <Item2>
-        <PackageName Value="IPEdit_pkg"/>
+        <PackageName Value="indylaz"/>
       </Item2>
       <Item3>
-        <PackageName Value="zcomponentdesign"/>
+        <PackageName Value="IPEdit_pkg"/>
       </Item3>
       <Item4>
-        <PackageName Value="LazUtils"/>
+        <PackageName Value="zcomponentdesign"/>
       </Item4>
       <Item5>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="LazUtils"/>
       </Item5>
       <Item6>
-        <PackageName Value="synuni"/>
+        <PackageName Value="lnetbase"/>
       </Item6>
       <Item7>
-        <PackageName Value="synfacilsyn"/>
+        <PackageName Value="synuni"/>
       </Item7>
       <Item8>
-        <PackageName Value="SynEditDsgn"/>
+        <PackageName Value="synfacilsyn"/>
       </Item8>
       <Item9>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="SynEditDsgn"/>
       </Item9>
       <Item10>
-        <PackageName Value="myexamplepackage"/>
+        <PackageName Value="SynEdit"/>
       </Item10>
       <Item11>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="myexamplepackage"/>
       </Item11>
       <Item12>
-        <PackageName Value="FCL"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item12>
       <Item13>
-        <PackageName Value="poweredby"/>
+        <PackageName Value="FCL"/>
       </Item13>
       <Item14>
-        <PackageName Value="industrial"/>
+        <PackageName Value="poweredby"/>
       </Item14>
       <Item15>
-        <PackageName Value="pkg_gifanim"/>
+        <PackageName Value="industrial"/>
       </Item15>
       <Item16>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="pkg_gifanim"/>
       </Item16>
       <Item17>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="zcomponent"/>
       </Item17>
       <Item18>
-        <PackageName Value="rxnew"/>
+        <PackageName Value="multiloglaz"/>
       </Item18>
       <Item19>
-        <PackageName Value="python4lazarus_package"/>
+        <PackageName Value="rxnew"/>
       </Item19>
       <Item20>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="python4lazarus_package"/>
       </Item20>
       <Item21>
-        <PackageName Value="LCL"/>
+        <PackageName Value="lnetvisual"/>
       </Item21>
+      <Item22>
+        <PackageName Value="LCL"/>
+      </Item22>
     </RequiredPackages>
     <Units Count="47">
       <Unit0>

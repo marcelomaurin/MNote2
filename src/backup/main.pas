@@ -616,9 +616,9 @@ begin
   {$IFDEF WINDOWS}
 
   if (Pos('\src', basePath) > 0) then
-    biblioteca := basePath + '..\libs\sqlite\win32\sqlite3.dll'
+    biblioteca := basePath + '\..\libs\sqlite\win32\sqlite3.dll'
   else
-    biblioteca := basePath + 'libs\sqlite\win32\sqlite3.dll';
+    biblioteca := basePath + '\libs\sqlite\win32\sqlite3.dll';
   {$ENDIF}
 
   {$IFDEF LINUX}

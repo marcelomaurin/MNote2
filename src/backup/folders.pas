@@ -6,8 +6,9 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ShellCtrls,
-  ExtCtrls, Menus, StdCtrls, funcoes, hint, setmain, chatgpt,  Types,
-  StrUtils, LConvEncoding, base, DateUtils, LazFileUtils, fpjson, jsonparser;
+  ExtCtrls, Menus, StdCtrls, GifAnim, untsalesSwitch, funcoes, hint, setmain,
+  chatgpt, Types, StrUtils, LConvEncoding, base, DateUtils, LazFileUtils,
+  fpjson, jsonparser;
 
 type
 
@@ -17,10 +18,14 @@ type
     btScanner: TButton;
     btIA: TButton;
     edFolder: TEdit;
+    GifAnim1: TGifAnim;
     Label1: TLabel;
+    Label2: TLabel;
     lbName: TLabel;
     meLog: TMemo;
     miAnalisaArquivo: TMenuItem;
+    Panel7: TPanel;
+    ProgressBar1: TProgressBar;
     Separator3: TMenuItem;
     mePergunta: TMemo;
     MenuItem1: TMenuItem;
@@ -45,6 +50,7 @@ type
     ShellListView1: TShellListView;
     ShellTreeView1: TShellTreeView;
     Splitter1: TSplitter;
+    Splitter2: TSplitter;
     tsFolders: TTabSheet;
     tsIA: TTabSheet;
 
@@ -67,13 +73,35 @@ type
       var AllowChange: Boolean);
     procedure ShellTreeView1GetSelectedIndex(Sender: TObject; Node: TTreeNode);
   private
+     ArvoreDiretorios : string;
+     Projeto : string;
+     Arquivos : TStringList;
+     function Util_ClipText(const S: string; MaxChars: Integer): string;
+     function AF_BuildDevMsg_ListaCodigos: string;
+     // === Helpers usadas por AnalisaFonte (sem aninhar) ===
+     function  AF_LoadTextLimited(const Path: string; const MaxBytes: Integer): string;
+     function  AF_AddLineNumbers(const S: string): string;
+     function  AF_GuessLanguageByExt(const Ext: string): string;
+     function  AF_BuildDevMsg: string;
+     function  AF_BuildAsk(const Fonte, Linguagem, SrcNum: string): string;
+     function  AF_SendToChatGPT(const DevMsg, Ask, Token: string; out Resp: string): Boolean;
+     function  AF_BeautifyJson(const Resp: string): string;
+     function AF_BuildAsk_ListaCodigos(
+                const ArvoreY, SolicitacaoX: string; MaxItens: Integer): string;
+     function ParseArquivosRecomendadosJSON(
+      const JSONText: string; Dest: TStrings;
+      out Solicitacao, Observacoes: string): Integer;
 
-  public
-    function Scanner(const Root: string): TStringList;
-    procedure AtualizaProjeto;  // << NOVA
-    procedure AnalisaFonte(const Fonte: string);
-    procedure RegistraTabelas(Fonte: string; json : string);
-  end;
+     function ExtractPathFromItemJSON(const ItemJSON: string): string;
+   public
+     function  Scanner(const Root: string): TStringList;
+     procedure AtualizaProjeto;
+     procedure AnalisaFonte(const Fonte: string);
+     procedure RegistraTabelas(Fonte: string; json : string);
+     procedure AnalisaProjeto();
+     function  ListaCodigos(const ArvoreArquivosY, SolicitacaoX: string; MaxItens: Integer = 25): string;
+   end;
+
 
 var
   frmFolders: TfrmFolders;
@@ -383,118 +411,156 @@ begin
     meLog.Lines.Assign(tree); // mostra a árvore no memo
     meLog.Lines.Add('');
     meLog.Lines.Add(Format('Total de linhas: %d', [tree.Count]));
+    //meLog.Lines.SaveToFile(ArvoreDiretorios);
   finally
     tree.Free;
   end;
 end;
 
-procedure TfrmFolders.btIAClick(Sender: TObject);
-
-  function ClipText(const S: string; MaxChars: Integer): string;
-  begin
-    if Length(S) <= MaxChars then Exit(S);
-    Result := Copy(S, 1, MaxChars) + LineEnding +
-              '... (cortado; árvore muito grande, envie filtros/mais detalhes se necessário)';
-  end;
-
-  // (opcional) monte uma pequena prévia de arquivos .pas/.lfm/.ini para a IA ter contexto
-  function BuildSmallPreviews(const Root: string; const Tree: TStrings;
-                              MaxFiles, MaxBytesPerFile: Integer): string;
-  var
-    i, cnt, L: Integer;
-    Path, Rel: string;
-    SL: TStringList;
-    Buf: AnsiString;
-  begin
-    Result := '';
-    SL := TStringList.Create;
-    try
-      cnt := 0;
-      for i := 0 to Tree.Count - 1 do
-      begin
-        Rel := Trim(Tree[i]);              // sua Scanner deve devolver caminhos relativos
-        if (Rel = '') then Continue;
-
-        // filtra extensões que ajudam a análise
-        if not AnsiMatchText(ExtractFileExt(Rel), ['.pas', '.pp', '.lfm', '.lpr', '.ini', '.json', '.yml', '.yaml']) then
-          Continue;
-
-        Path := IncludeTrailingPathDelimiter(Root) + Rel;
-        if not FileExists(Path) then Continue;
-
-        // limita quantidade de arquivos
-        Inc(cnt);
-        if cnt > MaxFiles then Break;
-
-        try
-          SL.LoadFromFile(Path);
-          // corta por bytes (simples): junta, converte e limita
-          Buf := UTF8Encode(SL.Text);
-          L := Length(Buf);
-          if L > MaxBytesPerFile then
-            SetLength(Buf, MaxBytesPerFile);
-
-          Result := Result +
-            '--- FILE: ' + Rel + ' ---' + LineEnding +
-            UTF8ToString(Buf) + LineEnding + LineEnding;
-        except
-          // ignora erro de leitura isolado
-        end;
-      end;
-    finally
-      SL.Free;
-    end;
-  end;
-
-var
-  Tree: TStringList;
-  Chat : TCHATGPT;
-  Dev, Prompt, Arvore, Previews, Raiz: string;
+procedure TfrmFolders.AnalisaProjeto();
+function ClipText(const S: string; MaxChars: Integer): string;
 begin
-  meLog.Clear;
+  if Length(S) <= MaxChars then Exit(S);
+  Result := Copy(S, 1, MaxChars) + LineEnding +
+            '... (cortado; árvore muito grande, envie filtros/mais detalhes se necessário)';
+end;
 
-  // gera a árvore
-  Tree := Scanner(edFolder.Text);
+// (opcional) monte uma pequena prévia de arquivos .pas/.lfm/.ini para a IA ter contexto
+function BuildSmallPreviews(const Root: string; const Tree: TStrings;
+                            MaxFiles, MaxBytesPerFile: Integer): string;
+var
+  i, cnt, L: Integer;
+  Path, Rel: string;
+  SL: TStringList;
+  Buf: AnsiString;
+begin
+  Result := '';
+  SL := TStringList.Create;
   try
-    Raiz   := edFolder.Text;
-    Arvore := ClipText(Tree.Text, 60000); // evita estourar tokens
+    cnt := 0;
+    for i := 0 to Tree.Count - 1 do
+    begin
+      Rel := Trim(Tree[i]);              // sua Scanner deve devolver caminhos relativos
+      if (Rel = '') then Continue;
 
-    // (opcional) trechos de arquivos — ajuste limites se quiser
-    Previews := BuildSmallPreviews(Raiz, Tree, {MaxFiles=} 12, {MaxBytesPerFile=} 8000);
+      // filtra extensões que ajudam a análise
+      if not AnsiMatchText(ExtractFileExt(Rel), ['.pas', '.pp', '.lfm', '.lpr', '.ini', '.json', '.yml', '.yaml']) then
+        Continue;
 
-    // sistema (instruções fixas para a IA)
-    Dev :=
-      'Voce é uma IA de respostas sintéticas, sua tarefa é responder de forma direta. .' + LineEnding+
-      'Responda de forma concisa e estruturada.';
+      Path := IncludeTrailingPathDelimiter(Root) + Rel;
+      if not FileExists(Path) then Continue;
 
-    // mensagem do usuário com a árvore e (opcional) trechos
-    Prompt :=
-      'Raiz do projeto: ' + Raiz + LineEnding + LineEnding +
-      '--- ÁRVORE DE DIRETÓRIOS E ARQUIVOS ---' + LineEnding +
-      Arvore + LineEnding +
-      '--- TRECHOS DE ARQUIVOS (amostra) ---' + LineEnding +
-      IfThen(Previews <> '', Previews, '(sem prévias)') + LineEnding +
-      '--- PEDIDO ---' + LineEnding +
-      '- Avalie a seguinte pergunta:' +mePergunta.text+  LineEnding;
+      // limita quantidade de arquivos
+      Inc(cnt);
+      if cnt > MaxFiles then Break;
 
-    // chama a IA
-    Chat := TCHATGPT.Create(Self);
-    try
-      Chat.TOKEN := FSetMain.CHATGPT;  // já usado no seu projeto
-      Chat.Dev   := Dev;
+      try
+        SL.LoadFromFile(Path);
+        // corta por bytes (simples): junta, converte e limita
+        Buf := UTF8Encode(SL.Text);
+        L := Length(Buf);
+        if L > MaxBytesPerFile then
+          SetLength(Buf, MaxBytesPerFile);
 
-      if Chat.SendQuestion(Prompt) then
-        meLog.Lines.Text := Chat.Response
-      else
-        meLog.Lines.Text := 'Erro ao consultar IA: ' + Chat.Response;
-    finally
-      Chat.Free;
+        Result := Result +
+          '--- FILE: ' + Rel + ' ---' + LineEnding +
+          UTF8ToString(Buf) + LineEnding + LineEnding;
+      except
+        // ignora erro de leitura isolado
+      end;
     end;
-
   finally
-    Tree.Free;
+    SL.Free;
   end;
 end;
+
+var
+Tree: TStringList;
+Chat : TCHATGPT;
+Dev, Prompt, Arvore, Previews, Raiz: string;
+begin
+meLog.Clear;
+
+// gera a árvore
+Tree := Scanner(edFolder.Text);
+try
+  Raiz   := edFolder.Text;
+  Arvore := ClipText(Tree.Text, 60000); // evita estourar tokens
+  ArvoreDiretorios:= Arvore;
+
+  // (opcional) trechos de arquivos — ajuste limites se quiser
+  Previews := BuildSmallPreviews(Raiz, Tree, {MaxFiles=} 12, {MaxBytesPerFile=} 8000);
+
+  // sistema (instruções fixas para a IA)
+  Dev :=
+    'Voce é uma IA de respostas sintéticas, sua tarefa é responder de forma direta. .' + LineEnding+
+    'Responda de forma concisa e estruturada.';
+
+  // mensagem do usuário com a árvore e (opcional) trechos
+  Prompt :=
+    'Raiz do projeto: ' + Raiz + LineEnding + LineEnding +
+    '--- ÁRVORE DE DIRETÓRIOS E ARQUIVOS ---' + LineEnding +
+    Arvore + LineEnding +
+    '--- TRECHOS DE ARQUIVOS (amostra) ---' + LineEnding +
+    IfThen(Previews <> '', Previews, '(sem prévias)') + LineEnding +
+    '--- PEDIDO ---' + LineEnding +
+    '- Avalie a seguinte pergunta:' +mePergunta.text+  LineEnding;
+
+  // chama a IA
+  Chat := TCHATGPT.Create(Self);
+  try
+    Chat.TOKEN := FSetMain.CHATGPT;  // já usado no seu projeto
+    Chat.Dev   := Dev;
+
+    if Chat.SendQuestion(Prompt) then
+      meLog.Lines.Text := Chat.Response
+    else
+      meLog.Lines.Text := 'Erro ao consultar IA: ' + Chat.Response;
+  finally
+    Projeto := meLog.Lines.text;
+    Chat.Free;
+  end;
+
+finally
+  Tree.Free;
+end;
+end;
+
+
+procedure TfrmFolders.btIAClick(Sender: TObject);
+var
+  jsonLista, solicit, obs: string;
+  qtd, i: Integer;
+begin
+  ArvoreDiretorios := '';
+  AnalisaProjeto();  // preenche ArvoreDiretorios
+
+  jsonLista := ListaCodigos(ArvoreDiretorios, mePergunta.Text, 20);
+
+  if Arquivos = nil then
+    Arquivos := TStringList.Create
+  else
+    Arquivos.Clear;
+
+  qtd := ParseArquivosRecomendadosJSON(jsonLista, Arquivos, solicit, obs);
+
+  // Exibe um resumo e o JSON completo no log
+  meLog.Clear;
+  meLog.Lines.Add('Solicitação: ' + solicit);
+  meLog.Lines.Add('Arquivos carregados (JSON por item): ' + IntToStr(qtd));
+  if obs <> '' then meLog.Lines.Add('Observações: ' + obs);
+  meLog.Lines.Add('');
+  meLog.Lines.Add('Arquivos:');
+  // se quiser listar só os paths para conferência:
+  for i := 0 to Arquivos.Count - 1 do
+    meLog.Lines.Add(ExtractPathFromItemJSON(Arquivos[i]));
+  meLog.Lines.Add('-----');
+  meLog.Lines.Add('');
+  meLog.Lines.Add('--- JSON bruto da IA ---');
+  meLog.Lines.Add(AF_BeautifyJson(jsonLista));
+end;
+
+
 
 
 
@@ -636,153 +702,185 @@ begin
   Application.ProcessMessages;
 end;
 
+{ =====================  ANALISAFONTE ORQUESTRADORA  ===================== }
+
 procedure TfrmFolders.AnalisaFonte(const Fonte: string);
-
-  function LoadTextLimited(const Path: string; const MaxBytes: Integer): string;
-  var
-    FS: TFileStream;
-    Buf: RawByteString;
-  begin
-    Result := '';
-    if not FileExists(Path) then Exit;
-    FS := TFileStream.Create(Path, fmOpenRead or fmShareDenyNone);
-    try
-      if FS.Size > MaxBytes then
-        SetLength(Buf, MaxBytes)
-      else
-        SetLength(Buf, FS.Size);
-      if Length(Buf) > 0 then
-      begin
-        FS.ReadBuffer(Pointer(Buf)^, Length(Buf));
-        Result := UTF8ToString(Buf); // tenta decodificar como UTF-8
-        if Result = '' then
-          Result := String(Buf);
-      end;
-    finally
-      FS.Free;
-    end;
-  end;
-
-  function AddLineNumbers(const S: string): string;
-  var
-    SL: TStringList;
-    i: Integer;
-  begin
-    SL := TStringList.Create;
-    try
-      SL.Text := S;
-      for i := 0 to SL.Count-1 do
-        SL[i] := Format('%6d | %s', [i+1, SL[i]]);
-      Result := SL.Text;
-    finally
-      SL.Free;
-    end;
-  end;
-
-  function GuessLanguageByExt(const Ext: string): string;
-  begin
-    case LowerCase(Ext) of
-      '.pas', '.pp', '.lpr':   Exit('pascal/delphi');
-      '.lfm':                  Exit('lazarus-form');
-      '.sql':                  Exit('sql');
-      '.py':                   Exit('python');
-      '.js':                   Exit('javascript');
-      '.ts':                   Exit('typescript');
-      '.json':                 Exit('json');
-      '.ini', '.cfg':          Exit('ini');
-      '.yml', '.yaml':         Exit('yaml');
-      '.php':                  Exit('php');
-      '.java':                 Exit('java');
-      '.cs':                   Exit('csharp');
-      '.c', '.h':              Exit('c');
-      '.cpp', '.hpp', '.cc':   Exit('cpp');
-    else
-      Exit('texto');
-    end;
-  end;
-
 var
-  FCHATGPT: TCHATGPT;
-  Src, SrcNum: string;
-  DevMsg, Ask, Resp: string;
+  Src, SrcNum, DevMsg, Ask, Resp, Beautified, Linguagem: string;
   MaxBytes: Integer;
-  Ext, Linguagem: string;
-  Parser: TJSONParser;
-  Data: TJSONData;
-  Beautified: string;
 begin
-  FCHATGPT := nil;
   meLog.Clear;
   meLog.Lines.Add('Analisando: ' + Fonte);
 
-  MaxBytes := 200 * 1024; // 200 KB de limite para não estourar tokens
-  Src := LoadTextLimited(Fonte, MaxBytes);
+  // 1) Carrega o conteúdo com limite (ex: 200 KB)
+  MaxBytes := 200 * 1024;
+  Src := AF_LoadTextLimited(Fonte, MaxBytes);
   if Src = '' then
   begin
     MessageHint('Arquivo vazio ou não foi possível ler.');
     Exit;
   end;
 
-  Ext := ExtractFileExt(Fonte);
-  Linguagem := GuessLanguageByExt(Ext);
-  SrcNum := AddLineNumbers(Src);
+  // 2) Enriquecimentos de contexto
+  Linguagem := AF_GuessLanguageByExt(ExtractFileExt(Fonte));
+  SrcNum    := AF_AddLineNumbers(Src);
 
-  // DEV: contrato de saída em JSON (sem exemplo)
-  DevMsg :=
+  // 3) Monta mensagens para a IA
+  DevMsg := AF_BuildDevMsg;
+  Ask    := AF_BuildAsk(Fonte, Linguagem, SrcNum);
+
+  // 4) Consulta IA
+  if not AF_SendToChatGPT(DevMsg, Ask, FSetMain.CHATGPT, Resp) then
+  begin
+    meLog.Lines.Add('Falha ao consultar a IA.');
+    Exit;
+  end;
+
+  // 5) Embeleza JSON (se possível) e registra
+  Beautified := AF_BeautifyJson(Resp);
+  if Beautified = '' then
+    Beautified := Resp; // se falhou, usa bruto
+
+  // 6) Persistência específica (suas tabelas/relacionamentos)
+  RegistraTabelas(Fonte, Beautified);
+end;
+
+{ =====================  HELPERS (SEM FUNÇÕES ANINHADAS)  ===================== }
+
+function TfrmFolders.AF_LoadTextLimited(const Path: string; const MaxBytes: Integer): string;
+var
+  FS: TFileStream;
+  Buf: RawByteString;
+begin
+  Result := '';
+  if not FileExists(Path) then Exit;
+
+  FS := TFileStream.Create(Path, fmOpenRead or fmShareDenyNone);
+  try
+    if FS.Size > MaxBytes then
+      SetLength(Buf, MaxBytes)
+    else
+      SetLength(Buf, FS.Size);
+
+    if Length(Buf) > 0 then
+    begin
+      FS.ReadBuffer(Pointer(Buf)^, Length(Buf));
+      // tenta decodificar como UTF-8; se vier vazio, assume binário/ANSI
+      Result := UTF8ToString(Buf);
+      if Result = '' then
+        Result := String(Buf);
+    end;
+  finally
+    FS.Free;
+  end;
+end;
+
+function TfrmFolders.AF_AddLineNumbers(const S: string): string;
+var
+  SL: TStringList;
+  i: Integer;
+begin
+  SL := TStringList.Create;
+  try
+    SL.Text := S;
+    for i := 0 to SL.Count - 1 do
+      SL[i] := Format('%6d | %s', [i + 1, SL[i]]);
+    Result := SL.Text;
+  finally
+    SL.Free;
+  end;
+end;
+
+function TfrmFolders.AF_GuessLanguageByExt(const Ext: string): string;
+begin
+  case LowerCase(Ext) of
+    '.pas', '.pp', '.lpr':   Exit('pascal/delphi');
+    '.lfm':                  Exit('lazarus-form');
+    '.sql':                  Exit('sql');
+    '.py':                   Exit('python');
+    '.js':                   Exit('javascript');
+    '.ts':                   Exit('typescript');
+    '.json':                 Exit('json');
+    '.ini', '.cfg':          Exit('ini');
+    '.yml', '.yaml':         Exit('yaml');
+    '.php':                  Exit('php');
+    '.java':                 Exit('java');
+    '.cs':                   Exit('csharp');
+    '.c', '.h':              Exit('c');
+    '.cpp', '.hpp', '.cc':   Exit('cpp');
+  else
+    Exit('texto');
+  end;
+end;
+
+function TfrmFolders.AF_BuildDevMsg: string;
+begin
+  Result :=
     'Você é um analisador de código.' + LineEnding +
-    'Responda ESTRITAMENTE em JSON válido UTF-8. ' +
-    'Não use markdown, não escreva nada fora do JSON e não inclua comentários.' + LineEnding;
+    'Responda ESTRITAMENTE em JSON válido UTF-8.' + LineEnding +
+    'Não use markdown, não escreva nada fora do JSON e não inclua comentários.';
+end;
 
-
-  // ASK: contexto + pedido
-  Ask :=
+function TfrmFolders.AF_BuildAsk(const Fonte, Linguagem, SrcNum: string): string;
+begin
+  Result :=
     'ARQUIVO: ' + ExtractFileName(Fonte) + LineEnding +
     'CAMINHO: ' + Fonte + LineEnding +
-    'LINGUAGEM (estimada): ' + Linguagem + LineEnding +
-    LineEnding +
+    'LINGUAGEM (estimada): ' + Linguagem + LineEnding + LineEnding +
     '--- CÓDIGO COM LINHAS ---' + LineEnding +
     SrcNum + LineEnding +
-    '--- FIM ---' + LineEnding +
-    LineEnding +
+    '--- FIM ---' + LineEnding + LineEnding +
     'TAREFA:' + LineEnding +
     '- Gere SOMENTE o JSON no formato fonte, lista de tabelas usadas ou relacionadas no fonte. ' + LineEnding +
     '- Identifique as tabelas usadas(tabela_usada).' + LineEnding +
-    '- Identifique as tabelas relacionadas(tabela_relacionada) .' + LineEnding +
-    '- Faça um resumo do que é feito em poucas linhas, caso tenha regras de negócio priorize no resumo.(resumo).' + LineEnding +
-    '- Mostre os fontes que estão sendo chamados neste fonte (fontes_vinculados).' + LineEnding +
+    '- Identifique as tabelas relacionadas(tabela_relacionada).' + LineEnding +
+    '- Faça um resumo do que é feito em poucas linhas; priorize regras de negócio (resumo).' + LineEnding +
+    '- Mostre os fontes chamados neste fonte (fontes_vinculados).' + LineEnding +
     '- NUNCA inclua markdown, rótulos, ou texto fora do JSON.';
+end;
 
-  if (FCHATGPT = nil) then
-    FCHATGPT := TCHATGPT.Create(Self);
-  try
-    if Trim(FSetMain.CHATGPT) = '' then
-    begin
-      ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
-      Exit;
-    end;
+function TfrmFolders.AF_SendToChatGPT(
+  const DevMsg, Ask, Token: string; out Resp: string): Boolean;
+var
+  Chat: TCHATGPT;
+begin
+  Result := False;
+  Resp   := '';
 
-    FCHATGPT.TOKEN := FSetMain.CHATGPT;             // seu token
-    FCHATGPT.Dev   := DevMsg;                        // sistema
-    // (opcional) Chat.Response := '';          // limpeza
-    if FCHATGPT.SendQuestion(Ask) then
-      Resp := FCHATGPT.Response
-    else
-      Resp := FCHATGPT.Response; // em caso de erro, vem o JSON de erro da RequestJson
-  finally
-    FCHATGPT.Free;
+  if Trim(Token) = '' then
+  begin
+    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+    Exit;
   end;
 
-  // tenta embelezar o JSON; se falhar, mostra bruto
-  Beautified := '';
+  Chat := TCHATGPT.Create(Self);
+  try
+    Chat.TOKEN := Token;
+    Chat.Dev   := DevMsg;
+    if Chat.SendQuestion(Ask) then
+    begin
+      Resp   := Chat.Response;
+      Result := True;
+    end
+    else
+      Resp := Chat.Response; // pode vir JSON de erro
+  finally
+    Chat.Free;
+  end;
+end;
+
+function TfrmFolders.AF_BeautifyJson(const Resp: string): string;
+var
+  Parser: TJSONParser;
+  Data: TJSONData;
+begin
+  Result := '';
   try
     Parser := TJSONParser.Create(Resp);
     try
       Data := Parser.Parse;
       try
-        Beautified := Data.FormatJSON([], 2); // identação de 2 espaços
-
-        //Registra Tabelas
-        RegistraTabelas(Fonte,Beautified);
+        Result := Data.FormatJSON([], 2);
       finally
         Data.Free;
       end;
@@ -790,12 +888,11 @@ begin
       Parser.Free;
     end;
   except
-    // ignore
+    // Se falhar o parse, devolve vazio e quem chama decide usar bruto
   end;
-
-
-
 end;
+
+
 
 procedure TfrmFolders.RegistraTabelas(Fonte: string; json: string);
 var
@@ -894,6 +991,10 @@ begin
             if (id <> 0) then
             begin
               dmbase.AtualizarResumo(id, Resumo);
+            end
+            else
+            begin
+              MessageHint('Arquivo nao encontrado na base');
             end;
         end;
 
@@ -920,6 +1021,177 @@ begin
   end;
   Parser.Free;
 end;
+
+function TfrmFolders.Util_ClipText(const S: string; MaxChars: Integer): string;
+begin
+  if Length(S) <= MaxChars then
+    Exit(S);
+  Result := Copy(S, 1, MaxChars) + LineEnding +
+            '... (cortado para caber no prompt)';
+end;
+
+function TfrmFolders.AF_BuildDevMsg_ListaCodigos: string;
+begin
+  // Regras: resposta ESTRITAMENTE em JSON válido UTF-8, sem markdown
+  Result :=
+    'Você é um assistente técnico de engenharia de software.' + LineEnding +
+    'Sua tarefa é, dada uma ÁRVORE DE ARQUIVOS (Y) e uma SOLICITAÇÃO/OBJETIVO (X),' + LineEnding +
+    'selecionar os arquivos mais relevantes para análise a fim de atender X.' + LineEnding +
+    'REGRAS:' + LineEnding +
+    '- Responda ESTRITAMENTE em JSON válido UTF-8.' + LineEnding +
+    '- Não use markdown, cabeçalhos, comentários ou textos fora do JSON.' + LineEnding +
+    '- A lista deve conter **apenas** caminhos que existam em Y.' + LineEnding +
+    '- Priorize pontos de entrada, módulos de regra de negócio, camadas de dados, configuração e testes-alvo.' + LineEnding +
+    '- Evite binários/mídias e arquivos obviamente irrelevantes.' + LineEnding +
+    '- Limite-se ao número máximo solicitado.' + LineEnding +
+    '' + LineEnding +
+    'FORMATO DO JSON:' + LineEnding +
+    '{' + LineEnding +
+    '  "solicitacao": "<eco de X>",' + LineEnding +
+    '  "arquivos_recomendados": [' + LineEnding +
+    '    {"path": "<caminho relativo conforme Y>", "motivo": "<por que este arquivo>", "prioridade": <1-n>} ' + LineEnding +
+    '  ],' + LineEnding +
+    '  "observacoes": "<opcional, breves notas ou lacunas>"' + LineEnding +
+    '}';
+end;
+
+function TfrmFolders.AF_BuildAsk_ListaCodigos(
+  const ArvoreY, SolicitacaoX: string; MaxItens: Integer): string;
+begin
+  Result :=
+    'SOLICITACAO (X): ' + SolicitacaoX + LineEnding + LineEnding +
+    'LIMITE_MAX_ITENS: ' + IntToStr(MaxItens) + LineEnding + LineEnding +
+    '--- ARVORE DE ARQUIVOS (Y) ---' + LineEnding +
+    ArvoreY + LineEnding +
+    '--- FIM ARVORE ---' + LineEnding + LineEnding +
+    'TAREFA:' + LineEnding +
+    '- Selecione até ' + IntToStr(MaxItens) + ' arquivos da árvore (Y) mais relevantes para atender X.' + LineEnding +
+    '- Mantenha caminhos exatamente como aparecem em Y quando possível.' + LineEnding +
+    '- Ordene por "prioridade" (1 = mais importante).' + LineEnding +
+    '- Responda apenas no formato JSON especificado.';
+end;
+
+function TfrmFolders.ListaCodigos(
+  const ArvoreArquivosY, SolicitacaoX: string; MaxItens: Integer): string;
+var
+  Dev, Ask, Resp, Y: string;
+begin
+  // Proteção básica
+  if Trim(FSetMain.CHATGPT) = '' then
+  begin
+    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+    Exit('');
+  end;
+
+  // Evita estourar contexto (ajuste se quiser)
+  Y   := Util_ClipText(ArvoreArquivosY, 60000);
+  Dev := AF_BuildDevMsg_ListaCodigos;
+  Ask := AF_BuildAsk_ListaCodigos(Y, SolicitacaoX, MaxItens);
+
+  if AF_SendToChatGPT(Dev, Ask, FSetMain.CHATGPT, Resp) then
+  begin
+    // Embeleza se for JSON válido; caso contrário, devolve bruto
+    Result := AF_BeautifyJson(Resp);
+    if Result = '' then
+      Result := Resp;
+  end
+  else
+  begin
+    // Se falhar, retorna a resposta de erro da API (geralmente JSON também)
+    Result := Resp;
+  end;
+end;
+
+function TfrmFolders.ParseArquivosRecomendadosJSON(
+  const JSONText: string; Dest: TStrings;
+  out Solicitacao, Observacoes: string): Integer;
+var
+  Parser: TJSONParser;
+  Data: TJSONData;
+  Obj, ItemObj: TJSONObject;
+  Arr: TJSONArray;
+  i: Integer;
+  itemJson: string;
+begin
+  Result := 0;
+  Solicitacao := '';
+  Observacoes := '';
+
+  if Dest <> nil then
+    Dest.Clear;
+
+  if Trim(JSONText) = '' then Exit;
+
+  try
+    Parser := TJSONParser.Create(JSONText);
+    try
+      Data := Parser.Parse;
+      try
+        if (Data = nil) or (Data.JSONType <> jtObject) then Exit;
+        Obj := TJSONObject(Data);
+
+        Solicitacao := Obj.Get('solicitacao', '');
+        Observacoes := Obj.Get('observacoes', '');
+
+        if Obj.Find('arquivos_recomendados', Arr) and (Arr <> nil) then
+        begin
+          for i := 0 to Arr.Count - 1 do
+          begin
+            if Arr.Items[i].JSONType = jtObject then
+            begin
+              ItemObj := TJSONObject(Arr.Items[i]);
+              // JSON compacto do item (uma linha)
+              itemJson := ItemObj.AsJSON;   // fpjson gera JSON sem quebras
+              if (itemJson <> '') and (Dest <> nil) then
+              begin
+                Dest.Add(itemJson);
+                Inc(Result);
+              end;
+            end;
+          end;
+        end;
+      finally
+        Data.Free;
+      end;
+    finally
+      Parser.Free;
+    end;
+  except
+    on E: Exception do
+      MessageHint('Falha ao processar JSON da lista: ' + E.Message);
+  end;
+end;
+
+function TfrmFolders.ExtractPathFromItemJSON(const ItemJSON: string): string;
+var
+  P: TJSONParser;
+  D: TJSONData;
+  O: TJSONObject;
+begin
+  Result := '';
+  if Trim(ItemJSON) = '' then Exit;
+  try
+    P := TJSONParser.Create(ItemJSON);
+    try
+      D := P.Parse;
+      try
+        if (D <> nil) and (D.JSONType = jtObject) then
+        begin
+          O := TJSONObject(D);
+          Result := O.Get('path', '');
+        end;
+      finally
+        D.Free;
+      end;
+    finally
+      P.Free;
+    end;
+  except
+    // silencioso
+  end;
+end;
+
+
 
 
 end.
