@@ -69,38 +69,6 @@ object frmFolders: TfrmFolders
           TabOrder = 1
           ShellTreeView = ShellTreeView1
         end
-        object pnScanner: TPanel
-          Left = 176
-          Height = 97
-          Top = 240
-          Width = 440
-          ClientHeight = 97
-          ClientWidth = 440
-          TabOrder = 2
-          Visible = False
-          object pbScanning: TProgressBar
-            Left = 24
-            Height = 20
-            Top = 48
-            Width = 400
-            Max = 100000
-            TabOrder = 0
-          end
-          object Label1: TLabel
-            Left = 56
-            Height = 15
-            Top = 24
-            Width = 61
-            Caption = 'Scanning ...'
-          end
-          object lbName: TLabel
-            Left = 136
-            Height = 15
-            Top = 24
-            Width = 42
-            Caption = 'lbName'
-          end
-        end
       end
       object tsIA: TTabSheet
         Caption = 'IA'
@@ -124,23 +92,14 @@ object frmFolders: TfrmFolders
           ClientHeight = 206
           ClientWidth = 796
           TabOrder = 2
-          object meLog: TMemo
-            Left = 1
-            Height = 204
-            Top = 1
-            Width = 794
-            Align = alClient
-            ScrollBars = ssAutoBoth
-            TabOrder = 0
-          end
           object Panel7: TPanel
             Left = 80
-            Height = 122
-            Top = 64
+            Height = 130
+            Top = 56
             Width = 518
-            ClientHeight = 122
+            ClientHeight = 130
             ClientWidth = 518
-            TabOrder = 1
+            TabOrder = 0
             Visible = False
             object GifAnim1: TGifAnim
               Left = 8
@@ -162,6 +121,15 @@ object frmFolders: TfrmFolders
               Width = 52
               Caption = 'IA Analise'
             end
+          end
+          object meResposta: TMemo
+            Left = 1
+            Height = 204
+            Top = 1
+            Width = 794
+            Align = alClient
+            ScrollBars = ssAutoBoth
+            TabOrder = 1
           end
         end
         object mePergunta: TMemo
@@ -212,6 +180,20 @@ object frmFolders: TfrmFolders
           ResizeAnchor = akTop
         end
       end
+      object TabSheet1: TTabSheet
+        Caption = 'Log'
+        ClientHeight = 622
+        ClientWidth = 796
+        object meLog: TMemo
+          Left = 0
+          Height = 622
+          Top = 0
+          Width = 796
+          Align = alClient
+          ScrollBars = ssAutoBoth
+          TabOrder = 0
+        end
+      end
     end
   end
   object Panel1: TPanel
@@ -243,6 +225,38 @@ object frmFolders: TfrmFolders
     Height = 652
     Top = 0
     Width = 5
+  end
+  object pnScanner: TPanel
+    Left = 360
+    Height = 97
+    Top = 120
+    Width = 440
+    ClientHeight = 97
+    ClientWidth = 440
+    TabOrder = 3
+    Visible = False
+    object pbScanning: TProgressBar
+      Left = 24
+      Height = 20
+      Top = 48
+      Width = 400
+      Max = 8
+      TabOrder = 0
+    end
+    object Label1: TLabel
+      Left = 56
+      Height = 15
+      Top = 24
+      Width = 61
+      Caption = 'Scanning ...'
+    end
+    object lbName: TLabel
+      Left = 136
+      Height = 15
+      Top = 24
+      Width = 42
+      Caption = 'lbName'
+    end
   end
   object PopupMenu1: TPopupMenu
     Left = 343
