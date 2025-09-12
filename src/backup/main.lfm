@@ -1,7 +1,7 @@
 object frmMNote: TfrmMNote
-  Left = -1709
+  Left = 370
   Height = 592
-  Top = 189
+  Top = 225
   Width = 1172
   Caption = 'MNote2 - Maurin Notepad'
   ClientHeight = 592
