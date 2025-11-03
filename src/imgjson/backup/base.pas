@@ -28,6 +28,7 @@ type
     function ConectaSQLite(const ArquivoDB: string; biblioteca : string): Boolean;
     function SalvarDadosMaster(projeto : string; Proposito: string; target: string; database: integer): boolean;
     procedure RegistraParam(Chave: string; Valor :string);
+    procedure RegistraRefTabelaFS(const IdFS: Integer; const Database, Tabela, Tipo, Contexto: string);
 
     procedure UpsertFile(const ParentId: Integer; const FileName, FullPath: string);
     function EnsureDirUnderParent(const ParentId: Integer; const DirName: string; MTime: Int64): Integer;
@@ -52,6 +53,50 @@ implementation
 { TdmBase }
 
 uses setmain, mquery2;
+
+procedure EnsureRefTableExists;
+begin
+  with dmBase.qryauxlocal do
+  begin
+    Close;
+    SQL.Clear;
+    // Tabela simples para vincular um arquivo (fs) às tabelas referenciadas
+    SQL.Text :=
+      'CREATE TABLE IF NOT EXISTS fs_ref_tabela ('+
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT,'+
+      '  id_fs INTEGER NOT NULL,'+
+      '  "database" TEXT,'+
+      '  tabela TEXT NOT NULL,'+
+      '  tipo TEXT,'+                 // CREATE/ALTER/SELECT/INSERT/UPDATE/DELETE/UNKNOWN
+      '  contexto TEXT,'+             // trecho breve/linhas do código em que apareceu
+      '  criado_em DATETIME DEFAULT (datetime(''now''))'+
+      ');';
+    ExecSQL;
+  end;
+end;
+
+procedure TdmBase.RegistraRefTabelaFS(const IdFS: Integer; const Database, Tabela, Tipo, Contexto: string);
+begin
+  if (zconlocal = nil) or (not zconlocal.Connected) or (IdFS <= 0) or (Trim(Tabela) = '') then Exit;
+
+  EnsureRefTableExists;
+
+  qryauxlocal.Close;
+  qryauxlocal.SQL.Clear;
+  qryauxlocal.SQL.Text :=
+    'INSERT INTO fs_ref_tabela (id_fs, "database", tabela, tipo, contexto) '+
+    'VALUES (:fs, :db, :tb, :tp, :cx)';
+  qryauxlocal.ParamByName('fs').AsInteger := IdFS;
+  if Trim(Database) = '' then qryauxlocal.ParamByName('db').Clear
+                         else qryauxlocal.ParamByName('db').AsString := Database;
+  qryauxlocal.ParamByName('tb').AsString  := Tabela;
+  if Trim(Tipo) = '' then qryauxlocal.ParamByName('tp').Clear
+                     else qryauxlocal.ParamByName('tp').AsString := Tipo;
+  if Trim(Contexto) = '' then qryauxlocal.ParamByName('cx').Clear
+                         else qryauxlocal.ParamByName('cx').AsString := Contexto;
+  qryauxlocal.ExecSQL;
+end;
+
 
 procedure TdmBase.Connect(Username: string; Password: string; hostname: string;
   Database: string);
@@ -397,7 +442,7 @@ begin
   qryauxlocal.SQL.Text :=
     'SELECT id '+
     '  FROM fs '+
-    ' WHERE nome = :n  and idpai = :m '+
+    ' WHERE nome = :n  and id_pai = :m '+
     ' LIMIT 1';
   qryauxlocal.ParamByName('n').AsString := Nome;
   qryauxlocal.ParamByName('m').Asinteger := iddir;

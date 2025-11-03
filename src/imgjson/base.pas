@@ -28,6 +28,7 @@ type
     function ConectaSQLite(const ArquivoDB: string; biblioteca : string): Boolean;
     function SalvarDadosMaster(projeto : string; Proposito: string; target: string; database: integer): boolean;
     procedure RegistraParam(Chave: string; Valor :string);
+    procedure RegistraRefTabelaFS(const IdFS: Integer; const Database, Tabela, Tipo, Contexto: string);
 
     procedure UpsertFile(const ParentId: Integer; const FileName, FullPath: string);
     function EnsureDirUnderParent(const ParentId: Integer; const DirName: string; MTime: Int64): Integer;
@@ -39,6 +40,9 @@ type
     function Buscafs_IDpeloDiretorio(const Caminho: string): Integer;
     function Buscafs_IDpeloNome( iddir : integer; Nome: string): Integer;
     procedure AtualizarResumo(id : integer; Resumo: string);
+    function EnsureTabela(const ADatabase, ATabela, AScriptIfNew: string): Integer;
+    procedure VinculaFsATabela(const AFsId, ATabelaId: Integer);
+
 
   end;
 
@@ -52,6 +56,133 @@ implementation
 { TdmBase }
 
 uses setmain, mquery2;
+
+function TdmBase.EnsureTabela(const ADatabase, ATabela, AScriptIfNew: string): Integer;
+var
+  scr: string;
+begin
+  Result := 0;
+  if (zconlocal = nil) or (not zconlocal.Connected) or (Trim(ATabela)='') then Exit;
+
+  // tenta pegar id existente
+  qryauxlocal.Close;
+  qryauxlocal.SQL.Clear;
+  qryauxlocal.SQL.Text :=
+    'SELECT id FROM tabelas WHERE "database" = :db AND tabela = :tb LIMIT 1';
+  qryauxlocal.ParamByName('db').AsString := ADatabase;
+  qryauxlocal.ParamByName('tb').AsString := ATabela;
+  qryauxlocal.Open;
+  try
+    if not qryauxlocal.EOF then
+    begin
+      Result := qryauxlocal.FieldByName('id').AsInteger;
+      Exit;
+    end;
+  finally
+    qryauxlocal.Close;
+  end;
+
+  // não existe → inserir (script é NOT NULL, garante algo)
+  scr := Trim(AScriptIfNew);
+  if scr = '' then
+    scr := '/* DDL não disponível no momento */';
+
+  qryauxlocal.Close;
+  qryauxlocal.SQL.Clear;
+  qryauxlocal.SQL.Text :=
+    'INSERT INTO tabelas ("database", tabela, script, criado_em, atualizado_em) '+
+    'VALUES (:db, :tb, :sc, datetime(''now''), datetime(''now''))';
+  qryauxlocal.ParamByName('db').AsString := ADatabase;
+  qryauxlocal.ParamByName('tb').AsString := ATabela;
+  qryauxlocal.ParamByName('sc').AsString := scr;
+  qryauxlocal.ExecSQL;
+
+  // retorna id
+  qryauxlocal.Close;
+  qryauxlocal.SQL.Clear;
+  qryauxlocal.SQL.Text :=
+    'SELECT id FROM tabelas WHERE "database" = :db AND tabela = :tb LIMIT 1';
+  qryauxlocal.ParamByName('db').AsString := ADatabase;
+  qryauxlocal.ParamByName('tb').AsString := ATabela;
+  qryauxlocal.Open;
+  try
+    if not qryauxlocal.EOF then
+      Result := qryauxlocal.FieldByName('id').AsInteger;
+  finally
+    qryauxlocal.Close;
+  end;
+end;
+
+procedure TdmBase.VinculaFsATabela(const AFsId, ATabelaId: Integer);
+begin
+  if (zconlocal = nil) or (not zconlocal.Connected) then Exit;
+  if (AFsId <= 0) or (ATabelaId <= 0) then Exit;
+
+  // INSERT OR IGNORE para respeitar UNIQUE(fs_id, tabela_id)
+  qryauxlocal.Close;
+  qryauxlocal.SQL.Clear;
+  qryauxlocal.SQL.Text :=
+    'INSERT OR IGNORE INTO fs_tabelas (fs_id, tabela_id, criado_em, atualizado_em) '+
+    'VALUES (:fs, :tb, datetime(''now''), datetime(''now''))';
+  qryauxlocal.ParamByName('fs').AsInteger := AFsId;
+  qryauxlocal.ParamByName('tb').AsInteger := ATabelaId;
+  qryauxlocal.ExecSQL;
+
+  // Sempre atualiza o atualizado_em
+  qryauxlocal.Close;
+  qryauxlocal.SQL.Clear;
+  qryauxlocal.SQL.Text :=
+    'UPDATE fs_tabelas SET atualizado_em = datetime(''now'') '+
+    'WHERE fs_id = :fs AND tabela_id = :tb';
+  qryauxlocal.ParamByName('fs').AsInteger := AFsId;
+  qryauxlocal.ParamByName('tb').AsInteger := ATabelaId;
+  qryauxlocal.ExecSQL;
+end;
+
+
+procedure EnsureRefTableExists;
+begin
+  with dmBase.qryauxlocal do
+  begin
+    Close;
+    SQL.Clear;
+    // Tabela simples para vincular um arquivo (fs) às tabelas referenciadas
+    SQL.Text :=
+      'CREATE TABLE IF NOT EXISTS fs_ref_tabela ('+
+      '  id INTEGER PRIMARY KEY AUTOINCREMENT,'+
+      '  id_fs INTEGER NOT NULL,'+
+      '  "database" TEXT,'+
+      '  tabela TEXT NOT NULL,'+
+      '  tipo TEXT,'+                 // CREATE/ALTER/SELECT/INSERT/UPDATE/DELETE/UNKNOWN
+      '  contexto TEXT,'+             // trecho breve/linhas do código em que apareceu
+      '  criado_em DATETIME DEFAULT (datetime(''now''))'+
+      ');';
+    ExecSQL;
+  end;
+end;
+
+procedure TdmBase.RegistraRefTabelaFS(const IdFS: Integer; const Database, Tabela, Tipo, Contexto: string);
+begin
+  if (zconlocal = nil) or (not zconlocal.Connected) or (IdFS <= 0) or (Trim(Tabela) = '') then Exit;
+
+  EnsureRefTableExists;
+
+  qryauxlocal.Close;
+  qryauxlocal.SQL.Clear;
+  qryauxlocal.SQL.Text :=
+    'INSERT INTO fs_ref_tabela (id_fs, "database", tabela, tipo, contexto) '+
+    'VALUES (:fs, :db, :tb, :tp, :cx)';
+  qryauxlocal.ParamByName('fs').AsInteger := IdFS;
+  if Trim(Database) = '' then qryauxlocal.ParamByName('db').Clear
+                         else qryauxlocal.ParamByName('db').AsString := Database;
+  qryauxlocal.ParamByName('tb').AsString  := Tabela;
+  if Trim(Tipo) = '' then qryauxlocal.ParamByName('tp').Clear
+                     else qryauxlocal.ParamByName('tp').AsString := Tipo;
+  if Trim(Contexto) = '' then qryauxlocal.ParamByName('cx').Clear
+                         else qryauxlocal.ParamByName('cx').AsString := Contexto;
+  qryauxlocal.ExecSQL;
+end;
+
 
 procedure TdmBase.Connect(Username: string; Password: string; hostname: string;
   Database: string);
