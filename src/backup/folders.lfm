@@ -194,6 +194,20 @@ object frmFolders: TfrmFolders
           TabOrder = 0
         end
       end
+      object tsTecnica: TTabSheet
+        Caption = 'Tecnica'
+        ClientHeight = 622
+        ClientWidth = 796
+        object meTecnica: TMemo
+          Left = 0
+          Height = 622
+          Top = 0
+          Width = 796
+          Align = alClient
+          ScrollBars = ssAutoBoth
+          TabOrder = 0
+        end
+      end
     end
   end
   object Panel1: TPanel
@@ -227,9 +241,9 @@ object frmFolders: TfrmFolders
     Width = 5
   end
   object pnScanner: TPanel
-    Left = 360
+    Left = 440
     Height = 97
-    Top = 120
+    Top = 136
     Width = 440
     ClientHeight = 97
     ClientWidth = 440

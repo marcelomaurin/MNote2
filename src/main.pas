@@ -14,7 +14,7 @@ uses
   newproject, uProjetoDB;
 
 
-const versao = '2.45';
+const versao = '2.46';
 
 type
 
