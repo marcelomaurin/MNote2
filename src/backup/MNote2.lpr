@@ -12,8 +12,8 @@ uses
   {$ifndef Darwin}
   folders, mquery2, pesquisar, triggers, view, Views, benchmark, porradawebapi,
   chart,config, config2, funcoes, setmain, sobre, jsonmain, about, base, NNTrainning,
-  Novo, PythonRun, setproject, SqlEditItem, SQLItem, trainning,
-newproject, uProjetoDB, sqlite_db
+  Novo, PythonRun, setproject, SQLItem, trainning,
+newproject, uProjetoDB, sqlite_db, IA
   {$ENDIF}
   ;
 
@@ -27,6 +27,7 @@ begin
   //Application.CreateForm(TfrmMQuery, frmMQuery);
   {$ifndef Darwin}
   {$ENDIF}
+  Application.CreateForm(TfrmIA, frmIA);
   Application.Run;
 end.
 

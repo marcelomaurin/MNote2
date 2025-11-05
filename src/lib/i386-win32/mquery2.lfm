@@ -1099,9 +1099,9 @@ object frmmquery2: Tfrmmquery2
           Height = 690
           Top = 1
           Width = 951
-          ActivePage = tsSQLPostgreSQL
+          ActivePage = tsSetupPostres
           Align = alClient
-          TabIndex = 1
+          TabIndex = 0
           TabOrder = 0
           object tsSetupPostres: TTabSheet
             Caption = 'PostgreSql Connection'
@@ -2330,7 +2330,7 @@ object frmmquery2: Tfrmmquery2
     Top = 520
   end
   object SynCompletion1: TSynCompletion
-    Position = -1
+    Position = 0
     LinesInWindow = 6
     OnPositionChanged = SynCompletion1PositionChanged
     SelectedColor = clHighlight
@@ -6138,5 +6138,17 @@ object frmmquery2: Tfrmmquery2
       Caption = 'IA'
       OnClick = miIAClick
     end
+  end
+  object zpostqry2: TZReadOnlyQuery
+    Connection = zconpost
+    Params = <>
+    Left = 800
+    Top = 400
+  end
+  object zpostqry3: TZReadOnlyQuery
+    Connection = zconpost
+    Params = <>
+    Left = 864
+    Top = 400
   end
 end

@@ -11,10 +11,10 @@ uses
   hint, registro, splash, setFolders, config, SynEditKeyCmds, PythonEngine,
   rxctrls, LogTreeView, uPoweredby, chatgpt, mquery2, porradawebapi,
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir,
-  newproject, uProjetoDB;
+  newproject, uProjetoDB, IA;
 
 
-const versao = '2.46';
+const versao = '2.47';
 
 type
 
@@ -640,6 +640,11 @@ begin
 
   CarregaContexto();
 
+  if(frmIA=nil) then
+  begin
+    frmIA := TfrmIA.create(self);
+  end;
+
   {$ifdef Darwin}
      //Nao faz nada
   {$else}
@@ -655,8 +660,11 @@ begin
    *)
   {$endif}
 
+
   CarregarOld();
   CarregarParametros();
+
+
 
   frmRegistrar := TfrmRegistrar.Create(self);
   frmRegistrar.Identifica();
@@ -1060,6 +1068,16 @@ begin
     frmToolsOuvir.Conectar();
   end;
 
+  if frmmquery2 = nil then
+  begin
+    frmmquery2 := Tfrmmquery2.Create(self);
+  end;
+
+  if (frmFolders = nil) then
+  begin
+       frmFolders := TfrmFolders.Create(self);
+  end;
+
 end;
 
 procedure TfrmMNote.lstFindChangeBounds(Sender: TObject);
@@ -1203,8 +1221,8 @@ end;
 
 procedure TfrmMNote.miChatGPTClick(Sender: TObject);
 begin
-    pnChatGPT.Visible:= not pnChatGPT.Visible;
-
+  //pnChatGPT.Visible:= not pnChatGPT.Visible;
+  frmIA.show;
 end;
 
 procedure TfrmMNote.micopyClick(Sender: TObject);

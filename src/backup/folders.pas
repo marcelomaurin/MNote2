@@ -2088,8 +2088,8 @@ begin
   Files := TStringList.Create;
   try
     Qtd := Recomendacoes_FromPergunta(Pergunta, Solicit, Obs);
-    meLog.Lines.Add(Format('[BuscaTermos] %d termo(s) e %d arquivo(s) indicados.', [Terms.Count, Files.Count]));
-    meLog.Lines.Add('[BuscaTermos] Observações: ' + Obs);
+    meLog.Lines.append(Format('[BuscaTermos] %d termo(s) e %d arquivo(s) indicados.', [Terms.Count, Files.Count]));
+    meLog.Lines.append('[BuscaTermos] Observações: ' + Obs);
 
     // Varredura real dos arquivos
     if DoSearch then
@@ -2097,7 +2097,7 @@ begin
       meLog.Lines.Add('=== Iniciando varredura de arquivos existentes ===');
       for  i := 0 to Files.Count - 1 do
       begin
-        meLog.Lines.Add(' Pesquisou arquivo ' + Files[i]);
+        meLog.Lines.append(' Pesquisou arquivo ' + Files[i]);
         BT_ScanFileForTerms(Files[i], Terms, 500*1024);
       end;
     end;
@@ -2107,7 +2107,7 @@ begin
     Files.Free;
   end;
 
-  meLog.Lines.Add('=== BuscaTermos: varredura concluída ===');
+  meLog.Lines.Append('=== BuscaTermos: varredura concluída ===');
 end;
 
 

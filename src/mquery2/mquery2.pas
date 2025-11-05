@@ -231,6 +231,8 @@ type
     zmyqry2: TZReadOnlyQuery;
     zpostqry: TZReadOnlyQuery;
     zpostqry1: TZReadOnlyQuery;
+    zpostqry2: TZReadOnlyQuery;
+    zpostqry3: TZReadOnlyQuery;
     Zqrypost: TZQuery;
     ZQryTransf: TZQuery;
     procedure btAnaliseClick(Sender: TObject);
@@ -2129,6 +2131,7 @@ begin
   end;
 end;
 
+
 procedure Tfrmmquery2.RefreshPost;
 var
   tvitem: TTreeNode;
@@ -2590,7 +2593,7 @@ begin
    end;
 end;
 
-
+(*
 procedure Tfrmmquery2.ListarTabelasPost();
 var
   Tabela : TTabela;
@@ -2679,6 +2682,252 @@ begin
 
   end;
 end;
+*)
+
+procedure Tfrmmquery2.ListarTabelasPost();
+var
+  tvItem, tvTemp, tvColunas, tvIndice, tvFK, tvTrigger: TTreeNode;
+  TabelaNome, SchemaNome: string;
+  a: Integer;
+  ColLine : string;
+
+  procedure OpenListaTabelas;
+  begin
+    // 1) Tenta pg_catalog.pg_tables
+    zpostqry.Close;
+    zpostqry.SQL.Text :=
+      'SELECT schemaname, tablename '+
+      'FROM pg_catalog.pg_tables '+
+      'WHERE schemaname = :schema '+
+      'ORDER BY tablename';
+    zpostqry.ParamByName('schema').AsString := SchemaNome;
+    try
+      zpostqry.Open;
+    except
+      // 2) Fallback via pg_class + pg_namespace
+      zpostqry.Close;
+      zpostqry.SQL.Text :=
+        'SELECT n.nspname AS schemaname, c.relname AS tablename '+
+        'FROM pg_catalog.pg_class c '+
+        'JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace '+
+        'WHERE n.nspname = :schema '+
+        '  AND c.relkind = ''r'' '+
+        'ORDER BY c.relname';
+      zpostqry.ParamByName('schema').AsString := SchemaNome;
+      zpostqry.Open;
+    end;
+  end;
+
+  procedure AddColunas(const ASchema, ATable: string; AParent: TTreeNode);
+  begin
+    // Colunas: nome, tipo, null, default
+    zpostqry1.Close;
+    zpostqry1.SQL.Text :=
+      'SELECT a.attnum, a.attname AS column_name, '+
+      '       pg_catalog.format_type(a.atttypid, a.atttypmod) AS data_type, '+
+      '       NOT a.attnotnull AS is_nullable, '+
+      '       pg_get_expr(ad.adbin, ad.adrelid) AS column_default '+
+      'FROM pg_catalog.pg_attribute a '+
+      'LEFT JOIN pg_catalog.pg_attrdef ad '+
+      '  ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum '+
+      'JOIN pg_catalog.pg_class c ON c.oid = a.attrelid '+
+      'JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace '+
+      'WHERE n.nspname = :schema '+
+      '  AND c.relname = :table '+
+      '  AND a.attnum > 0 AND NOT a.attisdropped '+
+      'ORDER BY a.attnum';
+    zpostqry1.ParamByName('schema').AsString := ASchema;
+    zpostqry1.ParamByName('table').AsString  := ATable;
+    zpostqry1.Open;
+
+    tvColunas := tvPost.Items.AddChildObject(AParent, 'fields', Pointer(ETDBCampos));
+    tvColunas.ImageIndex := 16;
+
+    while not zpostqry1.EOF do
+    begin
+      // Ex.: "id : integer NOT NULL DEFAULT nextval('...')"
+      ColLine := zpostqry1.FieldByName('column_name').AsString + ' : ' +
+                     zpostqry1.FieldByName('data_type').AsString;
+
+      if not zpostqry1.FieldByName('is_nullable').AsBoolean then
+        ColLine := ColLine + ' NOT NULL';
+
+      if not zpostqry1.FieldByName('column_default').IsNull then
+        ColLine := ColLine + ' DEFAULT ' + zpostqry1.FieldByName('column_default').AsString;
+
+      tvTemp := tvPost.Items.AddChildObject(tvColunas, ColLine, Pointer(0));
+      tvTemp.ImageIndex := 19;
+
+      zpostqry1.Next;
+    end;
+  end;
+
+  procedure AddPK(const ASchema, ATable: string; AParent: TTreeNode);
+  begin
+    // Primary Key (nomes das colunas em ordem)
+    zpostqry1.Close;
+    zpostqry1.SQL.Text :=
+      'SELECT c.conname, '+
+      '       array_agg(a.attname ORDER BY u.ord) AS cols '+
+      'FROM pg_catalog.pg_constraint c '+
+      'JOIN pg_catalog.pg_class t ON t.oid = c.conrelid '+
+      'JOIN pg_catalog.pg_namespace n ON n.oid = t.relnamespace '+
+      'JOIN LATERAL unnest(c.conkey) WITH ORDINALITY AS u(attnum, ord) ON TRUE '+
+      'JOIN pg_catalog.pg_attribute a ON a.attrelid = t.oid AND a.attnum = u.attnum '+
+      'WHERE c.contype = ''p'' '+
+      '  AND n.nspname = :schema '+
+      '  AND t.relname = :table '+
+      'GROUP BY c.conname '+
+      'ORDER BY c.conname';
+    zpostqry1.ParamByName('schema').AsString := ASchema;
+    zpostqry1.ParamByName('table').AsString  := ATable;
+    zpostqry1.Open;
+
+    tvIndice := tvPost.Items.AddChildObject(AParent, 'Primary Key', Pointer(ETDBPK));
+    tvIndice.ImageIndex := 17;
+
+    while not zpostqry1.EOF do
+    begin
+      tvTemp := tvPost.Items.AddChildObject(
+                  tvIndice,
+                  zpostqry1.FieldByName('conname').AsString + ' ('+
+                  zpostqry1.FieldByName('cols').AsString + ')',
+                  Pointer(0)
+                );
+      tvTemp.ImageIndex := 18;
+      zpostqry1.Next;
+    end;
+  end;
+
+  procedure AddFK(const ASchema, ATable: string; AParent: TTreeNode);
+  var
+    FKLine: string;
+  begin
+    // Foreign Keys (tabela/colunas locais → tabela/colunas referenciadas)
+    zpostqry2.Close;
+    zpostqry2.SQL.Text :=
+      'SELECT c.conname, '+
+      '       n2.nspname AS ref_schema, t2.relname AS ref_table, '+
+      '       array_agg(a1.attname ORDER BY u.ord) AS cols, '+
+      '       array_agg(a2.attname ORDER BY u.ord) AS ref_cols, '+
+      '       pg_get_constraintdef(c.oid, TRUE) AS def '+
+      'FROM pg_catalog.pg_constraint c '+
+      'JOIN pg_catalog.pg_class t1 ON t1.oid = c.conrelid '+
+      'JOIN pg_catalog.pg_namespace n1 ON n1.oid = t1.relnamespace '+
+      'JOIN pg_catalog.pg_class t2 ON t2.oid = c.confrelid '+
+      'JOIN pg_catalog.pg_namespace n2 ON n2.oid = t2.relnamespace '+
+      'JOIN LATERAL unnest(c.conkey) WITH ORDINALITY AS u(attnum, ord) ON TRUE '+
+      'JOIN LATERAL unnest(c.confkey) WITH ORDINALITY AS v(attnum, ord) ON v.ord = u.ord '+
+      'JOIN pg_catalog.pg_attribute a1 ON a1.attrelid = t1.oid AND a1.attnum = u.attnum '+
+      'JOIN pg_catalog.pg_attribute a2 ON a2.attrelid = t2.oid AND a2.attnum = v.attnum '+
+      'WHERE c.contype = ''f'' '+
+      '  AND n1.nspname = :schema '+
+      '  AND t1.relname = :table '+
+      'GROUP BY c.conname, ref_schema, ref_table, c.oid '+
+      'ORDER BY c.conname';
+    zpostqry2.ParamByName('schema').AsString := ASchema;
+    zpostqry2.ParamByName('table').AsString  := ATable;
+    zpostqry2.Open;
+
+    tvFK := tvPost.Items.AddChildObject(AParent, 'Chave Estrangeira', Pointer(ETDBFK));
+    // Se quiser ícone, defina aqui (ex.: tvFK.ImageIndex := <...>;)
+
+    while not zpostqry2.EOF do
+    begin
+      // Ex.: fk_pedido_cliente (cliente_id) → public.cliente(id)  [DEFERRABLE ...]
+      FKLine :=
+        zpostqry2.FieldByName('conname').AsString + ' ('+
+        zpostqry2.FieldByName('cols').AsString + ') → '+
+        zpostqry2.FieldByName('ref_schema').AsString + '.'+
+        zpostqry2.FieldByName('ref_table').AsString + '('+
+        zpostqry2.FieldByName('ref_cols').AsString + ')';
+
+      tvTemp := tvPost.Items.AddChildObject(tvFK, FKLine, Pointer(0));
+      // Detalhe opcional: child com a definição textual do FK (ON UPDATE/DELETE etc.)
+      tvPost.Items.AddChildObject(tvTemp, zpostqry2.FieldByName('def').AsString, Pointer(0));
+
+      zpostqry2.Next;
+    end;
+  end;
+
+  procedure AddTriggers(const ASchema, ATable: string; AParent: TTreeNode);
+  begin
+    // Triggers (exclui internas)
+    zpostqry1.Close;
+    zpostqry1.SQL.Text :=
+      'SELECT tg.tgname, pg_get_triggerdef(tg.oid, TRUE) AS def '+
+      'FROM pg_catalog.pg_trigger tg '+
+      'JOIN pg_catalog.pg_class t ON t.oid = tg.tgrelid '+
+      'JOIN pg_catalog.pg_namespace n ON n.oid = t.relnamespace '+
+      'WHERE n.nspname = :schema '+
+      '  AND t.relname = :table '+
+      '  AND NOT tg.tgisinternal '+
+      'ORDER BY tg.tgname';
+    zpostqry1.ParamByName('schema').AsString := ASchema;
+    zpostqry1.ParamByName('table').AsString  := ATable;
+    zpostqry1.Open;
+
+    if not zpostqry1.EOF then
+    begin
+      tvTrigger := tvPost.Items.AddChildObject(AParent, 'Triggers', Pointer(ETDTriggers));
+      while not zpostqry1.EOF do
+      begin
+        tvTemp := tvPost.Items.AddChildObject(tvTrigger,
+                   zpostqry1.FieldByName('tgname').AsString, Pointer(0));
+        // detalhe da trigger
+        tvPost.Items.AddChildObject(tvTemp,
+                   zpostqry1.FieldByName('def').AsString, Pointer(0));
+        zpostqry1.Next;
+      end;
+    end;
+  end;
+
+begin
+  SchemaNome := Trim(edSchemaPost.Text);
+  try
+    //pnlProgresso1.Visible := True;
+    posicaofieldspost.DeleteChildren;
+
+    OpenListaTabelas;
+    zpostqry.First;
+
+    while not zpostqry.EOF do
+    begin
+      if SameText(zpostqry.FieldByName('schemaname').AsString, SchemaNome) then
+      begin
+        TabelaNome := zpostqry.FieldByName('tablename').AsString;
+
+        // Highlighter
+        SynSQLSyn2.TableNames.Append(TabelaNome);
+
+        // Nó da tabela
+        tvItem := TTreeNode.Create(tvPost.Items);
+        tvItem.ImageIndex := 14;
+        tvItem := tvPost.Items.AddNode(tvItem, posicaofieldspost, TabelaNome, Pointer(nil), naAddChild);
+
+        // Campos (nome, tipo, null/default)
+        AddColunas(SchemaNome, TabelaNome, tvItem);
+
+        // Primary Keys
+        AddPK(SchemaNome, TabelaNome, tvItem);
+
+        // Foreign Keys
+        AddFK(SchemaNome, TabelaNome, tvItem);
+
+        // Triggers
+        AddTriggers(SchemaNome, TabelaNome, tvItem);
+      end;
+
+      zpostqry.Next;
+      Application.ProcessMessages;
+    end;
+  finally
+    //pnlProgresso1.Visible := False;
+    tvPost.FullExpand;
+  end;
+end;
+
+
 
 function Tfrmmquery2.DescreveTabelaIAMy(const tabela: string) : string;
 var
@@ -2848,6 +3097,7 @@ begin
   end;
 end;
 
+(*
 function Tfrmmquery2.CriaDicionarioPost(const ATargetFile: string): string;
 var
   outSQL        : TStringList;
@@ -2928,6 +3178,335 @@ begin
     outSQL.Free;
   end;
 end;
+*)
+
+function Tfrmmquery2.CriaDicionarioPost(const ATargetFile: string): string;
+var
+  outSQL        : TStringList;
+  schema        : string;
+  tblNode       : TTreeNode;
+  tblName       : string;
+  targetAbsPath : string;
+  targetDir     : string;
+
+  function QIdent(const S: string): string;
+  begin
+    // Identificador com aspas, escapando aspas duplas internas
+    Result := '"' + StringReplace(S, '"', '""', [rfReplaceAll]) + '"';
+  end;
+
+  function BuildColumnsSQL(const ASchema, ATable: string): TStringList;
+  var
+    line, colname, dtype, defval: string;
+    isnull: Boolean;
+  begin
+    Result := TStringList.Create;
+
+    zpostqry1.Close;
+    zpostqry1.SQL.Text :=
+      'SELECT a.attnum, a.attname AS column_name, '+
+      '       pg_catalog.format_type(a.atttypid, a.atttypmod) AS data_type, '+
+      '       NOT a.attnotnull AS is_nullable, '+
+      '       pg_get_expr(ad.adbin, ad.adrelid) AS column_default '+
+      'FROM pg_catalog.pg_attribute a '+
+      'LEFT JOIN pg_catalog.pg_attrdef ad '+
+      '  ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum '+
+      'JOIN pg_catalog.pg_class c ON c.oid = a.attrelid '+
+      'JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace '+
+      'WHERE n.nspname = :schema '+
+      '  AND c.relname = :table '+
+      '  AND a.attnum > 0 AND NOT a.attisdropped '+
+      'ORDER BY a.attnum';
+    zpostqry1.ParamByName('schema').AsString := ASchema;
+    zpostqry1.ParamByName('table').AsString  := ATable;
+    zpostqry1.Open;
+
+    while not zpostqry1.EOF do
+    begin
+      colname := zpostqry1.FieldByName('column_name').AsString;
+      dtype   := zpostqry1.FieldByName('data_type').AsString;
+      isnull  := zpostqry1.FieldByName('is_nullable').AsBoolean;
+
+      line := '  ' + QIdent(colname) + ' ' + dtype;
+
+      if not isnull then
+        line := line + ' NOT NULL';
+
+      if not zpostqry1.FieldByName('column_default').IsNull then
+      begin
+        defval := Trim(zpostqry1.FieldByName('column_default').AsString);
+        if defval <> '' then
+          line := line + ' DEFAULT ' + defval;
+      end;
+
+      Result.Add(line);
+      zpostqry1.Next;
+    end;
+  end;
+
+  function BuildPKSQL(const ASchema, ATable: string): TStringList;
+  begin
+    Result := TStringList.Create;
+
+    zpostqry2.Close;
+    zpostqry2.SQL.Text :=
+      'SELECT c.conname, pg_get_constraintdef(c.oid, TRUE) AS def '+
+      'FROM pg_catalog.pg_constraint c '+
+      'JOIN pg_catalog.pg_class t ON t.oid = c.conrelid '+
+      'JOIN pg_catalog.pg_namespace n ON n.oid = t.relnamespace '+
+      'WHERE c.contype = ''p'' '+
+      '  AND n.nspname = :schema '+
+      '  AND t.relname = :table '+
+      'ORDER BY c.conname';
+    zpostqry2.ParamByName('schema').AsString := ASchema;
+    zpostqry2.ParamByName('table').AsString  := ATable;
+    zpostqry2.Open;
+
+    while not zpostqry2.EOF do
+    begin
+      Result.Add(
+        'ALTER TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) +
+        ' ADD CONSTRAINT ' + QIdent(zpostqry2.FieldByName('conname').AsString) +
+        ' ' + zpostqry2.FieldByName('def').AsString + ';'
+      );
+      zpostqry2.Next;
+    end;
+  end;
+
+  function BuildFKSQL(const ASchema, ATable: string): TStringList;
+  begin
+    Result := TStringList.Create;
+
+    zpostqry2.Close;
+    zpostqry2.SQL.Text :=
+      'SELECT c.conname, pg_get_constraintdef(c.oid, TRUE) AS def '+
+      'FROM pg_catalog.pg_constraint c '+
+      'JOIN pg_catalog.pg_class t ON t.oid = c.conrelid '+
+      'JOIN pg_catalog.pg_namespace n ON n.oid = t.relnamespace '+
+      'WHERE c.contype = ''f'' '+
+      '  AND n.nspname = :schema '+
+      '  AND t.relname = :table '+
+      'ORDER BY c.conname';
+    zpostqry2.ParamByName('schema').AsString := ASchema;
+    zpostqry2.ParamByName('table').AsString  := ATable;
+    zpostqry2.Open;
+
+    while not zpostqry2.EOF do
+    begin
+      Result.Add(
+        'ALTER TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) +
+        ' ADD CONSTRAINT ' + QIdent(zpostqry2.FieldByName('conname').AsString) +
+        ' ' + zpostqry2.FieldByName('def').AsString + ';'
+      );
+      zpostqry2.Next;
+    end;
+  end;
+
+  function BuildIndexesSQL(const ASchema, ATable: string): TStringList;
+  var
+    ConstraintNames : TStringList;
+    idxname : string;
+  begin
+    // Índices não vinculados a PK/UNIQUE constraints (evita duplicar)
+    Result := TStringList.Create;
+
+    // Carrega nomes de constraints PK/UNIQUE para filtrar
+    zpostqry2.Close;
+    zpostqry2.SQL.Text :=
+      'SELECT c.conname '+
+      'FROM pg_catalog.pg_constraint c '+
+      'JOIN pg_catalog.pg_class t ON t.oid = c.conrelid '+
+      'JOIN pg_catalog.pg_namespace n ON n.oid = t.relnamespace '+
+      'WHERE c.contype IN (''p'',''u'') '+
+      '  AND n.nspname = :schema '+
+      '  AND t.relname = :table';
+    zpostqry2.ParamByName('schema').AsString := ASchema;
+    zpostqry2.ParamByName('table').AsString  := ATable;
+    zpostqry2.Open;
+
+    ConstraintNames := TStringList.Create;
+    try
+      ConstraintNames.CaseSensitive := False;
+      while not zpostqry2.EOF do
+      begin
+        ConstraintNames.Add(zpostqry2.FieldByName('conname').AsString);
+        zpostqry2.Next;
+      end;
+
+      // Buscar índices
+      zpostqry3.Close;
+      zpostqry3.SQL.Text :=
+        'SELECT schemaname, tablename, indexname, indexdef '+
+        'FROM pg_catalog.pg_indexes '+
+        'WHERE schemaname = :schema '+
+        '  AND tablename  = :table '+
+        'ORDER BY indexname';
+      zpostqry3.ParamByName('schema').AsString := ASchema;
+      zpostqry3.ParamByName('table').AsString  := ATable;
+      zpostqry3.Open;
+
+      while not zpostqry3.EOF do
+      begin
+        idxname := zpostqry3.FieldByName('indexname').AsString;
+        if ConstraintNames.IndexOf(idxname) < 0 then
+          Result.Add(zpostqry3.FieldByName('indexdef').AsString + ';');
+        zpostqry3.Next;
+      end;
+    finally
+      ConstraintNames.Free;
+    end;
+  end;
+
+  function BuildTriggersSQL(const ASchema, ATable: string): TStringList;
+  begin
+    Result := TStringList.Create;
+
+    zpostqry1.Close;
+    zpostqry1.SQL.Text :=
+      'SELECT tg.tgname, pg_get_triggerdef(tg.oid, TRUE) AS def '+
+      'FROM pg_catalog.pg_trigger tg '+
+      'JOIN pg_catalog.pg_class t ON t.oid = tg.tgrelid '+
+      'JOIN pg_catalog.pg_namespace n ON n.oid = t.relnamespace '+
+      'WHERE n.nspname = :schema '+
+      '  AND t.relname = :table '+
+      '  AND NOT tg.tgisinternal '+
+      'ORDER BY tg.tgname';
+    zpostqry1.ParamByName('schema').AsString := ASchema;
+    zpostqry1.ParamByName('table').AsString  := ATable;
+    zpostqry1.Open;
+
+    while not zpostqry1.EOF do
+    begin
+      // pg_get_triggerdef já retorna "CREATE TRIGGER ..."
+      Result.Add(zpostqry1.FieldByName('def').AsString + ';');
+      zpostqry1.Next;
+    end;
+  end;
+
+  function BuildCreateTableSQL(const ASchema, ATable: string): string;
+  var
+    cols, pks, fks, idx, trg: TStringList;
+    i: Integer;
+  begin
+    cols := nil; pks := nil; fks := nil; idx := nil; trg := nil;
+    try
+      cols := BuildColumnsSQL(ASchema, ATable);
+      pks  := BuildPKSQL(ASchema, ATable);
+      fks  := BuildFKSQL(ASchema, ATable);
+      idx  := BuildIndexesSQL(ASchema, ATable);
+      trg  := BuildTriggersSQL(ASchema, ATable);
+
+      // CREATE TABLE (somente colunas)
+      Result := 'CREATE TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) + ' (' + sLineBreak;
+      for i := 0 to cols.Count - 1 do
+      begin
+        if i < cols.Count - 1 then
+          Result := Result + cols[i] + ',' + sLineBreak
+        else
+          Result := Result + cols[i] + sLineBreak;
+      end;
+      Result := Result + ');' + sLineBreak;
+
+      // ALTER TABLE ... ADD CONSTRAINT (PK)
+      for i := 0 to pks.Count - 1 do
+        Result := Result + pks[i] + sLineBreak;
+
+      // ALTER TABLE ... ADD CONSTRAINT (FK)
+      for i := 0 to fks.Count - 1 do
+        Result := Result + fks[i] + sLineBreak;
+
+      // CREATE INDEX (não-PK/UNIQUE)
+      for i := 0 to idx.Count - 1 do
+        Result := Result + idx[i] + sLineBreak;
+
+      // CREATE TRIGGER
+      for i := 0 to trg.Count - 1 do
+        Result := Result + trg[i] + sLineBreak;
+
+    finally
+      cols.Free;
+      pks.Free;
+      fks.Free;
+      idx.Free;
+      trg.Free;
+    end;
+  end;
+
+var
+  sqlCreate : string;
+begin
+  Result := '';
+
+  if (dmBase = nil) then
+    dmBase := TdmBase.Create(Self);
+  dmBase.DeleteTabelas;
+
+  if not zconpost.Connected then
+  begin
+    ShowMessage('PostgreSQL não conectado.');
+    Exit;
+  end;
+
+  // Garante árvore carregada
+  if (posicaofieldspost = nil) or (posicaofieldspost.GetFirstChild = nil) then
+    RefreshPost;
+  if (posicaofieldspost = nil) or (posicaofieldspost.GetFirstChild = nil) then
+  begin
+    ShowMessage('Nenhuma tabela encontrada no tvPost.');
+    Exit;
+  end;
+
+  schema := Trim(edSchemaPost.Text);
+  if schema = '' then schema := 'public';
+
+  outSQL := TStringList.Create;
+  try
+    outSQL.Add('-- =========================================');
+    outSQL.Add('-- Dicionário de dados gerado pelo MQuery2');
+    outSQL.Add('-- ' + FormatDateTime('yyyy-mm-dd hh:nn:ss', Now));
+    outSQL.Add('-- Database: ' + Trim(edBancoPost.Text) + ' | Schema: ' + schema);
+    outSQL.Add('-- =========================================');
+    outSQL.Add('');
+
+    // Percorre tabelas do tree (raiz = posicaofieldspost)
+    tblNode := posicaofieldspost.GetFirstChild;
+    while tblNode <> nil do
+    begin
+      tblName := tblNode.Text;
+
+      outSQL.Add('-- ' + tblName);
+      sqlCreate := BuildCreateTableSQL(schema, tblName);
+      outSQL.Add(sqlCreate);
+      outSQL.Add('');
+
+      if (FSetMain.Project <> '') then
+      begin
+        if (dmBase = nil) then
+          dmBase := TdmBase.Create(Self);
+        dmBase.RegistraTabela(tblName, '', sqlCreate);
+      end;
+
+      tblNode := tblNode.GetNextSibling;
+      Application.ProcessMessages;
+    end;
+
+    // Salvar no arquivo se informado
+    targetAbsPath := ExpandFileName(ATargetFile);
+    targetDir     := ExtractFilePath(targetAbsPath);
+    if targetDir <> '' then
+      ForceDirectories(targetDir);
+    if (ATargetFile <> '') then
+    begin
+      outSQL.SaveToFile(targetAbsPath);
+      edLog.Append('Dicionário gerado em: ' + targetAbsPath);
+    end;
+
+    Result := outSQL.Text;
+  finally
+    outSQL.Free;
+  end;
+end;
+
 
 function Tfrmmquery2.CriaListaDependenciasPost(const outFile: string): string;
 var

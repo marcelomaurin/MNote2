@@ -13,7 +13,7 @@ uses
   folders, mquery2, pesquisar, triggers, view, Views, benchmark, porradawebapi,
   chart,config, config2, funcoes, setmain, sobre, jsonmain, about, base, NNTrainning,
   Novo, PythonRun, setproject, SQLItem, trainning,
-newproject, uProjetoDB, sqlite_db
+newproject, uProjetoDB, sqlite_db, IA
   {$ENDIF}
   ;
 

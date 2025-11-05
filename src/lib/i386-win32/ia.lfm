@@ -1,0 +1,186 @@
+object frmIA: TfrmIA
+  Left = 675
+  Height = 557
+  Top = 232
+  Width = 727
+  Caption = 'IA'
+  ClientHeight = 557
+  ClientWidth = 727
+  Position = poMainFormCenter
+  LCLVersion = '4.0.0.4'
+  object pgIA: TPageControl
+    Left = 170
+    Height = 446
+    Top = 50
+    Width = 557
+    ActivePage = Chat
+    Align = alClient
+    TabIndex = 0
+    TabOrder = 0
+    object Chat: TTabSheet
+      Caption = 'Chat'
+      ClientHeight = 418
+      ClientWidth = 549
+      object pnResposta: TPanel
+        Left = 0
+        Height = 293
+        Top = 0
+        Width = 549
+        Align = alTop
+        ClientHeight = 293
+        ClientWidth = 549
+        TabOrder = 0
+        object meResposta: TMemo
+          Left = 1
+          Height = 291
+          Top = 1
+          Width = 547
+          Align = alClient
+          Lines.Strings = (
+            ''
+          )
+          ReadOnly = True
+          TabOrder = 0
+        end
+      end
+      object Splitter1: TSplitter
+        Cursor = crVSplit
+        Left = 0
+        Height = 5
+        Top = 293
+        Width = 549
+        Align = alTop
+        ResizeAnchor = akTop
+      end
+      object pnPergunta: TPanel
+        Left = 0
+        Height = 120
+        Top = 298
+        Width = 549
+        Align = alClient
+        ClientHeight = 120
+        ClientWidth = 549
+        TabOrder = 2
+        object mePergunta: TMemo
+          Left = 1
+          Height = 118
+          Top = 1
+          Width = 547
+          Align = alClient
+          Lines.Strings = (
+            ''
+          )
+          TabOrder = 0
+          OnKeyPress = mePerguntaKeyPress
+        end
+      end
+    end
+    object TabSheet1: TTabSheet
+      Caption = 'Histórico'
+      ClientHeight = 418
+      ClientWidth = 549
+      object meHistorico: TMemo
+        Left = 0
+        Height = 418
+        Top = 0
+        Width = 549
+        Align = alClient
+        TabOrder = 0
+      end
+    end
+    object tsPensamento: TTabSheet
+      Caption = 'Pensamento'
+      ClientHeight = 418
+      ClientWidth = 549
+      object mePensamento: TMemo
+        Left = 0
+        Height = 418
+        Top = 0
+        Width = 549
+        Align = alClient
+        TabOrder = 0
+      end
+    end
+    object tsMapaMemoria: TTabSheet
+      Caption = 'Mapa de Memoria'
+      ClientHeight = 418
+      ClientWidth = 549
+      object meMapaMemoria: TMemo
+        Left = 0
+        Height = 418
+        Top = 0
+        Width = 549
+        Align = alClient
+        TabOrder = 0
+      end
+    end
+    object tsLog: TTabSheet
+      Caption = 'Log'
+      ClientHeight = 418
+      ClientWidth = 549
+      object meLog: TMemo
+        Left = 0
+        Height = 418
+        Top = 0
+        Width = 549
+        Align = alClient
+        TabOrder = 0
+      end
+    end
+  end
+  object pnTop: TPanel
+    Left = 0
+    Height = 50
+    Top = 0
+    Width = 727
+    Align = alTop
+    ClientHeight = 50
+    ClientWidth = 727
+    TabOrder = 1
+    object btSair: TBitBtn
+      Left = 592
+      Height = 38
+      Top = 8
+      Width = 123
+      Caption = '&Sair'
+      TabOrder = 0
+    end
+  end
+  object pnBotton: TPanel
+    Left = 0
+    Height = 61
+    Top = 496
+    Width = 727
+    Align = alBottom
+    ClientHeight = 61
+    ClientWidth = 727
+    TabOrder = 2
+    object btPerguntar: TBitBtn
+      Left = 576
+      Height = 56
+      Top = 0
+      Width = 139
+      Caption = '&Perguntar'
+      TabOrder = 0
+      OnClick = btPerguntarClick
+    end
+  end
+  object pnPainel: TPanel
+    Left = 0
+    Height = 446
+    Top = 50
+    Width = 170
+    Align = alLeft
+    ClientHeight = 446
+    ClientWidth = 170
+    TabOrder = 3
+    object btLimpaHist: TSpeedButton
+      Left = 0
+      Height = 48
+      Top = 0
+      Width = 167
+      Caption = 'Limpar Histórico'
+      OnClick = btLimpaHistClick
+    end
+  end
+end
