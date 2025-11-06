@@ -8,14 +8,15 @@ object frmIA: TfrmIA
   ClientWidth = 727
   Position = poMainFormCenter
   LCLVersion = '4.0.0.4'
+  OnCreate = FormCreate
   object pgIA: TPageControl
     Left = 170
     Height = 446
     Top = 50
     Width = 557
-    ActivePage = Chat
+    ActivePage = tsPensamento
     Align = alClient
-    TabIndex = 0
+    TabIndex = 2
     TabOrder = 0
     object Chat: TTabSheet
       Caption = 'Chat'
@@ -86,6 +87,7 @@ object frmIA: TfrmIA
         Width = 549
         Align = alClient
         TabOrder = 0
+        OnChange = meHistoricoChange
       end
     end
     object tsPensamento: TTabSheet
@@ -99,6 +101,7 @@ object frmIA: TfrmIA
         Width = 549
         Align = alClient
         TabOrder = 0
+        OnChange = mePensamentoChange
       end
     end
     object tsMapaMemoria: TTabSheet
@@ -112,6 +115,7 @@ object frmIA: TfrmIA
         Width = 549
         Align = alClient
         TabOrder = 0
+        OnChange = meMapaMemoriaChange
       end
     end
     object tsLog: TTabSheet

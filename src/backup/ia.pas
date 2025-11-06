@@ -34,6 +34,10 @@ type
     tsLog: TTabSheet;
     procedure btLimpaHistClick(Sender: TObject);
     procedure btPerguntarClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure meHistoricoChange(Sender: TObject);
+    procedure meMapaMemoriaChange(Sender: TObject);
+    procedure mePensamentoChange(Sender: TObject);
     procedure mePerguntaKeyPress(Sender: TObject; var Key: char);
   private
     FChatGPT: TCHATGPT;
@@ -87,6 +91,50 @@ procedure TfrmIA.btPerguntarClick(Sender: TObject);
 begin
   PerguntaIA();
   mePergunta.SetFocus;
+end;
+
+procedure TfrmIA.FormCreate(Sender: TObject);
+var
+  arquivo, arquivo1, arquivo2 : string;
+begin
+
+  arquivo := FSetMain.Defaultfolder+'HISTORICO.RIA';
+  arquivo1 :=FSetMain.Defaultfolder+'mapamemoria.RIA';
+  arquivo2 :=FSetMain.Defaultfolder+'penssamento.RIA';
+  if(FileExists(arquivo)) then
+    meHistorico.Lines.LoadFromFile(arquivo);
+  if(FileExists(arquivo1)) then
+    meMapaMemoria.Lines.LoadFromFile(arquivo1);
+  if(FileExists(arquivo2)) then
+    mePensamento.Lines.LoadFromFile(arquivo2);
+
+end;
+
+procedure TfrmIA.meHistoricoChange(Sender: TObject);
+var
+  arquivo : string;
+begin
+  arquivo := FSetMain.Defaultfolder+'HISTORICO.RIA';
+  if(FileExists(arquivo)) then
+    meHistorico.Lines.SaveToFile(arquivo);
+end;
+
+procedure TfrmIA.meMapaMemoriaChange(Sender: TObject);
+var
+  arquivo : string;
+begin
+  arquivo := FSetMain.Defaultfolder+'mapamemoria.RIA';
+  if(FileExists(arquivo)) then
+    meMapaMemoria.Lines.SaveToFile(arquivo);
+end;
+
+procedure TfrmIA.mePensamentoChange(Sender: TObject);
+var
+    arquivo : string;
+begin
+    arquivo := FSetMain.Defaultfolder+'pensamento.RIA';
+    if(FileExists(arquivo)) then
+      meMapaMemoria.Lines.SaveToFile(arquivo);
 end;
 
 procedure TfrmIA.mePerguntaKeyPress(Sender: TObject; var Key: char);
@@ -150,7 +198,7 @@ begin
           //Conexao postgres
           if(frmmquery2.zconpost.connected) then
           begin
-               CriaDicionarioPost();
+               meMapaMemoria.Lines.Add(CriaDicionarioPost());
           end;
           if(frmmquery2.zconmysql.Connected) then
           begin
@@ -300,7 +348,7 @@ begin
     'Sem justificativas, sem pontuação, sem quebras de linha.';
   Prompt :=
     'A pergunta abaixo envolve ARQUIVOS/PASTAS (abrir/salvar arquivo, listar diretórios, '+
-    'caminhos, upload/download, leitura/escrita, extensão, nome de arquivo)?' + LineEnding +
+    'caminhos, upload/download, leitura/escrita, extensão, nome de arquivo, e informações sobre um projeto.)?' + LineEnding +
     'Pergunta: "' + Pergunta + '"' + LineEnding +
     'Responda apenas com "Sim" ou "Nao".';
 

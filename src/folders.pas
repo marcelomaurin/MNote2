@@ -68,6 +68,7 @@ type
     procedure CarregaContexto();
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
+    procedure meTecnicaChange(Sender: TObject);
     procedure miAnalisaArquivoClick(Sender: TObject);
     procedure miCreatedirClick(Sender: TObject);
     procedure miDeleteClick(Sender: TObject);
@@ -103,7 +104,7 @@ type
 
      // ==== IA helpers / etapas ====
     function IA_GerarDevPrompt(const Pergunta: string): string;
-    function IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string; MaxBytes: Integer; out Resumo: string): Boolean;
+    function IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string; MaxBytes: Integer; force: boolean; out Resumo: string): Boolean;
     function IA_RespostaFinal(const DevPadrao, solicit: string): string;
     function IA_GeraMapaMental(const Texto, Questao: string): string; // << novo
 
@@ -154,7 +155,7 @@ var
 
 implementation
 
-uses  main;
+uses  main, IA;
 
 {$R *.lfm}
 
@@ -500,6 +501,11 @@ begin
   finally
     tree.Free;
   end;
+end;
+
+procedure TfrmFolders.meTecnicaChange(Sender: TObject);
+begin
+
 end;
 
 procedure TfrmFolders.miAnalisaArquivoClick(Sender: TObject);
@@ -883,10 +889,11 @@ begin
     Result := Resp;
 end;
 
-function TfrmFolders.IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string; MaxBytes: Integer; out Resumo: string): Boolean;
+function TfrmFolders.IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string; MaxBytes: Integer; force: boolean; out Resumo: string): Boolean;
 var
-  Src, SrcNum, Linguagem: string;
+  Src, SrcNum, Linguagem: widestring;
   DevMsg, Ask, Resp: string;
+  Arquivo : TStringList;
 begin
   Resumo := '';
   Result := False;
@@ -898,8 +905,11 @@ begin
     Exit(False);
   end;
 
+
+
   Linguagem := AF_GuessLanguageByExt(ExtractFileExt(FullPath));
   SrcNum    := AF_AddLineNumbers(Src);
+  frmMNote.CarregarArquivo(FullPath);
 
   DevMsg :=
     'Você é um analisador técnico. Responda em TEXTO SIMPLES (sem JSON, sem markdown).' + LineEnding +
@@ -914,14 +924,32 @@ begin
     SrcNum + LineEnding +
     '--- FIM ---' + LineEnding +
     'TAREFA:' + LineEnding +
-    '- Produza um RESUMO TÉCNICO do arquivo acima (6–10 linhas), em português, sem listas ou formatação.' + LineEnding +
+    '- Produza um RESUMO TÉCNICO do arquivo acima, seja o mais detalhista possivel, em português.' + LineEnding +
     '- Explique em alto nível a finalidade do arquivo, principais funções/métodos e pontos críticos.' + LineEnding +
     '- Se aplicável, cite dependências internas/externas de forma breve.' + LineEnding +
     '- Não inclua JSON, markdown, etiquetas ou códigos. Apenas o parágrafo do resumo.';
 
+  if (FileExists(FullPath+'.RIA') and not force)  then
+  begin
+    Arquivo := TStringList.create();
+    arquivo.LoadFromFile(FullPath+'.RIA');
+    resumo := arquivo.Text;
+    FreeAndNil(arquivo);
+    exit(true);
+  end;
   if AF_SendToChatGPT(DevMsg, Ask, FSetMain.CHATGPT, Resp) then
   begin
     Resumo := Resp.Trim;
+    Arquivo := TStringList.create();
+    Arquivo.Clear;
+    Arquivo.Append('Arquivo:'+extractfilepath(FullPath));
+    Arquivo.Append('FullPath:'+FullPath);
+    Arquivo.Append('Criado em:'+datetimetostr(now));
+
+    arquivo.append(resumo);
+
+    Arquivo.SaveToFile(FullPath+'.RIA');
+    FreeAndNil(arquivo);
     Exit(True);
   end
   else
@@ -1154,10 +1182,13 @@ begin
       Continue;
     end;
 
+
     UI_Step('Criando resumo técnico para: ' + RelPath, 5);
 
-    if IA_ResumoArquivo(Pergunta, FullPath, RelPath, MaxBytes, Resumo) then
+    if IA_ResumoArquivo(Pergunta, FullPath, RelPath, MaxBytes, false, Resumo) then
     begin
+
+
       AnaliseArquivo.Add('PATH: ' + RelPath);
       AnaliseArquivo.Add(Resumo);
       AnaliseArquivo.Add('');
@@ -1247,10 +1278,10 @@ begin
   Log_Resultado(Solicit, Qtd, Obs);
 
   // 7) Mapeia SQL
-  UI_Step('VarreArquivosEAchaSQL', 7);
-  meLog.Lines.Append('VarreArquivosEAchaSQL');
-  meLog.Lines.Append('');
-  VarreArquivosEAchaSQL(Pergunta, MaxBytes);
+  //UI_Step('VarreArquivosEAchaSQL', 7);
+  //meLog.Lines.Append('VarreArquivosEAchaSQL');
+  //meLog.Lines.Append('');
+  //VarreArquivosEAchaSQL(Pergunta, MaxBytes);
 end;
 
 function TfrmFolders.AnalisaFolderIA(Pergunta: string): string;
@@ -1313,6 +1344,8 @@ procedure TfrmFolders.btIAClick(Sender: TObject);
 begin
 
   meResposta.Lines.append(AnalisaFolderIA(mePergunta.Text));
+  //Armazena resultado no historico
+  frmIA.meHistorico.Lines.Append(meResposta.Lines.text);
 end;
 
 procedure TfrmFolders.FormDestroy(Sender: TObject);
@@ -1589,6 +1622,9 @@ begin
     begin
       Resp   := Chat.Response;
       meTecnica.Lines.Append(Resp);
+
+      //Adiciona ao historico
+      frmIA.meHistorico.Lines.Append(Resp);
       Result := True;
     end
     else

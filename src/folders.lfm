@@ -29,9 +29,9 @@ object frmFolders: TfrmFolders
       Height = 650
       Top = 1
       Width = 804
-      ActivePage = tsIA
+      ActivePage = tsTecnica
       Align = alClient
-      TabIndex = 1
+      TabIndex = 3
       TabOrder = 0
       object tsFolders: TTabSheet
         Caption = 'Folders'
@@ -128,8 +128,8 @@ object frmFolders: TfrmFolders
             Top = 1
             Width = 794
             Align = alClient
-            ScrollBars = ssAutoBoth
             TabOrder = 1
+            WantTabs = True
           end
         end
         object mePergunta: TMemo
@@ -206,6 +206,7 @@ object frmFolders: TfrmFolders
           Align = alClient
           ScrollBars = ssAutoBoth
           TabOrder = 0
+          OnChange = meTecnicaChange
         end
       end
     end

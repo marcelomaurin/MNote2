@@ -29,7 +29,7 @@ type
     MainMenu1: TMainMenu;
     meChatHist: TSynEdit;
     meCodes: TSynEdit;
-    meDialog: TSynEdit;
+    meDialog: TMemo;
     MenuItem19: TMenuItem;
     MenuItem20: TMenuItem;
     MenuItem21: TMenuItem;
@@ -38,6 +38,7 @@ type
     MenuItem24: TMenuItem;
     MenuItem25: TMenuItem;
     MenuItem26: TMenuItem;
+    btIA: TMenuItem;
     mnCompile: TMenuItem;
     miToolsFalar: TMenuItem;
     miIMGJSON: TMenuItem;
@@ -131,6 +132,7 @@ type
     Splitter2: TSplitter;
     Splitter3: TSplitter;
     Splitter4: TSplitter;
+    btHide: TToggleBox;
     tsDialog: TTabSheet;
     tsQuestion: TTabSheet;
     tsHistory: TTabSheet;
@@ -140,6 +142,8 @@ type
     TrayIcon1: TTrayIcon;
     vlGlobal: TValueListEditor;
     vlLocal: TValueListEditor;
+    procedure btHideChange(Sender: TObject);
+    procedure btIAClick(Sender: TObject);
     procedure edChatKeyPress(Sender: TObject; var Key: char);
     procedure FindDialog1Find(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -153,6 +157,7 @@ type
       var Handled: Boolean);
     procedure lstFindDblClick(Sender: TObject);
     procedure lstFindSelectionChange(Sender: TObject; User: boolean);
+    procedure meChatHistChange(Sender: TObject);
     procedure meChatHistClick(Sender: TObject);
     procedure MenuItem10Click(Sender: TObject);
     procedure MenuItem12Click(Sender: TObject);
@@ -216,6 +221,7 @@ type
     procedure mnStayClick(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
     procedure Panel1Click(Sender: TObject);
+    procedure pgMainChanging(Sender: TObject; var AllowChange: Boolean);
     procedure pnBottonClick(Sender: TObject);
     procedure pnChatGPT2Resize(Sender: TObject);
     procedure ReplaceDialog1Find(Sender: TObject);
@@ -266,6 +272,10 @@ type
     procedure CarregarArquivo(arquivo : string);
     procedure NewContext();
     procedure FazPergunta();
+    procedure CarregarHistorico();
+
+    function FileLoad(const FullName: string): Boolean;
+    function FocusFile(const FullName: string): Boolean; // << novo
   end;
 
 var
@@ -278,6 +288,85 @@ implementation
 { TfrmMNote }
 uses Sobre;
 
+function TfrmMNote.FocusFile(const FullName: string): Boolean;
+var
+  alvo: string;
+  i: Integer;
+  item: TItem;
+  openedPath: string;
+begin
+  Result := False;
+  if Trim(FullName) = '' then Exit;
+
+  alvo := ExpandFileName(FullName);
+
+  // Garante que está carregado (se já estiver aberto, FileLoad só foca; se não, carrega)
+  if not FileLoad(alvo) then
+    Exit(False);
+
+  // Agora localiza e foca exatamente a aba correspondente
+  for i := 0 to pgMain.PageCount - 1 do
+  begin
+    item := TItem(pgMain.Pages[i].Tag);
+    if item <> nil then
+    begin
+      openedPath := ExpandFileName(IncludeTrailingPathDelimiter(item.DirName) + item.FileName);
+      if SameText(openedPath, alvo) then
+      begin
+        pgMain.ActivePageIndex := i;
+        Result := True;
+        Exit;
+      end;
+    end;
+  end;
+end;
+
+
+function TfrmMNote.FileLoad(const FullName: string): Boolean;
+var
+  alvo: string;
+  i: Integer;
+  item: TItem;
+begin
+  Result := False;
+
+  // valida parâmetro
+  if Trim(FullName) = '' then Exit;
+
+  // normaliza caminho absoluto
+  alvo := ExpandFileName(FullName);
+
+  // verifica existência no disco
+  if not FileExists(alvo) then
+  begin
+    MessageHint('File not found: ' + alvo);
+    Exit(False);
+  end;
+
+  (*
+  // se já está aberto, apenas foca a aba
+  if ExistFileOpen(alvo) then
+  begin
+    for i := 0 to pgMain.PageCount - 1 do
+    begin
+      item := TItem(pgMain.Pages[i].Tag);
+      if SameText(ExpandFileName(item.DirName + item.FileName), alvo) or
+         SameText(ExpandFileName(item.FileName), alvo) then
+      begin
+        pgMain.ActivePageIndex := i;
+        Break;
+      end;
+    end;
+    Exit(True);
+  end;
+  *)
+
+  // não está aberto: carrega agora
+  //Carregar(alvo);
+
+  // considera sucesso se passou a existir como aba aberta
+  Result := ExistFileOpen(alvo);
+end;
 
 
 function TfrmMNote.ExistFileOpen(Arquivo: string): boolean;
@@ -410,8 +499,28 @@ begin
     Exit;
   end;
 
+  if FileLoad(arquivo) then
+  begin
+    FocusFile(arquivo);
+    MessageHint(arquivo + ' load! ');
+    Exit;
+
+  end;
+
   tb := NovoItem();
   item := TItem(tb.Tag);
+  //Carrega caracteristricas
+  item.DirName:= ExtractFileDir(arquivo);
+  item.FileExt:=ExtractFileExt(arquivo);
+  item.FileName:=ExtractFileName(arquivo);
+  if(item.DirName='') then
+  begin
+    item.DirName:= ExtractFileDir(Application.ExeName);
+  end;
+  item.FileName:=ExtractFileName(item.dirname+item.filename);
+  item.FileExt:= ExtractFileExt(arquivo);
+
+
   syn  := item.syn;
 
   try
@@ -436,6 +545,7 @@ begin
     syn.ReadOnly := True;
 
   tb.Caption := item.Nome;
+
   pgMain.Refresh;
 end;
 
@@ -443,13 +553,16 @@ procedure TfrmMNote.CarregarArquivo(arquivo : string);
 begin
   if (arquivo = '') then
   begin
+    (*
     if(FSetFolders = nil) then
     begin
       FSetFolders := TSetFolders.create();
       FSetFolders.CarregaContexto;
     end;
-
-    OpenDialog1.InitialDir:= FSetFolders.DefaultFolder;
+    *)
+    //OpenDialog1.InitialDir:= FSetFolders.DefaultFolder;
+    OpenDialog1.InitialDir:= FSetMain.DEFAULTFOLDER;
+    ;
     if OpenDialog1.execute then
     begin
       if FileExists(OpenDialog1.FileName) then
@@ -491,6 +604,18 @@ begin
 
      //AnalisarSynEdit(meChatHist);
      pnWait.Visible:=false;
+end;
+
+procedure TfrmMNote.CarregarHistorico();
+var
+  arquivo : string;
+  syn : TSynEdit;
+  item : TItem;
+begin
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
+  arquivo := item.DirName+'\'+item.FileName+'_historico.RIA';
+  meChatHist.Lines.LoadFromFile(arquivo);
 end;
 
 function TfrmMNote.NovoItem():TTabSheet;
@@ -663,6 +788,7 @@ begin
 
   CarregarOld();
   CarregarParametros();
+
 
 
 
@@ -985,6 +1111,28 @@ begin
   end;
 end;
 
+procedure TfrmMNote.btIAClick(Sender: TObject);
+var
+   tb : TTabSheet;
+   syn : TSynEdit;
+   item : TItem;
+begin
+  pnChatGPT.Visible:= not pnChatGPT.Visible;
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
+
+  //syn.CommandProcessor(TsynEditorCommand(ecCut),'',nil);
+  edChat.clear;
+  edChat.Lines.Append('Analise esse fonte e comente sobre ele, apresentando um resumo tecnico bem elaborado:');
+  edChat.Lines.Append(syn.Lines.text);
+  FazPergunta;
+end;
+
+procedure TfrmMNote.btHideChange(Sender: TObject);
+begin
+  pnChatGPT.Visible:= false;
+end;
+
 procedure TfrmMNote.btNovoClick(Sender: TObject);
 begin
   NovoItem();
@@ -993,54 +1141,43 @@ end;
 
 procedure TfrmMNote.FormDestroy(Sender: TObject);
 var
-   info : string;
-   syn : TSynEdit;
-   tb : TTabSheet;
-   item : TItem;
-   a: integer;
+  info       : string;
+  syn        : TSynEdit;
+  tb         : TTabSheet;
+  item       : TItem;
+  a          : Integer;
 begin
-  Fsetmain.posx := Left;
-  Fsetmain.posy := top;
-  Fsetmain.width := Width;
-  Fsetmain.Height:= Height;
-  (*
-  if (frmMQuery <> nil) then
-  begin
-    frmMQuery.Destroy;
-    frmmquery := nil;
-  end;
-  *)
+  Fsetmain.posx   := Left;
+  Fsetmain.posy   := Top;
+  Fsetmain.Width  := Width;
+  Fsetmain.Height := Height;
+
   if (frmFolders <> nil) then
   begin
-      frmFolders.destroy;
-      frmFolders := nil;
-
+    FreeAndNil(frmFolders);
   end;
 
-  //Salva arquivos abertos
+  // Salva arquivos abertos (com separador da plataforma)
   info := '';
-  for a:= 0 to pgMain.PageCount-1 do
+  for a := 0 to pgMain.PageCount - 1 do
   begin
-     tb := pgMain.Pages[a];
-     item := TItem(tb.tag);
-     syn := item.syn;
-     info := info + item.FileName+ ' ';
+    tb   := pgMain.Pages[a];
+    item := TItem(tb.Tag);
+    syn  := item.syn;
+
+    // Garante o separador correto no final do diretório antes de juntar com o nome do arquivo
+    info := info + IncludeTrailingPathDelimiter(item.DirName) + item.FileName + ' ';
   end;
 
-  FSetMain.lastfiles:=info; (*Salva contexto final*)
+  FSetMain.lastfiles := info; // Salva contexto final
 
-  Fsetmain.SalvaContexto(false);
+  Fsetmain.SalvaContexto(False);
+
   if Fsetmain <> nil then
-  begin
-    Fsetmain.Free();
-    Fsetmain := nil;
-  end;
-  if (FCHATGPT <> nil) then
-  begin
-    FCHATGPT.free;
+    FreeAndNil(Fsetmain);
 
-  end;
-
+  if FCHATGPT <> nil then
+    FreeAndNil(FCHATGPT);
 end;
 
 procedure TfrmMNote.FormShow(Sender: TObject);
@@ -1129,6 +1266,14 @@ end;
 procedure TfrmMNote.lstFindSelectionChange(Sender: TObject; User: boolean);
 begin
 
+end;
+
+procedure TfrmMNote.meChatHistChange(Sender: TObject);
+var
+   arquivo: string;
+begin
+   //arquivo := FSetMain.Defaultfolder+'\'+'HISTORICO.RIA'
+   //meChatHist.Lines.SaveToFile(arquivo);
 end;
 
 procedure TfrmMNote.meChatHistClick(Sender: TObject);
@@ -1221,7 +1366,7 @@ end;
 
 procedure TfrmMNote.miChatGPTClick(Sender: TObject);
 begin
-  //pnChatGPT.Visible:= not pnChatGPT.Visible;
+
   frmIA.show;
 end;
 
@@ -1912,17 +2057,32 @@ var
   codigo   : TCodigo;
   item     : TFonte;
   i        : integer;
+  pergunta: WideString;
+  fonte    : widestring;
+  mapa : widestring;
+  tb : TTabSheet;
+  syn : TSynEdit;
+  ritem : TItem;
 begin
   if (FCHATGPT = nil) then
     FCHATGPT := TCHATGPT.Create(self);
 
+  ritem := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := ritem.syn;
+  fonte := syn.Lines.Text;
   // contexto + pergunta atual
   mequestion.Lines.Add(edChat.Text);
 
+  //mapa := frmIA.meMapaMemoria.Lines.text;
+  mapa := frmIA.mePensamento.Lines.text;
+
   FCHATGPT.TOKEN := FSetMain.CHATGPT;
   //FCHATGPT.SendQuestion(mequestion.Text);
+
   FCHATGPT.Dev:= 'Voce é um assistente pessoal e teve as seguintes perguntas anteriores: '+meChatHist.Text;
-  FCHATGPT.SendQuestion( edChat.Text);
+
+  pergunta := 'Com base no fonte:'+fonte+ ' e no mapa de memoria da aplicacao'+mapa +', responda a seguinte pergunta: '+ edChat.Text;
+  FCHATGPT.SendQuestion( pergunta);
 
   resposta := FCHATGPT.Response;
 
@@ -2108,8 +2268,13 @@ begin
   if SaveDialog1.Execute then
   begin
     item.Savefile(SaveDialog1.FileName);
+    //Carrega caracteristricas
+    item.DirName:= ExtractFileDir(SaveDialog1.FileName);
+    item.FileName:=ExtractFileName(SaveDialog1.FileName);
+    item.FileExt:= ExtractFileExt(SaveDialog1.FileName);
+
     tb.Caption := ExtractFileName(SaveDialog1.FileName);
-    item.FileName := SaveDialog1.FileName;
+
     item.Salvo := False; // vai salvar já na sequência
     SalvarTab(tb);
   end;
@@ -2119,19 +2284,26 @@ procedure TfrmMNote.SalvarTab(tb: TTabSheet);
 var
   item: TItem;
   syn : TSynEdit;
+  fullname : string;
 begin
   item := TItem(tb.Tag);
   syn  := item.syn;
 
-  if item.FileName = '' then
+  if( item.FileName = '') then
   begin
     SalvarComo(tb);
     Exit;
   end;
+  if(item.DirName='') then
+  begin
+    item.DirName := ExtractFileDir(Application.ExeName);
+  end;
 
   if not item.Salvo then
   begin
-    syn.Lines.SaveToFile(item.FileName);
+
+    fullname:= item.DirName+item.FileName;
+    syn.Lines.SaveToFile(fullname);
     item.Salvo := True;
   end;
 end;
@@ -2178,6 +2350,11 @@ begin
 end;
 
 procedure TfrmMNote.Panel1Click(Sender: TObject);
+begin
+
+end;
+
+procedure TfrmMNote.pgMainChanging(Sender: TObject; var AllowChange: Boolean);
 begin
 
 end;
@@ -2229,9 +2406,39 @@ begin
 end;
 
 procedure TfrmMNote.pgMainChange(Sender: TObject);
+var
+  syn      : TSynEdit;
+  tb       : TTabSheet;
+  item     : TItem;
+  fullfile : string;
 begin
+  if pgMain.ActivePage = nil then
+    Exit;
 
+  tb := pgMain.ActivePage;
+  item := TItem(tb.Tag);
+  if item = nil then Exit;
 
+  // Monta o caminho com o separador certo da plataforma
+  fullfile := IncludeTrailingPathDelimiter(item.DirName) + item.FileName + '.RIA';
+
+  // Verifica se o arquivo existe
+  if FileExists(fullfile) then
+  begin
+    pnChatGPT.Visible := True;
+    try
+      meDialog.Lines.LoadFromFile(fullfile);
+    except
+      on E: Exception do
+        MessageHint('Erro ao carregar arquivo: ' + E.Message);
+    end;
+  end
+  else
+  begin
+    // Se o arquivo não existir, esconde o painel
+    pnChatGPT.Visible := False;
+    meDialog.Clear;
+  end;
 end;
 
 
