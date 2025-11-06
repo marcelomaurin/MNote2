@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "MNote2"
-#define MyAppVersion "2.46"
+#define MyAppVersion "2.47"
 #define MyAppPublisher "Maurinsoft"
 #define MyAppURL "http://maurinsoft.com.br"
 #define MyAppExeName "MNote2.exe"
