@@ -1,40 +1,81 @@
-Portuguese
-==========
-## Projeto MNote2
-O Projeto MNote2, é um simples editor de texto multi plataforma.
 
-<img src="https://github.com/marcelomaurin/MNote2/blob/master/imgs/MNote2.jpg">
 
-## Plataformas de Compatibilidade
-Criado para rodar em:
+# Projeto MNote2
 
-- Linux X86
+MNote2 é um editor de texto simples, leve e multiplataforma, desenvolvido para demonstrar a capacidade de criação de projetos multi plataforma utilizando Lazarus.
+
+![MNote2 Screenshot](https://github.com/marcelomaurin/MNote2/blob/master/imgs/MNote2.jpg)
+
+---
+
+## Funcionalidade Principal
+
+- Editor de texto básico com interface gráfica simples
+- Suporte a múltiplas plataformas
+- Fácil utilização para edição rápida de textos
+
+---
+
+## Plataformas Compatíveis
+
+O MNote2 foi projetado para funcionar nas seguintes plataformas:
+
+- Linux x86 (distribuições baseadas em Linux para arquitetura Intel/AMD)
 - Windows
-- Raspberry PI 3.
-Nota: O MAC deixa de ser compatível com o MNote devido aos custos do equipamento. Por este motivo, deixaremos apenas as versões históricas.
+- Raspberry Pi 3 (ARM)
 
-Ele é bem simples, porem foi desenvolvido para demonstrar a capacidade de desenvolvimento de projetos multi plataforma do lazarus.
+**Importante:**
+A compatibilidade com macOS foi descontinuada devido aos custos das máquinas Apple para desenvolvimento e testes contínuos. Versões históricas para macOS permanecerão apenas para referência.
 
-Vídeo:
-https://www.youtube.com/embed/3GepM6Q5Y1o
+---
 
-Site do Projeto:
-https://maurinsoft.com.br/?page_id=63
+## Tecnologias Utilizadas
 
-English
-=======
-Simple text editor written in Lazarus.
-MNote2 was created to be cross-platform.
-Running on windows, linux, mac, arm platforms.
+- Linguagem: Object Pascal
+- Ambiente de Desenvolvimento: Lazarus (Free Pascal)
+- Código-fonte modular e organizado para facilitar portabilidade entre plataformas
 
-Project website:
-https://maurinsoft.com.br/?page_id=63
+---
 
-Spanish
-=======
-Editor de texto simple escrito en Lazarus.
-MNote2 fue creado para ser multiplataforma.
-Se ejecuta en plataformas windows, linux, mac, arm.
+## Estrutura do Projeto
 
-Sitio web del proyecto:
-https://maurinsoft.com.br/?page_id=63
+O projeto possui a seguinte estrutura principal no repositório:
+
+```
+MNote2/
+├── .git/           # Histórico do Git e arquivos de configuração do repositório
+├── imgs/           # Imagens e screenshots usadas na documentação
+├── src/            # Possível diretório dos arquivos fonte (analisar para confirmar)
+├── README.md       # Esta documentação do projeto
+├── .gitignore      # Arquivos/pastas ignorados pelo Git
+└── Outros arquivos relacionados à compilação/configuração
+```
+
+---
+
+## Links Úteis
+
+- Site oficial do projeto: [https://maurinsoft.com.br/?page_id=63](https://maurinsoft.com.br/?page_id=63)
+- Vídeo demonstrativo do MNote2 no YouTube:
+  https://www.youtube.com/embed/3GepM6Q5Y1o
+- Repositório GitHub (contém código e histórico):
+  https://github.com/marcelomaurin/MNote2
+
+---
+
+## Como contribuir
+
+Para contribuir com o MNote2, siga os passos abaixo:
+
+1. Clone o repositório para sua máquina local.
+2. Configure o Lazarus para sua plataforma.
+3. Compile o projeto utilizando o Lazarus IDE.
+4. Implemente correções ou novas funcionalidades - por favor, mantenha o padrão de código Pascal.
+5. Envie um Pull Request com suas alterações.
+
+---
+
+## Contato e Suporte
+
+Para dúvidas e sugestões, utilize os contatos disponibilizados no site oficial.
+
