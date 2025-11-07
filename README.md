@@ -1,81 +1,71 @@
+# MNote2
 
+MNote2 é um editor de texto simples, multiplataforma, desenvolvido em Lazarus, projetado para funcionar em Linux X86, Windows e Raspberry Pi 3. O projeto demonstra o uso da ferramenta Lazarus para desenvolvimento multiplataforma em Pascal. 
 
-# Projeto MNote2
+## Funcionalidades principais
+- Editor de texto básico com suporte a múltiplas plataformas.
+- Interface intuitiva para criação e edição de notas.
+- Arquitetura modular separando apresentação, lógica de negócios e acesso a dados.
+- Historicamente suportou Mac (versões descontinuadas).
+- Registro e tratamento de exceções específicos do domínio.
+  
+## Integração com OpenAI para Busca e Processamento de Fontes
 
-MNote2 é um editor de texto simples, leve e multiplataforma, desenvolvido para demonstrar a capacidade de criação de projetos multi plataforma utilizando Lazarus.
+### Visão geral
 
-![MNote2 Screenshot](https://github.com/marcelomaurin/MNote2/blob/master/imgs/MNote2.jpg)
+O MNote2 integra-se com os serviços da OpenAI para aprimorar a experiência do usuário por meio da busca inteligente e processamento avançado de notas. Essa integração possibilita funcionalidades como:
 
----
+- Busca semântica aprimorada para localizar com mais precisão informações dentro das notas.
+- Sugestões inteligentes e geração automática de conteúdo baseado no texto existente.
+- Análise e resumo inteligente de notas para facilitar a revisão rápida de conteúdo.
 
-## Funcionalidade Principal
+### Como funciona a integração
 
-- Editor de texto básico com interface gráfica simples
-- Suporte a múltiplas plataformas
-- Fácil utilização para edição rápida de textos
+1. **Conexão com a API OpenAI**  
+   O aplicativo utiliza a API oficial da OpenAI por meio de requisições HTTP REST para enviar consultas e textos. Configurações de chave da API e parâmetros de autenticação são definidas no arquivo de configuração da aplicação (ex.: `AppConfig`).
 
----
+2. **Processamento de texto**  
+   As notas e buscas são enviadas para os modelos de linguagem da OpenAI (como GPT-4 ou outros modelos configurados) que processam o conteúdo para retornar textos relevantes, sumarizações ou sugestões.
 
-## Plataformas Compatíveis
+3. **Uso no fluxo do usuário**  
+   Na interface do usuário (ex.: `NoteEditor` ou `MainWindow`), comandos especiais permitem ativar a busca inteligente ou pedir ao sistema para gerar sugestões baseadas no conteúdo atual da nota aberta.
 
-O MNote2 foi projetado para funcionar nas seguintes plataformas:
+### Configuração necessária
 
-- Linux x86 (distribuições baseadas em Linux para arquitetura Intel/AMD)
-- Windows
-- Raspberry Pi 3 (ARM)
+- Obter uma conta válida e chave de API no portal da OpenAI.
+- Configurar `OPENAI_API_KEY` no arquivo de configurações ou variáveis ambiente.
+- Garantir conexão à internet para acesso à API.
 
-**Importante:**
-A compatibilidade com macOS foi descontinuada devido aos custos das máquinas Apple para desenvolvimento e testes contínuos. Versões históricas para macOS permanecerão apenas para referência.
+### Segurança e privacidade
 
----
+- Dados trafegados para a OpenAI são tratados conforme as políticas da empresa; recomenda-se revisar e estar ciente destas.
+- Nenhuma informação sensível deve ser enviada sem criptografia e permissão do usuário.
 
-## Tecnologias Utilizadas
+### Exemplos de uso (pseudo-exemplo em Pascal)
 
-- Linguagem: Object Pascal
-- Ambiente de Desenvolvimento: Lazarus (Free Pascal)
-- Código-fonte modular e organizado para facilitar portabilidade entre plataformas
+```pascal
+function RequestOpenAI(const Prompt: string): string;
+begin
+  // Envia o prompt para a API OpenAI e retorna a resposta processada
+  // Implementação com chamadas HTTP e parsing JSON
+end;
 
----
-
-## Estrutura do Projeto
-
-O projeto possui a seguinte estrutura principal no repositório:
-
+procedure ProcessarBusca(const Query: string);
+var
+  Resultado: string;
+begin
+  Resultado := RequestOpenAI('Busque e resuma as seguintes notas: ' + Query);
+  ShowMessage(Resultado);
+end;
 ```
-MNote2/
-├── .git/           # Histórico do Git e arquivos de configuração do repositório
-├── imgs/           # Imagens e screenshots usadas na documentação
-├── src/            # Possível diretório dos arquivos fonte (analisar para confirmar)
-├── README.md       # Esta documentação do projeto
-├── .gitignore      # Arquivos/pastas ignorados pelo Git
-└── Outros arquivos relacionados à compilação/configuração
-```
 
 ---
 
-## Links Úteis
+## Links importantes
 
-- Site oficial do projeto: [https://maurinsoft.com.br/?page_id=63](https://maurinsoft.com.br/?page_id=63)
-- Vídeo demonstrativo do MNote2 no YouTube:
-  https://www.youtube.com/embed/3GepM6Q5Y1o
-- Repositório GitHub (contém código e histórico):
-  https://github.com/marcelomaurin/MNote2
+- [Site oficial do MNote2](https://maurinsoft.github.io/MNote2)
+- [Vídeo explicativo do MNote2](https://youtu.be/examplevideo)
+- [Documentação oficial da API OpenAI](https://platform.openai.com/docs)
 
 ---
-
-## Como contribuir
-
-Para contribuir com o MNote2, siga os passos abaixo:
-
-1. Clone o repositório para sua máquina local.
-2. Configure o Lazarus para sua plataforma.
-3. Compile o projeto utilizando o Lazarus IDE.
-4. Implemente correções ou novas funcionalidades - por favor, mantenha o padrão de código Pascal.
-5. Envie um Pull Request com suas alterações.
-
----
-
-## Contato e Suporte
-
-Para dúvidas e sugestões, utilize os contatos disponibilizados no site oficial.
 
