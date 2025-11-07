@@ -377,6 +377,7 @@
         <Filename Value="ia.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmIA"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="IA"/>
       </Unit47>

@@ -234,16 +234,52 @@ begin
 end;
 
 procedure TfrmIA.MapeiaPensamento();
+var
+  DevMsg : widestring;
+  FullPrompt : widestring;
+  Pergunta : widestring;
+  Resposta : widestring;
 begin
-  // Converte o mapa de memória em um resumo curto e útil para o prompt.
-  mePensamento.Lines.Clear;
-  mePensamento.Lines.Add('Resumo do contexto (banco + projeto):');
-  mePensamento.Lines.Add('- Use nomes de schema/tabela/coluna exatamente como no mapa.');
-  mePensamento.Lines.Add('- Considere dependências, FKs e DDL quando a pergunta envolver SQL.');
-  mePensamento.Lines.Add('- Considere a estrutura de pastas e arquivos ao sugerir melhorias.');
-  mePensamento.Lines.Add('');
-  mePensamento.Lines.Add('Contexto condensado:');
-  mePensamento.Lines.Add(Copy(meMapaMemoria.Text, 1, 4000)); // mantém prompt enxuto
+  // Mensagem de sistema (instruções para o modelo)
+  DevMsg :=
+    'Você é um analisador de dados e sua missão é montar um mapa de Pensamento coerente com a pergunta.' + LineEnding +
+    'O histórico que será enviado representa as interações anteriores com o usuário,' + LineEnding +
+    'e deve ser considerado como base de contexto e aprendizado para manter a coerência.' + LineEnding +
+    LineEnding +
+    'Siga as regras:' + LineEnding +
+    '1) Crie um Mapa de pensamento coerente com que foi solicitado e embasado na conversa histórica.' + LineEnding +
+    '2) Use o histórico como base para lembrar do contexto da conversa.' + LineEnding +
+    '3) Trate a pergunta atual como o ponto principal a ser respondido.' + LineEnding +
+    '4) Se for código, retorne sempre o código completo e formatado.' + LineEnding +
+    '5) Se não houver contexto suficiente, peça mais detalhes.' + LineEnding;
+
+  // Prompt principal enviado ao modelo
+  FullPrompt :=
+    '--- CONTEXTO HISTÓRICO ---' + LineEnding +
+    'Abaixo está o histórico de toda a conversa até o momento. Use-o apenas para entender o contexto:' + LineEnding +
+    LineEnding +
+    meHistorico.lines.Text + LineEnding + LineEnding +
+    '--- NOVA PERGUNTA ---' + LineEnding +
+    'A seguir está a nova pergunta feita pelo usuário, que deve ser respondida considerando o histórico acima:' + LineEnding +
+    Pergunta + LineEnding + LineEnding +
+    '--- MAPA DE MEMÓRIA ---' + LineEnding +
+    meMapaMemoria.lines.Text + LineEnding + LineEnding +
+    '--- PENSAMENTO (INSTRUÇÕES INTERNAS) ---' + LineEnding +
+    mePensamento.lines.Text;
+
+  FChatGPT.TOKEN := FSetMain.CHATGPT;
+  FChatGPT.Dev := DevMsg;
+
+  AddLog('Enviando pergunta + histórico ao ChatGPT...');
+  if FChatGPT.SendQuestion(FullPrompt) then
+    Resposta := TextoLimpo(FChatGPT.Response)
+  else
+    Resposta := TextoLimpo(FChatGPT.Response);
+
+  mePensamento.Lines.Text := Resposta;
+   meMapaMemoria.Lines.Add(Resposta);
+
+
 end;
 
 procedure TfrmIA.RespondePergunta();
@@ -284,14 +320,14 @@ begin
     '--- CONTEXTO HISTÓRICO ---' + LineEnding +
     'Abaixo está o histórico de toda a conversa até o momento. Use-o apenas para entender o contexto:' + LineEnding +
     LineEnding +
-    Copy(meHistorico.Text, 1, 8000) + LineEnding + LineEnding +
+    meHistorico.Text + LineEnding + LineEnding +
     '--- NOVA PERGUNTA ---' + LineEnding +
     'A seguir está a nova pergunta feita pelo usuário, que deve ser respondida considerando o histórico acima:' + LineEnding +
     Pergunta + LineEnding + LineEnding +
     '--- MAPA DE MEMÓRIA ---' + LineEnding +
-    Copy(meMapaMemoria.Text, 1, 6000) + LineEnding + LineEnding +
+    meMapaMemoria.Text + LineEnding + LineEnding +
     '--- PENSAMENTO (INSTRUÇÕES INTERNAS) ---' + LineEnding +
-    Copy(mePensamento.Text, 1, 2000);
+    mePensamento.Text;
 
   FChatGPT.TOKEN := FSetMain.CHATGPT;
   FChatGPT.Dev := DevMsg;
