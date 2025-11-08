@@ -63,9 +63,10 @@ end;
 
 ## Links importantes
 
-- [Site oficial do MNote2](https://maurinsoft.github.io/MNote2)
+- [Site oficial do MNote2]([https://maurinsoft.github.io/MNote2](https://maurinsoft.com.br/wp/projetos-open-source/projeto-mnote2/))
 - [Vídeo explicativo do MNote2](https://youtu.be/examplevideo)
-- [Documentação oficial da API OpenAI](https://platform.openai.com/docs)
+- [Documentação da API OpenAI usada pelo MNote2]([https://platform.openai.com/docs](https://github.com/marcelomaurin/CHATGPT))
 
 ---
+
 
