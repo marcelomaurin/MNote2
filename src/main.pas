@@ -14,7 +14,7 @@ uses
   newproject, uProjetoDB, IA;
 
 
-const versao = '2.47';
+const versao = '2.48';
 
 type
 
@@ -269,24 +269,35 @@ type
     function NovoItem():TTabSheet;
 
     function ExistFileOpen(Arquivo : string): boolean;
-    procedure CarregarArquivo(arquivo : string);
+    procedure LoadArquivo(arquivo : string);
     procedure NewContext();
     procedure FazPergunta();
     procedure CarregarHistorico();
 
     function FileLoad(const FullName: string): Boolean;
     function FocusFile(const FullName: string): Boolean; // << novo
+    function GetFile(const FullName: string): WideString; // << novo
   end;
+
+  function FileLoad(const FullName: string): Boolean;
 
 var
   frmMNote: TfrmMNote;
 
 implementation
 
+
 {$R *.lfm}
 
 { TfrmMNote }
 uses Sobre;
+
+
+function FileLoad(const FullName: string): Boolean;
+begin
+     result := frmMNote.FileLoad(FullName);
+end;
+
 
 function TfrmMNote.FocusFile(const FullName: string): Boolean;
 var
@@ -299,6 +310,7 @@ begin
   if Trim(FullName) = '' then Exit;
 
   alvo := ExpandFileName(FullName);
+
 
   // Garante que está carregado (se já estiver aberto, FileLoad só foca; se não, carrega)
   if not FileLoad(alvo) then
@@ -321,6 +333,43 @@ begin
   end;
 end;
 
+function TfrmMNote.GetFile(const FullName: string): WideString;
+var
+  alvo: string;
+  i: Integer;
+  item: TItem;
+  syn : TSynEdit;
+  openedPath: string;
+begin
+  Result := '';
+  if Trim(FullName) = '' then Exit;
+
+
+  alvo := ExpandFileName(FullName);
+
+  // Garante que está carregado (se já estiver aberto, FileLoad só foca; se não, carrega)
+  if not FileLoad(alvo) then
+    Exit('');
+
+  // Agora localiza e foca exatamente a aba correspondente
+  for i := 0 to pgMain.PageCount - 1 do
+  begin
+    item := TItem(pgMain.Pages[i].Tag);
+    if item <> nil then
+    begin
+      openedPath := ExpandFileName(IncludeTrailingPathDelimiter(item.DirName) + item.FileName);
+      if SameText(openedPath, alvo) then
+      begin
+        pgMain.ActivePageIndex := i;
+        item := TItem(pgMain.Pages[i].Tag);
+        syn  := item.syn;
+        Result := syn.Lines.Text ;
+        Exit;
+      end;
+    end;
+  end;
+end;
+
 
 function TfrmMNote.FileLoad(const FullName: string): Boolean;
 var
@@ -331,7 +380,7 @@ begin
   Result := False;
 
   // valida parâmetro
-  if Trim(FullName) = '' then Exit;
+  if Trim(FullName) = '' then LoadArquivo('');
 
   // normaliza caminho absoluto
   alvo := ExpandFileName(FullName);
@@ -343,27 +392,8 @@ begin
     Exit(False);
   end;
 
-  (*
-  // se já está aberto, apenas foca a aba
-  if ExistFileOpen(alvo) then
-  begin
-    for i := 0 to pgMain.PageCount - 1 do
-    begin
-      item := TItem(pgMain.Pages[i].Tag);
-      if SameText(ExpandFileName(item.DirName + item.FileName), alvo) or
-         SameText(ExpandFileName(item.FileName), alvo) then
-      begin
-        pgMain.ActivePageIndex := i;
-        Break;
-      end;
-    end;
-    Exit(True);
-  end;
-  *)
-
   // não está aberto: carrega agora
-  //Carregar(alvo);
-
+  LoadArquivo(alvo);
   // considera sucesso se passou a existir como aba aberta
   Result := ExistFileOpen(alvo);
 end;
@@ -380,7 +410,7 @@ begin
   for i := 0 to pgMain.PageCount - 1 do
   begin
     item := TItem(pgMain.Pages[i].Tag);
-    atual := ExpandFileName(item.FileName);
+    atual := ExpandFileName(IncludeTrailingPathDelimiter(item.DirName) + item.FileName);
     if SameText(alvo, atual) then
       Exit(True);
   end;
@@ -499,13 +529,12 @@ begin
     Exit;
   end;
 
-  if FileLoad(arquivo) then
+  if  ExistFileOpen(arquivo) then
   begin
-    FocusFile(arquivo);
-    MessageHint(arquivo + ' load! ');
     Exit;
-
   end;
+
+
 
   tb := NovoItem();
   item := TItem(tb.Tag);
@@ -515,7 +544,7 @@ begin
   item.FileName:=ExtractFileName(arquivo);
   if(item.DirName='') then
   begin
-    item.DirName:= ExtractFileDir(Application.ExeName);
+    item.DirName:= ExtractFileDir(FSetMain.Defaultfolder);
   end;
   item.FileName:=ExtractFileName(item.dirname+item.filename);
   item.FileExt:= ExtractFileExt(arquivo);
@@ -549,7 +578,9 @@ begin
   pgMain.Refresh;
 end;
 
-procedure TfrmMNote.CarregarArquivo(arquivo : string);
+
+
+procedure TfrmMNote.LoadArquivo(arquivo : string);
 begin
   if (arquivo = '') then
   begin
@@ -562,7 +593,7 @@ begin
     *)
     //OpenDialog1.InitialDir:= FSetFolders.DefaultFolder;
     OpenDialog1.InitialDir:= FSetMain.DEFAULTFOLDER;
-    ;
+
     if OpenDialog1.execute then
     begin
       if FileExists(OpenDialog1.FileName) then
@@ -590,6 +621,7 @@ begin
      end;
   end;
 end;
+
 
 procedure TfrmMNote.NewContext;
 begin
@@ -2302,7 +2334,7 @@ begin
   if not item.Salvo then
   begin
 
-    fullname:= item.DirName+item.FileName;
+    fullname:= IncludeTrailingPathDelimiter(item.DirName)+item.FileName;
     syn.Lines.SaveToFile(fullname);
     item.Salvo := True;
   end;
@@ -2336,7 +2368,7 @@ end;
 
 procedure TfrmMNote.mnCarregarClick(Sender: TObject);
 begin
-  CarregarArquivo('');
+  LoadArquivo('');
 end;
 
 procedure TfrmMNote.MenuItem3Click(Sender: TObject);

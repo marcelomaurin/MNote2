@@ -65,7 +65,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
-    procedure CarregaContexto();
+
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure meTecnicaChange(Sender: TObject);
@@ -87,7 +87,7 @@ type
      function AF_BuildDevMsg_ListaCodigos: string;
 
      // === Helpers usadas por AnalisaFonte (sem aninhar) ===
-     function  AF_LoadTextLimited(const Path: string; const MaxBytes: Integer): string;
+     function  AF_LoadTextLimited(const Path: string ): widestring;
      function  AF_AddLineNumbers(const S: string): string;
      function  AF_GuessLanguageByExt(const Ext: string): string;
      function  AF_BuildDevMsg: string;
@@ -104,7 +104,9 @@ type
 
      // ==== IA helpers / etapas ====
     function IA_GerarDevPrompt(const Pergunta: string): string;
-    function IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string; MaxBytes: Integer; force: boolean; out Resumo: string): Boolean;
+    function IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string; force: boolean; out Resumo: string): Boolean;
+    function IA_PontosImportantes(const Pergunta, FullPath, RelPath: string; force: boolean; out Resumo: string): Boolean;
+    function PreparaListasAnaliseSuplementar(const Pergunta, FullPath, RelPath: string; force: boolean; out Resumo: string): Boolean;
     function IA_RespostaFinal(const DevPadrao, solicit: string): string;
     function IA_GeraMapaMental(const Texto, Questao: string): string; // << novo
 
@@ -114,19 +116,20 @@ type
     function ResolveFullPath(const RelPath: string): string;
     function DentroDaRaiz(const FullPath: string): Boolean;
     procedure PreparaListasAnalise;
-    procedure VarreArquivosEProduzResumos(const Pergunta: string; MaxBytes: Integer);
+
+    procedure VarreArquivosEProduzResumos(const Pergunta: string );
     procedure Log_Resultado(const solicit: string; qtd: Integer; const obs: string);
 
-    procedure VarreArquivosEAchaSQL(const Pergunta: string; const MaxBytes: Integer = 200*1024);
+    procedure VarreArquivosEAchaSQL(const Pergunta: string );
     function ResolveFsIdFromRelPath(const RelPath, FullPath: string): Integer;
+
 
     // ==== NOVOS HELPERS PARA BuscaTermos ====
     function BT_BuildDevMsg: string;
     function BT_BuildAsk(const Pergunta, Arvore: string): string;
     function ParseBuscaTermosJSON(const JSONText: string; out DoSearch: Boolean;
                                   Terms, Files: TStrings; out Obs: string): Boolean;
-    procedure BT_ScanFileForTerms(const RelPath: string; const Terms: TStrings;
-                                  const MaxBytes: Integer = 500*1024);
+    procedure BT_ScanFileForTerms(const RelPath: string; const Terms: TStrings);
 
     // ==== NOVOS HELPERS DE CAMINHO (cross-platform) ====
     function IsAbsolutePathPortable(const P: string): Boolean;
@@ -267,7 +270,7 @@ end;
 
 { =====================  SQL mapping  ===================== }
 
-procedure TfrmFolders.VarreArquivosEAchaSQL(const Pergunta: string; const MaxBytes: Integer);
+procedure TfrmFolders.VarreArquivosEAchaSQL(const Pergunta: string);
 var
   i: Integer;
   RelPath, FullPath: string;
@@ -362,7 +365,7 @@ begin
 
     fsId := ResolveFsIdFromRelPath(RelPath, FullPath);
 
-    Src := AF_LoadTextLimited(FullPath, MaxBytes);
+    Src := AF_LoadTextLimited(FullPath);
     if Src = '' then
     begin
       meLog.Lines.Append('PATH: '+RelPath);
@@ -464,15 +467,11 @@ begin
   arquivo := ShellListView1.Selected.Caption;
   if (arquivo <> '') then
   begin
-       frmMNote.CarregarArquivo(IncludeTrailingPathDelimiter(diretorio) + arquivo);
+       frmMNote.FileLoad(IncludeTrailingPathDelimiter(diretorio) + arquivo);
 
   end;
 end;
 
-procedure TfrmFolders.CarregaContexto();
-begin
-
-end;
 
 procedure TfrmFolders.MenuItem2Click(Sender: TObject);
 begin
@@ -889,7 +888,7 @@ begin
     Result := Resp;
 end;
 
-function TfrmFolders.IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string; MaxBytes: Integer; force: boolean; out Resumo: string): Boolean;
+function TfrmFolders.IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string; force: boolean; out Resumo: string): Boolean;
 var
   Src, SrcNum, Linguagem: widestring;
   DevMsg, Ask, Resp: string;
@@ -898,7 +897,7 @@ begin
   Resumo := '';
   Result := False;
 
-  Src := AF_LoadTextLimited(FullPath, MaxBytes);
+  Src := AF_LoadTextLimited(FullPath);
   if Src = '' then
   begin
     Resumo := 'Aviso: arquivo vazio ou leitura falhou.';
@@ -909,7 +908,7 @@ begin
 
   Linguagem := AF_GuessLanguageByExt(ExtractFileExt(FullPath));
   SrcNum    := AF_AddLineNumbers(Src);
-  frmMNote.CarregarArquivo(FullPath);
+  frmMNote.FileLoad(FullPath);
 
   DevMsg :=
     'Você é um analisador técnico. Responda em TEXTO SIMPLES (sem JSON, sem markdown).' + LineEnding +
@@ -958,6 +957,88 @@ begin
     Exit(False);
   end;
 end;
+
+function TfrmFolders.IA_PontosImportantes(const Pergunta, FullPath, RelPath: string;  force: boolean; out Resumo: string): Boolean;
+var
+  Src, SrcNum, Linguagem: widestring;
+  DevMsg, Ask, Resp: string;
+  Arquivo : TStringList;
+begin
+  Resumo := '';
+  Result := False;
+
+  Src := AF_LoadTextLimited(FullPath);
+  if Src = '' then
+  begin
+    Resumo := 'Aviso: arquivo vazio ou leitura falhou.';
+    Exit(False);
+  end;
+
+
+
+  Linguagem := AF_GuessLanguageByExt(ExtractFileExt(FullPath));
+  SrcNum    := AF_AddLineNumbers(Src);
+  frmMNote.FileLoad(FullPath);
+
+  DevMsg :=
+    'Você é um analisador técnico. Responda em TEXTO SIMPLES (sem JSON, sem markdown).' + LineEnding +
+    'Colete as informações importantes deste arquivo para o levantamento do problema, e posterior resposta.';
+
+  Ask :=
+    'PERGUNTA GERAL: ' + Pergunta + LineEnding +
+    'ARQUIVO: ' + ExtractFileName(FullPath) + LineEnding +
+    'CAMINHO RELATIVO: ' + RelPath + LineEnding +
+    'LINGUAGEM (estimada): ' + Linguagem + LineEnding +
+    '--- CÓDIGO COM LINHAS ---' + LineEnding +
+    SrcNum + LineEnding +
+    '--- FIM ---' + LineEnding +
+    'TAREFA:' + LineEnding +
+    '- Levante os pontos importantes deste codigo que serão usados para responder a pergunta, seja o mais detalhista possivel, em português.' + LineEnding +
+    '- Explique de forma que seja facil de entender a importancia do fonte, se necessário mostre o fragmento do fonte.' + LineEnding +
+    ' Apenas o parágrafo do resumo.';
+
+  if (FileExists(FullPath+'.RIA') and not force)  then
+  begin
+    Arquivo := TStringList.create();
+    arquivo.LoadFromFile(FullPath+'.RIA');
+    resumo := arquivo.Text;
+    FreeAndNil(arquivo);
+    exit(true);
+  end;
+  if AF_SendToChatGPT(DevMsg, Ask, FSetMain.CHATGPT, Resp) then
+  begin
+    Resumo := Resp.Trim;
+    Arquivo := TStringList.create();
+    Arquivo.Clear;
+    Arquivo.Append('Arquivo:'+extractfilepath(FullPath));
+    Arquivo.Append('FullPath:'+FullPath);
+    Arquivo.Append('Criado em:'+datetimetostr(now));
+
+    arquivo.append(resumo);
+
+    Arquivo.SaveToFile(FullPath+'.RIA');
+    FreeAndNil(arquivo);
+    Exit(True);
+  end
+  else
+  begin
+    Resumo := 'Falha ao consultar a IA para este arquivo.';
+    Exit(False);
+  end;
+end;
+
+function TfrmFolders.PreparaListasAnaliseSuplementar(const Pergunta, FullPath, RelPath: string; force: boolean; out Resumo: string): Boolean;
+begin
+  //O Objetivo é ver se há arquivos adicionais que precisam ser vistos
+
+  (*
+  if AnaliseArquivo = nil then
+    AnaliseArquivo := TStringList.Create
+  else
+    AnaliseArquivo.Clear;
+    *)
+end;
+
 
 function TfrmFolders.IA_GeraMapaMental(const Texto, Questao: string): string;
 var
@@ -1156,7 +1237,9 @@ begin
     AnaliseArquivo.Clear;
 end;
 
-procedure TfrmFolders.VarreArquivosEProduzResumos(const Pergunta: string; MaxBytes: Integer);
+
+
+procedure TfrmFolders.VarreArquivosEProduzResumos(const Pergunta: string);
 var
   i: Integer;
   RelPath, FullPath: string;
@@ -1185,7 +1268,7 @@ begin
 
     UI_Step('Criando resumo técnico para: ' + RelPath, 5);
 
-    if IA_ResumoArquivo(Pergunta, FullPath, RelPath, MaxBytes, false, Resumo) then
+    if IA_ResumoArquivo(Pergunta, FullPath, RelPath, false, Resumo) then
     begin
 
 
@@ -1199,6 +1282,38 @@ begin
       AnaliseArquivo.Add(Resumo); // já vem mensagem de falha/aviso
       AnaliseArquivo.Add('');
     end;
+
+    if IA_PontosImportantes(Pergunta, FullPath, RelPath, false, Resumo) then
+    begin
+
+
+      AnaliseArquivo.Add('PATH: ' + RelPath);
+      AnaliseArquivo.Add(Resumo);
+      AnaliseArquivo.Add('');
+    end
+    else
+    begin
+      AnaliseArquivo.Add('PATH: ' + RelPath);
+      AnaliseArquivo.Add(Resumo); // já vem mensagem de falha/aviso
+      AnaliseArquivo.Add('');
+    end;
+
+
+    if PreparaListasAnaliseSuplementar(Pergunta, FullPath, RelPath, false, Resumo) then
+    begin
+
+
+      AnaliseArquivo.Add('PATH: ' + RelPath);
+      AnaliseArquivo.Add(Resumo);
+      AnaliseArquivo.Add('');
+    end
+    else
+    begin
+      AnaliseArquivo.Add('PATH: ' + RelPath);
+      AnaliseArquivo.Add(Resumo); // já vem mensagem de falha/aviso
+      AnaliseArquivo.Add('');
+    end;
+
 
     Sleep(500);
   end;
@@ -1220,8 +1335,6 @@ begin
 end;
 
 procedure TfrmFolders.LevantamentoDados(const Pergunta: string; out DevPadrao, Solicit: string; out Qtd: Integer; out Obs: string);
-var
-  MaxBytes: Integer;
 begin
   // 0) Prompt Dev (guia de comportamento)
   meLog.Lines.Append('Inicia o guia de comportamento');
@@ -1255,14 +1368,14 @@ begin
   meLog.Lines.Append('Limite de leitura por arquivo');
   meLog.Lines.Append('');
 
-  MaxBytes := 200 * 1024;
+
 
   // 4) Varre arquivos e gera resumos técnicos
   UI_Step('Varre arquivos e gera resumos técnicos', 4);
   meLog.Lines.Append('Varre arquivos e gera resumos técnicos');
   meLog.Lines.Append('');
 
-  VarreArquivosEProduzResumos(Pergunta, MaxBytes);
+  VarreArquivosEProduzResumos(Pergunta);
 
   UI_Step('Busca termos da pergunta', 5);
   // 5) Busca termos da pergunta
@@ -1277,11 +1390,7 @@ begin
 
   Log_Resultado(Solicit, Qtd, Obs);
 
-  // 7) Mapeia SQL
-  //UI_Step('VarreArquivosEAchaSQL', 7);
-  //meLog.Lines.Append('VarreArquivosEAchaSQL');
-  //meLog.Lines.Append('');
-  //VarreArquivosEAchaSQL(Pergunta, MaxBytes);
+
 end;
 
 function TfrmFolders.AnalisaFolderIA(Pergunta: string): string;
@@ -1468,14 +1577,14 @@ end;
 procedure TfrmFolders.AnalisaFonte(const Fonte: string);
 var
   Src, SrcNum, DevMsg, Ask, Resp, Beautified, Linguagem: string;
-  MaxBytes: Integer;
+
 begin
   meLog.Clear;
   meLog.Lines.Append('Analisando: ' + Fonte);
 
   // 1) Carrega o conteúdo com limite (ex: 200 KB)
-  MaxBytes := 200 * 1024;
-  Src := AF_LoadTextLimited(Fonte, MaxBytes);
+
+  Src := AF_LoadTextLimited(Fonte);
   if Src = '' then
   begin
     MessageHint('Arquivo vazio ou não foi possível ler.');
@@ -1508,31 +1617,19 @@ end;
 
 { =====================  HELPERS (SEM FUNÇÕES ANINHADAS)  ===================== }
 
-function TfrmFolders.AF_LoadTextLimited(const Path: string; const MaxBytes: Integer): string;
-var
-  FS: TFileStream;
-  Buf: RawByteString;
+function TfrmFolders.AF_LoadTextLimited(const Path: string): widestring;
 begin
   Result := '';
   if not FileExists(Path) then Exit;
 
-  FS := TFileStream.Create(Path, fmOpenRead or fmShareDenyNone);
-  try
-    if FS.Size > MaxBytes then
-      SetLength(Buf, MaxBytes)
-    else
-      SetLength(Buf, FS.Size);
 
-    if Length(Buf) > 0 then
-    begin
-      FS.ReadBuffer(Pointer(Buf)^, Length(Buf));
-      // tenta decodificar como UTF-8; se vier vazio, assume binário/ANSI
-      Result := UTF8ToString(Buf);
-      if Result = '' then
-        Result := String(Buf);
-    end;
+  try
+    //frmMNote.FileLoad(path);
+    //frmMNote.FocusFile(path);
+    FileLoad(path);
+
   finally
-    FS.Free;
+    Result :=  frmMNote.GetFile(path);
   end;
 end;
 
@@ -2032,8 +2129,7 @@ begin
   end;
 end;
 
-procedure TfrmFolders.BT_ScanFileForTerms(const RelPath: string; const Terms: TStrings;
-                                          const MaxBytes: Integer);
+procedure TfrmFolders.BT_ScanFileForTerms(const RelPath: string; const Terms: TStrings);
 var
   FullPath: string;
   Content: string;
@@ -2074,7 +2170,7 @@ begin
     Exit;
   end;
 
-  Content := AF_LoadTextLimited(FullPath, MaxBytes);
+  Content := AF_LoadTextLimited(FullPath);
   if Content = '' then
   begin
     meLog.Lines.Append(Format('[BuscaTermos] %s: vazio ou ilegível.', [FullPath]));
@@ -2134,7 +2230,7 @@ begin
       for  i := 0 to Files.Count - 1 do
       begin
         meLog.Lines.append(' Pesquisou arquivo ' + Files[i]);
-        BT_ScanFileForTerms(Files[i], Terms, 500*1024);
+        BT_ScanFileForTerms(Files[i], Terms);
       end;
     end;
 
