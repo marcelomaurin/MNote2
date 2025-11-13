@@ -15,7 +15,7 @@ uses
   Novo, PythonRun, setproject, SQLItem, trainning,
 newproject, uProjetoDB, sqlite_db, IA
   {$ENDIF}
-  ;
+  ,uDocText;
 
 
 {$R *.res}
@@ -27,7 +27,6 @@ begin
   //Application.CreateForm(TfrmMQuery, frmMQuery);
   {$ifndef Darwin}
   {$ENDIF}
-  Application.CreateForm(TfrmIA, frmIA);
   Application.Run;
 end.
 

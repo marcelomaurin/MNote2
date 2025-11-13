@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ShellCtrls,
   ExtCtrls, Menus, StdCtrls, GifAnim, untsalesSwitch, funcoes, hint, setmain,
   chatgpt, Types, StrUtils, LConvEncoding, base, DateUtils, LazFileUtils,
-  fpjson, jsonparser, jsonscanner, Math;
+  fpjson, jsonparser, jsonscanner, Math, uDocText , uPdfText;
 
 type
 
@@ -144,12 +144,13 @@ type
      procedure AnalisaFonte(const Fonte: string);
      procedure RegistraTabelas(Fonte: string; json : string);
      procedure AnalisaProjeto();
-     function  ListaCodigos(const ArvoreArquivosY, SolicitacaoX: string; MaxItens: Integer = 25): string;
+     function ListaCodigos(const ArvoreArquivosY, SolicitacaoX: string; MaxItens: Integer = 25): string;
      function AnalisaFolderIA(Pergunta: string): string;
      function ScannerRaw(const Root: string): TStringList;
 
      // ==== NOVA PROCEDURE PÚBLICA ====
      procedure BuscaTermos(const Pergunta: string);
+     function FileBinNotRead(FullPath : string): boolean;
    end;
 
 
@@ -375,6 +376,11 @@ begin
     end;
 
     Linguagem := AF_GuessLanguageByExt(ExtractFileExt(FullPath));
+
+    //Se documenta nao extrai sql
+    if (Linguagem = 'word') or (Linguagem = 'pdf') then
+      Exit;
+
     SrcNum    := AF_AddLineNumbers(Src);
 
     DevMsg :=
@@ -893,22 +899,46 @@ var
   Src, SrcNum, Linguagem: widestring;
   DevMsg, Ask, Resp: string;
   Arquivo : TStringList;
+  Texto : widestring;
+
 begin
   Resumo := '';
   Result := False;
+  try
+    Src := AF_LoadTextLimited(FullPath);
 
-  Src := AF_LoadTextLimited(FullPath);
+  finally
+    MessageHint('Erro ao abrir arquivo');
+  end;
   if Src = '' then
   begin
     Resumo := 'Aviso: arquivo vazio ou leitura falhou.';
     Exit(False);
   end;
 
-
-
   Linguagem := AF_GuessLanguageByExt(ExtractFileExt(FullPath));
   SrcNum    := AF_AddLineNumbers(Src);
-  frmMNote.FileLoad(FullPath);
+  if SameText(Linguagem, 'word') or SameText(Linguagem, 'pdf') then
+  begin
+    //Converte o documento em texto para analise.
+    if( SameText(Linguagem, 'word')) then
+    begin
+      frmMNote.CloseTab(); //Fecha o fonte do doc pois nao precisa
+      Texto := GetDOCText(FullPath);
+      frmMNote.FileNewSave(FullPath+'.RIA', Texto);
+
+    end;
+    if( SameText(Linguagem, 'pdf')) then
+    begin
+      frmMNote.CloseTab(); //Fecha o fonte do pdf pois nao precisa
+      Texto := GetPDFText(FullPath);
+      frmMNote.FileNewSave(FullPath+'.RIA', Texto);
+    end;
+  end
+  else
+  begin
+     frmMNote.FileLoad(FullPath);
+  end;
 
   DevMsg :=
     'Você é um analisador técnico. Responda em TEXTO SIMPLES (sem JSON, sem markdown).' + LineEnding +
@@ -1253,6 +1283,7 @@ begin
     if RelPath = '' then
       Continue;
 
+
     FullPath := ResolveFullPath(RelPath);
     if not DentroDaRaiz(FullPath) then
       Continue;
@@ -1262,6 +1293,12 @@ begin
       AnaliseArquivo.Add('PATH: ' + FullPath);
       AnaliseArquivo.Add('Aviso: arquivo não encontrado em disco.');
       AnaliseArquivo.Add('');
+      Continue;
+    end;
+
+    //Consulta tipos validos
+    if( FileBinNotRead(FullPath) ) then
+    begin
       Continue;
     end;
 
@@ -1652,6 +1689,8 @@ end;
 function TfrmFolders.AF_GuessLanguageByExt(const Ext: string): string;
 begin
   case LowerCase(Ext) of
+    '.pdf'               :   Exit('pdf');
+    '.doc', '.docx', '.odt' :Exit('word');
     '.pas', '.pp', '.lpr':   Exit('pascal/delphi');
     '.lfm':                  Exit('lazarus-form');
     '.sql':                  Exit('sql');
@@ -2241,6 +2280,72 @@ begin
 
   meLog.Lines.Append('=== BuscaTermos: varredura concluída ===');
 end;
+
+function TfrmFolders.FileBinNotRead(FullPath: string): boolean;
+const
+  // Extensões consideradas binárias
+  BinExt: array[0..20] of string = (
+    '.exe', '.dll', '.jpg', '.jpeg', '.png', '.gif',
+    '.bmp', '.avi', '.mp4', '.mp3', '.wav', '.zip',
+    '.rar', '.7z', '.pdf', '.doc', '.docx', '.xls',
+    '.xlsx', '.bin', '.ria'
+  );
+var
+  ext: string;
+  FS: TFileStream;
+  Buffer: array[0..1023] of Byte;
+  ReadBytes, i: Integer;
+begin
+  Result := True; // assume texto
+
+  if not FileExists(FullPath) then
+    Exit(True);
+
+  ext := LowerCase(ExtractFileExt(FullPath));
+
+  // 1) Verifica pela extensão
+  for i := Low(BinExt) to High(BinExt) do
+  begin
+    if ext = BinExt[i] then
+    begin
+      Result := False; // é binário
+      Exit;
+    end;
+  end;
+
+  // 2) Se extensão não reconhecida, analisa conteúdo
+  try
+    FS := TFileStream.Create(FullPath, fmOpenRead or fmShareDenyNone);
+    try
+      ReadBytes := FS.Read(Buffer, SizeOf(Buffer));
+
+      for i := 0 to ReadBytes - 1 do
+      begin
+        // NULL = típico de binário
+        if Buffer[i] = 0 then
+        begin
+          Result := False;
+          Exit;
+        end;
+
+        // caracteres de controle não permitidos
+        if (Buffer[i] < 32) and not (Buffer[i] in [9, 10, 13]) then
+        begin
+          Result := False;
+          Exit;
+        end;
+      end;
+
+    finally
+      FS.Free;
+    end;
+  except
+    // Se deu erro lendo, assume texto para não travar
+    Result := True;
+  end;
+end;
+
+
 
 
 end.

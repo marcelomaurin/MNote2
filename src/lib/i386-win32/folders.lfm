@@ -74,6 +74,7 @@ object frmFolders: TfrmFolders
         Caption = 'IA'
         ClientHeight = 622
         ClientWidth = 796
+        TabVisible = False
         object Panel4: TPanel
           Left = 0
           Height = 50
@@ -184,6 +185,7 @@ object frmFolders: TfrmFolders
         Caption = 'Log'
         ClientHeight = 622
         ClientWidth = 796
+        TabVisible = False
         object meLog: TMemo
           Left = 0
           Height = 622
@@ -198,6 +200,7 @@ object frmFolders: TfrmFolders
         Caption = 'Tecnica'
         ClientHeight = 622
         ClientWidth = 796
+        TabVisible = False
         object meTecnica: TMemo
           Left = 0
           Height = 622

@@ -385,6 +385,8 @@ type
     function CriaListaDependenciasPost(const outFile: string): string;
     function QuestionarSQLPost(const pergunta, deps, ddl: string): string;
     function ValidaConexao(TipoBanco: Integer ): Boolean;
+    procedure OpenSelectPost();
+    procedure OpenSelectMy();
   end;
 
 var
@@ -1929,52 +1931,12 @@ end;
 
 procedure Tfrmmquery2.btExecutar1Click(Sender: TObject);
 begin
-  try
-    zpostqry1.close;
-    zpostqry1.sql.text := edSQLPost.Lines.Text;
-
-
-    dspos.DataSet := zpostqry1;
-    edlog.Append('SQL OPEN:'+edSQLPost.Lines.Text);
-    dbnavpost.DataSource := dspos;
-    dbgridpost.DataSource := dspos;
-
-    zpostqry1.Prepare;
-    zpostqry1.open;
-    pcPostgree.ActivePage := tsGridPostgres;
-
-  except
-     on E: Exception do
-     begin
-          edLog.Append('Error:'+e.message);
-          ShowMessage('Error:'+e.message);
-     end;
-
-  end;
+  OpenSelectPost();
 end;
 
 procedure Tfrmmquery2.btExecutarClick(Sender: TObject);
 begin
-  try
-    //zpostqry1.sql.text := edSQL.Lines.Text;
-   zmyqry2.sql.text := edSQL.Lines.Text;    ;
-
-    dsmy.DataSet := zmyqry2;
-    edlog.Append('SQL OPEN:'+edSQL.Lines.Text);
-    dbnavmy.DataSource := dsmy;
-    dbgridmy.DataSource := dsmy;
-
-    zmyqry2.Open;
-    //zpostqry1.open;
-    pgMysql.ActivePage := tsgrid;
-  except
-     on E: Exception do
-     begin
-          edLog.Append('Error:'+e.message);
-          ShowMessage('Error:'+e.message);
-     end;
-
-  end;
+  OpenSelectMy();
 
 end;
 
@@ -3305,6 +3267,7 @@ var
   function BuildIndexesSQL(const ASchema, ATable: string): TStringList;
   var
     ConstraintNames : TStringList;
+    idxname : string;
   begin
     // Índices não vinculados a PK/UNIQUE constraints (evita duplicar)
     Result := TStringList.Create;
@@ -3346,7 +3309,7 @@ var
 
       while not zpostqry3.EOF do
       begin
-        var idxname := zpostqry3.FieldByName('indexname').AsString;
+        idxname := zpostqry3.FieldByName('indexname').AsString;
         if ConstraintNames.IndexOf(idxname) < 0 then
           Result.Add(zpostqry3.FieldByName('indexdef').AsString + ';');
         zpostqry3.Next;
@@ -3823,6 +3786,57 @@ begin
 
 
     end;
+  end;
+end;
+
+procedure Tfrmmquery2.OpenSelectPost();
+begin
+  try
+    zpostqry1.close;
+    zpostqry1.sql.text := edSQLPost.Lines.Text;
+
+
+    dspos.DataSet := zpostqry1;
+    edlog.Append('SQL OPEN:'+edSQLPost.Lines.Text);
+    dbnavpost.DataSource := dspos;
+    dbgridpost.DataSource := dspos;
+
+    zpostqry1.Prepare;
+    zpostqry1.open;
+    pcPostgree.ActivePage := tsGridPostgres;
+
+
+  except
+     on E: Exception do
+     begin
+          edLog.Append('Error:'+e.message);
+          ShowMessage('Error:'+e.message);
+     end;
+
+  end;
+end;
+
+procedure Tfrmmquery2.OpenSelectMy();
+begin
+  try
+    //zpostqry1.sql.text := edSQL.Lines.Text;
+   zmyqry2.sql.text := edSQL.Lines.Text;    ;
+
+    dsmy.DataSet := zmyqry2;
+    edlog.Append('SQL OPEN:'+edSQL.Lines.Text);
+    dbnavmy.DataSource := dsmy;
+    dbgridmy.DataSource := dsmy;
+
+    zmyqry2.Open;
+    //zpostqry1.open;
+    pgMysql.ActivePage := tsgrid;
+  except
+     on E: Exception do
+     begin
+          edLog.Append('Error:'+e.message);
+          ShowMessage('Error:'+e.message);
+     end;
+
   end;
 end;
 

@@ -1,7 +1,7 @@
 object frmmquery2: Tfrmmquery2
-  Left = 283
+  Left = -1536
   Height = 770
-  Top = 118
+  Top = 158
   Width = 1172
   Caption = 'Query Tools'
   ClientHeight = 770
@@ -73,9 +73,9 @@ object frmmquery2: Tfrmmquery2
           Height = 690
           Top = 1
           Width = 951
-          ActivePage = tbConxao
+          ActivePage = tsgrid
           Align = alClient
-          TabIndex = 0
+          TabIndex = 2
           TabOrder = 0
           OnChange = PageControl1Change
           object tbConxao: TTabSheet
@@ -1099,9 +1099,9 @@ object frmmquery2: Tfrmmquery2
           Height = 690
           Top = 1
           Width = 951
-          ActivePage = tsSetupPostres
+          ActivePage = tsSQLPostgreSQL
           Align = alClient
-          TabIndex = 0
+          TabIndex = 1
           TabOrder = 0
           object tsSetupPostres: TTabSheet
             Caption = 'PostgreSql Connection'
@@ -2330,7 +2330,7 @@ object frmmquery2: Tfrmmquery2
     Top = 520
   end
   object SynCompletion1: TSynCompletion
-    Position = 0
+    Position = -1
     LinesInWindow = 6
     OnPositionChanged = SynCompletion1PositionChanged
     SelectedColor = clHighlight
