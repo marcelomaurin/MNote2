@@ -58,6 +58,10 @@ Source: "D:\projetos\maurinsoft\MNote2\libs\mysql\win64\*.*"; DestDir: "{app}\li
 Source: "D:\projetos\maurinsoft\MNote2\src\libs\win64\libmysql64.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
+; Copia o conteúdo da pasta \db do projeto para C:\db
+Source: "D:\projetos\maurinsoft\MNote2\db\*.*"; DestDir: "C:\db"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
