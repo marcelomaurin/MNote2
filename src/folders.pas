@@ -449,7 +449,11 @@ function TfrmFolders.ScannerRaw(const Root: string): TStringList;
           if (SR.Attr and faDirectory) <> 0 then
             Walk(P, NewRel, SL)
           else
-            SL.Add(NewRel); // apenas arquivo relativo
+          begin
+            // Ignora caches .RIA (ex.: arquivo.pas.RIA, arquivo.doc.RIA, arquivo.pdf.RIA)
+            if not SameText(ExtractFileExt(SR.Name), '.ria') then
+              SL.Add(NewRel);
+          end;
         end;
         code := FindNext(SR);
       end;
@@ -642,10 +646,15 @@ function TfrmFolders.Scanner(const Root: string): TStringList;
       begin
         if (SR.Name <> '.') and (SR.Name <> '..') then
         begin
-          if (SR.Attr and faDirectory) <> 0 then
-            SubDirs.Add(SR.Name)
-          else
-            Files.Add(SR.Name);
+             if (SR.Attr and faDirectory) <> 0 then
+               SubDirs.Add(SR.Name)
+             else
+             begin
+               // Não lista arquivos .RIA (são caches, não código/projeto)
+               if not SameText(ExtractFileExt(SR.Name), '.ria') then
+                 Files.Add(SR.Name);
+             end;
+
         end;
         code := FindNext(SR);
       end;
@@ -1296,11 +1305,24 @@ begin
       Continue;
     end;
 
-    //Consulta tipos validos
-    if( FileBinNotRead(FullPath) ) then
+    // Pula todos os caches .RIA (inclusive de Word/PDF)
+    if SameText(ExtractFileExt(FullPath), '.ria') then
     begin
+      AnaliseArquivo.Add('PATH: ' + RelPath);
+      AnaliseArquivo.Add('Ignorado (.RIA cache).');
+      AnaliseArquivo.Add('');
       Continue;
     end;
+
+    // Consulta tipos válidos: se for binário, NÃO lê
+    if FileBinNotRead(FullPath) then
+    begin
+      AnaliseArquivo.Add('PATH: ' + RelPath);
+      AnaliseArquivo.Add('Ignorado (arquivo binário).');
+      AnaliseArquivo.Add('');
+      Continue;
+    end;
+
 
 
     UI_Step('Criando resumo técnico para: ' + RelPath, 5);
@@ -2283,12 +2305,11 @@ end;
 
 function TfrmFolders.FileBinNotRead(FullPath: string): boolean;
 const
-  // Extensões consideradas binárias
-  BinExt: array[0..20] of string = (
+  // Extensões consideradas realmente binárias, que NÃO serão analisadas
+  BinExt: array[0..17] of string = (
     '.exe', '.dll', '.jpg', '.jpeg', '.png', '.gif',
     '.bmp', '.avi', '.mp4', '.mp3', '.wav', '.zip',
-    '.rar', '.7z', '.pdf', '.doc', '.docx', '.xls',
-    '.xlsx', '.bin', '.ria'
+    '.rar', '.7z', '.xls', '.xlsx', '.bin', '.ria'
   );
 var
   ext: string;
@@ -2296,24 +2317,30 @@ var
   Buffer: array[0..1023] of Byte;
   ReadBytes, i: Integer;
 begin
-  Result := True; // assume texto
+  // Valor padrão: pode ler (texto)
+  Result := False;
 
   if not FileExists(FullPath) then
-    Exit(True);
+  begin
+    // Se nem existe, não faz sentido tentar ler
+    Result := True;
+    Exit;
+  end;
 
   ext := LowerCase(ExtractFileExt(FullPath));
 
-  // 1) Verifica pela extensão
+  // 1) Verifica pela extensão fixa
   for i := Low(BinExt) to High(BinExt) do
   begin
     if ext = BinExt[i] then
     begin
-      Result := False; // é binário
+      // É binário conhecido → NÃO ler
+      Result := True;
       Exit;
     end;
   end;
 
-  // 2) Se extensão não reconhecida, analisa conteúdo
+  // 2) Se a extensão não denuncia binário, inspeciona o conteúdo
   try
     FS := TFileStream.Create(FullPath, fmOpenRead or fmShareDenyNone);
     try
@@ -2321,29 +2348,29 @@ begin
 
       for i := 0 to ReadBytes - 1 do
       begin
-        // NULL = típico de binário
+        // NULL (0) é típico de arquivo binário
         if Buffer[i] = 0 then
         begin
-          Result := False;
+          Result := True;
           Exit;
         end;
 
-        // caracteres de controle não permitidos
+        // Caracteres de controle "estranhos" para texto
         if (Buffer[i] < 32) and not (Buffer[i] in [9, 10, 13]) then
         begin
-          Result := False;
+          Result := True;
           Exit;
         end;
       end;
-
     finally
       FS.Free;
     end;
   except
-    // Se deu erro lendo, assume texto para não travar
+    // Se der erro lendo, por segurança não tenta analisar
     Result := True;
   end;
 end;
+
 
 
 

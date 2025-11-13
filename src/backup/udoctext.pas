@@ -11,7 +11,7 @@ uses
 { Retorna o conteúdo textual de um arquivo .doc ou .docx,
   como WideString, porém NORMALIZADO ao conjunto ANSI do Windows
   (caracteres fora do ANSI são substituídos por '?'). }
-function GetText(const FileName: string): WideString;
+function GetDOCText(const FileName: string): WideString;
 
 implementation
 
@@ -96,25 +96,13 @@ begin
   Buf := Buf + S;
 end;
 
-function ReadStreamToString(AStream: TStream): UnicodeString;
-var
-  ss: TStringStream;
-begin
-  // TStringStream moderno exige codepage explícito
-  ss := TStringStream.Create('', CP_UTF8);
-  try
-    ss.CopyFrom(AStream, 0);
-    Result := UTF8Decode(ss.DataString);
-  finally
-    ss.Free;
-  end;
-end;
-
 function SameZipPath(const A, B: string): Boolean;
 begin
   // Dentro do ZIP os separadores são '/'
-  Result := AnsiCompareText(StringReplace(A, '\', '/', [rfReplaceAll]),
-                            StringReplace(B, '\', '/', [rfReplaceAll])) = 0;
+  Result := AnsiCompareText(
+              StringReplace(A, '\', '/', [rfReplaceAll]),
+              StringReplace(B, '\', '/', [rfReplaceAll])
+            ) = 0;
 end;
 
 { ========== Extração de texto dos nós XML DOCX ========== }
@@ -163,11 +151,22 @@ var
 begin
   Doc := nil;
   try
-    ReadXMLFile(Doc, S); // laz2_XMLRead cuida de encoding
-    if (Doc <> nil) and (Doc.DocumentElement <> nil) then
-      ExtractNodeText(Doc.DocumentElement, OutAcc);
+    try
+      ReadXMLFile(Doc, S); // laz2_XMLRead cuida de encoding
+      if (Doc <> nil) and (Doc.DocumentElement <> nil) then
+        ExtractNodeText(Doc.DocumentElement, OutAcc);
+    except
+      on E: Exception do
+      begin
+        // Se der erro de XML em alguma parte (header, footer, etc),
+        // apenas ignora aquela parte para não derrubar tudo.
+        // Aqui você poderia logar se quiser.
+        // ShowMessage('Erro ao ler XML DOCX: ' + E.Message);
+      end;
+    end;
   finally
-    if Assigned(Doc) then Doc.Free;
+    if Assigned(Doc) then
+      Doc.Free;
   end;
 end;
 
@@ -304,8 +303,16 @@ begin
     WordApp := CreateOleObject('Word.Application');
     WordApp.Visible := False;
     // ReadOnly, sem conversão, sem prompts
-    Doc := WordApp.Documents.Open(FileName, False, True, False, EmptyParam, EmptyParam,
-                                  False, EmptyParam, EmptyParam, False, False, False, False, False, 0);
+    Doc := WordApp.Documents.Open(
+             FileName,
+             False,  // ConfirmConversions
+             True,   // ReadOnly
+             False,  // AddToRecentFiles
+             EmptyParam, EmptyParam,
+             False,  // Revert
+             EmptyParam, EmptyParam,
+             False, False, False, False, False, 0
+           );
     Opened := True;
     Result := Doc.Content.Text; // WideString
   finally
@@ -321,20 +328,40 @@ end;
 
 { ========== API principal ========== }
 
-function GetText(const FileName: string): WideString;
+function GetDOCText(const FileName: string): WideString;
 var
   rawWide: UnicodeString;
 begin
   if not FileExists(FileName) then
     raise Exception.CreateFmt('Arquivo não encontrado: %s', [FileName]);
 
+  // Limpa resultado
+  rawWide := '';
+
   if IsDocx(FileName) then
-    rawWide := ExtractDocxText(FileName)
-  else
-  if IsDoc(FileName) then
+  begin
+    try
+      rawWide := ExtractDocxText(FileName);
+    except
+      on E: Exception do
+        raise Exception.Create('Erro ao ler arquivo DOCX: ' + E.Message);
+    end;
+  end
+  else if IsDoc(FileName) then
   begin
     {$IFDEF WINDOWS}
-    rawWide := ExtractDocTextWithWord(FileName);
+    try
+      rawWide := ExtractDocTextWithWord(FileName);
+    except
+      on E: EOleSysError do
+        raise Exception.Create(
+          'Não foi possível automatizar o Microsoft Word para abrir o .doc.' + LineEnding +
+          'Verifique se o Microsoft Word está instalado e compatível (32/64 bits).' + LineEnding +
+          'Detalhe: ' + E.Message
+        );
+      on E: Exception do
+        raise Exception.Create('Erro ao ler arquivo DOC: ' + E.Message);
+    end;
     {$ELSE}
     raise Exception.Create('.doc requer Windows com MS Word instalado (OLE Automation).');
     {$ENDIF}

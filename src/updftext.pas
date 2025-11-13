@@ -7,19 +7,24 @@ interface
 uses
   Classes, SysUtils;
 
-{ Extrai o texto de um PDF usando executáveis externos (pdftotext ou mutool).
-  Retorna um WideString com caracteres NORMALIZADOS ao conjunto ANSI do Windows
-  (fora-ANSI substituídos por '?'), mantendo o tipo WideString por compatibilidade. }
+{ Parser PDF mínimo, sem executáveis externos.
+  - Verifica se o arquivo existe.
+  - Lê o PDF em memória.
+  - Procura streams (stream...endstream).
+  - Ignora streams marcados como /Subtype /Image.
+  - Descomprime streams com /Filter /FlateDecode.
+  - Dentro do conteúdo, extrai texto entre parênteses (...) (Tj/TJ).
+  - Retorna texto como WideString, normalizado para ANSI (fora-ANSI -> '?'). }
 function GetPDFText(const FileName: string): WideString;
 
 implementation
 
 uses
-  Process
-  {$IFDEF WINDOWS}
-  , Windows
-  {$ENDIF}
-  ;
+  ZStream
+  {$IFDEF WINDOWS}, Windows{$ENDIF};
+
+type
+  TRawBytes = RawByteString;
 
 function FileExistsStrict(const FN: string): Boolean;
 begin
@@ -32,10 +37,12 @@ var
   len: Integer;
 begin
   if W = '' then Exit('');
-  len := WideCharToMultiByte(CodePage, WC_NO_BEST_FIT_CHARS, PWideChar(W), Length(W), nil, 0, nil, nil);
+  len := WideCharToMultiByte(CodePage, WC_NO_BEST_FIT_CHARS,
+                             PWideChar(W), Length(W), nil, 0, nil, nil);
   SetLength(Result, len);
   if len > 0 then
-    WideCharToMultiByte(CodePage, WC_NO_BEST_FIT_CHARS, PWideChar(W), Length(W), PAnsiChar(Result), len, nil, nil);
+    WideCharToMultiByte(CodePage, WC_NO_BEST_FIT_CHARS,
+                        PWideChar(W), Length(W), PAnsiChar(Result), len, nil, nil);
 end;
 
 function AnsiBytesToWide(const A: RawByteString; CodePage: UINT): UnicodeString;
@@ -51,7 +58,6 @@ end;
 {$ELSE}
 function WideToAnsiBytes(const W: UnicodeString; CodePage: Cardinal): RawByteString;
 begin
-  // Em não-Windows, aproxima para CP1252 -> volta para Wide (mantendo compatibilidade)
   Result := UTF8Encode(UTF8Encode(W));
 end;
 
@@ -66,151 +72,263 @@ function NormalizeToAnsiWide(const W: UnicodeString): UnicodeString;
 var
   bytes: RawByteString;
 begin
-  // Converte p/ ANSI do Windows (ACP) com '?' para não mapeáveis e volta p/ Wide
   bytes := WideToAnsiBytes(W, GetACP);
   Result := AnsiBytesToWide(bytes, GetACP);
 end;
 {$ELSE}
 begin
-  // Em outros SOs deixamos como está (UTF-16)
   Result := W;
 end;
 {$ENDIF}
 
-function ReadAllFromPipe(AProc: TProcess): UnicodeString;
-const
-  BUF_SIZE = 32768;
+{ ========== Utilidades básicas ========== }
+
+function LoadFileToBuffer(const FileName: string): TRawBytes;
 var
-  Mem: TStringStream;
-  Buf: array[0..BUF_SIZE-1] of byte;
-  N: SizeInt;
+  fs: TFileStream;
 begin
-  Mem := TStringStream.Create('', CP_UTF8); // UTF-8 aware
+  fs := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   try
-    while AProc.Running do
+    SetLength(Result, fs.Size);
+    if fs.Size > 0 then
+      fs.ReadBuffer(Pointer(Result)^, fs.Size);
+  finally
+    fs.Free;
+  end;
+end;
+
+function PosExA(const SubStr, S: TRawBytes; Offset: SizeInt = 1): SizeInt;
+begin
+  Result := Pos(SubStr, Copy(S, Offset, MaxInt));
+  if Result > 0 then
+    Inc(Result, Offset - 1);
+end;
+
+function FindLastDictStart(const Buf: TRawBytes; StreamPos: SizeInt; MaxBack: SizeInt = 4096): SizeInt;
+var
+  i, startSearch: SizeInt;
+begin
+  Result := 0;
+  if StreamPos < 2 then Exit;
+  if StreamPos > MaxBack then
+    startSearch := StreamPos - MaxBack
+  else
+    startSearch := 1;
+
+  for i := StreamPos downto startSearch do
+  begin
+    if (Buf[i] = '<') and (i < Length(Buf)) and (Buf[i+1] = '<') then
     begin
-      if AProc.Output.NumBytesAvailable > 0 then
+      Result := i;
+      Exit;
+    end;
+  end;
+end;
+
+function ContainsToken(const S, Token: TRawBytes): Boolean;
+begin
+  Result := Pos(Token, S) > 0;
+end;
+
+{ ========== Descompressão FlateDecode ========== }
+
+function InflateData(const Data: TRawBytes): TRawBytes;
+var
+  inStream, outStream: TMemoryStream;
+  z: TDecompressionStream;
+  buf: array[0..4095] of byte;
+  n: Integer;
+begin
+  Result := '';
+  if Data = '' then Exit;
+
+  inStream := TMemoryStream.Create;
+  outStream := TMemoryStream.Create;
+  try
+    inStream.WriteBuffer(Pointer(Data)^, Length(Data));
+    inStream.Position := 0;
+
+    z := TDecompressionStream.Create(inStream);
+    try
+      repeat
+        n := z.Read(buf, SizeOf(buf));
+        if n > 0 then
+          outStream.WriteBuffer(buf, n);
+      until n = 0;
+    finally
+      z.Free;
+    end;
+
+    SetLength(Result, outStream.Size);
+    outStream.Position := 0;
+    if outStream.Size > 0 then
+      outStream.ReadBuffer(Pointer(Result)^, outStream.Size);
+  finally
+    outStream.Free;
+    inStream.Free;
+  end;
+end;
+
+{ ========== Extração de texto de conteúdo PDF (mínimo) ========== }
+
+function ExtractTextFromContent(const S: TRawBytes): UnicodeString;
+var
+  i, len: SizeInt;
+  inStr: Boolean;
+  cur: TRawBytes;
+  ch: AnsiChar;
+begin
+  Result := '';
+  len := Length(S);
+  i := 1;
+  inStr := False;
+  cur := '';
+
+  while i <= len do
+  begin
+    ch := S[i];
+
+    if not inStr then
+    begin
+      if ch = '(' then
       begin
-        N := AProc.Output.Read(Buf, SizeOf(Buf));
-        if N > 0 then
-          Mem.WriteBuffer(Buf, N);
+        inStr := True;
+        cur := '';
+      end;
+    end
+    else
+    begin
+      if ch = '\' then
+      begin
+        // escape: pega próximo char se houver
+        Inc(i);
+        if i <= len then
+        begin
+          ch := S[i];
+          case ch of
+            'n': cur := cur + #10;
+            'r': cur := cur + #13;
+            't': cur := cur + #9;
+            'b': cur := cur + #8;
+            'f': cur := cur + #12;
+          else
+            cur := cur + ch;
+          end;
+        end;
+      end
+      else if ch = ')' then
+      begin
+        // final de string
+        if cur <> '' then
+        begin
+          // converte bytes "como estão" para Wide (heurística simples)
+          {$IFDEF WINDOWS}
+          Result := Result + AnsiBytesToWide(cur, GetACP);
+          {$ELSE}
+          Result := Result + UTF8Decode(UTF8String(cur));
+          {$ENDIF}
+        end;
+        inStr := False;
+        cur := '';
       end
       else
-        Sleep(5);
+        cur := cur + ch;
     end;
 
-    // Lê qualquer resto após terminar
-    while AProc.Output.NumBytesAvailable > 0 do
+    Inc(i);
+  end;
+end;
+
+{ ========== Loop principal de streams do PDF ========== }
+
+function ExtractTextFromPdfBuffer(const Buf: TRawBytes): UnicodeString;
+var
+  idx, streamPos, endStreamPos: SizeInt;
+  dictStart: SizeInt;
+  dictStr: TRawBytes;
+  isImage, isFlate: Boolean;
+  lineEndPos: SizeInt;
+  streamDataStart, streamDataLen: SizeInt;
+  rawStream, decStream: TRawBytes;
+begin
+  Result := '';
+  idx := 1;
+  while True do
+  begin
+    streamPos := PosExA('stream', Buf, idx);
+    if streamPos = 0 then
+      Break;
+
+    endStreamPos := PosExA('endstream', Buf, streamPos + 6);
+    if endStreamPos = 0 then
+      Break;
+
+    // Dicionário antes de "stream"
+    dictStart := FindLastDictStart(Buf, streamPos);
+    if dictStart > 0 then
+      dictStr := Copy(Buf, dictStart, streamPos - dictStart)
+    else
+      dictStr := '';
+
+    // Heurísticas:
+    isImage := ContainsToken(dictStr, '/Subtype') and ContainsToken(dictStr, '/Image');
+    if isImage then
     begin
-      N := AProc.Output.Read(Buf, SizeOf(Buf));
-      if N > 0 then
-        Mem.WriteBuffer(Buf, N);
+      idx := endStreamPos + 9; // 'endstream'
+      Continue; // ignora imagens
     end;
 
-    Result := UTF8Decode(Mem.DataString);
-  finally
-    Mem.Free;
-  end;
-end;
+    isFlate := ContainsToken(dictStr, '/Filter') and ContainsToken(dictStr, 'FlateDecode');
 
-function ExecAndCapture(const Exe: string; const Params: array of string;
-                        out StdOutText: UnicodeString; out ExitCode: Integer): Boolean;
-var
-  P: TProcess;
-  i: Integer;
-begin
-  Result := False;
-  StdOutText := '';
-  ExitCode := -1;
+    // posição real de início dos dados após "stream" + EOL
+    lineEndPos := PosExA(#10, Buf, streamPos + 6); // assume LF
+    if lineEndPos = 0 then
+      lineEndPos := streamPos + 6
+    else
+      Inc(lineEndPos); // primeiro byte após LF
 
-  P := TProcess.Create(nil);
-  try
-    P.Executable := Exe;
-    for i := Low(Params) to High(Params) do
-      P.Parameters.Add(Params[i]);
-    P.Options := [poUsePipes, poNoConsole];
-    P.ShowWindow := swoHIDE;
-    try
-      P.Execute;
-    except
-      Exit(False);
+    streamDataStart := lineEndPos;
+    streamDataLen := endStreamPos - streamDataStart;
+    if (streamDataLen <= 0) or (streamDataStart <= 0) then
+    begin
+      idx := endStreamPos + 9;
+      Continue;
     end;
 
-    StdOutText := ReadAllFromPipe(P);
-    P.WaitOnExit;
-    ExitCode := P.ExitStatus;
-    Result := (ExitCode = 0);
-  finally
-    P.Free;
+    rawStream := Copy(Buf, streamDataStart, streamDataLen);
+
+    if isFlate then
+      decStream := InflateData(rawStream)
+    else
+      decStream := rawStream;
+
+    if decStream <> '' then
+      Result := Result + ExtractTextFromContent(decStream) + LineEnding;
+
+    idx := endStreamPos + 9; // avança depois de 'endstream'
   end;
+
+  Result := Trim(Result);
 end;
 
-function TryWithPdftotext(const FileName: string; out Txt: UnicodeString): Boolean;
-var
-  Code: Integer;
-begin
-  // -q        : quiet
-  // -nopgbrk  : não força quebra entre páginas
-  // -enc UTF-8: saída em UTF-8
-  // -eol unix : quebras \n simples (facilita normalizar)
-  Result := ExecAndCapture('pdftotext',
-                           ['-q', '-nopgbrk', '-enc', 'UTF-8', '-eol', 'unix', FileName, '-'],
-                           Txt, Code);
-end;
-
-function TryWithMutool(const FileName: string; out Txt: UnicodeString): Boolean;
-var
-  Code: Integer;
-begin
-  // MuPDF: mutool draw -F txt -o - file.pdf
-  Result := ExecAndCapture('mutool',
-                           ['draw', '-F', 'txt', '-o', '-', FileName],
-                           Txt, Code);
-end;
-
-function CleanText(const S: UnicodeString): UnicodeString;
-var
-  R: UnicodeString;
-  i: Integer;
-begin
-  R := S;
-  // Normalizações simples: CRLF/U+000C etc.
-  R := StringReplace(R, #$0C, LineEnding, [rfReplaceAll]); // form feed -> newline
-  // Normaliza \n para LineEnding
-  R := StringReplace(R, #10, LineEnding, [rfReplaceAll]);
-  // Remove \r residuais se existirem
-  R := StringReplace(R, #13#13, LineEnding, [rfReplaceAll]);
-  // Trim final
-  i := Length(R);
-  while (i > 0) and (R[i] in [#10, #13, ' ']) do Dec(i);
-  SetLength(R, i);
-  Result := R;
-end;
+{ ========== API principal ========== }
 
 function GetPDFText(const FileName: string): WideString;
 var
-  RawUtf: UnicodeString;
-  Ok: Boolean;
+  buf: TRawBytes;
+  rawWide: UnicodeString;
 begin
   if not FileExistsStrict(FileName) then
-    raise Exception.CreateFmt('Arquivo não encontrado: %s', [FileName]);
+    raise Exception.CreateFmt('Arquivo PDF não encontrado: %s', [FileName]);
 
-  // 1) Tenta Poppler (pdftotext)
-  Ok := TryWithPdftotext(FileName, RawUtf);
+  buf := LoadFileToBuffer(FileName);
+  if buf = '' then
+    Exit('');
 
-  // 2) Se falhar, tenta MuPDF (mutool)
-  if not Ok then
-    Ok := TryWithMutool(FileName, RawUtf);
+  rawWide := ExtractTextFromPdfBuffer(buf);
 
-  if not Ok then
-    raise Exception.Create('Não foi possível extrair texto do PDF. '+
-      'Instale e/ou coloque no PATH o "pdftotext" (Poppler) ou o "mutool" (MuPDF).');
-
-  // Limpezas e normalização
-  RawUtf := CleanText(RawUtf);
-
-  // Retorna como WideString “limitado” ao conjunto ANSI (ACP) para compatibilidade
-  Result := NormalizeToAnsiWide(RawUtf);
+  // Normaliza para ANSI (fora-ANSI -> '?'), mantendo tipo WideString
+  Result := NormalizeToAnsiWide(rawWide);
 end;
 
 end.
