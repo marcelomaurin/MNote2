@@ -14,13 +14,13 @@ uses
   - Ignora streams marcados como /Subtype /Image.
   - Descomprime streams com /Filter /FlateDecode.
   - Dentro do conteúdo, extrai texto entre parênteses (...) (Tj/TJ).
-  - Retorna texto como WideString, normalizado para ANSI (fora-ANSI -> '?'). }
+  - Retorna texto como WideString (Unicode), já limpo (Trim). }
 function GetPDFText(const FileName: string): WideString;
 
 implementation
 
 uses
-  ZStream
+  ZStream, LConvEncoding
   {$IFDEF WINDOWS}, Windows{$ENDIF};
 
 type
@@ -58,28 +58,21 @@ end;
 {$ELSE}
 function WideToAnsiBytes(const W: UnicodeString; CodePage: Cardinal): RawByteString;
 begin
-  Result := UTF8Encode(UTF8Encode(W));
+  // Para Linux/macOS, consideramos UTF-8 como "ansi" de trabalho
+  Result := UTF8Encode(W);
 end;
 
 function AnsiBytesToWide(const A: RawByteString; CodePage: Cardinal): UnicodeString;
 begin
-  Result := UTF8Decode(UTF8String(A));
+  Result := UTF8Decode(A);
 end;
 {$ENDIF}
 
+// Agora o "normalize" só limpa o texto, sem destruir acentuação
 function NormalizeToAnsiWide(const W: UnicodeString): UnicodeString;
-{$IFDEF WINDOWS}
-var
-  bytes: RawByteString;
 begin
-  bytes := WideToAnsiBytes(W, GetACP);
-  Result := AnsiBytesToWide(bytes, GetACP);
+  Result := Trim(W);
 end;
-{$ELSE}
-begin
-  Result := W;
-end;
-{$ENDIF}
 
 { ========== Utilidades básicas ========== }
 
@@ -99,7 +92,7 @@ end;
 
 function PosExA(const SubStr, S: TRawBytes; Offset: SizeInt = 1): SizeInt;
 begin
-  Result := SysUtils.Pos(SubStr, Copy(S, Offset, MaxInt));
+  Result := Pos(SubStr, Copy(S, Offset, MaxInt));
   if Result > 0 then
     Inc(Result, Offset - 1);
 end;
@@ -221,11 +214,11 @@ begin
         // final de string
         if cur <> '' then
         begin
-          // converte bytes "como estão" para Wide (heurística simples)
+          // converte bytes "como estão" para Wide
           {$IFDEF WINDOWS}
           Result := Result + AnsiBytesToWide(cur, GetACP);
           {$ELSE}
-          Result := Result + UTF8Decode(UTF8String(cur));
+          Result := Result + UTF8Decode(cur);
           {$ENDIF}
         end;
         inStr := False;
@@ -327,7 +320,7 @@ begin
 
   rawWide := ExtractTextFromPdfBuffer(buf);
 
-  // Normaliza para ANSI (fora-ANSI -> '?'), mantendo tipo WideString
+  // Normaliza (hoje: só Trim) e garante WideString
   Result := NormalizeToAnsiWide(rawWide);
 end;
 

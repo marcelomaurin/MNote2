@@ -9,12 +9,19 @@ uses
   {$IFDEF WINDOWS}, Windows, ComObj, Variants{$ENDIF};
 
 function GetDOCText(const FileName: string): WideString;
+function DocFileToText(const FileName: string): WideString; // alias de compatibilidade
 
 implementation
 
 function FileExtLower(const S: string): string;
 begin
   Result := LowerCase(ExtractFileExt(S));
+end;
+
+// === ALIAS DE COMPATIBILIDADE PARA CÓDIGO ANTIGO ===
+function DocFileToText(const FileName: string): WideString;
+begin
+  Result := GetDOCText(FileName);
 end;
 
 function IsDocx(const FN: string): Boolean;
@@ -33,18 +40,48 @@ procedure ExtractTextOnly(Node: TDOMNode; var Acc: UnicodeString);
 var
   i: integer;
   s: UnicodeString;
+  name: string;
 begin
-  if Node = nil then Exit;
+  if Node = nil then
+    Exit;
+
+  name := Node.NodeName;
 
   // Texto dentro de <w:t>
-  if Node.NodeName = 'w:t' then
+  if name = 'w:t' then
   begin
+    // DOCX é UTF-8 no XML; DOM devolve UTF-8, então convertemos para UnicodeString
     s := UTF8Decode(Node.TextContent);
     Acc := Acc + s;
     Exit;
   end;
 
-  // Desce nos filhos
+  // Quebra de linha explícita <w:br> ou <w:cr>
+  if (name = 'w:br') or (name = 'w:cr') then
+  begin
+    Acc := Acc + LineEnding;
+    Exit;
+  end;
+
+  // Tabulação <w:tab>
+  if name = 'w:tab' then
+  begin
+    Acc := Acc + #9;
+    Exit;
+  end;
+
+  // Parágrafo <w:p>: processa filhos e adiciona quebra de linha no final
+  if name = 'w:p' then
+  begin
+    for i := 0 to Node.ChildNodes.Count - 1 do
+      ExtractTextOnly(Node.ChildNodes[i], Acc);
+
+    // Fecha parágrafo com quebra de linha
+    Acc := Acc + LineEnding;
+    Exit;
+  end;
+
+  // Demais nós: só desce nos filhos
   for i := 0 to Node.ChildNodes.Count - 1 do
     ExtractTextOnly(Node.ChildNodes[i], Acc);
 end;
@@ -55,11 +92,18 @@ var
 begin
   Doc := nil;
   try
-    ReadXMLFile(Doc, S);
+    try
+      ReadXMLFile(Doc, S);
+    except
+      on E: Exception do
+        raise Exception.Create('Erro ao ler XML do DOCX: ' + E.Message);
+    end;
+
     if (Doc <> nil) and (Doc.DocumentElement <> nil) then
       ExtractTextOnly(Doc.DocumentElement, OutAcc);
   finally
-    if Assigned(Doc) then Doc.Free;
+    if Assigned(Doc) then
+      Doc.Free;
   end;
 end;
 
@@ -76,8 +120,13 @@ type
   end;
 
 procedure TZipCtx.OnCreate(Sender: TObject; var AStream: TStream; AItem: TFullZipFileEntry);
+var
+  normName: string;
 begin
-  if SameText(StringReplace(AItem.ArchiveFileName, '\', '/', [rfReplaceAll]), Target) then
+  // Normaliza o caminho dentro do ZIP para usar '/'
+  normName := StringReplace(AItem.ArchiveFileName, '\', '/', [rfReplaceAll]);
+
+  if SameText(normName, Target) then
   begin
     Mem := TMemoryStream.Create;
     AStream := Mem;
@@ -89,7 +138,7 @@ end;
 procedure TZipCtx.OnDone(Sender: TObject; var AStream: TStream; AItem: TFullZipFileEntry);
 begin
   try
-    if AStream = Mem then
+    if (Mem <> nil) and (AStream = Mem) then
     begin
       Mem.Position := 0;
       ParseXmlTextOnly(Mem, Acc^);
@@ -97,7 +146,8 @@ begin
     end;
   finally
     AStream.Free;
-    if AStream = Mem then Mem := nil;
+    if AStream = Mem then
+      Mem := nil;
   end;
 end;
 
@@ -115,17 +165,27 @@ begin
   L := TStringList.Create;
   try
     Z.FileName := FileName;
-    Z.Examine;
 
-    // só usamos document.xml — ignorar headers, footnotes, etc
+    // define alvo e acumulador
     C.Target := MAIN;
-    C.Acc := @Result;
+    C.Acc    := @Result;
+    C.Found  := False;
 
     Z.OnCreateStream := @C.OnCreate;
     Z.OnDoneStream   := @C.OnDone;
 
+    // só pedimos o document.xml
     L.Add(MAIN);
-    Z.UnZipFiles(L);
+
+    try
+      Z.UnZipFiles(L);
+    except
+      on E: Exception do
+        raise Exception.Create('Erro ao descompactar DOCX: ' + E.Message);
+    end;
+
+    if not C.Found then
+      raise Exception.Create('DOCX inválido: word/document.xml não encontrado.');
   finally
     L.Free;
     C.Free;
@@ -156,13 +216,12 @@ begin
 
   if IsDocx(FileName) then
     Result := ExtractDocxTextOnly(FileName)
-  else
-  if IsDoc(FileName) then
+  else if IsDoc(FileName) then
   begin
     {$IFDEF WINDOWS}
     Result := ExtractDocText(FileName);
     {$ELSE}
-    raise Exception.Create('.doc só funciona no Windows com Word.');
+    raise Exception.Create('.doc só funciona no Windows com Word instalado.');
     {$ENDIF}
   end
   else

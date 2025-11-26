@@ -11,16 +11,16 @@ uses
   hint, registro, splash, setFolders, config, SynEditKeyCmds, PythonEngine,
   rxctrls, LogTreeView, uPoweredby, chatgpt, mquery2, porradawebapi,
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir,
-  newproject, uProjetoDB, IA;
+  newproject, uProjetoDB, IA, uPdfText, uDocText;
 
-
-const versao = '2.50';
+const versao = '2.51';
 
 type
 
   { TfrmMNote }
 
   TfrmMNote = class(TForm)
+    btIA2: TButton;
     edChat: TMemo;
     FindDialog1: TFindDialog;
     FontDialog1: TFontDialog;
@@ -143,6 +143,7 @@ type
     vlGlobal: TValueListEditor;
     vlLocal: TValueListEditor;
     procedure btHideChange(Sender: TObject);
+    procedure btIA2Click(Sender: TObject);
     procedure btIAClick(Sender: TObject);
     procedure edChatKeyPress(Sender: TObject; var Key: char);
     procedure FindDialog1Find(Sender: TObject);
@@ -255,15 +256,10 @@ type
     procedure SalvarTudo();
     procedure CarregaContexto();
     procedure AssociarExtensao(item: Titem);
-
-    //procedure ConfigureCppHighlighter(var ACppHighlighter: TSynCppSyn);
-    (*
-    procedure SynEdit1KeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
-      *)
     procedure SynEditkey(Sender: TObject; var Key: char);
     function SubmeteChatGPT( info : string) : string;
 
+    function FindFilePage(const Arquivo: string): Integer;  // helper
   public
     { public declarations }
     function NovoItem():TTabSheet;
@@ -277,8 +273,8 @@ type
 
     function FileLoad(const FullName: string): Boolean;
     function FileNewSave(const FullName: string; Texto : widestring): boolean;
-    function FocusFile(const FullName: string): Boolean; // << novo
-    function GetFile(const FullName: string): WideString; // << novo
+    function FocusFile(const FullName: string): Boolean;
+    function GetFile(const FullName: string): WideString;
     procedure RodaScript();
     procedure RodaSQL();
   end;
@@ -290,16 +286,41 @@ var
 
 implementation
 
-
 {$R *.lfm}
 
-{ TfrmMNote }
-uses Sobre;
+uses
+  Sobre;
 
+{ -------------------------------------------------------------------- }
+{  Helper para extrair texto de DOC/DOCX/PDF                           }
+{ -------------------------------------------------------------------- }
+
+function LoadBinaryDocAsText(const AFileName: string): string;
+var
+  ext: string;
+begin
+  Result := '';
+  ext := LowerCase(ExtractFileExt(AFileName));
+
+  // 🔹 Ajuste os nomes das funções abaixo conforme tiver em uPdfText/uDocText
+  if ext = '.pdf' then
+  begin
+    // Ex.: função em uPdfText
+    Result := PdfFileToText(AFileName);
+  end
+  else
+  if (ext = '.doc') or (ext = '.docx') then
+  begin
+    // Ex.: função em uDocText
+    Result := DocFileToText(AFileName);
+  end;
+end;
+
+{ TfrmMNote }
 
 function FileLoad(const FullName: string): Boolean;
 begin
-     result := frmMNote.FileLoad(FullName);
+  result := frmMNote.FileLoad(FullName);
 end;
 
 
@@ -315,12 +336,9 @@ begin
 
   alvo := ExpandFileName(FullName);
 
-
-  // Garante que está carregado (se já estiver aberto, FileLoad só foca; se não, carrega)
   if not FileLoad(alvo) then
     Exit(False);
 
-  // Agora localiza e foca exatamente a aba correspondente
   for i := 0 to pgMain.PageCount - 1 do
   begin
     item := TItem(pgMain.Pages[i].Tag);
@@ -348,14 +366,11 @@ begin
   Result := '';
   if Trim(FullName) = '' then Exit;
 
-
   alvo := ExpandFileName(FullName);
 
-  // Garante que está carregado (se já estiver aberto, FileLoad só foca; se não, carrega)
   if not FileLoad(alvo) then
     Exit('');
 
-  // Agora localiza e foca exatamente a aba correspondente
   for i := 0 to pgMain.PageCount - 1 do
   begin
     item := TItem(pgMain.Pages[i].Tag);
@@ -381,14 +396,12 @@ var
   item: TItem;
   i, n: NativeInt;
 
-  // Python interop
   gil: PyGILState_STATE;
-  keyObj: PPyObject;       // borrowed (PyList_GetItem)
-  valObj: PPyObject;       // borrowed (PyDict_GetItem)
-  reprObj: PPyObject;      // new ref (precisa DECREF)
-  globalsDict, localsDict: PPyObject; // borrowed (PyEval_GetGlobals/Locals)
+  keyObj: PPyObject;
+  valObj: PPyObject;
+  reprObj: PPyObject;
+  globalsDict, localsDict: PPyObject;
 
-  // conversões
   nameU, valU: UnicodeString;
   nameS, valS: String;
 
@@ -404,7 +417,6 @@ var
   end;
 
 begin
-  // 1) Garantias básicas da aba/índice
   if (pgMain = nil) or (pgMain.PageCount = 0) then Exit;
   if (pgMain.ActivePageIndex < 0) or (pgMain.ActivePageIndex >= pgMain.PageCount) then Exit;
 
@@ -422,7 +434,6 @@ begin
     Exit;
   end;
 
-  // 2) Salva antes de rodar
   try
     mnSalvarClick(Self);
   except
@@ -433,17 +444,14 @@ begin
     end;
   end;
 
-  // 3) Preparação de UI
   meResult.Lines.Clear;
-  item.Resultado := meResult;   // o runner escreve aqui
-  pnInspector.Visible := False; // só exibe após preencher
+  item.Resultado := meResult;
+  pnInspector.Visible := False;
   if Assigned(vlGlobal) then vlGlobal.Strings.Clear;
   if Assigned(vlLocal)  then vlLocal.Strings.Clear;
 
-  // 4) Executa
   item.Run;
 
-  // 5) Posiciona caret em caso de erro e encerra
   syn := item.syn;
   if item.Error then
   begin
@@ -452,35 +460,29 @@ begin
     Exit;
   end;
 
-  // 6) Inspector de variáveis (opcional)
   if (item.PythonCtrl <> nil) and item.PythonCtrl.VarsCheck then
   begin
-    // Entra no GIL para chamadas na API C do Python
     gil := item.PythonCtrl.PythonEngine.PyGILState_Ensure();
     try
-      // Pega os dicionários (borrowed refs)
       globalsDict := item.PythonCtrl.PythonEngine.PyEval_GetGlobals();
       localsDict  := item.PythonCtrl.PythonEngine.PyEval_GetLocals();
 
-      // -------- Globais --------
       n := item.PythonCtrl.VarListGlobal_Size;
       for i := 0 to n - 1 do
       begin
-        keyObj := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsGlobalKeys, i); // borrowed
+        keyObj := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsGlobalKeys, i);
         if keyObj <> nil then
         begin
-          // Nome
           nameU := item.PythonCtrl.PythonEngine.PyUnicodeAsString(keyObj);
           nameS := UTF8Encode(nameU);
 
-          // Valor: globals()[key] (borrowed)
           valS := '';
           if globalsDict <> nil then
           begin
-            valObj := item.PythonCtrl.PythonEngine.PyDict_GetItem(globalsDict, keyObj); // borrowed
+            valObj := item.PythonCtrl.PythonEngine.PyDict_GetItem(globalsDict, keyObj);
             if valObj <> nil then
             begin
-              reprObj := item.PythonCtrl.PythonEngine.PyObject_Repr(valObj); // new ref
+              reprObj := item.PythonCtrl.PythonEngine.PyObject_Repr(valObj);
               try
                 if reprObj <> nil then
                 begin
@@ -498,25 +500,22 @@ begin
         end;
       end;
 
-      // -------- Locais --------
       n := item.PythonCtrl.VarListLocal_Size;
       for i := 0 to n - 1 do
       begin
-        keyObj := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsLocalKeys, i); // borrowed
+        keyObj := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsLocalKeys, i);
         if keyObj <> nil then
         begin
-          // Nome
           nameU := item.PythonCtrl.PythonEngine.PyUnicodeAsString(keyObj);
           nameS := UTF8Encode(nameU);
 
-          // Valor: locals()[key] (borrowed)
           valS := '';
           if localsDict <> nil then
           begin
-            valObj := item.PythonCtrl.PythonEngine.PyDict_GetItem(localsDict, keyObj); // borrowed
+            valObj := item.PythonCtrl.PythonEngine.PyDict_GetItem(localsDict, keyObj);
             if valObj <> nil then
             begin
-              reprObj := item.PythonCtrl.PythonEngine.PyObject_Repr(valObj); // new ref
+              reprObj := item.PythonCtrl.PythonEngine.PyObject_Repr(valObj);
               try
                 if reprObj <> nil then
                 begin
@@ -552,7 +551,6 @@ begin
    item := TItem(tb.Tag);
    syn := item.syn;
 
-   //Postgres
    if(frmmquery2.zconpost.Connected) then
    begin
       frmmquery2.edSQLPost.text := syn.Lines.text;
@@ -567,34 +565,32 @@ begin
       frmmquery2.show;
       frmmquery2.OpenSelectMy();
    end;
-
 end;
 
 
 function TfrmMNote.FileLoad(const FullName: string): Boolean;
 var
   alvo: string;
-  i: Integer;
-  item: TItem;
 begin
   Result := False;
 
-  // valida parâmetro
-  if Trim(FullName) = '' then LoadArquivo('');
+  if Trim(FullName) = '' then
+  begin
+    LoadArquivo('');
+    Result := (pgMain.PageCount > 0);
+    Exit;
+  end;
 
-  // normaliza caminho absoluto
   alvo := ExpandFileName(FullName);
 
-  // verifica existência no disco
   if not FileExists(alvo) then
   begin
     MessageHint('File not found: ' + alvo);
     Exit(False);
   end;
 
-  // não está aberto: carrega agora
   LoadArquivo(alvo);
-  // considera sucesso se passou a existir como aba aberta
+
   Result := ExistFileOpen(alvo);
 end;
 
@@ -605,65 +601,88 @@ var
    item: TItem;
    syn : TSynEdit;
 begin
+  Result := False;
+
   NovoItem();
   if (pgMain.ActivePage <> nil) then
   begin
     tb := pgMain.ActivePage;
-
-    if(tb = nil ) then exit(false);
+    if (tb = nil) then Exit(False);
 
     item := TItem(tb.Tag);
+    if item = nil then Exit(False);
+
     syn  := item.syn;
+    syn.Text := Texto;
 
-    syn.Text:= texto;
+    item.DirName  := ExtractFileDir(FullName);
+    item.FileName := ExtractFileName(FullName);
+    item.FileExt  := ExtractFileExt(FullName);
 
-    item.DirName:= ExtractFileDir(FullName);
-    item.FileName:=ExtractFileName(FullName);
-    item.FileExt:= ExtractFileExt(FullName);
-
-    if(item.FileName<>'') then
-    begin
+    if (item.FileName <> '') then
       tb.Caption := ExtractFileName(item.FileName);
-    end;
 
-    if(FullName<>'') then
+    if (FullName <> '') then
     begin
+      try
         item.Savefile(FullName);
-        item.Salvo := true; // vai salvar já na sequência
+        item.Salvo := True;
+        Result := True;
+      except
+        on E: Exception do
+        begin
+          MessageHint('Erro ao salvar arquivo: ' + E.Message);
+          Result := False;
+        end;
+      end;
     end;
-    item.Salvo := False; // vai salvar já na sequência
-    pgMain.ActivePage := tb;
 
+    pgMain.ActivePage := tb;
   end;
 end;
 
-
-function TfrmMNote.ExistFileOpen(Arquivo: string): boolean;
+function TfrmMNote.FindFilePage(const Arquivo: string): Integer;
 var
   i: Integer;
   item: TItem;
   alvo, atual: string;
 begin
-  Result := False;
+  Result := -1;
+  if Trim(Arquivo) = '' then Exit;
+
   alvo := ExpandFileName(Arquivo);
+
   for i := 0 to pgMain.PageCount - 1 do
   begin
     item := TItem(pgMain.Pages[i].Tag);
-    atual := ExpandFileName(IncludeTrailingPathDelimiter(item.DirName) + item.FileName);
-    if SameText(alvo, atual) then
-      Exit(True);
+    if item <> nil then
+    begin
+      if item.FileName <> '' then
+        atual := ExpandFileName(IncludeTrailingPathDelimiter(item.DirName) + item.FileName)
+      else
+        atual := '';
+
+      if (atual <> '') and SameText(alvo, atual) then
+      begin
+        Result := i;
+        Exit;
+      end;
+    end;
   end;
+end;
+
+function TfrmMNote.ExistFileOpen(Arquivo: string): boolean;
+begin
+  Result := FindFilePage(Arquivo) <> -1;
 end;
 
 procedure TfrmMNote.synChange(Sender: TObject);
 var
-
   item : TItem;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   item.mudou();
 end;
-
 
 procedure TfrmMNote.SynEditkey(Sender: TObject; var Key: char);
 var
@@ -673,27 +692,15 @@ begin
    case Key of
       char(VK_C):
       begin
-        //syn.CommandProcessor(TSynEditorCommand(ecCopy), ' ', nil);
-
       end;
       char(VK_V):
       begin
-        //syn.CommandProcessor(TSynEditorCommand(ecPaste), ' ', nil);
-        //syn.PasteFromClipboard;
-        //miPasteClick(sender);
       end;
       char(VK_X):
       begin
         syn.CommandProcessor(TSynEditorCommand(ecCut), ' ', nil);
-        //syn.PasteFromClipboard;
       end;
-      else
-      begin
-        //showmessage(inttostr(ord(Key)));
-      end;
-
    end;
-
 end;
 
 function TfrmMNote.SubmeteChatGPT(info: string): string;
@@ -711,17 +718,14 @@ begin
   result := resultado;
 end;
 
-
-
-
-
-
-
 procedure TfrmMNote.Carregar(arquivo : String);
 var
   tb  : TTabSheet;
   syn : TSynEdit;
   item: TItem;
+  idx : Integer;
+  ext : string;
+  txt : string;
 begin
   if not FileExists(arquivo) then
   begin
@@ -729,31 +733,32 @@ begin
     Exit;
   end;
 
-  if  ExistFileOpen(arquivo) then
+  idx := FindFilePage(arquivo);
+  if idx <> -1 then
   begin
+    pgMain.ActivePageIndex := idx;
     Exit;
   end;
 
-
-
   tb := NovoItem();
   item := TItem(tb.Tag);
-  //Carrega caracteristricas
-  item.DirName:= ExtractFileDir(arquivo);
-  item.FileExt:=ExtractFileExt(arquivo);
-  item.FileName:=ExtractFileName(arquivo);
-  if(item.DirName='') then
-  begin
-    item.DirName:= ExtractFileDir(FSetMain.Defaultfolder);
-  end;
-  item.FileName:=ExtractFileName(item.dirname+item.filename);
-  item.FileExt:= ExtractFileExt(arquivo);
 
+  item.DirName  := ExtractFileDir(arquivo);
+  item.FileExt  := ExtractFileExt(arquivo);
+  item.FileName := ExtractFileName(arquivo);
+
+  if (item.DirName = '') then
+    item.DirName := ExtractFileDir(FSetMain.Defaultfolder);
+
+  item.FileName := ExtractFileName(item.DirName + item.FileName);
+  item.FileExt  := ExtractFileExt(arquivo);
 
   syn  := item.syn;
+  ext  := LowerCase(ExtractFileExt(arquivo));
 
   try
-    syn.Lines.LoadFromFile(arquivo);
+    // carrega comportamento padrão do TItem
+    item.Loadfile(arquivo);
   except
     on E: Exception do
     begin
@@ -763,65 +768,57 @@ begin
     end;
   end;
 
+  // para PDF/DOC/DOCX, substitui o conteúdo pelo texto extraído
+  if (ext = '.pdf') or (ext = '.doc') or (ext = '.docx') then
+  begin
+    txt := LoadBinaryDocAsText(arquivo);
+    syn.Lines.Text := txt;
+    if Trim(txt) = '' then
+      MessageHint('Nenhum texto extraído de ' + ExtractFileName(arquivo));
+  end;
+
   tb.Tag        := PtrInt(item);
   tb.ImageIndex := 0;
   tb.PopupMenu  := popFechar;
 
-  item.Loadfile(arquivo);
   item.Salvo := True;
 
   if (FileGetAttr(arquivo) and faReadOnly) <> 0 then
     syn.ReadOnly := True;
 
-  tb.Caption := item.Nome;
+  if item.Nome <> '' then
+    tb.Caption := item.Nome
+  else
+    tb.Caption := ExtractFileName(arquivo);
 
   pgMain.Refresh;
 end;
-
-
 
 procedure TfrmMNote.LoadArquivo(arquivo : string);
 begin
   if (arquivo = '') then
   begin
-    (*
-    if(FSetFolders = nil) then
-    begin
-      FSetFolders := TSetFolders.create();
-      FSetFolders.CarregaContexto;
-    end;
-    *)
-    //OpenDialog1.InitialDir:= FSetFolders.DefaultFolder;
     OpenDialog1.InitialDir:= FSetMain.DEFAULTFOLDER;
 
     if OpenDialog1.execute then
     begin
       if FileExists(OpenDialog1.FileName) then
       begin
-          if not ExistFileOpen(OpenDialog1.FileName) then  //Verifica se existe essa aba ja
-          begin
-            Carregar(OpenDialog1.FileName);
-            Application.ProcessMessages;
-          end;
+        Carregar(OpenDialog1.FileName);
+        Application.ProcessMessages;
       end
       else
-      begin
-           MessageHint('File not found!');
-      end;
+        MessageHint('File not found!');
     end;
   end
   else
   begin
-     if FileExists(arquivo) then
-     begin
-        if not ExistFileOpen(arquivo) then  //Verifica se existe essa aba ja
-        begin
-          Carregar(arquivo);
-        end;
-     end;
+    if FileExists(arquivo) then
+      Carregar(arquivo)
+    else
+      MessageHint('File not found!');
   end;
 end;
-
 
 procedure TfrmMNote.NewContext;
 begin
@@ -831,11 +828,9 @@ end;
 procedure TfrmMNote.FazPergunta;
 begin
    pnWait.Visible:=true;
-     Application.ProcessMessages;
-     QuestionChat();
-
-     //AnalisarSynEdit(meChatHist);
-     pnWait.Visible:=false;
+   Application.ProcessMessages;
+   QuestionChat();
+   pnWait.Visible:=false;
 end;
 
 procedure TfrmMNote.CarregarHistorico();
@@ -846,8 +841,12 @@ var
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  arquivo := item.DirName+'\'+item.FileName+'_historico.RIA';
-  meChatHist.Lines.LoadFromFile(arquivo);
+  arquivo := IncludeTrailingPathDelimiter(item.DirName) + item.FileName + '_historico.RIA';
+
+  if FileExists(arquivo) then
+    meChatHist.Lines.LoadFromFile(arquivo)
+  else
+    meChatHist.Clear;
 end;
 
 function TfrmMNote.NovoItem():TTabSheet;
@@ -855,7 +854,6 @@ var
    tb : TTabSheet;
    syn : TSynEdit;
    item : TItem;
-
 begin
   tb := pgMain.AddTabSheet();
 
@@ -866,17 +864,14 @@ begin
   syn.PopupMenu := popSysEdit;
   syn.OnChange:= @synChange;
   syn.Font := FSetMain.Font;
-  //syn.OnKeyDown:=@SynEdit1KeyDown;
   syn.OnKeyPress:= @SynEditkey;
-
-
 
   item := TItem.create(self);
   item.AtribuiNovoNome();
-  item.syn := syn; //Ponteiro de editor
+  item.syn := syn;
 
   tb.PopupMenu := popFechar;
-  tb.Tag:= PtrInt(item); //Guarda o item
+  tb.Tag:= PtrInt(item);
   tb.ImageIndex:=0;
 
   tb.Caption:= item.Nome;
@@ -896,7 +891,7 @@ begin
   page := pgMain.ActivePage;
   item := TItem(page.Tag);
 
-  page.PageControl := nil; // desacopla da PageControl
+  page.PageControl := nil;
   page.Free;
 
   if item <> nil then
@@ -919,7 +914,6 @@ begin
   end;
 end;
 
-
 procedure TfrmMNote.CarregarOld();
 var
    a : integer;
@@ -929,20 +923,21 @@ var
 begin
   strparametros := FsetMain.lastfiles;
   lista := TStringList.create;
-  lista.delimiter := ' ';
-  lista.DelimitedText :=  strparametros;
-  for a  := 0 to lista.Count-1 do
-  begin
-     info :=lista[a];
-     if(FileExists(info)) then
-     begin
-         //MessageHint(info);
-         if not ExistFileOpen(info) then  //Verifica se existe essa aba ja
-         begin
+  try
+    lista.Delimiter := ' ';
+    lista.DelimitedText :=  strparametros;
+    for a  := 0 to lista.Count-1 do
+    begin
+       info := lista[a];
+       if(FileExists(info)) then
+       begin
+         if not ExistFileOpen(info) then
            Carregar(info);
-         end;
          Application.ProcessMessages;
-     end;
+       end;
+    end;
+  finally
+    lista.Free;
   end;
   application.ProcessMessages;
 end;
@@ -954,7 +949,6 @@ var
    biblioteca : string;
    basePath : string;
 begin
-  // Define plataforma e arquitetura
   {$IFDEF MSWINDOWS}
     plataforma := 'Windows ';
   {$ENDIF}
@@ -978,18 +972,14 @@ begin
   if IsRun(filename) then
   begin
     if KillAppByName(filename) then
-    begin
       MessageHint('Assumindo funções MNote anterior!');
-    end;
   end;
 
   if (FSetMain = nil) then
-  begin
     FsetMain := TsetMain.Create();
-  end;
+
   basePath := ExtractFileDir(Application.ExeName);
   {$IFDEF WINDOWS}
-
   if (Pos('\src', basePath) > 0) then
     biblioteca := basePath + '\..\libs\sqlite\win32\sqlite3.dll'
   else
@@ -997,10 +987,8 @@ begin
   {$ENDIF}
 
   {$IFDEF LINUX}
-
   biblioteca := basePath + 'libs/linux64/libsqlite3.so';
   {$ENDIF}
-
 
   if(FSetMain.Project<>'') then
   begin
@@ -1009,43 +997,23 @@ begin
   end;
 
   if(frmHint= nil) then
-  begin
     frmHint := TfrmHint.create(self);
-  end;
 
   CarregaContexto();
 
   if(frmIA=nil) then
-  begin
     frmIA := TfrmIA.create(self);
-  end;
 
   {$ifdef Darwin}
-     //Nao faz nada
   {$else}
-  (*
-     for i := 1 to paramCount() do
-     begin
-        info := paramStr(i);
-        if FileExists(info) then
-        begin
-            Carregar(info);
-        end;
-     end;
-   *)
   {$endif}
-
 
   CarregarOld();
   CarregarParametros();
 
-
-
-
   frmRegistrar := TfrmRegistrar.Create(self);
   frmRegistrar.Identifica();
 end;
-
 
 procedure TfrmMNote.CarregaContexto();
 begin
@@ -1080,7 +1048,6 @@ begin
   end;
 end;
 
-
 procedure TfrmMNote.AssociarExtensao(item: Titem);
 var
    arquivo: string;
@@ -1099,33 +1066,21 @@ begin
           begin
              if ShowConfirm('Associa extensão '+ext + ' a aplicação!') then
              begin
-                  //if RegisterFileType2(Arquivo, application.ExeName) then
                   if  RegistrarExtensao(  ExtractFileExt(application.ExeName), 'Aplicativo de edição de texto', ExtractFileName(application.ExeName), Application.ExeName) then
                   begin
-                    //showmessage('Extensão associada!');
-                    //MessageHint('Extensão associada!');
                   end
                   else
                   begin
-                     //showmessage('Extensão não foi associada!');
-                    //MessageHint('Extensão não foi associada!');
                   end;
              end;
           end;
         end
         else
         begin
-           (*
-           PopupNotifier1.Title:='Atenção!';
-           PopupNotifier1.Text:='Associação de extensão somente possivel quando estiver rodando como administrador';
-           PopupNotifier1.Show;
-           *)
-          //MessageHint('Associação de extensão somente possivel quando estiver rodando como administrador');
         end;
         {$endif}
    end;
 end;
-
 
 procedure TfrmMNote.mnStayClick(Sender: TObject);
 begin
@@ -1147,8 +1102,6 @@ begin
   Fsetmain.SalvaContexto(false);
 end;
 
-
-//Verifica se ha algum fonte sem salvar
 function TfrmMNote.Mudou(): boolean;
 var
    a : integer;
@@ -1172,16 +1125,12 @@ function TfrmMNote.PerguntaSalvar(): boolean;
 var
    reply, BOXStyle : integer;
    resultado : boolean;
-
 begin
    resultado := false;
    BoxStyle := MB_ICONQuestion + MB_YESNO;
    Reply := Application.MessageBox('Do you want to save the files?', 'Confirm', BOXStyle);
    if Reply = IDYES then
-   begin
-      resultado := true;
-   end;
-
+     resultado := true;
    result := resultado;
 end;
 
@@ -1198,9 +1147,7 @@ begin
       item := TItem(tb.tag);
       syn := item.syn;
       if not(item.Salvo) then
-      begin
-         SalvarTab(tb);
-      end;
+        SalvarTab(tb);
    end;
 end;
 
@@ -1209,10 +1156,7 @@ begin
   if not Mudou() then
   begin
     if PerguntaSalvar() then
-    begin
-      //Deve salvar antes
       SalvarTudo();
-    end;
   end;
   CloseAction:= caFree;
 end;
@@ -1220,13 +1164,11 @@ end;
 procedure TfrmMNote.FindDialog1Find(Sender: TObject);
 var
    FindS: String;
-   Found : boolean;
-   IPos, FLen, SLen: Integer; {Internpos, Lengde søkestreng, lengde memotekst}
+   IPos, FLen, SLen: Integer;
    Res : integer;
-    item: TItem;
-    syn: TSynEdit;
-    find : TFinds;
-
+   item: TItem;
+   syn: TSynEdit;
+   find : TFinds;
 begin
   pnResult.Visible:= true;
 
@@ -1235,12 +1177,8 @@ begin
   syn := item.syn;
   IPOS := 0;
   FPOS := 0;
-  //syn := TSynEdit(pgMain.ActivePage.Tag);
-  //item := TItem(syn.tag);
   item := TItem(frmMNote.pgMain.ActivePage.Tag);
   syn := item.syn;
-  {FPos is global}
-  Found:= False;
   FLen := Length(strFind);
   SLen := Length(syn.Text);
 
@@ -1248,10 +1186,10 @@ begin
   lstFind.Items.clear;
 
   repeat
-    if(frMatchCase in FindDialog1.Options ) then // ckMatchcase.Checked then
-          IPos := Pos(strFind, Copy(syn.Text,FPos+1,SLen-FPos))
+    if(frMatchCase in FindDialog1.Options ) then
+      IPos := Pos(strFind, Copy(syn.Text,FPos+1,SLen-FPos))
     else
-          IPos := Pos(AnsiUpperCase(strFind),AnsiUpperCase( Copy(syn.Text,FPos+1,SLen-FPos)));
+      IPos := Pos(AnsiUpperCase(strFind),AnsiUpperCase( Copy(syn.Text,FPos+1,SLen-FPos)));
 
     if (IPOS>0) then
     begin
@@ -1259,22 +1197,16 @@ begin
          find := TFinds.create(syn ,frmMNote.pgMain.ActivePage , item, FPOS, strFind);
          lstFind.Visible := true;
          lstFind.Items.AddObject('Pos:'+inttostr(FPOS),tobject(find));
-
     end
-     else
+    else
     begin
          FPOS := 0;
          break;
     end;
   until (IPOS <=0);
 
-  If lstFind.Count > 0 then
+  If lstFind.Count = 0 then
   begin
-      //pnBotton.Visible:= true;
-  end
-   Else
-  begin
-      //pnBotton.Visible:= false;
       Res := Application.MessageBox('Text was not found!',
              'Find',  mb_OK + mb_ICONWARNING);
       FPos := 0;
@@ -1286,28 +1218,19 @@ var
   i: Integer;
   TempAttr: TSynHighlighterAttributes;
 begin
-  // Cria um novo objeto de atributo de realce para definir o estilo
-  //TempAttr := TSynHighlighterAttributes.Create('TempHighlight', hcPlainText);
   TempAttr := TSynHighlighterAttributes.Create('TempHighlight', '');
   try
-    // Define a cor de fundo como preta
     TempAttr.Background := clBlack;
-    TempAttr.Foreground := clWhite; // Define a cor do texto como branca para melhor visibilidade
-    TempAttr.Style := []; // Você pode adicionar mais estilos, como negrito ou itálico, se desejar
-
-    // Aplica o estilo às linhas especificadas
+    TempAttr.Foreground := clWhite;
+    TempAttr.Style := [];
     for i := StartLine to EndLine do
     begin
-      // Isso é apenas um exemplo e pode não funcionar conforme esperado, pois o SynEdit
-      // geralmente requer a modificação do realce de sintaxe para alterar estilos.
-      //SynEdit.Lines.Attributes[i] := TempAttr;
-
+      // exemplo conceitual
     end;
   finally
     TempAttr.Free;
   end;
 end;
-
 
 procedure TfrmMNote.AnalisarSynEdit(SynEdit: TSynEdit);
 var
@@ -1324,25 +1247,18 @@ begin
   begin
     Line := SynEdit.Lines[i];
 
-    // Verifica se a linha contém o marcador de início ou fim do bloco de código
     if Pos('```', Line) > 0 then
     begin
       if not InCodeBlock then
       begin
-        // Início de um novo bloco de código
         StartPos := i;
         InCodeBlock := True;
       end
       else
       begin
-        // Fim do bloco de código
         EndPos := i;
         InCodeBlock := False;
-
-        // Aplica o estilo com fundo preto ao bloco de código
         AplicarEstilo(SynEdit, StartPos, EndPos);
-
-        // Resetar para o próximo bloco, se houver
         StartPos := -1;
         EndPos := -1;
       end;
@@ -1350,13 +1266,11 @@ begin
   end;
 end;
 
-
-
 procedure TfrmMNote.edChatKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #13 then
   begin
-    Key := #0;            // não insere nova linha / não dá beep
+    Key := #0;
     FazPergunta;
   end;
 end;
@@ -1371,7 +1285,6 @@ begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
 
-  //syn.CommandProcessor(TsynEditorCommand(ecCut),'',nil);
   edChat.clear;
   edChat.Lines.Append('Analise esse fonte e comente sobre ele, apresentando um resumo tecnico bem elaborado:');
   edChat.Lines.Append(syn.Lines.text);
@@ -1383,10 +1296,14 @@ begin
   pnChatGPT.Visible:= false;
 end;
 
+procedure TfrmMNote.btIA2Click(Sender: TObject);
+begin
+    frmIA.show;
+end;
+
 procedure TfrmMNote.btNovoClick(Sender: TObject);
 begin
   NovoItem();
-
 end;
 
 procedure TfrmMNote.FormDestroy(Sender: TObject);
@@ -1403,23 +1320,18 @@ begin
   Fsetmain.Height := Height;
 
   if (frmFolders <> nil) then
-  begin
     FreeAndNil(frmFolders);
-  end;
 
-  // Salva arquivos abertos (com separador da plataforma)
   info := '';
   for a := 0 to pgMain.PageCount - 1 do
   begin
     tb   := pgMain.Pages[a];
     item := TItem(tb.Tag);
     syn  := item.syn;
-
-    // Garante o separador correto no final do diretório antes de juntar com o nome do arquivo
     info := info + IncludeTrailingPathDelimiter(item.DirName) + item.FileName + ' ';
   end;
 
-  FSetMain.lastfiles := info; // Salva contexto final
+  FSetMain.lastfiles := info;
 
   Fsetmain.SalvaContexto(False);
 
@@ -1441,42 +1353,30 @@ begin
   if(Fsetmain.ToolsFalar) then
   begin
     if(frmToolsfalar= nil) then
-    begin
-       frmToolsfalar := TfrmToolsFalar.create(self);
-    end;
+      frmToolsfalar := TfrmToolsFalar.create(self);
     frmToolsfalar.Conectar();
   end;
   if(Fsetmain.ToolsOuvir) then
   begin
     if(frmToolsOuvir= nil) then
-    begin
-       frmToolsOuvir := TfrmToolsOuvir.create(self);
-    end;
+      frmToolsOuvir := TfrmToolsOuvir.create(self);
     frmToolsOuvir.Conectar();
   end;
 
   if frmmquery2 = nil then
-  begin
     frmmquery2 := Tfrmmquery2.Create(self);
-  end;
 
   if (frmFolders = nil) then
-  begin
-       frmFolders := TfrmFolders.Create(self);
-  end;
-
+    frmFolders := TfrmFolders.Create(self);
 end;
 
 procedure TfrmMNote.lstFindChangeBounds(Sender: TObject);
 begin
-
-
 end;
 
 procedure TfrmMNote.lstFindClick(Sender: TObject);
 var
    find : TFinds;
-   res : boolean;
 procedure setSelLength(var textComponent:TSynEdit; newValue:integer);
 begin
      textComponent.SelEnd:=textComponent.SelStart+newValue ;
@@ -1489,55 +1389,41 @@ begin
         frmMNote.pgMain.ActivePage := find.tb;
         FPOS := find.IPOS;
 
-
         FPos := find.IPos + length(find.strFind);
-        //   Hoved.BringToFront;       {Edit control must have focus in }
         find.syn.SetFocus;
         frmMnote.ActiveControl := find.syn;
-        find.syn.SelStart:= find.IPos;  // -1;   mike   {Select the string found by POS}
-        setSelLength(find.syn, find.FLen);     //meChatHist.SelLength := FLen;
-        //Found := True;
-        FPos:=FPos+find.FLen-1;   //mike - move just past end of found item
-
+        find.syn.SelStart:= find.IPos;
+        setSelLength(find.syn, find.FLen);
+        FPos:=FPos+find.FLen-1;
     end;
 end;
 
 procedure TfrmMNote.lstFindContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 begin
-
 end;
 
 procedure TfrmMNote.lstFindDblClick(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.lstFindSelectionChange(Sender: TObject; User: boolean);
 begin
-
 end;
 
 procedure TfrmMNote.meChatHistChange(Sender: TObject);
-var
-   arquivo: string;
 begin
-   //arquivo := FSetMain.Defaultfolder+'\'+'HISTORICO.RIA'
-   //meChatHist.Lines.SaveToFile(arquivo);
 end;
 
 procedure TfrmMNote.meChatHistClick(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.MenuItem10Click(Sender: TObject);
 var
    plataforma : string;
 begin
-
-   // Define plataforma e arquitetura
-  {$IFDEF MSWINDOWS}
+   {$IFDEF MSWINDOWS}
     plataforma := 'Windows ';
   {$ENDIF}
   {$IFDEF LINUX}
@@ -1558,18 +1444,15 @@ end;
 
 procedure TfrmMNote.MenuItem12Click(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.MenuItem14Click(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
+   syn  : TSynEdit;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  //syn.CommandProcessor(TsynEditorCommand(ecCut),'',nil);
   syn.CutToClipboard;
 end;
 
@@ -1578,7 +1461,6 @@ begin
   meChatHist.Text := '';
   meDialog.text:= '';
   meCodes.text := '';
-
 end;
 
 procedure TfrmMNote.MenuItem19Click(Sender: TObject);
@@ -1595,9 +1477,7 @@ end;
 procedure TfrmMNote.MenuItem21Click(Sender: TObject);
 begin
   if (frmToolsOuvir= nil) then
-  begin
-       frmToolsOuvir := TfrmToolsOuvir.create(self);
-  end;
+    frmToolsOuvir := TfrmToolsOuvir.create(self);
   frmToolsOuvir.show();
 end;
 
@@ -1611,48 +1491,38 @@ end;
 
 procedure TfrmMNote.MenuItem7Click(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.miChatGPTClick(Sender: TObject);
 begin
-
   frmIA.show;
 end;
 
 procedure TfrmMNote.micopyClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
+   syn  : TSynEdit;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  //syn.CommandProcessor(TsynEditorCommand(ecCopy),'',nil);
   syn.CopyToClipboard;
-
 end;
 
 procedure TfrmMNote.miIMGJSONClick(Sender: TObject);
 begin
   if (frmmainJSON = nil) then
-  begin
-       frmmainJSON := TfrmmainJSON.create(self);
-  end;
+    frmmainJSON := TfrmmainJSON.create(self);
   frmmainJSON.show;
 end;
 
 procedure TfrmMNote.miPasteClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
+   syn  : TSynEdit;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  //syn.CommandProcessor(TsynEditorCommand(ecPaste),'',nil);
   syn.PasteFromClipboard;
-
 end;
 
 procedure TfrmMNote.miporradaClick(Sender: TObject);
@@ -1665,37 +1535,30 @@ end;
 
 procedure TfrmMNote.miRedoClick(Sender: TObject);
 var
-
-tb : TTabSheet;
-syn : TSynEdit;
-item : TItem;
+  item : TItem;
+  syn  : TSynEdit;
 begin
-item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-syn := item.syn;
-syn.Redo;
+  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  syn := item.syn;
+  syn.Redo;
 end;
 
 procedure TfrmMNote.miSelectAllClick(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.miSelectBlockClick(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.miSelectCmdClick(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.miToolsFalarClick(Sender: TObject);
 begin
   if (frmToolsFalar= nil) then
-  begin
-       frmToolsFalar := TfrmToolsFalar.create(self);
-  end;
+    frmToolsFalar := TfrmToolsFalar.create(self);
   frmToolsFalar.show();
 end;
 
@@ -1704,52 +1567,46 @@ var
      Output : string;
      filename : string;
 begin
-     mnSalvarClick(self); (*Salva antes de rodar*)
+     mnSalvarClick(self);
      filename := FSetMain.CleanScript;
      if (filename <> '') then
      begin
        {$IFDEF WINDOWS}
           if(Callprg(filename, '', Output)=true) then
           begin
-               //showmessage('Run program!!');
-               MessageHint('Clean script'+ filename);
+               MessageHint('Clean script '+ filename);
                meResult.Lines.Text:= Output;
                pnResult.Visible:= true;
           end
           else
           begin
-               //showmessage('Fail debug!!');
-               MessageHint('fail clean script'+ filename);
+               MessageHint('fail clean script '+ filename);
                pnResult.Visible:= false;
           end;
-          {$ENDIF}
+       {$ENDIF}
      end
      else
      begin
-         MessageHint('Config clean need!'+ filename);
+         MessageHint('Config clean need! '+ filename);
          pnResult.Visible:= false;
      end;
-
 end;
 
 procedure TfrmMNote.mnCompileClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
+   syn  : TSynEdit;
    I : NativeInt;
    variavel : PPyObject;
    variavelname : string;
-
 begin
-   mnSalvarClick(self); (*Salva antes de rodar*)
+   mnSalvarClick(self);
    item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
    meResult.Lines.clear;
    item.Resultado := meResult;
 
    item.Run();
    syn := item.syn;
-   //pnResult.Visible:=true;
    if (item.PythonCtrl.VarsCheck) then
    begin
       pnInspector.Visible:=true;
@@ -1764,18 +1621,12 @@ begin
      begin
          for I := 0 to item.PythonCtrl.VarListGlobal_Size -1  do
          begin
-               //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
-               //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
-               //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
                variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsGlobalKeys,I);
                variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
                vlGlobal.InsertRow(variavelname,'',true);
          end;
          for I := 0 to item.PythonCtrl.VarListLocal_Size -1  do
          begin
-               //ShowMessage('Variável: ' + PyVarsList[I] + #13#10 +
-               //  'Valor: ' + VarToStr(PyVarsDict.GetItem(PyVarsList[I])));
-               //vlGlobal.InsertRow(item.VarsList[I],item.VarsList.Strings[i], true);
                variavel := item.PythonCtrl.PythonEngine.PyList_GetItem(item.PythonCtrl.VarsLocalKeys,I);
                variavelname := item.PythonCtrl.PythonEngine.PyUnicodeAsString(variavel);
                vlLocal.InsertRow(variavelname,'',true);
@@ -1788,34 +1639,30 @@ procedure TfrmMNote.mndebugClick(Sender: TObject);
 var
      Output : string;
      filename : string;
-  begin
-     mnSalvarClick(self); (*Salva antes de rodar*)
-     filename := FSetMain.DebugScript;
-     if (filename <> '') then
-     begin
-        {$IFDEF WINDOWS}
-          if(Callprg(filename,'', Output)=true) then
-          begin
-               //showmessage('Run program!!');
-               MessageHint('Debug script'+ filename);
-               meResult.Lines.Text:= Output;
-               pnResult.Visible:= true;
-          end
-          else
-          begin
-               //showmessage('Fail debug!!');
-               MessageHint('fail debug script'+ filename);
-               pnResult.Visible:= false;
-          end;
-          {$ENDIF}
-     end
-     else
-     begin
-         MessageHint('Config Debug need!'+ filename);
-         pnResult.Visible:= false;
-     end;
-
-
+begin
+   mnSalvarClick(self);
+   filename := FSetMain.DebugScript;
+   if (filename <> '') then
+   begin
+      {$IFDEF WINDOWS}
+        if(Callprg(filename,'', Output)=true) then
+        begin
+             MessageHint('Debug script '+ filename);
+             meResult.Lines.Text:= Output;
+             pnResult.Visible:= true;
+        end
+        else
+        begin
+             MessageHint('fail debug script '+ filename);
+             pnResult.Visible:= false;
+        end;
+      {$ENDIF}
+   end
+   else
+   begin
+       MessageHint('Config Debug need! '+ filename);
+       pnResult.Visible:= false;
+   end;
 end;
 
 procedure TfrmMNote.mnHideResultClick(Sender: TObject);
@@ -1825,9 +1672,8 @@ end;
 
 procedure TfrmMNote.mnidos2unixClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
+   syn  : TSynEdit;
 begin
   if (pgMain.PageCount <>0 ) then
   begin
@@ -1835,27 +1681,21 @@ begin
     syn := item.syn;
     RemoveCtrlMFromSynEdit(syn);
   end;
-
 end;
 
 procedure TfrmMNote.mniJSONVALIDClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
+   syn  : TSynEdit;
 begin
   if (pgMain.PageCount <>0 ) then
   begin
     item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
     syn := item.syn;
     if ValidateJson(syn) then
-    begin
-      ShowMessage('JSON VALID!');
-    end
+      ShowMessage('JSON VALID!')
     else
-    begin
       ShowMessage('JSON NOT VALID!');
-    end;
   end;
 end;
 
@@ -1863,41 +1703,36 @@ procedure TfrmMNote.mninstallClick(Sender: TObject);
 var
      Output : string;
      filename : string;
-  begin
-     mnSalvarClick(self); (*Salva antes de rodar*)
-     filename := FSetMain.Install;
-     if (filename <> '') then
-     begin
-       {$IFDEF WINDOWS}
-          if(Callprg(filename, '', Output)=true) then
-          begin
-               //showmessage('Run program!!');
-               MessageHint('Install script'+ filename);
-               meResult.Lines.Text:= Output;
-               pnResult.Visible:= true;
-          end
-          else
-          begin
-               //showmessage('Fail debug!!');
-               MessageHint('fail Install script'+ filename);
-               pnResult.Visible:= false;
-          end;
-          {$ENDIF}
-     end
-     else
-     begin
-         MessageHint('Config Install need!'+ filename);
-         pnResult.Visible:= false;
-     end;
-
-
+begin
+   mnSalvarClick(self);
+   filename := FSetMain.Install;
+   if (filename <> '') then
+   begin
+     {$IFDEF WINDOWS}
+        if(Callprg(filename, '', Output)=true) then
+        begin
+             MessageHint('Install script '+ filename);
+             meResult.Lines.Text:= Output;
+             pnResult.Visible:= true;
+        end
+        else
+        begin
+             MessageHint('fail Install script '+ filename);
+             pnResult.Visible:= false;
+        end;
+     {$ENDIF}
+   end
+   else
+   begin
+       MessageHint('Config Install need! '+ filename);
+       pnResult.Visible:= false;
+   end;
 end;
 
 procedure TfrmMNote.mnJavaClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
+   syn  : TSynEdit;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
@@ -1906,9 +1741,8 @@ end;
 
 procedure TfrmMNote.mnNoneClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
+   syn  : TSynEdit;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
@@ -1917,9 +1751,8 @@ end;
 
 procedure TfrmMNote.mnPHPClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
+   syn  : TSynEdit;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
@@ -1928,51 +1761,31 @@ end;
 
 procedure TfrmMNote.mnSQLClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
-  // sql : TSynSQLSyn;
+   syn  : TSynEdit;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  //sql := TSynSQLSyn.create(self);
-  //sql.sqldialect := sqlMySQL;
-  //sql.TableNames.clear;
-
-
-  //syn.Highlighter :=  SynSQLSyn1;
-  //item.ItemType:= ti_SQL;
-
-
+  // configurar highlighter SQL se desejar
 end;
 
 procedure TfrmMNote.MenuItem15Click(Sender: TObject);
 begin
   if (frmFolders = nil) then
-  begin
-       frmFolders := TfrmFolders.Create(self);
-  end;
+    frmFolders := TfrmFolders.Create(self);
   {$ifndef Darwin}
   if frmFolders.Showing then
-  begin
-    frmFolders.hide;
-  end
+    frmFolders.hide
   else
-  begin
     frmFolders.show();
-
-  end;
   {$else}
    MessageHint('Folder not run in MACOS');
   {$ENDIF}
-
 end;
 
 procedure TfrmMNote.MenuItem16Click(Sender: TObject);
 begin
-
 end;
-
 
 procedure TfrmMNote.mnrunClick(Sender: TObject);
 var
@@ -1989,19 +1802,11 @@ begin
   item := TItem(tb.Tag);
   syn := item.syn;
 
-
   if(item.ItemType = ti_SQL) then
-  begin
-    RodaSQL();
-  end
+    RodaSQL()
   else
-  begin
     RodaScript();
-  end;
-
 end;
-
-
 
 procedure TfrmMNote.MenuItem4Click(Sender: TObject);
 begin
@@ -2014,7 +1819,6 @@ begin
     frmmquery2.Show;
 end;
 
-
 procedure TfrmMNote.miConfigClick(Sender: TObject);
 begin
   frmConfig := TfrmConfig.create(self);
@@ -2024,15 +1828,11 @@ end;
 
 procedure TfrmMNote.miUndoClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
-   //cpp : TSynCppSyn;
+   syn  : TSynEdit;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  //cpp := TSynCppSyn.create(self);
-  //syn.Highlighter := cpp;
   syn.Undo;
 end;
 
@@ -2053,7 +1853,6 @@ end;
 
 procedure TfrmMNote.MenuItem1Click(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.MenuItem2Click(Sender: TObject);
@@ -2078,20 +1877,12 @@ end;
 
 procedure TfrmMNote.mnCClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
-   //cpp : TSynCppSyn;
-
+   syn  : TSynEdit;
 begin
-  //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  //item := TItem(syn.tag);
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  //cpp := TSynCppSyn.create(self);
-  //syn.Highlighter := SynCppSyn1;
-  //ConfigureCppHighlighter(SynCppSyn1);
-
+  // configurar highlighter C se desejar
 end;
 
 procedure TfrmMNote.mnFechar2Click(Sender: TObject);
@@ -2115,8 +1906,6 @@ begin
       Fsetmain.fixar := true;
       mnFixar.Caption:='Move';
       mnFixW.caption := 'Move';
-      //self.hide;
-      //self.show;
       self.refresh;
     end;
     Fsetmain.SalvaContexto(false);
@@ -2124,28 +1913,23 @@ end;
 
 procedure TfrmMNote.mnLazarusClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
-
+   syn  : TSynEdit;
 begin
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  //syn.Highlighter := SynPasSyn1;
+  // configurar highlighter Pascal se desejar
 end;
 
 procedure TfrmMNote.mnAssociarClick(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.MudaTodasaFontes();
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
+   syn  : TSynEdit;
    a : integer;
-
 begin
   for a := 0 to pgMain.PageCount-1 do
   begin
@@ -2168,9 +1952,8 @@ var
   pergunta: WideString;
   fonte    : widestring;
   mapa : widestring;
-  tb : TTabSheet;
-  syn : TSynEdit;
   ritem : TItem;
+  syn : TSynEdit;
 begin
   if (FCHATGPT = nil) then
     FCHATGPT := TCHATGPT.Create(self);
@@ -2178,15 +1961,11 @@ begin
   ritem := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := ritem.syn;
   fonte := syn.Lines.Text;
-  // contexto + pergunta atual
   mequestion.Lines.Add(edChat.Text);
 
-  //mapa := frmIA.meMapaMemoria.Lines.text;
   mapa := frmIA.mePensamento.Lines.text;
 
   FCHATGPT.TOKEN := FSetMain.CHATGPT;
-  //FCHATGPT.SendQuestion(mequestion.Text);
-
   FCHATGPT.Dev:= 'Voce é um assistente pessoal e teve as seguintes perguntas anteriores: '+meChatHist.Text;
 
   pergunta := 'Com base no fonte:'+fonte+ ' e no mapa de memoria da aplicacao '+mapa +', responda a seguinte pergunta: '+ edChat.Text;
@@ -2203,23 +1982,16 @@ begin
     frmToolsfalar.Conectar();
     Application.ProcessMessages;
     frmToolsfalar.Falar();
-    //frmToolsfalar.Disconectar();
-    //frmToolsfalar.Free;
-    //frmToolsfalar := nil;
-
   end;
 
-  // histórico visual
-  meChatHist.Lines.Add(''); // separador
+  meChatHist.Lines.Add('');
   meChatHist.Lines.Add('Question: ' + edChat.Text);
   meChatHist.Lines.Add('Response: ' + resposta);
 
-  // diálogo
   meDialog.Lines.Clear;
   meDialog.Lines.Add('Question: ' + edChat.Text);
   meDialog.Lines.Add('Response: ' + resposta);
 
-  // extrai blocos de código
   meCodes.Lines.BeginUpdate;
   try
     meCodes.Lines.Clear;
@@ -2230,7 +2002,7 @@ begin
       begin
         item := TFonte(codigo.Items[i]);
         meCodes.Lines.Add(item.codigo);
-        meCodes.Lines.Add(''); // separador entre blocos
+        meCodes.Lines.Add('');
       end;
     finally
       codigo.Free;
@@ -2244,12 +2016,9 @@ end;
 
 procedure TfrmMNote.mnfontClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
+   syn  : TSynEdit;
 begin
-  //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  //item := TItem(syn.tag);
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
   FontDialog1.Font := syn.Font;
@@ -2264,38 +2033,30 @@ begin
       meDialog.font := FontDialog1.Font;
       MudaTodasaFontes();
       FSetMain.SalvaContexto(false);
-
-
   end;
 end;
 
 procedure TfrmMNote.mnPythonClick(Sender: TObject);
 var
-   tb : TTabSheet;
-   syn : TSynEdit;
    item : TItem;
+   syn  : TSynEdit;
 begin
-  //syn := TSynEdit( pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  //item := TItem(syn.tag);
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
-  //syn.Highlighter := SynPythonSyn1;
+  // configurar highlighter Python se desejar
 end;
 
 procedure TfrmMNote.mnScriptClick(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.MenuItem6Click(Sender: TObject);
 begin
-
   close;
 end;
 
 procedure TfrmMNote.MenuItem8Click(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.MenuItem9Click(Sender: TObject);
@@ -2309,45 +2070,17 @@ begin
       SalvarTab(tb);
    end;
    MessageHint('All Saved!');
-
 end;
 
 procedure TfrmMNote.mnFecharClick(Sender: TObject);
-
 begin
      CloseTab();
 end;
 
-
-
 procedure TfrmMNote.mnPesqItemClick(Sender: TObject);
-var
-   Line, SearchStr: string;
-   LineNum, StartPos, P: Integer;
-item : TItem;
-syn : TSynEdit;
-
 begin
-  (*
-  if (frmchgtext = nil) then
-  begin
-      frmchgtext := Tfrmchgtext.create(self);
-  end;
-  if frmchgtext.Showing then
-  begin
-    frmchgtext.hide;
-  end
-  else
-  begin
-       frmchgtext.show;
-  end;
-  *)
   FindDialog1.Execute;
-
-
-
 end;
-
 
 procedure TfrmMNote.SalvarComo(tb: TTabSheet);
 var
@@ -2365,14 +2098,13 @@ begin
   if SaveDialog1.Execute then
   begin
     item.Savefile(SaveDialog1.FileName);
-    //Carrega caracteristricas
     item.DirName:= ExtractFileDir(SaveDialog1.FileName);
     item.FileName:=ExtractFileName(SaveDialog1.FileName);
     item.FileExt:= ExtractFileExt(SaveDialog1.FileName);
 
     tb.Caption := ExtractFileName(SaveDialog1.FileName);
 
-    item.Salvo := False; // vai salvar já na sequência
+    item.Salvo := False;
     SalvarTab(tb);
   end;
 end;
@@ -2392,13 +2124,10 @@ begin
     Exit;
   end;
   if(item.DirName='') then
-  begin
     item.DirName := ExtractFileDir(Application.ExeName);
-  end;
 
   if not item.Salvo then
   begin
-
     fullname:= IncludeTrailingPathDelimiter(item.DirName)+item.FileName;
     syn.Lines.SaveToFile(fullname);
     item.Salvo := True;
@@ -2425,10 +2154,9 @@ var
 begin
    if (pgMain.ActivePage <> nil) then
    begin
-         tb := pgMain.ActivePage;
-         SalvarComo(tb);
+     tb := pgMain.ActivePage;
+     SalvarComo(tb);
    end;
-
 end;
 
 procedure TfrmMNote.mnCarregarClick(Sender: TObject);
@@ -2438,73 +2166,49 @@ end;
 
 procedure TfrmMNote.MenuItem3Click(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.PageControl1Change(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.Panel1Click(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.pgMainChanging(Sender: TObject; var AllowChange: Boolean);
 begin
-
 end;
 
 procedure TfrmMNote.pnBottonClick(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.pnChatGPT2Resize(Sender: TObject);
-var
-  charWidth: integer;
-  numColumns: integer;
 begin
-  // Calcule a largura média de um caractere
-  //charWidth := meChatHist.Canvas.TextWidth('M'); // 'M' é geralmente um dos caracteres mais largos
-
-  // Calcule o número desejado de colunas com base na largura do painel
-  //numColumns := pnChatGPT2.Width div charWidth;
-
-  // Ajuste a largura do Memo para corresponder ao número de colunas
-  // (levando em consideração a borda e o scrollbar, se houver)
-  //meChatHist.Width := numColumns * charWidth + (meChatHist.Width - meChatHist.ClientWidth);
-
 end;
 
 procedure TfrmMNote.ReplaceDialog1Find(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.ReplaceDialog1Replace(Sender: TObject);
 var
-   syn : TSynEdit;
    tb : TTabSheet;
-   listagem : TListBox;
 begin
    if (pgMain.ActivePage <> nil) then
    begin
       tb := pgMain.ActivePage;
-      syn := TSynEdit(tb.tag);
-
+      // implementar se quiser replace manual
    end;
 end;
 
 procedure TfrmMNote.pntvClick(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmMNote.pgMainChange(Sender: TObject);
 var
-  syn      : TSynEdit;
   tb       : TTabSheet;
   item     : TItem;
   fullfile : string;
@@ -2516,10 +2220,8 @@ begin
   item := TItem(tb.Tag);
   if item = nil then Exit;
 
-  // Monta o caminho com o separador certo da plataforma
   fullfile := IncludeTrailingPathDelimiter(item.DirName) + item.FileName + '.RIA';
 
-  // Verifica se o arquivo existe
   if FileExists(fullfile) then
   begin
     pnChatGPT.Visible := True;
@@ -2532,29 +2234,20 @@ begin
   end
   else
   begin
-    // Se o arquivo não existir, esconde o painel
     pnChatGPT.Visible := False;
     meDialog.Clear;
   end;
 end;
 
-
-
-
-
 procedure TfrmMNote.TabSheet1ContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 begin
-
 end;
 
 procedure TfrmMNote.TabSheet2ContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 begin
-
 end;
-
-
 
 end.
 

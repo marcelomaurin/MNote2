@@ -359,7 +359,6 @@ begin
     begin
       fIPOUVIR := RetiraInfo(arquivo.Strings[posicao]);   ;
     end;
-
     if  BuscaChave(arquivo,'DEFAULTFOLDER:',posicao) then
     begin
       FDefaultfolder := RetiraInfo(arquivo.Strings[posicao]);   ;
@@ -451,6 +450,7 @@ begin
   arquivo.Append('TOOLSFALAR:'+iif(FToolsFalar,'1','0'));
   arquivo.Append('TOOLSOUVIR:'+iif(FToolsOuvir,'1','0'));
   arquivo.Append('DEFAULTFOLDER:'+FDefaultfolder);
+  arquivo.Append('PROJECT:'+FPROJECT);
 
   arquivo.SaveToFile(fpath+filename);
 end;

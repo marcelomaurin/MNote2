@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls,
   StdCtrls, Buttons, chatgpt, setmain, folders, mquery2, fpjson, jsonparser,
-  item,SynEditTypes, SynEdit;
+  item, SynEditTypes, SynEdit;
 
 type
   TTipoAcao = (
@@ -19,7 +19,7 @@ type
     taGerar_EnviarEmail
   );
 
-  const
+const
   TIPO_ACAO_NOME: array[TTipoAcao] of string = (
     'GERAR_PESQUISARINFORMACAO',
     'GERAR_CRIARTABELA',
@@ -29,7 +29,7 @@ type
     'GERAR_ENVIAREMAIL'
   );
 
-  const
+const
   TIPO_ACAO_DESCRICAO: array[TTipoAcao] of string = (
     'Pesquisar informações no banco de dados (ex: gerar SELECTs, consultas e buscas).',
     'Criar novas tabelas no banco de dados, incluindo campos e tipos.',
@@ -38,9 +38,6 @@ type
     'Gerar novo código do zero, criando arquivos, funções, classes ou estruturas.',
     'Gerar e enviar um e-mail automaticamente com base no conteúdo analisado.'
   );
-
-
-
 
 type
   { TfrmIA }
@@ -86,14 +83,15 @@ type
     procedure MapeiaPensamento();
     procedure RespondePergunta();
     procedure LimparHistorico();
-    function  QuestoesFolder(): boolean;
-    function  QuestoesBanco(): boolean;
-    procedure AnalisaRespostaFolder();  // <<< NOVA FUNÇÃO
+    function QuestoesFolder(): boolean;
+    function QuestoesCaminho(): boolean;
+    function QuestoesBanco(): boolean;
+    procedure AnalisaRespostaFolder();
     function BancoConectado(): boolean;
     function CriaDicionarioPost(): string;
     function VerificaContinuidade(): boolean;
-    function GeraAcao(const Resposta: string): boolean; //Verifica geracao de ação
-    function AnalisaAcao(const Resposta: string) : boolean; //Identifica Acoes
+    function GeraAcao(const Resposta: string): boolean;
+    function AnalisaAcao(const Resposta: string): boolean;
     function AcaoToStr(Acao: TTipoAcao): string;
     procedure FazPerguntaIA();
     function IsAcaoValida(const S: string): boolean;
@@ -117,8 +115,6 @@ implementation
 uses
   LConvEncoding, main;
 
-
-
 { Utils }
 
 function TfrmIA.AcaoToStr(Acao: TTipoAcao): string;
@@ -138,16 +134,15 @@ var
   i: Integer;
   NomeAcao: string;
 begin
-  Screen.Cursor := crHourGlass;   // cursor "processando"
-  btPerguntar.Enabled := False;   // evita clique duplo
+  Screen.Cursor := crHourGlass;
+  btPerguntar.Enabled := False;
   try
     meLog.Lines.Add(FormatDateTime('yyyy-mm-dd hh:nn:ss', Now) + ' - Iniciando pesquisa na IA');
     PerguntaIA();
 
-    // meResposta.Lines.Text contém a resposta da IA principal
-    if GeraAcao(meResposta.Lines.Text) then   // classificador "precisa de ação?"
+    if GeraAcao(meResposta.Lines.Text) then
     begin
-      if AnalisaAcao(meResposta.Lines.Text) then // preenche lstRealizar
+      if AnalisaAcao(meResposta.Lines.Text) then
       begin
         meLog.Lines.Add('Ações identificadas pela IA: ' + IntToStr(lstRealizar.Count));
 
@@ -162,11 +157,10 @@ begin
 
     mePergunta.SetFocus;
   finally
-    Screen.Cursor := crDefault;   // volta ao normal
-    btPerguntar.Enabled := True;  // reabilita o botão
+    Screen.Cursor := crDefault;
+    btPerguntar.Enabled := True;
   end;
 end;
-
 
 procedure TfrmIA.AddLog(const S: string);
 begin
@@ -175,7 +169,7 @@ end;
 
 function TfrmIA.TextoLimpo(const S: string): string;
 begin
-  // Garante UTF-8 para evitar caracteres “?” em logs/respostas
+  // Mantém a ideia de garantir UTF-8.
   Result := UTF8Encode(S);
 end;
 
@@ -188,83 +182,80 @@ end;
 
 procedure TfrmIA.btPerguntarClick(Sender: TObject);
 begin
-     FazPerguntaIA();
+  FazPerguntaIA();
 end;
-
 
 procedure TfrmIA.FormCreate(Sender: TObject);
 var
-  arquivo, arquivo1, arquivo2 : string;
-
+  arquivo, arquivo1, arquivo2: string;
   ac: TTipoAcao;
 begin
   lstAcao := TStringList.Create;
   lstRealizar := TStringList.Create;
 
-  // Preenche lista estática baseada no ENUM
   for ac := Low(TTipoAcao) to High(TTipoAcao) do
     lstAcao.Add(AcaoToStr(ac));
 
-  arquivo := FSetMain.Defaultfolder+'HISTORICO.RIA';
-  arquivo1 :=FSetMain.Defaultfolder+'mapamemoria.RIA';
-  arquivo2 :=FSetMain.Defaultfolder+'pensamento.RIA';
-  if(FileExists(arquivo)) then
-    meHistorico.Lines.LoadFromFile(arquivo);
-  if(FileExists(arquivo1)) then
-    meMapaMemoria.Lines.LoadFromFile(arquivo1);
-  if(FileExists(arquivo2)) then
-    mePensamento.Lines.LoadFromFile(arquivo2);
+  arquivo  := FSetMain.Defaultfolder + 'HISTORICO.RIA';
+  arquivo1 := FSetMain.Defaultfolder + 'mapamemoria.RIA';
+  arquivo2 := FSetMain.Defaultfolder + 'pensamento.RIA';
 
+  if FileExists(arquivo) then
+    meHistorico.Lines.LoadFromFile(arquivo);
+  if FileExists(arquivo1) then
+    meMapaMemoria.Lines.LoadFromFile(arquivo1);
+  if FileExists(arquivo2) then
+    mePensamento.Lines.LoadFromFile(arquivo2);
 end;
 
 procedure TfrmIA.meHistoricoChange(Sender: TObject);
 var
-  arquivo : string;
+  arquivo: string;
 begin
-  arquivo := FSetMain.Defaultfolder+'HISTORICO.RIA';
-  if(FileExists(arquivo)) then
+  arquivo := FSetMain.Defaultfolder + 'HISTORICO.RIA';
+  try
     meHistorico.Lines.SaveToFile(arquivo);
+  except
+    // silencia erro de I/O
+  end;
 end;
 
 procedure TfrmIA.meMapaMemoriaChange(Sender: TObject);
 var
-  arquivo : string;
+  arquivo: string;
 begin
-  arquivo := FSetMain.Defaultfolder+'mapamemoria.RIA';
-  if(FileExists(arquivo)) then
+  arquivo := FSetMain.Defaultfolder + 'mapamemoria.RIA';
+  try
     meMapaMemoria.Lines.SaveToFile(arquivo);
+  except
+  end;
 end;
 
 procedure TfrmIA.mePensamentoChange(Sender: TObject);
 var
-    arquivo : string;
+  arquivo: string;
 begin
-    arquivo := FSetMain.Defaultfolder+'pensamento.RIA';
-    if(FileExists(arquivo)) then
-      meMapaMemoria.Lines.SaveToFile(arquivo);
+  arquivo := FSetMain.Defaultfolder + 'pensamento.RIA';
+  try
+    mePensamento.Lines.SaveToFile(arquivo);
+  except
+  end;
 end;
 
 procedure TfrmIA.mePerguntaKeyPress(Sender: TObject; var Key: char);
 begin
-  if (key = #13) then
+  if (Key = #13) then
     FazPerguntaIA();
 end;
 
 procedure TfrmIA.PerguntaIA();
 begin
-  //AnalisaContinuidade
-  if(not VerificaContinuidade()) then
-  begin
-     LimparHistorico();
-  end;
-  // 1) Coleta de contexto
+  if not VerificaContinuidade() then
+    LimparHistorico();
+
   AnalisaBanco();
   AnalisaFolder();
-
-  // 2) Consolida o “raciocínio” (mapa de memória -> pensamento)
   MapeiaPensamento();
-
-  // 3) Faz a pergunta efetiva (gera resposta, histórico e log)
   RespondePergunta();
 end;
 
@@ -273,19 +264,15 @@ var
   baseDir, fileName: string;
 begin
   {$IFDEF WINDOWS}
-  // AppData do usuário (pasta de configuração da aplicação)
-  baseDir := GetAppConfigDir(False);      // ex.: C:\Users\<user>\AppData\Local\<AppName>\
+  baseDir := GetAppConfigDir(False);
   {$ELSE}
-  // Linux/macOS: pasta do usuário
-  baseDir := GetUserDir;                  // ex.: /home/<user>/
+  baseDir := GetUserDir;
   {$ENDIF}
 
   ForceDirectories(baseDir);
   fileName := IncludeTrailingPathDelimiter(baseDir) + 'dicionario.sql';
 
-  // injeta o caminho por parâmetro
-  result := frmmquery2.CriaDicionarioPost(fileName);
-
+  Result := frmmquery2.CriaDicionarioPost(fileName);
 end;
 
 function TfrmIA.VerificaContinuidade(): boolean;
@@ -297,7 +284,6 @@ var
 begin
   Result := False;
 
-  // Obtém a pergunta atual
   if Assigned(mePergunta) then
     Pergunta := Trim(mePergunta.Text)
   else
@@ -309,7 +295,6 @@ begin
     Exit(False);
   end;
 
-  // Garante instância e token
   if FChatGPT = nil then
     FChatGPT := TCHATGPT.Create(Self);
 
@@ -321,7 +306,6 @@ begin
 
   FChatGPT.TOKEN := FSetMain.CHATGPT;
 
-  // Mensagem de sistema: define papel e regras
   DevMsg :=
     'Você é um classificador.' + LineEnding +
     'Sua função é responder apenas com "Sim" ou "Nao".' + LineEnding +
@@ -330,7 +314,6 @@ begin
     'Sem explicações, sem pontuação, sem comentários adicionais.';
   FChatGPT.Dev := DevMsg;
 
-  // Prompt principal
   FullPrompt :=
     '--- HISTÓRICO DE CONVERSAS ---' + LineEnding +
     meHistorico.Lines.Text + LineEnding + LineEnding +
@@ -338,14 +321,12 @@ begin
     Pergunta + LineEnding +
     'A pergunta tem relação direta com o histórico acima?';
 
-  // Log e envio
   AddLog('Enviando pergunta ao classificador de continuidade...');
   if FChatGPT.SendQuestion(FullPrompt) then
     Resposta := Trim(LowerCase(TextoLimpo(FChatGPT.Response)))
   else
     Resposta := Trim(LowerCase(TextoLimpo(FChatGPT.Response)));
 
-  // Verifica se a resposta foi "sim"
   if (Resposta = 'sim') or (Resposta = 'yes') then
   begin
     Result := True;
@@ -357,7 +338,6 @@ begin
     AddLog('Classificação: NÃO (sem continuidade)');
   end;
 
-  // Atualiza campos visuais
   mePensamento.Lines.Text := Resposta;
   meMapaMemoria.Lines.Add('Classificação de continuidade: ' + Resposta);
 end;
@@ -371,22 +351,18 @@ var
 begin
   Result := False;
 
-  // Se não tem texto, não tem ação
   if Trim(Resposta) = '' then
     Exit(False);
 
-  // Garante instância do ChatGPT
   if FChatGPT = nil then
     FChatGPT := TCHATGPT.Create(Self);
 
-  // Confere token configurado
   if Trim(FSetMain.CHATGPT) = '' then
   begin
     ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
     Exit(False);
   end;
 
-  // Mensagem de sistema (modo classificador binário)
   DevMsg :=
     'Você é um classificador binário.' + LineEnding +
     'Sua única função é responder se a orientação da IA exige a execução de uma AÇÃO .' + LineEnding +
@@ -394,7 +370,6 @@ begin
     'Responda **apenas** com "Sim" ou "Nao".' + LineEnding +
     'Sem explicações, sem pontuação, sem comentários adicionais.';
 
-  // Prompt enviado ao modelo
   Prompt :=
     'Analise o TEXTO abaixo e responda se ele exige que o sistema realize alguma AÇÃO prática,' + LineEnding +
     'como por exemplo: executar um comando, chamar uma função, clicar em um botão,' + LineEnding +
@@ -408,7 +383,6 @@ begin
     LineEnding +
     '--- TEXTO ---' + LineEnding +
     Resposta;
-
 
   FChatGPT.TOKEN := FSetMain.CHATGPT;
   FChatGPT.Dev   := DevMsg;
@@ -425,7 +399,6 @@ begin
   if Resp = '' then
     Exit(False);
 
-  // Considera "Sim" qualquer resposta começando com 'S'
   First := Resp[1];
   Result := (First = 'S');
 end;
@@ -436,13 +409,8 @@ var
 begin
   Result := False;
   for ac := Low(TTipoAcao) to High(TTipoAcao) do
-  begin
     if SameText(S, AcaoToStr(ac)) then
-    begin
-      Result := True;
-      Exit;
-    end;
-  end;
+      Exit(True);
 end;
 
 function TfrmIA.StrToAcao(const S: string; out Acao: TTipoAcao): boolean;
@@ -454,14 +422,11 @@ begin
   SUp := UpperCase(Trim(S));
 
   for ac := Low(TTipoAcao) to High(TTipoAcao) do
-  begin
     if SUp = AcaoToStr(ac) then
     begin
       Acao := ac;
-      Result := True;
-      Exit;
+      Exit(True);
     end;
-  end;
 end;
 
 procedure TfrmIA.ExecutaAcao(const NomeAcao, TextoResposta: string);
@@ -475,26 +440,14 @@ begin
   end;
 
   case Acao of
-    taGerar_PesquisarInformacao:
-      Acao_Gerar_PesquisarInformacao(TextoResposta);
-
-    taGerar_CriarTabela:
-      Acao_Gerar_CriarTabela(TextoResposta);
-
-    taGerar_ModificarTabela:
-      Acao_Gerar_ModificarTabela(TextoResposta);
-
-    taGerar_ModificarCodigo:
-      Acao_Gerar_ModificarCodigo(TextoResposta);
-
-    taGerar_NovoCodigo:
-      Acao_Gerar_NovoCodigo(TextoResposta);
-
-    taGerar_EnviarEmail:
-      Acao_Gerar_EnviarEmail(TextoResposta);
+    taGerar_PesquisarInformacao: Acao_Gerar_PesquisarInformacao(TextoResposta);
+    taGerar_CriarTabela:         Acao_Gerar_CriarTabela(TextoResposta);
+    taGerar_ModificarTabela:     Acao_Gerar_ModificarTabela(TextoResposta);
+    taGerar_ModificarCodigo:     Acao_Gerar_ModificarCodigo(TextoResposta);
+    taGerar_NovoCodigo:          Acao_Gerar_NovoCodigo(TextoResposta);
+    taGerar_EnviarEmail:         Acao_Gerar_EnviarEmail(TextoResposta);
   end;
 end;
-
 
 procedure TfrmIA.Acao_Gerar_PesquisarInformacao(const TextoResposta: string);
 var
@@ -502,43 +455,37 @@ var
   TextoAposInicio, BlocoSQL: WideString;
   PosInicio, TamMarcadorInicio, PosFimBlocoRelativo: Integer;
   AchouAlgum: Boolean;
-  tb : TTabSheet;
-  syn : TSynEdit;
-  item : TItem;
+  tb: TTabSheet;
+  syn: TSynEdit;
+  item: TItem;
 begin
   meLog.Lines.Add('>> [AÇÃO] GERAR_PESQUISARINFORMACAO acionada.');
 
-  TextoRestante       := TextoResposta;
-  AchouAlgum          := False;
+  TextoRestante := TextoResposta;
+  AchouAlgum    := False;
 
-  // Loop para tratar POSSÍVEIS VÁRIOS blocos ```sql``` na mesma resposta
   while True do
   begin
     TextoRestanteMinusc := LowerCase(TextoRestante);
 
-    // 1) Procura o início do bloco de código - primeiro ```sql
     PosInicio := Pos('```sql', TextoRestanteMinusc);
     if PosInicio > 0 then
-      TamMarcadorInicio := Length('```sql')    // 6
+      TamMarcadorInicio := Length('```sql')
     else
     begin
-      // Se não achar, tenta apenas ```
       PosInicio := Pos('```', TextoRestante);
-      TamMarcadorInicio := Length('```');      // 3
+      TamMarcadorInicio := Length('```');
     end;
 
     if PosInicio = 0 then
     begin
-      // Não há mais blocos de código
       if not AchouAlgum then
         meLog.Lines.Add('Nenhum bloco ```sql``` encontrado na resposta (ou nenhum SELECT válido).');
       Break;
     end;
 
-    // 2) Pega o texto após a abertura do bloco
     TextoAposInicio := Copy(TextoRestante, PosInicio + TamMarcadorInicio, MaxInt);
 
-    // Se logo depois vier uma quebra de linha (#13#10, #10 ou #13), pula ela
     if (Length(TextoAposInicio) >= 2) and
        (TextoAposInicio[1] = #13) and (TextoAposInicio[2] = #10) then
       TextoAposInicio := Copy(TextoAposInicio, 3, MaxInt)
@@ -546,7 +493,6 @@ begin
             ((TextoAposInicio[1] = #10) or (TextoAposInicio[1] = #13)) then
       TextoAposInicio := Copy(TextoAposInicio, 2, MaxInt);
 
-    // 3) Acha o fechamento ``` *DENTRO* desse trecho
     PosFimBlocoRelativo := Pos('```', TextoAposInicio);
     if PosFimBlocoRelativo = 0 then
     begin
@@ -554,25 +500,25 @@ begin
       Break;
     end;
 
-    // 4) Extrai o conteúdo do bloco de código (entre início e fim)
     BlocoSQL := Trim(Copy(TextoAposInicio, 1, PosFimBlocoRelativo - 1));
 
-    // 5) Garante que é uma consulta (SELECT)
     if Pos('SELECT', UpperCase(BlocoSQL)) > 0 then
     begin
       AchouAlgum := True;
 
-      // 6) Abre nova aba no MNote com o SQL
       if Assigned(frmMNote) then
       begin
         if not frmMNote.FileNewSave('', BlocoSQL) then
           meLog.Lines.Add('Falha ao criar nova aba no MNote com a consulta SQL.')
         else
+        begin
           meLog.Lines.Add('Nova aba criada no MNote com consulta SELECT.');
-          tb := frmMNote.pgMain.ActivePage;
+          tb   := frmMNote.pgMain.ActivePage;
           item := TItem(tb.Tag);
-          item.ItemType:= ti_SQL;
-          syn := item.syn;
+          item.ItemType := ti_SQL;
+          syn  := item.syn;
+          // aqui você pode ajustar o SynEdit se quiser
+        end;
       end
       else
         meLog.Lines.Add('frmMNote não está disponível para abrir a consulta.');
@@ -580,52 +526,39 @@ begin
     else
       meLog.Lines.Add('Bloco de código encontrado, mas não contém SELECT (ignorado).');
 
-    // 7) Avança o TextoRestante para depois do bloco atual
-    //    Pega o resto após o fechamento ```
     TextoRestante := Copy(TextoAposInicio,
                           PosFimBlocoRelativo + Length('```'),
                           MaxInt);
 
-    // Se sobrar pouco texto, encerra o loop
     if Trim(TextoRestante) = '' then
       Break;
   end;
 end;
 
-
-
-
-
 procedure TfrmIA.Acao_Gerar_CriarTabela(const TextoResposta: string);
 begin
-  // TODO: Implementar geração de SQL para criar tabela, etc.
-  meLog.Lines.Add('>> [AÇÃO] GERAR_CRIARTABELA acionada:'+TextoResposta);
+  meLog.Lines.Add('>> [AÇÃO] GERAR_CRIARTABELA acionada:' + TextoResposta);
 end;
 
 procedure TfrmIA.Acao_Gerar_ModificarTabela(const TextoResposta: string);
 begin
-   // TODO: Implementar alteração de estrutura de tabela
-  meLog.Lines.Add('>> [AÇÃO] GERAR_MODIFICARTABELA acionada:'+TextoResposta);
+  meLog.Lines.Add('>> [AÇÃO] GERAR_MODIFICARTABELA acionada:' + TextoResposta);
 end;
 
 procedure TfrmIA.Acao_Gerar_ModificarCodigo(const TextoResposta: string);
 begin
-  // TODO: Implementar modificação de código existente
-  meLog.Lines.Add('>> [AÇÃO] GERAR_MODIFICARCODIGO acionada:'+TextoResposta);
+  meLog.Lines.Add('>> [AÇÃO] GERAR_MODIFICARCODIGO acionada:' + TextoResposta);
 end;
 
 procedure TfrmIA.Acao_Gerar_NovoCodigo(const TextoResposta: string);
 begin
-   // TODO: Implementar criação de novo código fonte
-  meLog.Lines.Add('>> [AÇÃO] GERAR_NOVOCODIGO acionada:'+TextoResposta);
+  meLog.Lines.Add('>> [AÇÃO] GERAR_NOVOCODIGO acionada:' + TextoResposta);
 end;
 
 procedure TfrmIA.Acao_Gerar_EnviarEmail(const TextoResposta: string);
 begin
-  // TODO: Implementar envio de e-mail com base na resposta
-  meLog.Lines.Add('>> [AÇÃO] GERAR_ENVIAREMAIL acionada:'+TextoResposta);
+  meLog.Lines.Add('>> [AÇÃO] GERAR_ENVIAREMAIL acionada:' + TextoResposta);
 end;
-
 
 function TfrmIA.AnalisaAcao(const Resposta: string): boolean;
 var
@@ -642,22 +575,18 @@ begin
   Result := False;
   lstRealizar.Clear;
 
-  // Se não tem texto, não tem ação
   if Trim(Resposta) = '' then
     Exit(False);
 
-  // Garante instância do ChatGPT
   if FChatGPT = nil then
     FChatGPT := TCHATGPT.Create(Self);
 
-  // Confere token configurado
   if Trim(FSetMain.CHATGPT) = '' then
   begin
     ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
     Exit(False);
   end;
 
-  // Mensagem de sistema: EXTRATOR DE AÇÕES EM JSON
   DevMsg :=
     'Você é um EXTRATOR DE AÇÕES.' + LineEnding +
     'Sua função é analisar um texto e identificar quais AÇÕES o sistema deve realizar.' + LineEnding +
@@ -669,12 +598,10 @@ begin
     'NUNCA escreva explicações, comentários, texto fora do JSON.' + LineEnding +
     'As ações possíveis são APENAS estas (use exatamente estes valores):' + LineEnding;
 
-  // Acrescenta a lista de ações com descrições
   for ac := Low(TTipoAcao) to High(TTipoAcao) do
     DevMsg := DevMsg +
       '- ' + TIPO_ACAO_NOME[ac] + ' = ' + TIPO_ACAO_DESCRICAO[ac] + LineEnding;
 
-  // Prompt enviado ao modelo
   Prompt :=
     'Analise o TEXTO abaixo e identifique quais AÇÕES o sistema deve realizar.' + LineEnding +
     'Responda SOMENTE com um JSON no formato {"acoes":[...]} contendo zero ou mais ações.' + LineEnding +
@@ -696,7 +623,6 @@ begin
   if Resp = '' then
     Exit(False);
 
-  // Tenta parsear o JSON
   try
     JsonData := GetJSON(Resp);
   except
@@ -713,7 +639,6 @@ begin
 
     Obj := TJSONObject(JsonData);
 
-    // Tenta pegar o array "acoes"
     if not Obj.Find('acoes', JsonData) then
       Exit(False);
 
@@ -722,12 +647,9 @@ begin
 
     Arr := TJSONArray(JsonData);
 
-    // Varre o array de ações
     for i := 0 to Arr.Count - 1 do
     begin
       SAcao := Trim(UpperCase(Arr.Strings[i]));
-
-      // Garante que só entra ação válida
       if IsAcaoValida(SAcao) then
         lstRealizar.Add(SAcao);
     end;
@@ -738,74 +660,127 @@ begin
   end;
 end;
 
-
-
-
 procedure TfrmIA.AnalisaBanco();
 begin
-  if(QuestoesBanco()) then
+  if QuestoesBanco() then
   begin
-      if(BancoConectado) then
+    if BancoConectado then
+    begin
+      if (frmmquery2.zconpost.Connected) or (frmmquery2.zconmysql.Connected) then
       begin
-        (*
-          // Ponto de integração: traga resumos do banco (schemas/tabelas/colunas),
-          // dependências, DDLs, etc. por agora, deixo um placeholder organizado.
-          // Você pode popular este memo a partir do seu MQuery2/DM.
-          meMapaMemoria.Lines.Add('--[BANCO]---------------------------------------');
-          meMapaMemoria.Lines.Add('Schemas relevantes: public');
-          meMapaMemoria.Lines.Add('Tabelas-chave: (preencha aqui via MQuery2/DM)');
-          meMapaMemoria.Lines.Add('Dependências/FKs: (preencha aqui via MQuery2/DM)');
-          meMapaMemoria.Lines.Add('');
-         *)
+        if frmmquery2.zconpost.Connected then
+          meMapaMemoria.Lines.Add(CriaDicionarioPost());
 
-        if(frmmquery2.zconpost.connected or frmmquery2.zconmysql.Connected) then
+        if frmmquery2.zconmysql.Connected then
         begin
-          //Conexao postgres
-          if(frmmquery2.zconpost.connected) then
-          begin
-               meMapaMemoria.Lines.Add(CriaDicionarioPost());
-          end;
-          if(frmmquery2.zconmysql.Connected) then
-          begin
-
-          end;
+          // ponto para dicionário MySQL, se quiser no futuro
         end;
-
-      end
-       else
-      begin
-          meMapaMemoria.Lines.Add('Avisa o usuario que é necessário conectar no banco de dados para fazer analises de dados.');
-
       end;
+    end
+    else
+      meMapaMemoria.Lines.Add('Avisa o usuario que é necessário conectar no banco de dados para fazer analises de dados.');
+  end;
+end;
+
+function TfrmIA.QuestoesCaminho(): boolean;
+var
+  Pergunta, DevMsg, Prompt, Resp: string;
+  First: Char;
+begin
+  Result := False;
+
+  Pergunta := Trim(mePergunta.Text);
+  if Pergunta = '' then Exit;
+
+  if FChatGPT = nil then
+    FChatGPT := TCHATGPT.Create(Self);
+
+  if Trim(FSetMain.CHATGPT) = '' then
+  begin
+    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+    Exit;
   end;
 
+  DevMsg :=
+    'Você é um classificador. Responda apenas com "Sim" ou "Nao".' + LineEnding +
+    'Sem explicações, sem justificativas e sem pontuação.' + LineEnding +
+    'Voce tem acesso a diversas informações que serão passadas no momento apropriado, então considere que tem acesso a informações' + LineEnding +
+    'Regras:' + LineEnding +
+    '1) Se a pergunta for genérica (ex: "listar arquivos da pasta atual"), responda "Sim".' + LineEnding +
+    '2) Se a pergunta exigir um caminho, nome de arquivo ou pasta específica que NÃO esteja contido no caminho, responda "Nao".' + LineEnding +
+    '3) Se a árvore fornecer potencialmente o necessário, mesmo sem dados completos, responda "Sim".' + LineEnding +
+    'Seu objetivo é determinar se O CAMINHO PODE conter o necessário — não se contém ou não.';
 
+  Prompt :=
+    'Vou te passar duas coisas:' + LineEnding +
+    '1) A pergunta do usuário.' + LineEnding +
+    '2) A árvore de pastas/projeto disponível.' + LineEnding +
+    LineEnding +
+    'Com base APENAS no caminho, determine:' + LineEnding +
+    'É possível atender à solicitação feita na pergunta?' + LineEnding +
+    'Responda somente com "Sim" ou "Nao".' + LineEnding +
+    LineEnding +
+    'Pergunta: "' + Pergunta + '"' + LineEnding +
+    'Árvore disponível:' + LineEnding +
+    FSetMain.Defaultfolder + LineEnding +
+    meLog.Lines.Text + LineEnding +
+    'Responda apenas com "Sim" ou "Nao".';
+
+  FChatGPT.TOKEN := FSetMain.CHATGPT;
+  FChatGPT.Dev   := DevMsg;
+
+  AddLog('Classificando se a árvore tem informações suficientes...');
+
+  if FChatGPT.SendQuestion(Prompt) then
+    Resp := LowerCase(Trim(FChatGPT.Response))
+  else
+    Resp := LowerCase(Trim(FChatGPT.Response));
+
+  if Resp <> '' then
+  begin
+    First := LowerCase(Resp[1]);
+    if First = 's' then
+      Result := True
+    else if First = 'n' then
+      Result := False;
+  end;
+
+  AddLog(Format('QuestoesCaminho => Resp="%s" | Result=%s',
+    [Resp, BoolToStr(Result, True)]));
 end;
 
 procedure TfrmIA.AnalisaFolder();
 begin
   if QuestoesFolder() then
   begin
-    // Integra análise da unit Folders
-    meMapaMemoria.Lines.Add('--[FOLDER/PROJETO]------------------------------');
-    meMapaMemoria.Lines.Add(frmFolders.AnalisaFolderIA(mePergunta.Lines.Text));
-    meMapaMemoria.Lines.Add(frmFolders.meLog.Lines.Text);
+    frmFolders.AnalisaProjeto();
+    if QuestoesCaminho() then
+    begin
+      meMapaMemoria.Lines.Add('--[FOLDER/PROJETO]------------------------------');
+      meMapaMemoria.Lines.Add(frmFolders.AnalisaFolderIA(mePergunta.Lines.Text));
+      meMapaMemoria.Lines.Add(frmFolders.meLog.Lines.Text);
 
-    // Resumo orientado à pergunta, extraído do meLog + pergunta
-    AnalisaRespostaFolder();  // <<< chama a nova função
-    meMapaMemoria.Lines.Add(''); // separador visual
+      AnalisaRespostaFolder();
+      meMapaMemoria.Lines.Add('');
+    end;
   end;
-
 end;
 
 procedure TfrmIA.MapeiaPensamento();
 var
-  DevMsg : widestring;
-  FullPrompt : widestring;
-  Pergunta : widestring;
-  Resposta : widestring;
+  DevMsg, FullPrompt, Pergunta, Resposta: WideString;
 begin
-  // Mensagem de sistema (instruções para o modelo)
+  Pergunta := Trim(mePergunta.Text);
+
+  if FChatGPT = nil then
+    FChatGPT := TCHATGPT.Create(Self);
+
+  if Trim(FSetMain.CHATGPT) = '' then
+  begin
+    AddLog('Token do ChatGPT não configurado em FSetMain.CHATGPT (MapeiaPensamento).');
+    Exit;
+  end;
+
   DevMsg :=
     'Você é um analisador de dados e sua missão é montar um mapa de Pensamento coerente com a pergunta.' + LineEnding +
     'O histórico que será enviado representa as interações anteriores com o usuário,' + LineEnding +
@@ -818,33 +793,34 @@ begin
     '4) Se for código, retorne sempre o código completo e formatado.' + LineEnding +
     '5) Se não houver contexto suficiente, peça mais detalhes.' + LineEnding;
 
-  // Prompt principal enviado ao modelo
   FullPrompt :=
     '--- CONTEXTO HISTÓRICO ---' + LineEnding +
     'Abaixo está o histórico de toda a conversa até o momento. Use-o apenas para entender o contexto:' + LineEnding +
     LineEnding +
-    meHistorico.lines.Text + LineEnding + LineEnding +
+    meHistorico.Lines.Text + LineEnding + LineEnding +
     '--- NOVA PERGUNTA ---' + LineEnding +
     'A seguir está a nova pergunta feita pelo usuário, que deve ser respondida considerando o histórico acima:' + LineEnding +
     Pergunta + LineEnding + LineEnding +
     '--- MAPA DE MEMÓRIA ---' + LineEnding +
-    meMapaMemoria.lines.Text + LineEnding + LineEnding +
+    meMapaMemoria.Lines.Text + LineEnding + LineEnding +
     '--- PENSAMENTO (INSTRUÇÕES INTERNAS) ---' + LineEnding +
-    mePensamento.lines.Text;
+    mePensamento.Lines.Text;
 
   FChatGPT.TOKEN := FSetMain.CHATGPT;
-  FChatGPT.Dev := DevMsg;
+  FChatGPT.Dev   := DevMsg;
 
-  AddLog('Enviando pergunta + histórico ao ChatGPT...');
+  AddLog('MapeiaPensamento: enviando contexto para gerar mapa de pensamento...');
   if FChatGPT.SendQuestion(FullPrompt) then
     Resposta := TextoLimpo(FChatGPT.Response)
   else
     Resposta := TextoLimpo(FChatGPT.Response);
 
-  mePensamento.Lines.Text := Resposta;
-   meMapaMemoria.Lines.Add(Resposta);
-
-
+  if Trim(Resposta) <> '' then
+  begin
+    mePensamento.Lines.Text := Resposta;
+    meMapaMemoria.Lines.Add('--- [PENSAMENTO/IA] ---');
+    meMapaMemoria.Lines.Add(Resposta);
+  end;
 end;
 
 procedure TfrmIA.RespondePergunta();
@@ -867,7 +843,6 @@ begin
     Exit;
   end;
 
-  // Mensagem de sistema (instruções para o modelo)
   DevMsg :=
     'Você é um assistente técnico e está participando de uma conversa contínua.' + LineEnding +
     'O histórico que será enviado representa as interações anteriores com o usuário,' + LineEnding +
@@ -880,7 +855,6 @@ begin
     '4) Se for código, retorne sempre o código completo e formatado.' + LineEnding +
     '5) Se não houver contexto suficiente, peça mais detalhes.' + LineEnding;
 
-  // Prompt principal enviado ao modelo
   FullPrompt :=
     '--- CONTEXTO HISTÓRICO ---' + LineEnding +
     'Abaixo está o histórico de toda a conversa até o momento. Use-o apenas para entender o contexto:' + LineEnding +
@@ -895,7 +869,7 @@ begin
     mePensamento.Text;
 
   FChatGPT.TOKEN := FSetMain.CHATGPT;
-  FChatGPT.Dev := DevMsg;
+  FChatGPT.Dev   := DevMsg;
 
   AddLog('Enviando pergunta + histórico ao ChatGPT...');
   if FChatGPT.SendQuestion(FullPrompt) then
@@ -905,7 +879,6 @@ begin
 
   meResposta.Lines.Text := Resposta;
 
-  // Atualiza histórico (mantém coerência para próximas interações)
   meHistorico.Lines.Add('');
   meHistorico.Lines.Add('Pergunta: ' + Pergunta);
   meHistorico.Lines.Add('Resposta: ' + Copy(Resposta, 1, 2000));
@@ -943,13 +916,13 @@ begin
     Exit;
   end;
 
-  // Responder apenas "Sim" ou "Nao"
   DevMsg :=
     'Você é um classificador. Responda apenas com "Sim" ou "Nao".' + LineEnding +
     'Sem justificativas, sem pontuação, sem quebras de linha.';
   Prompt :=
-    'A pergunta abaixo envolve ARQUIVOS/PASTAS/Projeto (abrir/salvar arquivo, listar diretórios, '+
-    'caminhos, upload/download, leitura/escrita, extensão, nome de arquivo, e informações sobre um projeto. Em suma informações que envolvem dados que devem estar armazenados porem voce não tem acesso.)?' + LineEnding +
+    'A pergunta abaixo envolve acesso a ARQUIVOS/PASTAS/Projeto com operações do tipo (abrir ou salvar arquivo, listar diretórios, ' +
+    'caminhos de pastas ou arquivos, leitura ou escrita de arquivos, criação ou manipulação de diretorios, informações sobre um projeto. ' + LineEnding +
+    ' Em suma, qualquer informação que envolve dados que devam estar armazenados, porem voce não tem acesso na nuvem.)?' + LineEnding +
     'Pergunta: "' + Pergunta + '"' + LineEnding +
     'Responda apenas com "Sim" ou "Nao".';
 
@@ -959,21 +932,21 @@ begin
   AddLog('Classificando se a pergunta envolve arquivos/pastas...');
   if FChatGPT.SendQuestion(Prompt) then
   begin
-    Resp := Trim(FChatGPT.Response);
-    AddLog('SIM');
+    Resp := LowerCase(Trim(FChatGPT.Response));
+    AddLog('sim');
   end
   else
   begin
     Resp := Trim(FChatGPT.Response);
-    AddLog('Não');
+    AddLog('nao');
   end;
 
   if Resp <> '' then
   begin
-    First := UpCase(Resp[1]);  // evita problemas com acentos
-    if First = 'S' then
+    First := LowerCase(Resp[1]);
+    if First = 's' then
       Result := True
-    else if First = 'N' then
+    else if First = 'n' then
       Result := False;
   end;
 
@@ -1000,7 +973,6 @@ begin
     Exit;
   end;
 
-  // Responder apenas "Sim" ou "Nao"
   DevMsg :=
     'Você é um classificador. Responda apenas com "Sim" ou "Nao".' + LineEnding +
     'Sem justificativas, sem pontuação, sem quebras de linha.';
@@ -1021,7 +993,7 @@ begin
 
   if Resp <> '' then
   begin
-    First := UpCase(Resp[1]);  // evita problemas com acentos
+    First := UpCase(Resp[1]);
     if First = 'S' then
       Result := True
     else if First = 'N' then
@@ -1032,15 +1004,14 @@ begin
     [Resp, BoolToStr(Result, True)]));
 end;
 
-
 procedure TfrmIA.AnalisaRespostaFolder();
 var
-  Pergunta, DevMsg, Prompt, Resposta, Historico, LogTxt: string;
+  Pergunta, DevMsg, Prompt, Resposta, Historico, LogTxt, Mapa: WideString;
 begin
-  // Gera resumo do LOG focado na pergunta atual e grava no meMapaMemoria
   Pergunta  := Trim(mePergunta.Text);
-  Historico := Copy(meHistorico.Text, 1, 4000);   // mantém curto
-  LogTxt    := Copy(meLog.Lines.Text, 1, 8000);   // fonte dos fatos
+  Historico := meHistorico.Text;
+  LogTxt    := meLog.Lines.Text;
+  Mapa      := meMapaMemoria.Lines.Text;
 
   if (Pergunta = '') or (LogTxt = '') then
   begin
@@ -1057,16 +1028,17 @@ begin
     Exit;
   end;
 
-  // Instruções para extrair somente o que é pertinente à pergunta
   DevMsg :=
     'Você é um assistente técnico que extrai respostas objetivas do LOG.' + LineEnding +
     'Use o histórico apenas como contexto mínimo.' + LineEnding +
-    'Retorne um texto corrido, sem listas, sem preâmbulo, no máx. 1000 caracteres.' + LineEnding +
+    'Retorne um texto sintetizando as informações relevantes para atender a questão.' + LineEnding +
     'Se não houver nada útil, responda exatamente: Sem dados relevantes';
 
   Prompt :=
     '--- CONTEXTO HISTÓRICO (resumo) ---' + LineEnding +
     Historico + LineEnding + LineEnding +
+    '--- CONTEXTO MAPA MENTAL (informações relevantes) ---' + LineEnding +
+    Mapa + LineEnding + LineEnding +
     '--- LOG DO FOLDER (fonte factual) ---' + LineEnding +
     LogTxt + LineEnding + LineEnding +
     '--- PERGUNTA ---' + LineEnding +
@@ -1094,14 +1066,11 @@ end;
 
 function TfrmIA.BancoConectado(): boolean;
 begin
-  if(frmmquery2 <> nil) then
-  begin
-    result := frmmquery2.zconpost.Connected or  frmmquery2.zconmysql.Connected;
-  end
+  if frmmquery2 <> nil then
+    Result := frmmquery2.zconpost.Connected or frmmquery2.zconmysql.Connected
   else
-    result := false;
+    Result := False;
 end;
 
 end.
-
 

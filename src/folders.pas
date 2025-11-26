@@ -78,13 +78,13 @@ type
       var AllowChange: Boolean);
     procedure ShellTreeView1GetSelectedIndex(Sender: TObject; Node: TTreeNode);
   private
-     ArvoreDiretorios : string;
+     ArvoreDiretorios : widestring;
      Projeto : string;
      Arquivos : TStringList;
      AnaliseArquivo: TStringList; // << novo
 
      function Util_ClipText(const S: string; MaxChars: Integer): string;
-     function AF_BuildDevMsg_ListaCodigos: string;
+     function AF_BuildDevMsg_ListaCodigos: widestring;
 
      // === Helpers usadas por AnalisaFonte (sem aninhar) ===
      function  AF_LoadTextLimited(const Path: string ): widestring;
@@ -92,13 +92,13 @@ type
      function  AF_GuessLanguageByExt(const Ext: string): string;
      function  AF_BuildDevMsg: string;
      function  AF_BuildAsk(const Fonte, Linguagem, SrcNum: string): string;
-     function  AF_SendToChatGPT(const DevMsg, Ask, Token: string; out Resp: string): Boolean;
+     function  AF_SendToChatGPT(const DevMsg, Ask, Token: widestring; out Resp: widestring): Boolean;
      function  AF_BeautifyJson(const Resp: string): string;
      function AF_BuildAsk_ListaCodigos(
-                const ArvoreY, SolicitacaoX: string; MaxItens: Integer): string;
+                const ArvoreY, SolicitacaoX: widestring; MaxItens: Integer): widestring;
      function ParseArquivosRecomendadosJSON(
-      const JSONText: string; Dest: TStrings;
-      out Solicitacao, Observacoes: string): Integer;
+      const JSONText: widestring; Dest: TStrings;
+      out Solicitacao, Observacoes: widestring): Integer;
      function ClipForAsk(const S: string; Max: Integer = 15000): string;
      function ExtractPathFromItemJSON(const ItemJSON: string): string;
 
@@ -112,7 +112,7 @@ type
 
     // ==== Fluxo principal quebrado ====
     procedure UI_Step(const Titulo: string; Posicao: Integer);
-    function Recomendacoes_FromPergunta(const Pergunta: string; out solicit, obs: string): Integer;
+    function Recomendacoes_FromPergunta(const Pergunta: widestring; out solicit, obs: widestring): Integer;
     function ResolveFullPath(const RelPath: string): string;
     function DentroDaRaiz(const FullPath: string): Boolean;
     procedure PreparaListasAnalise;
@@ -139,12 +139,12 @@ type
    public
      function  Scanner(const Root: string): TStringList;
      procedure AtualizaProjeto;
-     procedure LevantamentoDados(const Pergunta: string; out DevPadrao, Solicit: string; out Qtd: Integer; out Obs: string);
+     procedure LevantamentoDados(const Pergunta: widestring; out DevPadrao, Solicit: widestring; out Qtd: Integer; out Obs: widestring);
 
      procedure AnalisaFonte(const Fonte: string);
      procedure RegistraTabelas(Fonte: string; json : string);
      procedure AnalisaProjeto();
-     function ListaCodigos(const ArvoreArquivosY, SolicitacaoX: string; MaxItens: Integer = 25): string;
+     function ListaCodigos(const ArvoreArquivosY, SolicitacaoX: widestring; MaxItens: Integer = 25): string;
      function AnalisaFolderIA(Pergunta: string): string;
      function ScannerRaw(const Root: string): TStringList;
 
@@ -225,7 +225,8 @@ end;
 
 function TfrmFolders.NormalizeAndExpand(const P: string): string;
 begin
-  Result := ExpandAndNormalizeCompat(ExpandFileName(P));
+  // versão sem ExpandFileName duplo
+  Result := ExpandAndNormalizeCompat(P);
 end;
 
 { =====================  FS / ID resolução  ===================== }
@@ -274,9 +275,9 @@ end;
 procedure TfrmFolders.VarreArquivosEAchaSQL(const Pergunta: string);
 var
   i: Integer;
-  RelPath, FullPath: string;
-  Src, Linguagem, SrcNum: string;
-  DevMsg, Ask, Resp: string;
+  RelPath, FullPath: widestring;
+  Src, Linguagem, SrcNum: widestring;
+  DevMsg, Ask, Resp: widestring;
   fsId: Integer;
 
   function JsonOnly(const S: string): string;
@@ -389,6 +390,7 @@ begin
       'Formato: {"tables":[{"database":"","name":""},...],"creates":[{"database":"","name":"","script":""},...]} '+
       'Se não houver nada, retorne {"tables":[],"creates":[]}';
 
+
     Ask :=
       'Extrair TABELAS e CREATE TABLE do código a seguir.'+LineEnding+
       'ARQUIVO: '+ExtractFileName(FullPath)+LineEnding+
@@ -471,21 +473,22 @@ end;
 procedure TfrmFolders.MenuItem1Click(Sender: TObject);
 var
   diretorio : string;
-  arquivo : string;
+  arquivo   : string;
+  fullPath  : string;
 begin
   diretorio := ShellTreeView1.Path;
-  arquivo := ShellListView1.Selected.Caption;
+  arquivo   := ShellListView1.Selected.Caption;
   if (arquivo <> '') then
   begin
-       frmMNote.FileLoad(IncludeTrailingPathDelimiter(diretorio) + arquivo);
-
+    fullPath := IncludeTrailingPathDelimiter(diretorio) + arquivo;
+    fullPath := NormalizeAndExpand(fullPath);
+    frmMNote.FileLoad(fullPath);
   end;
 end;
 
 
 procedure TfrmFolders.MenuItem2Click(Sender: TObject);
 begin
-
   Fsetmain.Defaultfolder:= ShellTreeView1.Path;
   FSetMain.SalvaContexto(false);
 end;
@@ -542,6 +545,9 @@ begin
       // ignora
     end;
   end;
+
+  if arquivo <> '' then
+    arquivo := NormalizeAndExpand(arquivo);
 
   if DirectoryExists(arquivo) then
   begin
@@ -718,8 +724,19 @@ begin
 end;
 
 procedure TfrmFolders.FormCreate(Sender: TObject);
+var
+  norm: string;
 begin
-  edFolder.Text := FSetmain.DefaultFolder;
+  // Normaliza pasta default antes de usar
+  norm := Trim(FSetMain.DefaultFolder);
+  if norm <> '' then
+  begin
+    norm := NormalizeAndExpand(norm);
+    FSetMain.DefaultFolder := norm;
+    edFolder.Text := norm;
+  end
+  else
+    edFolder.Text := '';
 
   if AnaliseArquivo = nil then
     AnaliseArquivo := TStringList.Create
@@ -832,14 +849,14 @@ procedure TfrmFolders.AnalisaProjeto();
 var
   TreePretty, TreeRaw: TStringList;
   Chat : TCHATGPT;
-  Dev, Prompt, Arvore, Previews, Raiz: string;
+  Dev, Prompt, Arvore, Previews, Raiz: widestring;
 begin
   // gera as duas representações
   TreePretty := Scanner(edFolder.Text);  // bonita, só para exibir
   TreeRaw    := ScannerRaw(edFolder.Text); // caminhos relativos reais para a IA
   try
     Raiz   := edFolder.Text;
-    Arvore := ClipText(TreePretty.Text, 60000); // exibição
+    Arvore := TreePretty.Text; // exibição
     ArvoreDiretorios := Arvore;
 
     meLog.Lines.Append('');
@@ -891,62 +908,71 @@ end;
 
 function TfrmFolders.IA_GerarDevPrompt(const Pergunta: string): string;
 var
-  DevMsg, Ask, Resp: string;
+  DevMsg, Ask, Resp: widestring;
 begin
   // Gera um prompt-guia (Dev system) para a etapa final
   DevMsg := 'Voce é um analista de IA, sua função é criar um prompt. ' +
-            'Com base na pergunta crie um prompt para guiar a IA como ela deve se comportar perante o que se quer.';
-  Ask    := 'PERGUNTA:' + Pergunta +
+            'Com base na Arvore de diretorio e na pergunta apresentada, monte uma pergunta.';
+
+  Ask    := 'PERGUNTA:' + Pergunta + LineEnding +
+            ' Arvore diretorio:'+
+            ArvoreDiretorios  + LineEnding +
+
             ' Com base na pergunta crie um prompt para guiar a IA como ela deve se comportar perante o que se quer.';
   Result := '';
-  if AF_SendToChatGPT(DevMsg, Ask, FSetMain.CHATGPT, Resp) then
-    Result := Resp;
+  //if AF_SendToChatGPT(DevMsg, Ask, FSetMain.CHATGPT, Resp) then
+    Result := DevMsg+ ask;
 end;
 
 function TfrmFolders.IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string; force: boolean; out Resumo: string): Boolean;
 var
   Src, SrcNum, Linguagem: widestring;
-  DevMsg, Ask, Resp: string;
+  DevMsg, Ask, Resp: widestring;
   Arquivo : TStringList;
   Texto : widestring;
-
+  PathNorm: string;
 begin
   Resumo := '';
   Result := False;
-  try
-    Src := AF_LoadTextLimited(FullPath);
 
-  finally
-    MessageHint('Erro ao abrir arquivo');
+  PathNorm := NormalizeAndExpand(FullPath);
+
+  try
+    Src := AF_LoadTextLimited(PathNorm);
+  except
+    MessageHint('Erro ao abrir arquivo: ' + PathNorm);
+    Exit(False);
   end;
+
   if Src = '' then
   begin
     Resumo := 'Aviso: arquivo vazio ou leitura falhou.';
     Exit(False);
   end;
 
-  Linguagem := AF_GuessLanguageByExt(ExtractFileExt(FullPath));
+  Linguagem := AF_GuessLanguageByExt(ExtractFileExt(PathNorm));
   SrcNum    := AF_AddLineNumbers(Src);
+
+  // Se for Word/PDF, converte para texto e salva o .RIA (cache)
   if SameText(Linguagem, 'word') or SameText(Linguagem, 'pdf') then
   begin
-    //Converte o documento em texto para analise.
-    if( SameText(Linguagem, 'word')) then
+    if SameText(Linguagem, 'word') then
     begin
       frmMNote.CloseTab(); //Fecha o fonte do doc pois nao precisa
-      Texto := GetDOCText(FullPath);
-      frmMNote.FileNewSave(FullPath+'.RIA', Texto);
-
+      Texto := GetDOCText(PathNorm);
+      frmMNote.FileNewSave(PathNorm+'.RIA', Texto);
     end;
-    if( SameText(Linguagem, 'pdf')) then
+
+    if SameText(Linguagem, 'pdf') then
     begin
       frmMNote.CloseTab(); //Fecha o fonte do pdf pois nao precisa
-      Texto := GetPDFText(FullPath);
-      frmMNote.FileNewSave(FullPath+'.RIA', Texto);
+      Texto := GetPDFText(PathNorm);
+      frmMNote.FileNewSave(PathNorm+'.RIA', Texto);
     end;
   end
   else
   begin
-     frmMNote.FileLoad(FullPath);
+    frmMNote.FileLoad(PathNorm);
   end;
 
   DevMsg :=
@@ -955,7 +981,7 @@ begin
 
   Ask :=
     'PERGUNTA GERAL: ' + Pergunta + LineEnding +
-    'ARQUIVO: ' + ExtractFileName(FullPath) + LineEnding +
+    'ARQUIVO: ' + ExtractFileName(PathNorm) + LineEnding +
     'CAMINHO RELATIVO: ' + RelPath + LineEnding +
     'LINGUAGEM (estimada): ' + Linguagem + LineEnding +
     '--- CÓDIGO COM LINHAS ---' + LineEnding +
@@ -967,27 +993,33 @@ begin
     '- Se aplicável, cite dependências internas/externas de forma breve.' + LineEnding +
     '- Não inclua JSON, markdown, etiquetas ou códigos. Apenas o parágrafo do resumo.';
 
-  if (FileExists(FullPath+'.RIA') and not force)  then
+  // Se já existir cache .RIA e não for forçado, usa direto
+  if (FileExists(PathNorm+'.RIA') and not force)  then
   begin
     Arquivo := TStringList.create();
-    arquivo.LoadFromFile(FullPath+'.RIA');
-    resumo := arquivo.Text;
-    FreeAndNil(arquivo);
-    exit(true);
+    try
+      Arquivo.LoadFromFile(PathNorm+'.RIA');
+      Resumo := Arquivo.Text;
+    finally
+      Arquivo.Free;
+    end;
+    Exit(True);
   end;
+
   if AF_SendToChatGPT(DevMsg, Ask, FSetMain.CHATGPT, Resp) then
   begin
-    Resumo := Resp.Trim;
+    Resumo := trim(Resp);
     Arquivo := TStringList.create();
-    Arquivo.Clear;
-    Arquivo.Append('Arquivo:'+extractfilepath(FullPath));
-    Arquivo.Append('FullPath:'+FullPath);
-    Arquivo.Append('Criado em:'+datetimetostr(now));
-
-    arquivo.append(resumo);
-
-    Arquivo.SaveToFile(FullPath+'.RIA');
-    FreeAndNil(arquivo);
+    try
+      Arquivo.Clear;
+      Arquivo.Append('Arquivo:'+extractfilepath(PathNorm));
+      Arquivo.Append('FullPath:'+PathNorm);
+      Arquivo.Append('Criado em:'+datetimetostr(now));
+      Arquivo.Append(Resumo);
+      Arquivo.SaveToFile(PathNorm+'.RIA');
+    finally
+      Arquivo.Free;
+    end;
     Exit(True);
   end
   else
@@ -1000,24 +1032,25 @@ end;
 function TfrmFolders.IA_PontosImportantes(const Pergunta, FullPath, RelPath: string;  force: boolean; out Resumo: string): Boolean;
 var
   Src, SrcNum, Linguagem: widestring;
-  DevMsg, Ask, Resp: string;
+  DevMsg, Ask, Resp: widestring;
   Arquivo : TStringList;
+  PathNorm: string;
 begin
   Resumo := '';
   Result := False;
 
-  Src := AF_LoadTextLimited(FullPath);
+  PathNorm := NormalizeAndExpand(FullPath);
+
+  Src := AF_LoadTextLimited(PathNorm);
   if Src = '' then
   begin
     Resumo := 'Aviso: arquivo vazio ou leitura falhou.';
     Exit(False);
   end;
 
-
-
-  Linguagem := AF_GuessLanguageByExt(ExtractFileExt(FullPath));
+  Linguagem := AF_GuessLanguageByExt(ExtractFileExt(PathNorm));
   SrcNum    := AF_AddLineNumbers(Src);
-  frmMNote.FileLoad(FullPath);
+  frmMNote.FileLoad(PathNorm);
 
   DevMsg :=
     'Você é um analisador técnico. Responda em TEXTO SIMPLES (sem JSON, sem markdown).' + LineEnding +
@@ -1025,7 +1058,7 @@ begin
 
   Ask :=
     'PERGUNTA GERAL: ' + Pergunta + LineEnding +
-    'ARQUIVO: ' + ExtractFileName(FullPath) + LineEnding +
+    'ARQUIVO: ' + ExtractFileName(PathNorm) + LineEnding +
     'CAMINHO RELATIVO: ' + RelPath + LineEnding +
     'LINGUAGEM (estimada): ' + Linguagem + LineEnding +
     '--- CÓDIGO COM LINHAS ---' + LineEnding +
@@ -1036,27 +1069,32 @@ begin
     '- Explique de forma que seja facil de entender a importancia do fonte, se necessário mostre o fragmento do fonte.' + LineEnding +
     ' Apenas o parágrafo do resumo.';
 
-  if (FileExists(FullPath+'.RIA') and not force)  then
+  if (FileExists(PathNorm+'.RIA') and not force)  then
   begin
     Arquivo := TStringList.create();
-    arquivo.LoadFromFile(FullPath+'.RIA');
-    resumo := arquivo.Text;
-    FreeAndNil(arquivo);
-    exit(true);
+    try
+      Arquivo.LoadFromFile(PathNorm+'.RIA');
+      Resumo := Arquivo.Text;
+    finally
+      Arquivo.Free;
+    end;
+    Exit(True);
   end;
+
   if AF_SendToChatGPT(DevMsg, Ask, FSetMain.CHATGPT, Resp) then
   begin
-    Resumo := Resp.Trim;
+    Resumo := Trim(Resp);
     Arquivo := TStringList.create();
-    Arquivo.Clear;
-    Arquivo.Append('Arquivo:'+extractfilepath(FullPath));
-    Arquivo.Append('FullPath:'+FullPath);
-    Arquivo.Append('Criado em:'+datetimetostr(now));
-
-    arquivo.append(resumo);
-
-    Arquivo.SaveToFile(FullPath+'.RIA');
-    FreeAndNil(arquivo);
+    try
+      Arquivo.Clear;
+      Arquivo.Append('Arquivo:'+extractfilepath(PathNorm));
+      Arquivo.Append('FullPath:'+PathNorm);
+      Arquivo.Append('Criado em:'+datetimetostr(now));
+      Arquivo.Append(Resumo);
+      Arquivo.SaveToFile(PathNorm+'.RIA');
+    finally
+      Arquivo.Free;
+    end;
     Exit(True);
   end
   else
@@ -1068,20 +1106,15 @@ end;
 
 function TfrmFolders.PreparaListasAnaliseSuplementar(const Pergunta, FullPath, RelPath: string; force: boolean; out Resumo: string): Boolean;
 begin
-  //O Objetivo é ver se há arquivos adicionais que precisam ser vistos
-
-  (*
-  if AnaliseArquivo = nil then
-    AnaliseArquivo := TStringList.Create
-  else
-    AnaliseArquivo.Clear;
-    *)
+  // Por enquanto não faz análise extra, só retorna falso de forma explícita
+  Resumo := '';
+  Result := False;
 end;
 
 
 function TfrmFolders.IA_GeraMapaMental(const Texto, Questao: string): string;
 var
-  DevMsg, Ask, Resp: string;
+  DevMsg, Ask, Resp: widestring;
 begin
   DevMsg :=
     'Você é um especialista em síntese. ' +
@@ -1093,7 +1126,7 @@ begin
   Ask :=
     'QUESTÃO: ' + Questao + LineEnding +
     '--- INFORMAÇÕES DISPONÍVEIS ---' + LineEnding +
-    ClipForAsk(Texto, 60000) + LineEnding +
+    Texto + LineEnding +
     '--- FIM ---' + LineEnding +
     'TAREFA:' + LineEnding +
     '- Construa um mapa mental objetivo, apenas com itens que ajudam diretamente a responder a QUESTÃO.' + LineEnding +
@@ -1124,7 +1157,7 @@ function TfrmFolders.IA_RespostaFinal(const DevPadrao, solicit: string): string;
 
   function SummarizeChunk(const DevMsg, PromptPrefix, Chunk: string; out OutText: string): Boolean;
   var
-    Ask, Resp: string;
+    Ask, Resp: widestring;
   begin
     Ask :=
       PromptPrefix + LineEnding +
@@ -1141,7 +1174,7 @@ function TfrmFolders.IA_RespostaFinal(const DevPadrao, solicit: string): string;
   function ReduceSummaries(const DevMsg, Solicitacao: string; const Partes: TStrings): string;
   var
     i: Integer;
-    Acum, Ask, Resp: string;
+    Acum, Ask, Resp: widestring;
   begin
     Acum := '';
     for i := 0 to Partes.Count - 1 do
@@ -1163,8 +1196,8 @@ function TfrmFolders.IA_RespostaFinal(const DevPadrao, solicit: string): string;
   end;
 
 var
-  DevMsg, Ask, Resp: string;
-  Contexto: string;
+  DevMsg, Ask, Resp: widestring;
+  Contexto: widestring;
   Chunks, Resumos: TStringList;
   i: Integer;
   tmp: string;
@@ -1220,9 +1253,9 @@ begin
   Application.ProcessMessages;
 end;
 
-function TfrmFolders.Recomendacoes_FromPergunta(const Pergunta: string; out solicit, obs: string): Integer;
+function TfrmFolders.Recomendacoes_FromPergunta(const Pergunta: widestring; out solicit, obs: widestring): Integer;
 var
-  jsonLista: string;
+  jsonLista: widestring;
 begin
   // Gera árvore para exibição/preview e em seguida chama lista
   ArvoreDiretorios := '';
@@ -1393,7 +1426,7 @@ begin
   UI_Step('Pergunta final baseada nas ANÁLISES (NÃO usar meLog inteiro)', 7);
 end;
 
-procedure TfrmFolders.LevantamentoDados(const Pergunta: string; out DevPadrao, Solicit: string; out Qtd: Integer; out Obs: string);
+procedure TfrmFolders.LevantamentoDados(const Pergunta: widestring; out DevPadrao, Solicit: widestring; out Qtd: Integer; out Obs: widestring);
 begin
   // 0) Prompt Dev (guia de comportamento)
   meLog.Lines.Append('Inicia o guia de comportamento');
@@ -1407,6 +1440,7 @@ begin
   // 1) Recomendações a partir da pergunta
   meLog.Lines.Append('Recomendações a partir da pergunta');
   meLog.Lines.Append('');
+
   Qtd := Recomendacoes_FromPergunta(Pergunta, Solicit, Obs);
   meLog.Lines.Append('Solicitacoes:'+Solicit);
   meLog.Lines.Append('Observações:'+Obs);
@@ -1454,11 +1488,11 @@ end;
 
 function TfrmFolders.AnalisaFolderIA(Pergunta: string): string;
 var
-  DevPadrao, Solicit, Obs: string;
+  DevPadrao, Solicit, Obs: widestring;
   Qtd: Integer;
-  RespFinal: string;
-  MapaMental: string; // << novo
-  PromptMapa: string;
+  RespFinal: widestring;
+  MapaMental: widestring; // << novo
+  PromptMapa: widestring;
 begin
   // Setup visual e limpeza
   pbScanning.Position := 0;
@@ -1611,6 +1645,7 @@ begin
     MessageHint('*** Pasta inválida: ' + RootPath);
     Exit;
   end;
+  RootPath := NormalizeAndExpand(RootPath);
 
   // transação (opcional, acelera bastante)
   dmBase.zconlocal.AutoCommit := False;
@@ -1635,7 +1670,7 @@ end;
 
 procedure TfrmFolders.AnalisaFonte(const Fonte: string);
 var
-  Src, SrcNum, DevMsg, Ask, Resp, Beautified, Linguagem: string;
+  Src, SrcNum, DevMsg, Ask, Resp, Beautified, Linguagem: widestring;
 
 begin
   meLog.Clear;
@@ -1677,18 +1712,23 @@ end;
 { =====================  HELPERS (SEM FUNÇÕES ANINHADAS)  ===================== }
 
 function TfrmFolders.AF_LoadTextLimited(const Path: string): widestring;
+var
+  normPath: string;
 begin
   Result := '';
-  if not FileExists(Path) then Exit;
-
+  normPath := NormalizeAndExpand(Path);
+  if not FileExists(normPath) then Exit;
 
   try
-    //frmMNote.FileLoad(path);
-    //frmMNote.FocusFile(path);
-    FileLoad(path);
-
-  finally
-    Result :=  frmMNote.GetFile(path);
+    // Garante que o frmMNote carregue o arquivo e depois recupera o texto
+    frmMNote.FileLoad(normPath);
+    Result := frmMNote.GetFile(normPath);
+  except
+    on E: Exception do
+    begin
+      Result := '';
+      MessageHint('Erro ao carregar arquivo para análise: ' + E.Message);
+    end;
   end;
 end;
 
@@ -1759,7 +1799,7 @@ begin
 end;
 
 function TfrmFolders.AF_SendToChatGPT(
-  const DevMsg, Ask, Token: string; out Resp: string): Boolean;
+  const DevMsg, Ask, Token: widestring; out Resp: widestring): Boolean;
 var
   Chat: TCHATGPT;
 begin
@@ -1828,6 +1868,7 @@ var
   caminho : string;
   arquivo : string;
   extensao : string;
+  normFonte: string;
   iddir , id : integer;
 
   procedure ReplaceDebugMarkers(var S: string);
@@ -1862,11 +1903,12 @@ var
   end;
 
 begin
-  caminho := ExtractFilePath(Fonte);
+  normFonte := NormalizeAndExpand(Fonte);
+  caminho := ExtractFilePath(normFonte);
   if (caminho <> '') and (caminho[Length(caminho)] in ['/', '\']) then
      Delete(caminho, Length(caminho), 1);
-  arquivo := ExtractFileName(fonte);
-  extensao:= ExtractFileExt(fonte);
+  arquivo := ExtractFileName(normFonte);
+  extensao:= ExtractFileExt(normFonte);
 
   // 1) Sanitiza entrada
   Clean := json;
@@ -1892,7 +1934,7 @@ begin
         Resumo := Obj.Get('resumo', '');
 
         // 4) (Exemplo) Exibe no log — troque aqui pelo que quiser fazer com as listas
-        meLog.Lines.Append('--- Resultado de ' + ExtractFileName(Fonte) + ' ---');
+        meLog.Lines.Append('--- Resultado de ' + arquivo + ' ---');
         meLog.Lines.Append('resumo: ' + Resumo);
 
         meLog.Lines.Append('tabela_usada:');
@@ -1943,51 +1985,53 @@ begin
             '... (cortado para caber no prompt)';
 end;
 
-function TfrmFolders.AF_BuildDevMsg_ListaCodigos: string;
+
+function TfrmFolders.AF_BuildDevMsg_ListaCodigos: widestring;
 begin
   // Regras: resposta ESTRITAMENTE em JSON válido UTF-8, sem markdown
   Result :=
     'Você é um assistente técnico de engenharia de software.' + LineEnding +
-    'Sua tarefa é, dada uma ÁRVORE DE ARQUIVOS (Y) e uma SOLICITAÇÃO/OBJETIVO (X),' + LineEnding +
-    'selecionar os arquivos mais relevantes para análise a fim de atender X.' + LineEnding +
+    'Sua tarefa é, dada uma ÁRVORE DE ARQUIVOS  e uma SOLICITAÇÃO/OBJETIVO,' + LineEnding +
+    'selecionar o ou os arquivos  relevantes para análise a fim de atender a solicitacao.' + LineEnding +
     'REGRAS:' + LineEnding +
     '- Responda ESTRITAMENTE em JSON válido UTF-8.' + LineEnding +
     '- Não use markdown, cabeçalhos, comentários ou textos fora do JSON.' + LineEnding +
-    '- A lista deve conter **apenas** caminhos que existam em Y.' + LineEnding +
+    '- A lista deve conter **apenas** caminhos que existam na Arvore de arquivos.' + LineEnding +
     '- Priorize pontos de entrada, módulos de regra de negócio, camadas de dados, configuração e testes-alvo.' + LineEnding +
     '- Evite binários/mídias e arquivos obviamente irrelevantes.' + LineEnding +
     '- Limite-se ao número máximo solicitado.' + LineEnding +
     '' + LineEnding +
     'FORMATO DO JSON:' + LineEnding +
     '{' + LineEnding +
-    '  "solicitacao": "<eco de X>",' + LineEnding +
+    '  "solicitacao": "<eco da solicitacao>",' + LineEnding +
     '  "arquivos_recomendados": [' + LineEnding +
-    '    {"path": "<caminho relativo conforme Y>", "motivo": "<por que este arquivo>", "prioridade": <1-n>} ' + LineEnding +
+    '    {"path": "<caminho relativo conforme a Arvore de Diretórios>", "motivo": "<por que este arquivo>", "prioridade": <1-n>} ' + LineEnding +
     '  ],' + LineEnding +
     '  "observacoes": "<opcional, breves notas ou lacunas>"' + LineEnding +
     '}';
 end;
 
+
 function TfrmFolders.AF_BuildAsk_ListaCodigos(
-  const ArvoreY, SolicitacaoX: string; MaxItens: Integer): string;
+  const ArvoreY, SolicitacaoX: widestring; MaxItens: Integer): widestring;
 begin
   Result :=
-    'SOLICITACAO (X): ' + SolicitacaoX + LineEnding + LineEnding +
+    'SOLICITACAO: ' + SolicitacaoX + LineEnding + LineEnding +
     'LIMITE_MAX_ITENS: ' + IntToStr(MaxItens) + LineEnding + LineEnding +
-    '--- ARVORE DE ARQUIVOS (Y) ---' + LineEnding +
-    ArvoreY + LineEnding +
+    '--- ARVORE DE ARQUIVOS---' + LineEnding +
+    ArvoreDiretorios + LineEnding +
     '--- FIM ARVORE ---' + LineEnding + LineEnding +
     'TAREFA:' + LineEnding +
-    '- Selecione até ' + IntToStr(MaxItens) + ' arquivos da árvore (Y) mais relevantes para atender X.' + LineEnding +
-    '- Mantenha caminhos exatamente como aparecem em Y quando possível.' + LineEnding +
+    '- Selecione os arquivos da "ARVORE DE ARQUIVOS" relevantes para atender solicitação.' + LineEnding +
+    '- Mantenha caminhos exatamente como aparecem na "ARVORE DE ARQUIVOS".' + LineEnding +
     '- Ordene por "prioridade" (1 = mais importante).' + LineEnding +
     '- Responda apenas no formato JSON especificado.';
 end;
 
 function TfrmFolders.ListaCodigos(
-  const ArvoreArquivosY, SolicitacaoX: string; MaxItens: Integer): string;
+  const ArvoreArquivosY, SolicitacaoX: widestring; MaxItens: Integer): string;
 var
-  Dev, Ask, Resp, Y: string;
+  Dev, Ask, Resp: widestring;
 begin
   // Proteção básica
   if Trim(FSetMain.CHATGPT) = '' then
@@ -1996,15 +2040,13 @@ begin
     Exit('');
   end;
 
-  // Evita estourar contexto (ajuste se quiser)
-  Y   := Util_ClipText(ArvoreArquivosY, 60000);
   Dev := AF_BuildDevMsg_ListaCodigos;
-  Ask := AF_BuildAsk_ListaCodigos(Y, SolicitacaoX, MaxItens);
+  Ask := AF_BuildAsk_ListaCodigos(ArvoreArquivosY, SolicitacaoX, MaxItens);
 
   if AF_SendToChatGPT(Dev, Ask, FSetMain.CHATGPT, Resp) then
   begin
-    // Embeleza se for JSON válido; caso contrário, devolve bruto
-    Result := AF_BeautifyJson(Resp);
+    //Result := AF_BeautifyJson(Resp);
+    Result := Resp;
     if Result = '' then
       Result := Resp;
   end
@@ -2016,8 +2058,8 @@ begin
 end;
 
 function TfrmFolders.ParseArquivosRecomendadosJSON(
-  const JSONText: string; Dest: TStrings;
-  out Solicitacao, Observacoes: string): Integer;
+  const JSONText: widestring; Dest: TStrings;
+  out Solicitacao, Observacoes: widestring): Integer;
 var
   Parser: TJSONParser;
   Data: TJSONData;
@@ -2033,19 +2075,32 @@ begin
   if Dest <> nil then
     Dest.Clear;
 
-  if Trim(JSONText) = '' then Exit;
+  // Se o JSON vier vazio (string em branco)
+  if Trim(JSONText) = '' then
+  begin
+    // Nada para fazer, apenas retorna 0 e strings vazias
+    Exit;
+  end;
 
   try
     Parser := TJSONParser.Create(JSONText);
     try
       Data := Parser.Parse;
       try
-        if (Data = nil) or (Data.JSONType <> jtObject) then Exit;
+        // Se não for um objeto JSON, trata como vazio/inválido
+        if (Data = nil) or (Data.JSONType <> jtObject) then
+        begin
+          Exit; // Result já é 0, Dest já está limpa
+        end;
+
         Obj := TJSONObject(Data);
 
+        // Campos opcionais
         Solicitacao := Obj.Get('solicitacao', '');
         Observacoes := Obj.Get('observacoes', '');
 
+        // Lista de arquivos recomendados (pode não existir)
+        Arr := nil;
         if Obj.Find('arquivos_recomendados', Arr) and (Arr <> nil) then
         begin
           for i := 0 to Arr.Count - 1 do
@@ -2063,6 +2118,7 @@ begin
             end;
           end;
         end;
+        // Se não tiver 'arquivos_recomendados', resultado continua 0, sem erro
       finally
         Data.Free;
       end;
@@ -2071,9 +2127,17 @@ begin
     end;
   except
     on E: Exception do
+    begin
       MessageHint('Falha ao processar JSON da lista: ' + E.Message);
+      if Dest <> nil then
+        Dest.Clear;
+      Result := 0;
+      Solicitacao := '';
+      Observacoes := '';
+    end;
   end;
 end;
+
 
 function TfrmFolders.ExtractPathFromItemJSON(const ItemJSON: string): string;
 var
@@ -2262,11 +2326,11 @@ end;
 
 procedure TfrmFolders.BuscaTermos(const Pergunta: string);
 var
-  DevPadrao, Solicit, Obs: string;
-  Qtd: Integer;
+  Dev, Ask, Resp: widestring;
   Terms, Files: TStringList;
   DoSearch: Boolean;
-  i : integer;
+  Obs: string;
+  i: Integer;
 begin
   meLog.Lines.Add('=== BuscaTermos: consultando IA para obter termos/arquivos ===');
 
@@ -2280,19 +2344,39 @@ begin
   Terms := TStringList.Create;
   Files := TStringList.Create;
   try
-    Qtd := Recomendacoes_FromPergunta(Pergunta, Solicit, Obs);
-    meLog.Lines.append(Format('[BuscaTermos] %d termo(s) e %d arquivo(s) indicados.', [Terms.Count, Files.Count]));
+    Dev := BT_BuildDevMsg;
+    Ask := BT_BuildAsk(Pergunta, ArvoreDiretorios);
+
+    if not AF_SendToChatGPT(Dev, Ask, FSetMain.CHATGPT, Resp) then
+    begin
+      meLog.Lines.Add('[BuscaTermos] Falha ao consultar IA para definição de termos.');
+      Exit;
+    end;
+
+    if not ParseBuscaTermosJSON(Resp, DoSearch, Terms, Files, Obs) then
+    begin
+      meLog.Lines.Add('[BuscaTermos] Não foi possível interpretar o JSON retornado.');
+      Exit;
+    end;
+
+    meLog.Lines.append(
+      Format('[BuscaTermos] %d termo(s) e %d arquivo(s) indicados.', [Terms.Count, Files.Count])
+    );
     meLog.Lines.append('[BuscaTermos] Observações: ' + Obs);
 
     // Varredura real dos arquivos
-    if DoSearch then
+    if DoSearch and (Terms.Count > 0) and (Files.Count > 0) then
     begin
       meLog.Lines.Add('=== Iniciando varredura de arquivos existentes ===');
-      for  i := 0 to Files.Count - 1 do
+      for i := 0 to Files.Count - 1 do
       begin
-        meLog.Lines.append(' Pesquisou arquivo ' + Files[i]);
+        meLog.Lines.append(' Pesquisando arquivo ' + Files[i]);
         BT_ScanFileForTerms(Files[i], Terms);
       end;
+    end
+    else
+    begin
+      meLog.Lines.Add('[BuscaTermos] Busca por termos não autorizada ou listas vazias. Nada a varrer.');
     end;
 
   finally
@@ -2370,10 +2454,6 @@ begin
     Result := True;
   end;
 end;
-
-
-
-
 
 end.
 

@@ -19,7 +19,19 @@ object frmMNote: TfrmMNote
     Top = 0
     Width = 1172
     Align = alTop
+    ClientHeight = 50
+    ClientWidth = 1172
     TabOrder = 0
+    object btIA2: TButton
+      Left = 1040
+      Height = 46
+      Top = 2
+      Width = 122
+      Anchors = [akTop, akRight]
+      Caption = 'IA'
+      TabOrder = 0
+      OnClick = btIA2Click
+    end
   end
   object pnclient: TPanel
     Left = 0
@@ -199,10 +211,10 @@ object frmMNote: TfrmMNote
           Height = 287
           Top = 51
           Width = 375
-          ActivePage = tsHistory
+          ActivePage = tsDialog
           Align = alClient
           AutoSize = True
-          TabIndex = 2
+          TabIndex = 0
           TabOrder = 4
           object tsDialog: TTabSheet
             Caption = 'Dialog'
@@ -1692,6 +1704,7 @@ object frmMNote: TfrmMNote
     object btIA: TMenuItem
       Caption = 'IA'
       ImageIndex = 12
+      Visible = False
       OnClick = btIAClick
     end
   end

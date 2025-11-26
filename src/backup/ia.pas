@@ -86,7 +86,8 @@ type
     procedure MapeiaPensamento();
     procedure RespondePergunta();
     procedure LimparHistorico();
-    function  QuestoesFolder(): boolean;
+    function QuestoesFolder(): boolean;
+    function QuestoesCaminho(): boolean;
     function  QuestoesBanco(): boolean;
     procedure AnalisaRespostaFolder();  // <<< NOVA FUNÇÃO
     function BancoConectado(): boolean;
@@ -569,9 +570,9 @@ begin
           meLog.Lines.Add('Falha ao criar nova aba no MNote com a consulta SQL.')
         else
           meLog.Lines.Add('Nova aba criada no MNote com consulta SELECT.');
-          tb := pgMain.ActivePage;
+          tb := frmMNote.pgMain.ActivePage;
           item := TItem(tb.Tag);
-          item.
+          item.ItemType:= ti_SQL;
           syn := item.syn;
       end
       else
@@ -778,22 +779,94 @@ begin
 
       end;
   end;
-
-
 end;
+
+function TfrmIA.QuestoesCaminho(): boolean;
+var
+  Pergunta, DevMsg, Prompt, Resp: string;
+  First: Char;
+begin
+  Result := False;
+
+  Pergunta := Trim(mePergunta.Text);
+  if Pergunta = '' then Exit;
+
+  if FChatGPT = nil then
+    FChatGPT := TCHATGPT.Create(Self);
+
+  if Trim(FSetMain.CHATGPT) = '' then
+  begin
+    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+    Exit;
+  end;
+
+  // Classificador: apenas "Sim" ou "Nao"
+  DevMsg :=
+    'Você é um classificador. Responda apenas com "Sim" ou "Nao".' + LineEnding +
+    'Sem explicações, sem justificativas e sem pontuação.' + LineEnding +
+    'Voce tem acesso a diversas informações que serão passadas no momento apropriado, então considere que tem acesso a informações'+LineEnding +
+    'Regras:' + LineEnding +
+    '1) Se a pergunta for genérica (ex: "listar arquivos da pasta atual"), responda "Sim".' + LineEnding +
+    '2) Se a pergunta exigir um caminho, nome de arquivo ou pasta específica que NÃO esteja contido no caminho, responda "Nao".' + LineEnding +
+    '3) Se a árvore fornecer potencialmente o necessário, mesmo sem dados completos, responda "Sim".' + LineEnding +
+    'Seu objetivo é determinar se O CAMINHO PODE conter o necessário — não se contém ou não.';
+
+  Prompt :=
+    'Vou te passar duas coisas:' + LineEnding +
+    '1) A pergunta do usuário.' + LineEnding +
+    '2) A árvore de pastas/projeto disponível.' + LineEnding +
+    LineEnding +
+    'Com base APENAS no caminho, determine:' + LineEnding +
+    'É possível atender à solicitação feita na pergunta?' + LineEnding +
+    'Responda somente com "Sim" ou "Nao".' + LineEnding +
+    LineEnding +
+    'Pergunta: "' + Pergunta + '"' + LineEnding +
+    'Árvore disponível:' + LineEnding +
+    FSetMain.Defaultfolder + LineEnding +
+    meLog.Lines.Text + LineEnding +
+    'Responda apenas com "Sim" ou "Nao".';
+
+  FChatGPT.TOKEN := FSetMain.CHATGPT;
+  FChatGPT.Dev   := DevMsg;
+
+  AddLog('Classificando se a árvore tem informações suficientes...');
+
+  if FChatGPT.SendQuestion(Prompt) then
+    Resp := LowerCase(Trim(FChatGPT.Response))
+  else
+    Resp := LowerCase(Trim(FChatGPT.Response));
+
+  if Resp <> '' then
+  begin
+    First := LowerCase(Resp[1]);
+    if First = 's' then
+      Result := True
+    else if First = 'n' then
+      Result := False;
+  end;
+
+  AddLog(Format('QuestoesCaminho => Resp="%s" | Result=%s',
+    [Resp, BoolToStr(Result, True)]));
+end;
+
+
 
 procedure TfrmIA.AnalisaFolder();
 begin
-  if QuestoesFolder() then
+  if(QuestoesFolder()) then
   begin
-    // Integra análise da unit Folders
-    meMapaMemoria.Lines.Add('--[FOLDER/PROJETO]------------------------------');
-    meMapaMemoria.Lines.Add(frmFolders.AnalisaFolderIA(mePergunta.Lines.Text));
-    meMapaMemoria.Lines.Add(frmFolders.meLog.Lines.Text);
+    frmFolders.AnalisaProjeto();
+    if(QuestoesCaminho()) then
+    begin
+      // Integra análise da unit Folders
+      meMapaMemoria.Lines.Add('--[FOLDER/PROJETO]------------------------------');
+      meMapaMemoria.Lines.Add(frmFolders.AnalisaFolderIA(mePergunta.Lines.Text));
+      meMapaMemoria.Lines.Add(frmFolders.meLog.Lines.Text);
 
-    // Resumo orientado à pergunta, extraído do meLog + pergunta
-    AnalisaRespostaFolder();  // <<< chama a nova função
-    meMapaMemoria.Lines.Add(''); // separador visual
+      // Resumo orientado à pergunta, extraído do meLog + pergunta
+      AnalisaRespostaFolder();  // <<< chama a nova função
+      meMapaMemoria.Lines.Add(''); // separador visual
+    end;
   end;
 
 end;
@@ -948,8 +1021,9 @@ begin
     'Você é um classificador. Responda apenas com "Sim" ou "Nao".' + LineEnding +
     'Sem justificativas, sem pontuação, sem quebras de linha.';
   Prompt :=
-    'A pergunta abaixo envolve ARQUIVOS/PASTAS/Projeto (abrir/salvar arquivo, listar diretórios, '+
-    'caminhos, upload/download, leitura/escrita, extensão, nome de arquivo, e informações sobre um projeto. Em suma informações que envolvem dados que devem estar armazenados porem voce não tem acesso.)?' + LineEnding +
+    'A pergunta abaixo envolve acesso a ARQUIVOS/PASTAS/Projeto com operações do tipo (abrir ou salvar arquivo, listar diretórios, '+
+    'caminhos de pastas ou arquivos, leitura ou escrita de arquivos, criação ou manipulação de diretorios, informações sobre um projeto. '+LineEnding +
+    ' Em suma, qualquer informação que envolve dados que devam estar armazenados, porem voce não tem acesso na nuvem.)?' + LineEnding +
     'Pergunta: "' + Pergunta + '"' + LineEnding +
     'Responda apenas com "Sim" ou "Nao".';
 
@@ -959,21 +1033,21 @@ begin
   AddLog('Classificando se a pergunta envolve arquivos/pastas...');
   if FChatGPT.SendQuestion(Prompt) then
   begin
-    Resp := Trim(FChatGPT.Response);
-    AddLog('SIM');
+    Resp := LowerCase(Trim(FChatGPT.Response));
+    AddLog('sim');
   end
   else
   begin
     Resp := Trim(FChatGPT.Response);
-    AddLog('Não');
+    AddLog('nao');
   end;
 
   if Resp <> '' then
   begin
-    First := UpCase(Resp[1]);  // evita problemas com acentos
-    if First = 'S' then
+    First := LowerCase(Resp[1]);  // evita problemas com acentos
+    if First = 's' then
       Result := True
-    else if First = 'N' then
+    else if First = 'n' then
       Result := False;
   end;
 
@@ -1035,12 +1109,13 @@ end;
 
 procedure TfrmIA.AnalisaRespostaFolder();
 var
-  Pergunta, DevMsg, Prompt, Resposta, Historico, LogTxt: string;
+  Pergunta, DevMsg, Prompt, Resposta, Historico, LogTxt, Mapa: widestring;
 begin
   // Gera resumo do LOG focado na pergunta atual e grava no meMapaMemoria
   Pergunta  := Trim(mePergunta.Text);
-  Historico := Copy(meHistorico.Text, 1, 4000);   // mantém curto
-  LogTxt    := Copy(meLog.Lines.Text, 1, 8000);   // fonte dos fatos
+  Historico := meHistorico.Text;   // mantém curto
+  LogTxt    := meLog.Lines.Text;   // fonte dos fatos
+  Mapa      := meMapaMemoria.Lines.text; //Mapa mental
 
   if (Pergunta = '') or (LogTxt = '') then
   begin
@@ -1061,12 +1136,14 @@ begin
   DevMsg :=
     'Você é um assistente técnico que extrai respostas objetivas do LOG.' + LineEnding +
     'Use o histórico apenas como contexto mínimo.' + LineEnding +
-    'Retorne um texto corrido, sem listas, sem preâmbulo, no máx. 1000 caracteres.' + LineEnding +
+    'Retorne um texto sintetizando as informações relevantes para atender a questão.' + LineEnding +
     'Se não houver nada útil, responda exatamente: Sem dados relevantes';
 
   Prompt :=
     '--- CONTEXTO HISTÓRICO (resumo) ---' + LineEnding +
     Historico + LineEnding + LineEnding +
+    '--- CONTEXTO MAPA MENTAL (informações relevantes) ---' + LineEnding +
+    MAPA + LineEnding + LineEnding +
     '--- LOG DO FOLDER (fonte factual) ---' + LineEnding +
     LogTxt + LineEnding + LineEnding +
     '--- PERGUNTA ---' + LineEnding +

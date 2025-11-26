@@ -29,9 +29,9 @@ object frmFolders: TfrmFolders
       Height = 650
       Top = 1
       Width = 804
-      ActivePage = tsTecnica
+      ActivePage = tsFolders
       Align = alClient
-      TabIndex = 3
+      TabIndex = 0
       TabOrder = 0
       object tsFolders: TTabSheet
         Caption = 'Folders'
