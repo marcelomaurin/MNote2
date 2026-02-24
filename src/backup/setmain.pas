@@ -15,8 +15,6 @@ const filename = 'mnote.cfg';
 
 
 type
-  { TfrmMenu }
-
   { TSetMain }
 
   TSetMain = class(TObject)
@@ -62,8 +60,6 @@ type
         FDefaultfolder : string;
         FProject : string;
 
-
-        //filename : String;
         procedure SetDevice(const Value : Boolean);
         procedure SetPOSX(value : integer);
         procedure SetPOSY(value : integer);
@@ -79,7 +75,7 @@ type
         procedure Default();
   public
         constructor create();
-        destructor Destroy();
+        destructor Destroy(); override;
         procedure SalvaContexto(flag : boolean);
         Procedure CarregaContexto();
         procedure IdentificaArquivo(flag : boolean);
@@ -96,7 +92,7 @@ type
         property CleanScript : string read FCleanScript write FCleanScript;
         property Install : string read FInstall write FInstall;
         property Compile : string read FCompile write FCompile;
-        property Font : TFont read FFont write SetFont;
+        property Font : TFont read FFONT write SetFont;
         property CHATGPT: String read FCHATGPT write SetCHATGPT;
         property DLLPath : String read FDllPath write SetDllPath;
         property DLLMyPath : String read FDllMyPath write SetDllMyPath;
@@ -108,7 +104,7 @@ type
         property PasswordMy : String read FPasswordMy write FPasswordMy;
         property HostnamePost : String read FHostnamePost write FHostnamePost;
         property BancoPOST : String read FBancoPOST write FBancoPOST;
-        property UsernamePost: String read FUsernamePOST write FUsernamePost;
+        property UsernamePost: String read FUsernamePost write FUsernamePost;
         property PasswordPost : String read FPasswordPost write FPasswordPost;
         property SchemaPost: String read FSchemaPost write FSchemaPost;
         property ToolsFalar : Boolean read FToolsFalar write SetToolsFalar;
@@ -145,15 +141,14 @@ begin
     FDllPath:= ExtractFilePath(ApplicationName);
     FDllMyPath:= ExtractFilePath(ApplicationName);
     FDllPostPath:= ExtractFilePath(ApplicationName);
-    //FLastFiles :="";
-    //    FPATH : string;
+
     FHeight :=400;
     FWidth :=400;
-    FRunScript := '';   //Script de Run
-    FDebugScript :='';  //Script de Debug
-    FCleanScript :='';  //Script de Limpeza
-    FInstall :='';      //Script de Instalacao
-    FCompile :='';      //Script de Compilacao
+    FRunScript := '';
+    FDebugScript :='';
+    FCleanScript :='';
+    FInstall :='';
+    FCompile :='';
 
     fIPFALAR := '127.0.0.1';
     fIPOUVIR := '127.0.0.1';
@@ -162,14 +157,13 @@ begin
          FFONT := TFont.create();
     end;
     FFONT.Name := 'Courier New';
-    FFont.Size := 12;          // Define o tamanho
+    FFont.Size := 12;
 
-    FCHATGPT:=''; //CHATGPT TOKEN
+    FCHATGPT:='';
     FToolsFalar := false;
     FToolsOuvir := false;
     FDefaultfolder := '';
     FProject:= '';
-
 end;
 
 procedure TSetMain.SetPOSX(value: integer);
@@ -199,8 +193,9 @@ end;
 
 procedure TSetMain.SetFont(value: TFont);
 begin
-  //StringToFont(value,FFONT);
-  FFont := value;
+  // copia o conteúdo da fonte em vez de trocar o ponteiro
+  if Assigned(value) then
+    FFONT.Assign(value);
 end;
 
 procedure TSetMain.SetCHATGPT(value: String);
@@ -233,141 +228,103 @@ var
   posicao: integer;
 begin
     if  BuscaChave(arquivo,'DEVICE:',posicao) then
-    begin
       ckdevice := (RetiraInfo(arquivo.Strings[posicao])='1');
-    end;
+
     if  BuscaChave(arquivo,'POSX:',posicao) then
-    begin
       FPOSX := strtoint(RetiraInfo(arquivo.Strings[posicao]));
-    end;
+
     if  BuscaChave(arquivo,'POSY:',posicao) then
-    begin
       FPOSY := strtoint(RetiraInfo(arquivo.Strings[posicao]));
-    end;
+
     if  BuscaChave(arquivo,'FIXAR:',posicao) then
-    begin
       FFixar := StrToBool(RetiraInfo(arquivo.Strings[posicao]));
-    end;
+
     if  BuscaChave(arquivo,'STAY:',posicao) then
-    begin
       FStay := strtoBool(RetiraInfo(arquivo.Strings[posicao]));
-    end;
+
     if  BuscaChave(arquivo,'LASTFILES:',posicao) then
-    begin
       FLastFiles := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'HEIGHT:',posicao) then
-    begin
       FHEIGHT := strtoint(RetiraInfo(arquivo.Strings[posicao]));
-    end;
+
     if  BuscaChave(arquivo,'WIDTH:',posicao) then
-    begin
       FWidth := strtoint(RetiraInfo(arquivo.Strings[posicao]));
-    end;
+
     if  BuscaChave(arquivo,'RUNSCRIPT:',posicao) then
-    begin
       FRunScript := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'DEBUGSCRIPT:',posicao) then
-    begin
       FDebugScript := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'CLEANSCRIPT:',posicao) then
-    begin
       FCleanScript := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'INSTALLSCRIPT:',posicao) then
-    begin
       FInstall := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'COMPILESCRIPT:',posicao) then
-    begin
       FCompile := RetiraInfo(arquivo.Strings[posicao]);
-    end;
 
     if  BuscaChave(arquivo,'FONT:',posicao) then
-    begin
       StringToFont(RetiraInfo(arquivo.Strings[posicao]),FFONT);
-    end;
+
     if  BuscaChave(arquivo,'CHATGPT:',posicao) then
-    begin
       FCHATGPT := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'DLLPATH:',posicao) then
-    begin
       FDLLPATH := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'DLLMYPATH:',posicao) then
-    begin
       FDLLMyPATH := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'DLLPOSTPATH:',posicao) then
-    begin
       FDLLPOSTPATH := RetiraInfo(arquivo.Strings[posicao]);
-    end;
 
     if  BuscaChave(arquivo,'HOSTNAMEMY:',posicao) then
-    begin
       FHostnameMy := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'BANCOMY:',posicao) then
-    begin
       FBancoMy := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'USERNAMEMY:',posicao) then
-    begin
       FUsernameMy := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'PASSWORDMY:',posicao) then
-    begin
       FPasswordMy := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'HOSTNAMEPOST:',posicao) then
-    begin
       FHostnamePost := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'BANCOPOST:',posicao) then
-    begin
       FBancoPost := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'USERNAMEPOST:',posicao) then
-    begin
       FUsernamePost := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'PASSWORDPOST:',posicao) then
-    begin
       FPasswordPost := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'SCHEMAPOST:',posicao) then
-    begin
       FSchemaPost := RetiraInfo(arquivo.Strings[posicao]);
-    end;
+
     if  BuscaChave(arquivo,'TOOLSFALAR:',posicao) then
-    begin
       FTOOLSFALAR := iif(RetiraInfo(arquivo.Strings[posicao])='0',false,true);
-    end;
+
     if  BuscaChave(arquivo,'TOOLSOUVIR:',posicao) then
-    begin
       FTOOLSOUVIR := iif(RetiraInfo(arquivo.Strings[posicao])='0',false,true);
-    end;
 
     if  BuscaChave(arquivo,'IPFALAR:',posicao) then
-    begin
-      fIPFALAR := RetiraInfo(arquivo.Strings[posicao]);   ;
-    end;
-    if  BuscaChave(arquivo,'IPOUVIR:',posicao) then
-    begin
-      fIPOUVIR := RetiraInfo(arquivo.Strings[posicao]);   ;
-    end;
-    if  BuscaChave(arquivo,'DEFAULTFOLDER:',posicao) then
-    begin
-      FDefaultfolder := RetiraInfo(arquivo.Strings[posicao]);   ;
-    end;
-    if  BuscaChave(arquivo,'PROJECT:',posicao) then
-    begin
-      FProject := RetiraInfo(arquivo.Strings[posicao]);   ;
-    end;
+      fIPFALAR := RetiraInfo(arquivo.Strings[posicao]);
 
+    if  BuscaChave(arquivo,'IPOUVIR:',posicao) then
+      fIPOUVIR := RetiraInfo(arquivo.Strings[posicao]);
+
+    if  BuscaChave(arquivo,'DEFAULTFOLDER:',posicao) then
+      FDefaultfolder := RetiraInfo(arquivo.Strings[posicao]);
+
+    if  BuscaChave(arquivo,'PROJECT:',posicao) then
+      FProject := RetiraInfo(arquivo.Strings[posicao]);
 end;
 
 
@@ -396,9 +353,9 @@ begin
 end;
 
 
-//Metodo construtor
 constructor TSetMain.create();
 begin
+    inherited Create;
     arquivo := TStringList.create();
     FFONT := TFont.create();
     IdentificaArquivo(true);
@@ -412,7 +369,7 @@ begin
 
   if not DirectoryExists(FPath) then
     CreateDir(FPath);
-  //filename := 'Work'+ FormatDateTime('ddmmyy',now())+'.cfg';
+
   arquivo.Clear;
   arquivo.Append('DEVICE:'+iif(ckdevice,'1','0'));
   arquivo.Append('POSX:'+inttostr(FPOSX));
@@ -441,7 +398,6 @@ begin
   arquivo.Append('IPFALAR:'+fIPFALAR);
   arquivo.Append('IPOUVIR:'+fIPOUVIR);
 
-
   arquivo.Append('HOSTNAMEPOST:'+FHostnamePOST);
   arquivo.Append('BANCOPOST:'+FBancoPOST);
   arquivo.Append('USERNAMEPOST:'+FUsernamePOST);
@@ -457,14 +413,12 @@ end;
 
 destructor TSetMain.Destroy;
 begin
-  //SalvaContexto(false);
-  arquivo.free;
+  arquivo.Free;
   arquivo := nil;
-  FFONT.free;
+  FFONT.Free;
+  FFONT := nil;
+  inherited Destroy;
 end;
 
 end.
-
-
-
 

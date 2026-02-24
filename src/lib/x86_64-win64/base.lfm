@@ -1,45 +1,46 @@
 object dmBase: TdmBase
+  OnCreate = DataModuleCreate
   OldCreateOrder = False
-  Height = 325
-  HorizontalOffset = 759
-  VerticalOffset = 400
-  Width = 416
-  PPI = 120
+  Height = 260
+  HorizontalOffset = 159
+  VerticalOffset = 676
+  Width = 333
   object DataSource1: TDataSource
-    Left = 160
-    Top = 51
-  end
-  object zcon: TZConnection
-    ControlsCodePage = cCP_UTF8
-    AutoEncodeStrings = True
-    Properties.Strings = (
-      'AutoEncodeStrings=ON'
-      'controls_cp=CP_UTF8'
-    )
-    DesignConnection = True
-    Port = 0
-    Database = 'localdb'
-    User = 'root'
-    Protocol = 'mysqld-5'
-    Left = 35
-    Top = 37
+    Left = 128
+    Top = 41
   end
   object zqryaux: TZQuery
-    Connection = zcon
     Params = <>
-    Left = 328
-    Top = 56
+    Left = 262
+    Top = 45
   end
   object zqryaux1: TZQuery
-    Connection = zcon
     Params = <>
-    Left = 328
-    Top = 136
+    Left = 262
+    Top = 109
   end
   object zqryaux2: TZQuery
-    Connection = zcon
     Params = <>
-    Left = 328
-    Top = 216
+    Left = 262
+    Top = 173
+  end
+  object zconlocal: TZConnection
+    ControlsCodePage = cDynamic
+    Properties.Strings = (
+      'RawStringEncoding=DB_CP'
+    )
+    DisableSavepoints = False
+    Port = 0
+    Database = 'D:\projetos\maurinsoft\MNote2\db\projeto_padrao.db'
+    Protocol = 'sqlite'
+    LibraryLocation = 'D:\projetos\maurinsoft\MNote2\libs\sqlite\win32\sqlite3.dll'
+    Left = 56
+    Top = 185
+  end
+  object qryauxlocal: TZQuery
+    Connection = zconlocal
+    Params = <>
+    Left = 136
+    Top = 184
   end
 end

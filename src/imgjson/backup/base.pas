@@ -18,6 +18,7 @@ type
     zqryaux: TZQuery;
     zqryaux1: TZQuery;
     zqryaux2: TZQuery;
+    procedure DataModuleCreate(Sender: TObject);
   private
     function FileMTimeUTC_OrNow(const FullPath: string): Int64;
     function NormExt(const FN: string): string;
@@ -472,6 +473,11 @@ begin
   end;
 end;
 
+procedure TdmBase.DataModuleCreate(Sender: TObject);
+begin
+  zconlocal.LibraryLocation := ExtractFileDir(ApplicationName)+'\'+ sqllite.d;
+end;
+
 // converte data de modificação para epoch (segundos)
 function TdmBase.FileMTimeUTC_OrNow(const FullPath: string): Int64;
 var
@@ -585,7 +591,7 @@ begin
     Delete(pathNorm, Length(pathNorm), 1);
 
   // Normaliza raiz do projeto
-  rootNorm := NormalizePathDelims(IncludeTrailingPathDelimiter(FSetMain.DefaultFolder));
+  rootNorm := NormalizePathLocal(IncludeTrailingPathDelimiter(FSetMain.DefaultFolder));
 
   // Se o caminho for absoluto dentro da raiz, converte para relativo
   if (Length(pathNorm) >= Length(rootNorm)) and

@@ -1,4 +1,5 @@
 object dmBase: TdmBase
+  OnCreate = DataModuleCreate
   OldCreateOrder = False
   Height = 260
   HorizontalOffset = 159
@@ -33,7 +34,7 @@ object dmBase: TdmBase
     Database = 'D:\projetos\maurinsoft\MNote2\db\projeto_padrao.db'
     Protocol = 'sqlite'
     LibraryLocation = 'D:\projetos\maurinsoft\MNote2\libs\sqlite\win32\sqlite3.dll'
-    Left = 55
+    Left = 56
     Top = 185
   end
   object qryauxlocal: TZQuery

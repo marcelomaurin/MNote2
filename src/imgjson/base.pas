@@ -18,6 +18,7 @@ type
     zqryaux: TZQuery;
     zqryaux1: TZQuery;
     zqryaux2: TZQuery;
+    procedure DataModuleCreate(Sender: TObject);
   private
     function FileMTimeUTC_OrNow(const FullPath: string): Int64;
     function NormExt(const FN: string): string;
@@ -470,6 +471,11 @@ begin
   finally
     qryauxlocal.Close;
   end;
+end;
+
+procedure TdmBase.DataModuleCreate(Sender: TObject);
+begin
+  zconlocal.LibraryLocation := ExtractFileDir(ApplicationName)+'\'+ 'sqllite.dll';
 end;
 
 // converte data de modificação para epoch (segundos)

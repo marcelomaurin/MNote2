@@ -10,10 +10,10 @@ object frmIA: TfrmIA
   LCLVersion = '4.0.0.4'
   OnCreate = FormCreate
   object pgIA: TPageControl
-    Left = 170
+    Left = 0
     Height = 446
     Top = 50
-    Width = 557
+    Width = 727
     ActivePage = Chat
     Align = alClient
     TabIndex = 0
@@ -21,21 +21,21 @@ object frmIA: TfrmIA
     object Chat: TTabSheet
       Caption = 'Chat'
       ClientHeight = 418
-      ClientWidth = 549
+      ClientWidth = 719
       object pnResposta: TPanel
         Left = 0
         Height = 293
         Top = 0
-        Width = 549
+        Width = 719
         Align = alTop
         ClientHeight = 293
-        ClientWidth = 549
+        ClientWidth = 719
         TabOrder = 0
         object meResposta: TMemo
           Left = 1
           Height = 291
           Top = 1
-          Width = 547
+          Width = 717
           Align = alClient
           Lines.Strings = (
             ''
@@ -49,7 +49,7 @@ object frmIA: TfrmIA
         Left = 0
         Height = 5
         Top = 293
-        Width = 549
+        Width = 719
         Align = alTop
         ResizeAnchor = akTop
       end
@@ -57,16 +57,16 @@ object frmIA: TfrmIA
         Left = 0
         Height = 120
         Top = 298
-        Width = 549
+        Width = 719
         Align = alClient
         ClientHeight = 120
-        ClientWidth = 549
+        ClientWidth = 719
         TabOrder = 2
         object mePergunta: TMemo
           Left = 1
           Height = 118
           Top = 1
-          Width = 547
+          Width = 717
           Align = alClient
           Lines.Strings = (
             ''
@@ -79,12 +79,12 @@ object frmIA: TfrmIA
     object TabSheet1: TTabSheet
       Caption = 'Histórico'
       ClientHeight = 418
-      ClientWidth = 549
+      ClientWidth = 719
       object meHistorico: TMemo
         Left = 0
         Height = 418
         Top = 0
-        Width = 549
+        Width = 719
         Align = alClient
         TabOrder = 0
         OnChange = meHistoricoChange
@@ -93,12 +93,12 @@ object frmIA: TfrmIA
     object tsPensamento: TTabSheet
       Caption = 'Pensamento'
       ClientHeight = 418
-      ClientWidth = 549
+      ClientWidth = 719
       object mePensamento: TMemo
         Left = 0
         Height = 418
         Top = 0
-        Width = 549
+        Width = 719
         Align = alClient
         TabOrder = 0
         OnChange = mePensamentoChange
@@ -107,12 +107,12 @@ object frmIA: TfrmIA
     object tsMapaMemoria: TTabSheet
       Caption = 'Mapa de Memoria'
       ClientHeight = 418
-      ClientWidth = 549
+      ClientWidth = 719
       object meMapaMemoria: TMemo
         Left = 0
         Height = 418
         Top = 0
-        Width = 549
+        Width = 719
         Align = alClient
         TabOrder = 0
         OnChange = meMapaMemoriaChange
@@ -121,12 +121,12 @@ object frmIA: TfrmIA
     object tsLog: TTabSheet
       Caption = 'Log'
       ClientHeight = 418
-      ClientWidth = 549
+      ClientWidth = 719
       object meLog: TMemo
         Left = 0
         Height = 418
         Top = 0
-        Width = 549
+        Width = 719
         Align = alClient
         TabOrder = 0
       end
@@ -149,6 +149,14 @@ object frmIA: TfrmIA
       Caption = '&Sair'
       TabOrder = 0
     end
+    object btLimpaHist: TSpeedButton
+      Left = 464
+      Height = 36
+      Top = 10
+      Width = 120
+      Caption = 'Limpar Histórico'
+      OnClick = btLimpaHistClick
+    end
   end
   object pnBotton: TPanel
     Left = 0
@@ -167,24 +175,6 @@ object frmIA: TfrmIA
       Caption = '&Perguntar'
       TabOrder = 0
       OnClick = btPerguntarClick
-    end
-  end
-  object pnPainel: TPanel
-    Left = 0
-    Height = 446
-    Top = 50
-    Width = 170
-    Align = alLeft
-    ClientHeight = 446
-    ClientWidth = 170
-    TabOrder = 3
-    object btLimpaHist: TSpeedButton
-      Left = 0
-      Height = 48
-      Top = 0
-      Width = 167
-      Caption = 'Limpar Histórico'
-      OnClick = btLimpaHistClick
     end
   end
 end

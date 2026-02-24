@@ -15,7 +15,7 @@ uses
   Novo, PythonRun, setproject, SQLItem, trainning,
 newproject, uProjetoDB, sqlite_db, IA
   {$ENDIF}
-  ,uDocText;
+  ,uDocText, uPdfText;
 
 
 {$R *.res}

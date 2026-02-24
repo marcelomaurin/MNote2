@@ -104,9 +104,21 @@ type
 
      // ==== IA helpers / etapas ====
     function IA_GerarDevPrompt(const Pergunta: string): string;
-    function IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string; force: boolean; out Resumo: string): Boolean;
-    function IA_PontosImportantes(const Pergunta, FullPath, RelPath: string; force: boolean; out Resumo: string): Boolean;
-    function PreparaListasAnaliseSuplementar(const Pergunta, FullPath, RelPath: string; force: boolean; out Resumo: string): Boolean;
+
+    // NOVO: resumo fixo do arquivo (.RIA) – independente da pergunta
+    function IA_ResumoArquivoBase(const FullPath, RelPath: string;
+      force: boolean; out Resumo: string): Boolean;
+
+    // Orquestrador: chama resumo base (.RIA) + análise por pergunta (.PIA)
+    function IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string;
+      force: boolean; out Resumo: string): Boolean;
+
+    // Agora: análise orientada à pergunta, gravada em .PIA e SEM cache de leitura
+    function IA_PontosImportantes(const Pergunta, FullPath, RelPath: string;
+      force: boolean; out Resumo: string): Boolean;
+
+    function PreparaListasAnaliseSuplementar(const Pergunta, FullPath, RelPath: string;
+      force: boolean; out Resumo: string): Boolean;
     function IA_RespostaFinal(const DevPadrao, solicit: string): string;
     function IA_GeraMapaMental(const Texto, Questao: string): string; // << novo
 
@@ -137,6 +149,10 @@ type
     function NormalizeAndExpand(const P: string): string;
 
    public
+     // <<< NOVO FLAG PÚBLICO >>>
+     // Se True, força regerar o .RIA mesmo que já exista.
+     // Valor padrão: False (inicializado no FormCreate).
+     flagMudanca: Boolean;
      function  Scanner(const Root: string): TStringList;
      procedure AtualizaProjeto;
      procedure LevantamentoDados(const Pergunta: widestring; out DevPadrao, Solicit: widestring; out Qtd: Integer; out Obs: widestring);
@@ -151,6 +167,8 @@ type
      // ==== NOVA PROCEDURE PÚBLICA ====
      procedure BuscaTermos(const Pergunta: string);
      function FileBinNotRead(FullPath : string): boolean;
+
+
    end;
 
 
@@ -225,7 +243,8 @@ end;
 
 function TfrmFolders.NormalizeAndExpand(const P: string): string;
 begin
-  Result := ExpandAndNormalizeCompat(ExpandFileName(P));
+  // versão sem ExpandFileName duplo
+  Result := ExpandAndNormalizeCompat(P);
 end;
 
 { =====================  FS / ID resolução  ===================== }
@@ -451,8 +470,9 @@ function TfrmFolders.ScannerRaw(const Root: string): TStringList;
             Walk(P, NewRel, SL)
           else
           begin
-            // Ignora caches .RIA (ex.: arquivo.pas.RIA, arquivo.doc.RIA, arquivo.pdf.RIA)
-            if not SameText(ExtractFileExt(SR.Name), '.ria') then
+            // Ignora caches .RIA e .PIA (ex.: arquivo.pas.RIA, arquivo.pas.PIA)
+            if not (SameText(ExtractFileExt(SR.Name), '.ria') or
+                    SameText(ExtractFileExt(SR.Name), '.pia')) then
               SL.Add(NewRel);
           end;
         end;
@@ -472,13 +492,16 @@ end;
 procedure TfrmFolders.MenuItem1Click(Sender: TObject);
 var
   diretorio : string;
-  arquivo : string;
+  arquivo   : string;
+  fullPath  : string;
 begin
   diretorio := ShellTreeView1.Path;
-  arquivo := ShellListView1.Selected.Caption;
+  arquivo   := ShellListView1.Selected.Caption;
   if (arquivo <> '') then
   begin
-       frmMNote.FileLoad(IncludeTrailingPathDelimiter(diretorio) + arquivo);
+    fullPath := IncludeTrailingPathDelimiter(diretorio) + arquivo;
+    fullPath := NormalizeAndExpand(fullPath);
+    frmMNote.FileLoad(fullPath);
   end;
 end;
 
@@ -541,6 +564,9 @@ begin
       // ignora
     end;
   end;
+
+  if arquivo <> '' then
+    arquivo := NormalizeAndExpand(arquivo);
 
   if DirectoryExists(arquivo) then
   begin
@@ -649,8 +675,9 @@ function TfrmFolders.Scanner(const Root: string): TStringList;
                SubDirs.Add(SR.Name)
              else
              begin
-               // Não lista arquivos .RIA (são caches, não código/projeto)
-               if not SameText(ExtractFileExt(SR.Name), '.ria') then
+               // Não lista arquivos .RIA / .PIA (são caches, não código/projeto)
+               if not (SameText(ExtractFileExt(SR.Name), '.ria') or
+                       SameText(ExtractFileExt(SR.Name), '.pia')) then
                  Files.Add(SR.Name);
              end;
 
@@ -717,8 +744,19 @@ begin
 end;
 
 procedure TfrmFolders.FormCreate(Sender: TObject);
+var
+  norm: string;
 begin
-  edFolder.Text := FSetmain.DefaultFolder;
+  // Normaliza pasta default antes de usar
+  norm := Trim(FSetMain.DefaultFolder);
+  if norm <> '' then
+  begin
+    norm := NormalizeAndExpand(norm);
+    FSetMain.DefaultFolder := norm;
+    edFolder.Text := norm;
+  end
+  else
+    edFolder.Text := '';
 
   if AnaliseArquivo = nil then
     AnaliseArquivo := TStringList.Create
@@ -729,6 +767,9 @@ begin
     Arquivos := TStringList.Create
   else
     Arquivos.Clear;
+
+  // <<< VALOR PADRÃO DO FLAG >>>
+  flagMudanca := False;
 
   if ((edFolder.Text = '') or (not ValidateDirectory(edFolder.Text))) then
   begin
@@ -799,7 +840,7 @@ procedure TfrmFolders.AnalisaProjeto();
         if (Rel = '') then Continue;
 
         // filtra extensões úteis
-        if not AnsiMatchText(ExtractFileExt(Rel), ['.pas', '.pp', '.lfm', '.lpr', '.ini', '.json', '.yml', '.yaml']) then
+        if not AnsiMatchText(LowerCase(ExtractFileExt(Rel)), ['.pas', '.pp', '.lfm', '.lpr', '.ini', '.json', '.yml', '.yaml','.php','.htm','.js', '.xml', '.c','.cpp','.txt','.doc','.docx','.pdf','.sql','.jsp','.py','.cob','.html','.md' ]) then
           Continue;
 
         Path := IncludeTrailingPathDelimiter(Root) + Rel;
@@ -851,7 +892,8 @@ begin
 
     Dev :=
       'Voce é uma IA de respostas sintéticas, sua tarefa é responder de forma direta.' + LineEnding +
-      'Responda de forma concisa e estruturada.';
+      'Responda de forma concisa e estruturada. '+ LineEnding +
+      ' Assuma que voce tem acesso as informações necessarias.';
 
     Prompt :=
       'Raiz do projeto: ' + Raiz + LineEnding + LineEnding +
@@ -906,20 +948,40 @@ begin
     Result := DevMsg+ ask;
 end;
 
-function TfrmFolders.IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string; force: boolean; out Resumo: string): Boolean;
+{ === NOVA FUNÇÃO: RESUMO BASE (.RIA), INDEPENDENTE DA PERGUNTA === }
+
+function TfrmFolders.IA_ResumoArquivoBase(const FullPath, RelPath: string;
+  force: boolean; out Resumo: string): Boolean;
 var
   Src, SrcNum, Linguagem: widestring;
   DevMsg, Ask, Resp: widestring;
   Arquivo : TStringList;
-  Texto : widestring;
+  PathNorm, RIAPath: string;
 begin
   Resumo := '';
   Result := False;
 
+  PathNorm := NormalizeAndExpand(FullPath);
+  RIAPath  := PathNorm + '.RIA';
+
+  // Se já existir .RIA e não for forçado e NÃO houver flagMudanca, apenas reutiliza
+  if FileExists(RIAPath) and (not force) and (not flagMudanca) then
+  begin
+    Arquivo := TStringList.Create;
+    try
+      Arquivo.LoadFromFile(RIAPath);
+      Resumo := Arquivo.Text;
+    finally
+      Arquivo.Free;
+    end;
+    Exit(True);
+  end;
+
+  // Carrega conteúdo para mandar pra IA
   try
-    Src := AF_LoadTextLimited(FullPath);
+    Src := AF_LoadTextLimited(PathNorm);
   except
-    MessageHint('Erro ao abrir arquivo: ' + FullPath);
+    MessageHint('Erro ao abrir arquivo: ' + PathNorm);
     Exit(False);
   end;
 
@@ -929,154 +991,152 @@ begin
     Exit(False);
   end;
 
-  Linguagem := AF_GuessLanguageByExt(ExtractFileExt(FullPath));
+  Linguagem := AF_GuessLanguageByExt(ExtractFileExt(PathNorm));
   SrcNum    := AF_AddLineNumbers(Src);
 
-  // Se for Word/PDF, converte para texto e salva o .RIA (cache)
-  if SameText(Linguagem, 'word') or SameText(Linguagem, 'pdf') then
-  begin
-    if SameText(Linguagem, 'word') then
-    begin
-      frmMNote.CloseTab(); //Fecha o fonte do doc pois nao precisa
-      Texto := GetDOCText(FullPath);
-      frmMNote.FileNewSave(FullPath+'.RIA', Texto);
-    end;
-
-    if SameText(Linguagem, 'pdf') then
-    begin
-      frmMNote.CloseTab(); //Fecha o fonte do pdf pois nao precisa
-      Texto := GetPDFText(FullPath);
-      frmMNote.FileNewSave(FullPath+'.RIA', Texto);
-    end;
-  end
-  else
-  begin
-    frmMNote.FileLoad(FullPath);
-  end;
-
+  // Prompt: resumo técnico do arquivo, independente de qualquer pergunta
   DevMsg :=
-    'Você é um analisador técnico. Responda em TEXTO SIMPLES (sem JSON, sem markdown).' + LineEnding +
-    'Foque no que o arquivo faz, como faz e as regras de negócio, entradas/saídas, riscos.';
+    'Você é um analisador técnico de arquivos de código e texto.' + LineEnding +
+    'Responda em TEXTO SIMPLES (sem JSON, sem markdown).' + LineEnding +
+    'Descreva o que o arquivo faz, principais responsabilidades, entradas/saídas e regras de negócio.';
 
   Ask :=
-    'PERGUNTA GERAL: ' + Pergunta + LineEnding +
-    'ARQUIVO: ' + ExtractFileName(FullPath) + LineEnding +
+    'RESUMO TÉCNICO DO ARQUIVO (INDEPENDENTE DE PERGUNTA).' + LineEnding +
+    'ARQUIVO: ' + ExtractFileName(PathNorm) + LineEnding +
     'CAMINHO RELATIVO: ' + RelPath + LineEnding +
     'LINGUAGEM (estimada): ' + Linguagem + LineEnding +
-    '--- CÓDIGO COM LINHAS ---' + LineEnding +
+    '--- CÓDIGO/TEXTO COM LINHAS ---' + LineEnding +
     SrcNum + LineEnding +
     '--- FIM ---' + LineEnding +
     'TAREFA:' + LineEnding +
-    '- Produza um RESUMO TÉCNICO do arquivo acima, seja o mais detalhista possivel, em português.' + LineEnding +
-    '- Explique em alto nível a finalidade do arquivo, principais funções/métodos e pontos críticos.' + LineEnding +
+    '- Escreva um RESUMO TÉCNICO em português, o mais detalhado possível, sobre o conteúdo deste arquivo.' + LineEnding +
+    '- Explique finalidade, principais funções/métodos/estruturas e pontos críticos.' + LineEnding +
     '- Se aplicável, cite dependências internas/externas de forma breve.' + LineEnding +
-    '- Não inclua JSON, markdown, etiquetas ou códigos. Apenas o parágrafo do resumo.';
-
-  // Se já existir cache .RIA e não for forçado, usa direto
-  if (FileExists(FullPath+'.RIA') and not force)  then
-  begin
-    Arquivo := TStringList.create();
-    try
-      Arquivo.LoadFromFile(FullPath+'.RIA');
-      Resumo := Arquivo.Text;
-    finally
-      Arquivo.Free;
-    end;
-    Exit(True);
-  end;
-
-  if AF_SendToChatGPT(DevMsg, Ask, FSetMain.CHATGPT, Resp) then
-  begin
-    Resumo := trim(Resp);
-    Arquivo := TStringList.create();
-    try
-      Arquivo.Clear;
-      Arquivo.Append('Arquivo:'+extractfilepath(FullPath));
-      Arquivo.Append('FullPath:'+FullPath);
-      Arquivo.Append('Criado em:'+datetimetostr(now));
-      Arquivo.Append(Resumo);
-      Arquivo.SaveToFile(FullPath+'.RIA');
-    finally
-      Arquivo.Free;
-    end;
-    Exit(True);
-  end
-  else
-  begin
-    Resumo := 'Falha ao consultar a IA para este arquivo.';
-    Exit(False);
-  end;
-end;
-
-function TfrmFolders.IA_PontosImportantes(const Pergunta, FullPath, RelPath: string;  force: boolean; out Resumo: string): Boolean;
-var
-  Src, SrcNum, Linguagem: widestring;
-  DevMsg, Ask, Resp: widestring;
-  Arquivo : TStringList;
-begin
-  Resumo := '';
-  Result := False;
-
-  Src := AF_LoadTextLimited(FullPath);
-  if Src = '' then
-  begin
-    Resumo := 'Aviso: arquivo vazio ou leitura falhou.';
-    Exit(False);
-  end;
-
-  Linguagem := AF_GuessLanguageByExt(ExtractFileExt(FullPath));
-  SrcNum    := AF_AddLineNumbers(Src);
-  frmMNote.FileLoad(FullPath);
-
-  DevMsg :=
-    'Você é um analisador técnico. Responda em TEXTO SIMPLES (sem JSON, sem markdown).' + LineEnding +
-    'Colete as informações importantes deste arquivo para o levantamento do problema, e posterior resposta.';
-
-  Ask :=
-    'PERGUNTA GERAL: ' + Pergunta + LineEnding +
-    'ARQUIVO: ' + ExtractFileName(FullPath) + LineEnding +
-    'CAMINHO RELATIVO: ' + RelPath + LineEnding +
-    'LINGUAGEM (estimada): ' + Linguagem + LineEnding +
-    '--- CÓDIGO COM LINHAS ---' + LineEnding +
-    SrcNum + LineEnding +
-    '--- FIM ---' + LineEnding +
-    'TAREFA:' + LineEnding +
-    '- Levante os pontos importantes deste codigo que serão usados para responder a pergunta, seja o mais detalhista possivel, em português.' + LineEnding +
-    '- Explique de forma que seja facil de entender a importancia do fonte, se necessário mostre o fragmento do fonte.' + LineEnding +
-    ' Apenas o parágrafo do resumo.';
-
-  if (FileExists(FullPath+'.RIA') and not force)  then
-  begin
-    Arquivo := TStringList.create();
-    try
-      Arquivo.LoadFromFile(FullPath+'.RIA');
-      Resumo := Arquivo.Text;
-    finally
-      Arquivo.Free;
-    end;
-    Exit(True);
-  end;
+    '- Não inclua JSON, markdown, etiquetas ou códigos. Apenas texto corrido.';
 
   if AF_SendToChatGPT(DevMsg, Ask, FSetMain.CHATGPT, Resp) then
   begin
     Resumo := Trim(Resp);
-    Arquivo := TStringList.create();
+    Arquivo := TStringList.Create;
     try
       Arquivo.Clear;
-      Arquivo.Append('Arquivo:'+extractfilepath(FullPath));
-      Arquivo.Append('FullPath:'+FullPath);
-      Arquivo.Append('Criado em:'+datetimetostr(now));
+      Arquivo.Append('Arquivo:' + ExtractFilePath(PathNorm));
+      Arquivo.Append('FullPath:' + PathNorm);
+      Arquivo.Append('Criado em:' + DateTimeToStr(Now));
       Arquivo.Append(Resumo);
-      Arquivo.SaveToFile(FullPath+'.RIA');
+      Arquivo.SaveToFile(RIAPath);
     finally
       Arquivo.Free;
     end;
-    Exit(True);
+    Result := True;
   end
   else
   begin
-    Resumo := 'Falha ao consultar a IA para este arquivo.';
+    Resumo := 'Falha ao consultar a IA para o resumo do arquivo.';
+    Result := False;
+  end;
+end;
+
+{ === ORQUESTRADOR: CHAMA RESUMO BASE (.RIA) + ANÁLISE COM PERGUNTA (.PIA) === }
+
+function TfrmFolders.IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string;
+  force: boolean; out Resumo: string): Boolean;
+var
+  ResRIA, ResPIA: string;
+  okRIA, okPIA: Boolean;
+begin
+  Resumo := '';
+
+  // 1) Resumo fixo do arquivo (.RIA) – cacheado, mas respeita flagMudanca
+  okRIA := IA_ResumoArquivoBase(FullPath, RelPath, force, ResRIA);
+
+  // 2) Análise orientada à pergunta (.PIA) – SEM cache de leitura, sempre recalculada
+  okPIA := IA_PontosImportantes(Pergunta, FullPath, RelPath, True, ResPIA);
+
+  if not okRIA then
+    ResRIA := ResRIA; // já traz mensagem de erro/aviso
+  if not okPIA then
+    ResPIA := ResPIA;
+
+  Resumo :=
+    '--- RESUMO DO ARQUIVO (.RIA) ---' + LineEnding +
+    ResRIA + LineEnding + LineEnding +
+    '--- ANÁLISE PARA A PERGUNTA (.PIA) ---' + LineEnding +
+    ResPIA;
+
+  // Considera sucesso se pelo menos uma das duas análises funcionou
+  Result := okRIA or okPIA;
+end;
+
+
+{ === ANÁLISE EM FUNÇÃO DA PERGUNTA (.PIA), SEM REUSO DE CACHE === }
+
+function TfrmFolders.IA_PontosImportantes(const Pergunta, FullPath, RelPath: string;
+  force: boolean; out Resumo: string): Boolean;
+var
+  Src, SrcNum, Linguagem: widestring;
+  DevMsg, Ask, Resp: widestring;
+  Arquivo : TStringList;
+  PathNorm, PIAPath: string;
+begin
+  Resumo := '';
+  Result := False;
+
+  PathNorm := NormalizeAndExpand(FullPath);
+  PIAPath  := PathNorm + '.PIA';
+
+  // Sempre recarrega o conteúdo e sempre chama a IA,
+  // independentemente de já existir .PIA anterior.
+  Src := AF_LoadTextLimited(PathNorm);
+  if Src = '' then
+  begin
+    Resumo := 'Aviso: arquivo vazio ou leitura falhou.';
     Exit(False);
+  end;
+
+  Linguagem := AF_GuessLanguageByExt(ExtractFileExt(PathNorm));
+  SrcNum    := AF_AddLineNumbers(Src);
+  frmMNote.FileLoad(PathNorm);
+
+  DevMsg :=
+    'Você é um analisador técnico. Responda em TEXTO SIMPLES (sem JSON, sem markdown).' + LineEnding +
+    'Colete as informações importantes deste arquivo para o levantamento do problema e posterior resposta.';
+
+  Ask :=
+    'PERGUNTA GERAL: ' + Pergunta + LineEnding +
+    'ARQUIVO: ' + ExtractFileName(PathNorm) + LineEnding +
+    'CAMINHO RELATIVO: ' + RelPath + LineEnding +
+    'LINGUAGEM (estimada): ' + Linguagem + LineEnding +
+    '--- CÓDIGO COM LINHAS ---' + LineEnding +
+    SrcNum + LineEnding +
+    '--- FIM ---' + LineEnding +
+    'TAREFA:' + LineEnding +
+    '- Levante os pontos importantes deste código que serão usados para responder a pergunta, seja o mais detalhista possível, em português.' + LineEnding +
+    '- Explique de forma que seja fácil de entender a importância do fonte para a pergunta.' + LineEnding +
+    '- Se necessário, mostre pequenos fragmentos do código para contextualizar.' + LineEnding +
+    '- Apenas texto corrido, sem JSON ou markdown.';
+
+  if AF_SendToChatGPT(DevMsg, Ask, FSetMain.CHATGPT, Resp) then
+  begin
+    Resumo := Trim(Resp);
+    Arquivo := TStringList.Create;
+    try
+      Arquivo.Clear;
+      Arquivo.Append('Arquivo:' + ExtractFilePath(PathNorm));
+      Arquivo.Append('FullPath:' + PathNorm);
+      Arquivo.Append('Pergunta:' + Pergunta);
+      Arquivo.Append('Criado em:' + DateTimeToStr(Now));
+      Arquivo.Append(Resumo);
+      Arquivo.SaveToFile(PIAPath);
+    finally
+      Arquivo.Free;
+    end;
+    Result := True;
+  end
+  else
+  begin
+    Resumo := 'Falha ao consultar a IA para este arquivo (análise por pergunta).';
+    Result := False;
   end;
 end;
 
@@ -1292,6 +1352,7 @@ var
   i: Integer;
   RelPath, FullPath: string;
   Resumo: string;
+  ext: string;
 begin
   UI_Step('Varre os arquivos recomendados e resume cada um', 4);
 
@@ -1300,7 +1361,6 @@ begin
     RelPath := Trim(ExtractPathFromItemJSON(Arquivos[i]));
     if RelPath = '' then
       Continue;
-
 
     FullPath := ResolveFullPath(RelPath);
     if not DentroDaRaiz(FullPath) then
@@ -1314,11 +1374,13 @@ begin
       Continue;
     end;
 
-    // Pula todos os caches .RIA (inclusive de Word/PDF)
-    if SameText(ExtractFileExt(FullPath), '.ria') then
+    ext := LowerCase(ExtractFileExt(FullPath));
+
+    // Pula todos os caches .RIA / .PIA
+    if (LowerCase(ext) = '.ria') or (LowerCase(ext) = '.pia') then
     begin
       AnaliseArquivo.Add('PATH: ' + RelPath);
-      AnaliseArquivo.Add('Ignorado (.RIA cache).');
+      AnaliseArquivo.Add('Ignorado (cache .RIA/.PIA).');
       AnaliseArquivo.Add('');
       Continue;
     end;
@@ -1332,14 +1394,13 @@ begin
       Continue;
     end;
 
+    UI_Step('Criando resumo técnico e análise para: ' + RelPath, 5);
 
-
-    UI_Step('Criando resumo técnico para: ' + RelPath, 5);
-
-    if IA_ResumoArquivo(Pergunta, FullPath, RelPath, false, Resumo) then
+    // IA_ResumoArquivo agora já inclui:
+    // - Resumo fixo (.RIA) – cacheado, mas respeita flagMudanca
+    // - Análise para a pergunta (.PIA) – sempre refeita
+    if IA_ResumoArquivo(Pergunta, FullPath, RelPath, False, Resumo) then
     begin
-
-
       AnaliseArquivo.Add('PATH: ' + RelPath);
       AnaliseArquivo.Add(Resumo);
       AnaliseArquivo.Add('');
@@ -1351,37 +1412,13 @@ begin
       AnaliseArquivo.Add('');
     end;
 
-    if IA_PontosImportantes(Pergunta, FullPath, RelPath, false, Resumo) then
+    // Ganchos para futuras análises suplementares, se forem ativadas
+    if PreparaListasAnaliseSuplementar(Pergunta, FullPath, RelPath, False, Resumo) then
     begin
-
-
       AnaliseArquivo.Add('PATH: ' + RelPath);
       AnaliseArquivo.Add(Resumo);
       AnaliseArquivo.Add('');
-    end
-    else
-    begin
-      AnaliseArquivo.Add('PATH: ' + RelPath);
-      AnaliseArquivo.Add(Resumo); // já vem mensagem de falha/aviso
-      AnaliseArquivo.Add('');
     end;
-
-
-    if PreparaListasAnaliseSuplementar(Pergunta, FullPath, RelPath, false, Resumo) then
-    begin
-
-
-      AnaliseArquivo.Add('PATH: ' + RelPath);
-      AnaliseArquivo.Add(Resumo);
-      AnaliseArquivo.Add('');
-    end
-    else
-    begin
-      AnaliseArquivo.Add('PATH: ' + RelPath);
-      AnaliseArquivo.Add(Resumo); // já vem mensagem de falha/aviso
-      AnaliseArquivo.Add('');
-    end;
-
 
     Sleep(500);
   end;
@@ -1411,7 +1448,7 @@ begin
   meLog.Lines.Append('Gera árvore e sugere arquivos relevantes');
   meLog.Lines.Append('');
 
-  DevPadrao := IA_GerarDevPrompt(Pergunta);
+  //DevPadrao := IA_GerarDevPrompt(Pergunta);
   meLog.Lines.Append('');
   // 1) Recomendações a partir da pergunta
   meLog.Lines.Append('Recomendações a partir da pergunta');
@@ -1437,9 +1474,7 @@ begin
   meLog.Lines.Append('Limite de leitura por arquivo');
   meLog.Lines.Append('');
 
-
-
-  // 4) Varre arquivos e gera resumos técnicos
+  // 4) Varre arquivos e gera resumos técnicos + análises (.RIA + .PIA)
   UI_Step('Varre arquivos e gera resumos técnicos', 4);
   meLog.Lines.Append('Varre arquivos e gera resumos técnicos');
   meLog.Lines.Append('');
@@ -1458,8 +1493,6 @@ begin
   meLog.Lines.Append('');
 
   Log_Resultado(Solicit, Qtd, Obs);
-
-
 end;
 
 function TfrmFolders.AnalisaFolderIA(Pergunta: string): string;
@@ -1520,7 +1553,6 @@ end;
 
 procedure TfrmFolders.btIAClick(Sender: TObject);
 begin
-
   meResposta.Lines.append(AnalisaFolderIA(mePergunta.Text));
   //Armazena resultado no historico
   frmIA.meHistorico.Lines.Append(meResposta.Lines.text);
@@ -1621,6 +1653,7 @@ begin
     MessageHint('*** Pasta inválida: ' + RootPath);
     Exit;
   end;
+  RootPath := NormalizeAndExpand(RootPath);
 
   // transação (opcional, acelera bastante)
   dmBase.zconlocal.AutoCommit := False;
@@ -1687,14 +1720,17 @@ end;
 { =====================  HELPERS (SEM FUNÇÕES ANINHADAS)  ===================== }
 
 function TfrmFolders.AF_LoadTextLimited(const Path: string): widestring;
+var
+  normPath: string;
 begin
   Result := '';
-  if not FileExists(Path) then Exit;
+  normPath := NormalizeAndExpand(Path);
+  if not FileExists(normPath) then Exit;
 
   try
     // Garante que o frmMNote carregue o arquivo e depois recupera o texto
-    frmMNote.FileLoad(Path);
-    Result := frmMNote.GetFile(Path);
+    frmMNote.FileLoad(normPath);
+    Result := frmMNote.GetFile(normPath);
   except
     on E: Exception do
     begin
@@ -1840,6 +1876,7 @@ var
   caminho : string;
   arquivo : string;
   extensao : string;
+  normFonte: string;
   iddir , id : integer;
 
   procedure ReplaceDebugMarkers(var S: string);
@@ -1874,11 +1911,12 @@ var
   end;
 
 begin
-  caminho := ExtractFilePath(Fonte);
+  normFonte := NormalizeAndExpand(Fonte);
+  caminho := ExtractFilePath(normFonte);
   if (caminho <> '') and (caminho[Length(caminho)] in ['/', '\']) then
      Delete(caminho, Length(caminho), 1);
-  arquivo := ExtractFileName(fonte);
-  extensao:= ExtractFileExt(fonte);
+  arquivo := ExtractFileName(normFonte);
+  extensao:= ExtractFileExt(normFonte);
 
   // 1) Sanitiza entrada
   Clean := json;
@@ -1904,7 +1942,7 @@ begin
         Resumo := Obj.Get('resumo', '');
 
         // 4) (Exemplo) Exibe no log — troque aqui pelo que quiser fazer com as listas
-        meLog.Lines.Append('--- Resultado de ' + ExtractFileName(Fonte) + ' ---');
+        meLog.Lines.Append('--- Resultado de ' + arquivo + ' ---');
         meLog.Lines.Append('resumo: ' + Resumo);
 
         meLog.Lines.Append('tabela_usada:');
@@ -2360,10 +2398,10 @@ end;
 function TfrmFolders.FileBinNotRead(FullPath: string): boolean;
 const
   // Extensões consideradas realmente binárias, que NÃO serão analisadas
-  BinExt: array[0..17] of string = (
+  BinExt: array[0..18] of string = (
     '.exe', '.dll', '.jpg', '.jpeg', '.png', '.gif',
     '.bmp', '.avi', '.mp4', '.mp3', '.wav', '.zip',
-    '.rar', '.7z', '.xls', '.xlsx', '.bin', '.ria'
+    '.rar', '.7z', '.xls', '.xlsx', '.bin', '.ria', '.pia'
   );
 var
   ext: string;
@@ -2424,10 +2462,6 @@ begin
     Result := True;
   end;
 end;
-
-
-
-
 
 end.
 

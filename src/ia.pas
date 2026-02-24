@@ -42,6 +42,7 @@ const
 type
   { TfrmIA }
   TfrmIA = class(TForm)
+    btLimpaHist: TSpeedButton;
     btSair: TBitBtn;
     btPerguntar: TBitBtn;
     Chat: TTabSheet;
@@ -56,8 +57,6 @@ type
     pgIA: TPageControl;
     pnTop: TPanel;
     pnBotton: TPanel;
-    pnPainel: TPanel;
-    btLimpaHist: TSpeedButton;
     Splitter1: TSplitter;
     TabSheet1: TTabSheet;
     tsMapaMemoria: TTabSheet;
@@ -206,6 +205,7 @@ begin
     meMapaMemoria.Lines.LoadFromFile(arquivo1);
   if FileExists(arquivo2) then
     mePensamento.Lines.LoadFromFile(arquivo2);
+
 end;
 
 procedure TfrmIA.meHistoricoChange(Sender: TObject);
@@ -251,7 +251,14 @@ end;
 procedure TfrmIA.PerguntaIA();
 begin
   if not VerificaContinuidade() then
+  begin
     LimparHistorico();
+
+  end
+  else
+  begin
+     frmFolders.flagMudanca:= false;
+  end;
 
   AnalisaBanco();
   AnalisaFolder();
@@ -757,7 +764,7 @@ begin
     if QuestoesCaminho() then
     begin
       meMapaMemoria.Lines.Add('--[FOLDER/PROJETO]------------------------------');
-      meMapaMemoria.Lines.Add(frmFolders.AnalisaFolderIA(mePergunta.Lines.Text));
+      meMapaMemoria.Lines.Add(frmFolders.AnalisaFolderIA(meHistorico.text+' '+mePergunta.Lines.Text));
       meMapaMemoria.Lines.Add(frmFolders.meLog.Lines.Text);
 
       AnalisaRespostaFolder();
@@ -894,6 +901,7 @@ begin
   mePensamento.Lines.Clear;
   meResposta.Lines.Clear;
   meLog.Lines.Clear;
+  frmFolders.flagMudanca:= true;
   AddLog('Histórico limpo.');
 end;
 

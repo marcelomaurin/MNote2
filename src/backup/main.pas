@@ -20,6 +20,7 @@ type
   { TfrmMNote }
 
   TfrmMNote = class(TForm)
+    btHide: TToggleBox;
     btIA2: TButton;
     edChat: TMemo;
     FindDialog1: TFindDialog;
@@ -39,10 +40,11 @@ type
     MenuItem25: TMenuItem;
     MenuItem26: TMenuItem;
     btIA: TMenuItem;
+    mequestion: TMemo;
+    miIAThisSource: TMenuItem;
     mnCompile: TMenuItem;
     miToolsFalar: TMenuItem;
     miIMGJSON: TMenuItem;
-    mequestion: TMemo;
     MenuItem14: TMenuItem;
     MenuItem17: TMenuItem;
     MenuItem18: TMenuItem;
@@ -52,14 +54,16 @@ type
     mnidos2unix: TMenuItem;
     PageControl1: TPageControl;
     Panel2: TPanel;
-    pnChatGPT: TPanel;
     Panel3: TPanel;
+    Panel4: TPanel;
     pcInspector: TPageControl;
+    pgMain: TPageControl;
+    pnChatGPT: TPanel;
     pnChatGPT2: TPanel;
+    pmchatgpt: TPopupMenu;
     pnclient: TPanel;
     pnInspector: TPanel;
     pnWait: TPanel;
-    pmchatgpt: TPopupMenu;
     Separator4: TMenuItem;
     miRedo: TMenuItem;
     miSelectAll: TMenuItem;
@@ -120,7 +124,6 @@ type
     MenuItem6: TMenuItem;
     mnPesqItem: TMenuItem;
     OpenDialog1: TOpenDialog;
-    pgMain: TPageControl;
     Panel1: TPanel;
     popFechar: TPopupMenu;
     popFind: TPopupMenu;
@@ -132,14 +135,13 @@ type
     Splitter2: TSplitter;
     Splitter3: TSplitter;
     Splitter4: TSplitter;
-    btHide: TToggleBox;
-    tsDialog: TTabSheet;
-    tsQuestion: TTabSheet;
-    tsHistory: TTabSheet;
     tsCode: TTabSheet;
-    tsLocal: TTabSheet;
+    tsDialog: TTabSheet;
     tsGlobal: TTabSheet;
+    tsHistory: TTabSheet;
     TrayIcon1: TTrayIcon;
+    tsLocal: TTabSheet;
+    tsQuestion: TTabSheet;
     vlGlobal: TValueListEditor;
     vlLocal: TValueListEditor;
     procedure btHideChange(Sender: TObject);
@@ -168,6 +170,7 @@ type
     procedure MenuItem20Click(Sender: TObject);
     procedure MenuItem21Click(Sender: TObject);
     procedure MenuItem23Click(Sender: TObject);
+    procedure miIAThisSourceClick(Sender: TObject);
     procedure MenuItem7Click(Sender: TObject);
     procedure miChatGPTClick(Sender: TObject);
     procedure micopyClick(Sender: TObject);
@@ -264,6 +267,7 @@ type
     { public declarations }
     function NovoItem():TTabSheet;
     procedure CloseTab();
+    procedure AnalisaFonte();
 
     function ExistFileOpen(Arquivo : string): boolean;
     procedure LoadArquivo(arquivo : string);
@@ -277,6 +281,7 @@ type
     function GetFile(const FullName: string): WideString;
     procedure RodaScript();
     procedure RodaSQL();
+    procedure MudaDoc();
   end;
 
   function FileLoad(const FullName: string): Boolean;
@@ -289,7 +294,7 @@ implementation
 {$R *.lfm}
 
 uses
-  Sobre, uDocText, uPdfText;
+  Sobre;
 
 { -------------------------------------------------------------------- }
 {  Helper para extrair texto de DOC/DOCX/PDF                           }
@@ -567,6 +572,48 @@ begin
    end;
 end;
 
+procedure TfrmMNote.MudaDoc();
+var
+  tb       : TTabSheet;
+  item     : TItem;
+  fullfile : string;
+begin
+  if pgMain.ActivePage = nil then
+  begin
+    pnChatGPT.Visible:= false;
+    Exit;
+  end
+  else
+  begin
+    pnChatGPT.Visible:= true;
+
+  end;
+
+
+  tb := pgMain.ActivePage;
+  item := TItem(tb.Tag);
+  if item = nil then Exit;
+
+  fullfile := IncludeTrailingPathDelimiter(item.DirName) + item.FileName + '.RIA';
+
+  if FileExists(fullfile) then
+  begin
+    pnChatGPT.Visible := True;
+    try
+      meDialog.Lines.LoadFromFile(fullfile);
+    except
+      on E: Exception do
+        MessageHint('Erro ao carregar arquivo: ' + E.Message);
+    end;
+  end
+  else
+  begin
+    //pnChatGPT.Visible := False;
+    meDialog.Clear;
+  end;
+end;
+
+
 
 function TfrmMNote.FileLoad(const FullName: string): Boolean;
 var
@@ -577,6 +624,7 @@ begin
   if Trim(FullName) = '' then
   begin
     LoadArquivo('');
+
     Result := (pgMain.PageCount > 0);
     Exit;
   end;
@@ -590,6 +638,7 @@ begin
   end;
 
   LoadArquivo(alvo);
+
 
   Result := ExistFileOpen(alvo);
 end;
@@ -759,6 +808,7 @@ begin
   try
     // carrega comportamento padrão do TItem
     item.Loadfile(arquivo);
+    MudaDoc();
   except
     on E: Exception do
     begin
@@ -805,7 +855,9 @@ begin
       if FileExists(OpenDialog1.FileName) then
       begin
         Carregar(OpenDialog1.FileName);
+
         Application.ProcessMessages;
+
       end
       else
         MessageHint('File not found!');
@@ -898,6 +950,11 @@ begin
     item.Free;
 end;
 
+procedure TfrmMNote.AnalisaFonte();
+begin
+   pnChatGPT.Visible:=true;
+end;
+
 procedure TfrmMNote.CarregarParametros();
 var
   i: Integer;
@@ -909,6 +966,7 @@ begin
     if FileExists(p) and (not ExistFileOpen(p)) then
     begin
       Carregar(p);
+
       Application.ProcessMessages;
     end;
   end;
@@ -1281,7 +1339,7 @@ var
    syn : TSynEdit;
    item : TItem;
 begin
-  pnChatGPT.Visible:= not pnChatGPT.Visible;
+  //pnChatGPT.Visible:= not pnChatGPT.Visible;
   item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := item.syn;
 
@@ -1293,7 +1351,7 @@ end;
 
 procedure TfrmMNote.btHideChange(Sender: TObject);
 begin
-  pnChatGPT.Visible:= false;
+  //pnChatGPT.Visible:= false;
 end;
 
 procedure TfrmMNote.btIA2Click(Sender: TObject);
@@ -1367,7 +1425,10 @@ begin
     frmmquery2 := Tfrmmquery2.Create(self);
 
   if (frmFolders = nil) then
+  begin
     frmFolders := TfrmFolders.Create(self);
+    frmFolders.flagMudanca:= true;
+  end;
 end;
 
 procedure TfrmMNote.lstFindChangeBounds(Sender: TObject);
@@ -1467,6 +1528,7 @@ procedure TfrmMNote.MenuItem19Click(Sender: TObject);
 begin
   meCodes.SelectAll;
   meCodes.CopyToClipboard;
+
 end;
 
 procedure TfrmMNote.MenuItem20Click(Sender: TObject);
@@ -1487,6 +1549,11 @@ begin
   frmNewProject.ShowModal;
   frmNewProject.free;
   frmNewProject := nil;
+end;
+
+procedure TfrmMNote.miIAThisSourceClick(Sender: TObject);
+begin
+  AnalisaFonte();
 end;
 
 procedure TfrmMNote.MenuItem7Click(Sender: TObject);
@@ -1958,6 +2025,7 @@ begin
   if (FCHATGPT = nil) then
     FCHATGPT := TCHATGPT.Create(self);
 
+
   ritem := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
   syn := ritem.syn;
   fonte := syn.Lines.Text;
@@ -1966,7 +2034,7 @@ begin
   mapa := frmIA.mePensamento.Lines.text;
 
   FCHATGPT.TOKEN := FSetMain.CHATGPT;
-  FCHATGPT.Dev:= 'Voce é um assistente pessoal e teve as seguintes perguntas anteriores: '+meChatHist.Text;
+  FCHATGPT.Dev:= 'Voce é um assistente pessoal e teve as seguintes perguntas anteriores: '+meChatHist.Text+' , caso sugira alguma mudança sempre faça com alteração completa do fonte apresentado. ';
 
   pergunta := 'Com base no fonte:'+fonte+ ' e no mapa de memoria da aplicacao '+mapa +', responda a seguinte pergunta: '+ edChat.Text;
   FCHATGPT.SendQuestion( pergunta);
@@ -2005,6 +2073,13 @@ begin
         meCodes.Lines.Add('');
       end;
     finally
+      if(codigo.Count=1) then
+      begin
+        if(ShowConfirm('Change code?')) then
+        begin
+            syn.Text:= meCodes.Text;
+        end;
+      end;
       codigo.Free;
     end;
   finally
@@ -2126,12 +2201,12 @@ begin
   if(item.DirName='') then
     item.DirName := ExtractFileDir(Application.ExeName);
 
-  if not item.Salvo then
-  begin
-    fullname:= IncludeTrailingPathDelimiter(item.DirName)+item.FileName;
-    syn.Lines.SaveToFile(fullname);
-    item.Salvo := True;
-  end;
+  //if not item.Salvo then
+  //begin
+  fullname:= IncludeTrailingPathDelimiter(item.DirName)+item.FileName;
+  syn.Lines.SaveToFile(fullname);
+  item.Salvo := True;
+  //end;
 end;
 
 procedure TfrmMNote.mnSalvarClick(Sender: TObject);
@@ -2208,35 +2283,9 @@ begin
 end;
 
 procedure TfrmMNote.pgMainChange(Sender: TObject);
-var
-  tb       : TTabSheet;
-  item     : TItem;
-  fullfile : string;
+
 begin
-  if pgMain.ActivePage = nil then
-    Exit;
-
-  tb := pgMain.ActivePage;
-  item := TItem(tb.Tag);
-  if item = nil then Exit;
-
-  fullfile := IncludeTrailingPathDelimiter(item.DirName) + item.FileName + '.RIA';
-
-  if FileExists(fullfile) then
-  begin
-    pnChatGPT.Visible := True;
-    try
-      meDialog.Lines.LoadFromFile(fullfile);
-    except
-      on E: Exception do
-        MessageHint('Erro ao carregar arquivo: ' + E.Message);
-    end;
-  end
-  else
-  begin
-    pnChatGPT.Visible := False;
-    meDialog.Clear;
-  end;
+  MudaDoc();
 end;
 
 procedure TfrmMNote.TabSheet1ContextPopup(Sender: TObject; MousePos: TPoint;
