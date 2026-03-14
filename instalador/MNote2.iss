@@ -3,7 +3,7 @@
 ; DLLs ficam junto do EXE
 
 #define MyAppName "MNote2"
-#define MyAppVersion "2.52"
+#define MyAppVersion "2.53"
 #define MyAppPublisher "Maurinsoft"
 #define MyAppURL "http://maurinsoft.com.br"
 #define MyAppExeName "MNote2.exe"
@@ -20,14 +20,14 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 
 ; ===== 32-bits =====
-ArchitecturesAllowed=x86
-ArchitecturesInstallIn64BitMode=x86
+;ArchitecturesAllowed=x86
+;ArchitecturesInstallIn64BitMode=x86
 DefaultDirName={pf32}\MEDIT2
 
 DisableProgramGroupPage=yes
 
 OutputDir=D:\projetos\maurinsoft\MNote2\bin
-OutputBaseFilename=win_MNote2_52
+OutputBaseFilename=win_MNote2_53
 SetupIconFile=D:\projetos\maurinsoft\MNote2\src\MNote2.ico
 
 Compression=lzma

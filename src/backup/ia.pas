@@ -764,7 +764,7 @@ begin
     if QuestoesCaminho() then
     begin
       meMapaMemoria.Lines.Add('--[FOLDER/PROJETO]------------------------------');
-      meMapaMemoria.Lines.Add(frmFolders.AnalisaFolderIA(mePergunta.Lines.Text));
+      meMapaMemoria.Lines.Add(frmFolders.AnalisaFolderIA(meHistorico.text+' '+mePergunta.Lines.Text));
       meMapaMemoria.Lines.Add(frmFolders.meLog.Lines.Text);
 
       AnalisaRespostaFolder();

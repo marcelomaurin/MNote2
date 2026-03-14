@@ -88,6 +88,10 @@ type
     procedure AnalisaRespostaFolder();
     function BancoConectado(): boolean;
     function CriaDicionarioPost(): string;
+
+    // >>>>>> NOVO: Dicionário SQLite <<<<<<
+    function CriaDicionarioSQLite(): string;
+
     function VerificaContinuidade(): boolean;
     function GeraAcao(const Resposta: string): boolean;
     function AnalisaAcao(const Resposta: string): boolean;
@@ -205,7 +209,6 @@ begin
     meMapaMemoria.Lines.LoadFromFile(arquivo1);
   if FileExists(arquivo2) then
     mePensamento.Lines.LoadFromFile(arquivo2);
-
 end;
 
 procedure TfrmIA.meHistoricoChange(Sender: TObject);
@@ -253,11 +256,10 @@ begin
   if not VerificaContinuidade() then
   begin
     LimparHistorico();
-
   end
   else
   begin
-     frmFolders.flagMudanca:= false;
+    frmFolders.flagMudanca := false;
   end;
 
   AnalisaBanco();
@@ -280,6 +282,116 @@ begin
   fileName := IncludeTrailingPathDelimiter(baseDir) + 'dicionario.sql';
 
   Result := frmmquery2.CriaDicionarioPost(fileName);
+end;
+
+function TfrmIA.CriaDicionarioSQLite(): string;
+var
+  baseDir, fileName, dbName: string;
+  outSQL: TStringList;
+  tbl, ddl, line: string;
+begin
+  Result := '';
+
+  if (frmmquery2 = nil) then Exit;
+  if not frmmquery2.zconsqlite.Connected then Exit;
+
+  {$IFDEF WINDOWS}
+  baseDir := GetAppConfigDir(False);
+  {$ELSE}
+  baseDir := GetUserDir;
+  {$ENDIF}
+
+  ForceDirectories(baseDir);
+  fileName := IncludeTrailingPathDelimiter(baseDir) + 'dicionario_sqlite.sql';
+
+  dbName := '';
+  if Assigned(frmmquery2.edDatabase) then
+    dbName := ExtractFileName(Trim(frmmquery2.edDatabase.Text));
+
+  outSQL := TStringList.Create;
+  try
+    outSQL.Add('-- =========================================');
+    outSQL.Add('-- Dicionário de dados (SQLite) - IA');
+    outSQL.Add('-- Gerado em: ' + FormatDateTime('yyyy-mm-dd hh:nn:ss', Now));
+    if Trim(dbName) <> '' then
+      outSQL.Add('-- DB: ' + dbName);
+    outSQL.Add('-- =========================================');
+    outSQL.Add('');
+
+    // lista tabelas (exclui sqlite_%)
+    frmmquery2.zliteqry.Close;
+    frmmquery2.zliteqry.SQL.Text :=
+      'SELECT name '+
+      'FROM sqlite_master '+
+      'WHERE type = ''table'' AND name NOT LIKE ''sqlite_%'' '+
+      'ORDER BY name';
+    frmmquery2.zliteqry.Open;
+
+    while not frmmquery2.zliteqry.EOF do
+    begin
+      tbl := frmmquery2.zliteqry.FieldByName('name').AsString;
+
+      outSQL.Add('-- ' + tbl);
+
+      // tenta pegar CREATE direto
+      frmmquery2.zliteqry1.Close;
+      frmmquery2.zliteqry1.SQL.Text :=
+        'SELECT sql FROM sqlite_master WHERE type=''table'' AND name=:n';
+      frmmquery2.zliteqry1.ParamByName('n').AsString := tbl;
+      frmmquery2.zliteqry1.Open;
+
+      ddl := '';
+      if (not frmmquery2.zliteqry1.IsEmpty) and (Trim(frmmquery2.zliteqry1.Fields[0].AsString) <> '') then
+        ddl := frmmquery2.zliteqry1.Fields[0].AsString;
+
+      if Trim(ddl) <> '' then
+        outSQL.Add(ddl + ';')
+      else
+      begin
+        // fallback: gera via PRAGMA table_info
+        outSQL.Add('CREATE TABLE ' + tbl + ' (');
+
+        frmmquery2.zliteqry1.Close;
+        frmmquery2.zliteqry1.SQL.Text := 'PRAGMA table_info(' + QuotedStr(tbl) + ')';
+        frmmquery2.zliteqry1.Open;
+
+        while not frmmquery2.zliteqry1.EOF do
+        begin
+          line := '  ' + frmmquery2.zliteqry1.FieldByName('name').AsString + ' ' +
+                  frmmquery2.zliteqry1.FieldByName('type').AsString;
+
+          if frmmquery2.zliteqry1.FieldByName('notnull').AsInteger = 1 then
+            line := line + ' NOT NULL';
+
+          if not frmmquery2.zliteqry1.FieldByName('dflt_value').IsNull then
+            line := line + ' DEFAULT ' + frmmquery2.zliteqry1.FieldByName('dflt_value').AsString;
+
+          frmmquery2.zliteqry1.Next;
+
+          if frmmquery2.zliteqry1.EOF then
+            outSQL.Add(line)
+          else
+            outSQL.Add(line + ',');
+        end;
+
+        outSQL.Add(');');
+      end;
+
+      outSQL.Add('');
+      frmmquery2.zliteqry.Next;
+    end;
+
+    // salva e retorna
+    try
+      outSQL.SaveToFile(fileName);
+    except
+      // se falhar, só ignora o save e retorna o texto
+    end;
+
+    Result := outSQL.Text;
+  finally
+    outSQL.Free;
+  end;
 end;
 
 function TfrmIA.VerificaContinuidade(): boolean;
@@ -524,7 +636,6 @@ begin
           item := TItem(tb.Tag);
           item.ItemType := ti_SQL;
           syn  := item.syn;
-          // aqui você pode ajustar o SynEdit se quiser
         end;
       end
       else
@@ -668,12 +779,15 @@ begin
 end;
 
 procedure TfrmIA.AnalisaBanco();
+var
+  dicSqlite: string;
 begin
   if QuestoesBanco() then
   begin
     if BancoConectado then
     begin
-      if (frmmquery2.zconpost.Connected) or (frmmquery2.zconmysql.Connected) then
+      // >>>> Ajuste: agora inclui SQLite também <<<<
+      if (frmmquery2.zconpost.Connected) or (frmmquery2.zconmysql.Connected) or (frmmquery2.zconsqlite.Connected) then
       begin
         if frmmquery2.zconpost.Connected then
           meMapaMemoria.Lines.Add(CriaDicionarioPost());
@@ -681,6 +795,16 @@ begin
         if frmmquery2.zconmysql.Connected then
         begin
           // ponto para dicionário MySQL, se quiser no futuro
+        end;
+
+        if frmmquery2.zconsqlite.Connected then
+        begin
+          dicSqlite := CriaDicionarioSQLite();
+          if Trim(dicSqlite) <> '' then
+          begin
+            meMapaMemoria.Lines.Add('--[DICIONARIO SQLITE]------------------------------');
+            meMapaMemoria.Lines.Add(dicSqlite);
+          end;
         end;
       end;
     end
@@ -901,7 +1025,7 @@ begin
   mePensamento.Lines.Clear;
   meResposta.Lines.Clear;
   meLog.Lines.Clear;
-  frmFolders.flagMudanca:= true;
+  frmFolders.flagMudanca := true;
   AddLog('Histórico limpo.');
 end;
 
@@ -1075,10 +1199,10 @@ end;
 function TfrmIA.BancoConectado(): boolean;
 begin
   if frmmquery2 <> nil then
-    Result := frmmquery2.zconpost.Connected or frmmquery2.zconmysql.Connected
+    // >>>> Ajuste: inclui SQLite
+    Result := frmmquery2.zconpost.Connected or frmmquery2.zconmysql.Connected or frmmquery2.zconsqlite.Connected
   else
     Result := False;
 end;
 
 end.
-
