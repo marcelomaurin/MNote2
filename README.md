@@ -46,17 +46,18 @@ MNote2 é um editor de texto multiplataforma avançado, desenvolvido principalme
   - Registro automático de associações de arquivos em Windows.
 
 ---
-### Screen Shot
-Editor integrado
+## Screenshots
+
+### Editor integrado
 ![Editor](screenshots/Editor%20com%20IA%20integrada.jpg)
 
-Gerenciamento de Arquivos
+### Gerenciamento de Arquivos
 ![Gestão de Arquivos](screenshots/Gestão%20de%20Arquivos.jpg)
 
-Inteligência Artificial
+### Inteligência Artificial
 ![Uso da IA](screenshots/IA.jpg)
 
-Gerenciador de Banco de dados
+### Gerenciador de Banco de Dados
 ![Banco de dados](screenshots/MQUERY.jpg)
 
 
