@@ -148,6 +148,11 @@ type
     function NormalizeRelPath(const P: string): string;
     function NormalizeAndExpand(const P: string): string;
 
+    // ==== NOVOS HELPERS DE CACHE .RIA ====
+    function ArquivoEhDoDia(const AFileName: string): Boolean;
+    function FonteMudouAposCache(const FonteArquivo, CacheArquivo: string): Boolean;
+    procedure ExcluiCacheSeFonteMudou(const FonteArquivo, CacheArquivo: string);
+
    public
      // <<< NOVO FLAG PÚBLICO >>>
      // Se True, força regerar o .RIA mesmo que já exista.
@@ -167,8 +172,6 @@ type
      // ==== NOVA PROCEDURE PÚBLICA ====
      procedure BuscaTermos(const Pergunta: string);
      function FileBinNotRead(FullPath : string): boolean;
-
-
    end;
 
 
@@ -190,12 +193,10 @@ begin
   S := Trim(P);
   if S = '' then Exit(False);
   {$IFDEF WINDOWS}
-  // C:\..., c:\..., \\server\share\...
   Result :=
     ((Length(S) >= 2) and (S[2] = ':')) or
     AnsiStartsText('\\', S);
   {$ELSE}
-  // /home/..., //server/share (também absoluto no POSIX)
   Result := (Length(S) > 0) and (S[1] = '/');
   {$ENDIF}
 end;
@@ -205,46 +206,75 @@ var
   S: string;
 begin
   S := Trim(P);
-  // Troca / e \ por PathDelim da plataforma
   S := StringReplace(S, '/', PathDelim, [rfReplaceAll]);
   S := StringReplace(S, '\', PathDelim, [rfReplaceAll]);
-  // Remove delimitadores à esquerda para manter relativo
   while (Length(S) > 0) and (S[1] = PathDelim) do
     Delete(S, 1, 1);
-  // Colapsa delimitadores duplicados
   while Pos(PathDelim + PathDelim, S) > 0 do
     S := StringReplace(S, PathDelim + PathDelim, PathDelim, [rfReplaceAll]);
   Result := S;
 end;
 
-{ ==== Compat: normalização de separadores de caminho (cross-platform) ==== }
 function NormalizePathDelimsCompat(const P: string): string;
 var
   S: string;
 begin
-  // 1) troca / e \ pelo PathDelim da plataforma
   S := StringReplace(P, '/', PathDelim, [rfReplaceAll]);
   S := StringReplace(S, '\', PathDelim, [rfReplaceAll]);
-
-  // 2) colapsa delimitadores repetidos (// ou \\ -> / ou \)
   while Pos(PathDelim + PathDelim, S) > 0 do
     S := StringReplace(S, PathDelim + PathDelim, PathDelim, [rfReplaceAll]);
-
-  // 3) mantém como está (não resolve . e ..; isso é feito pelo ExpandFileName)
   Result := S;
 end;
 
 function ExpandAndNormalizeCompat(const P: string): string;
 begin
-  // Resolve . e .. e símbolos de user/drive, depois normaliza separadores
   Result := NormalizePathDelimsCompat(ExpandFileName(P));
 end;
 
-
 function TfrmFolders.NormalizeAndExpand(const P: string): string;
 begin
-  // versão sem ExpandFileName duplo
   Result := ExpandAndNormalizeCompat(P);
+end;
+
+{ ===== Helpers de cache .RIA ===== }
+
+function TfrmFolders.ArquivoEhDoDia(const AFileName: string): Boolean;
+var
+  Dt: TDateTime;
+begin
+  Result := False;
+  if not FileExists(AFileName) then Exit;
+  if not FileAge(AFileName, Dt) then Exit;
+  Result := SameDate(Dt, Now);
+end;
+
+function TfrmFolders.FonteMudouAposCache(const FonteArquivo, CacheArquivo: string): Boolean;
+var
+  DtFonte, DtCache: TDateTime;
+begin
+  Result := False;
+
+  if (not FileExists(FonteArquivo)) or (not FileExists(CacheArquivo)) then
+    Exit(False);
+
+  if (not FileAge(FonteArquivo, DtFonte)) or (not FileAge(CacheArquivo, DtCache)) then
+    Exit(False);
+
+  Result := DtFonte > DtCache;
+end;
+
+procedure TfrmFolders.ExcluiCacheSeFonteMudou(const FonteArquivo, CacheArquivo: string);
+begin
+  if FileExists(CacheArquivo) and FonteMudouAposCache(FonteArquivo, CacheArquivo) then
+  begin
+    try
+      DeleteFile(CacheArquivo);
+      meLog.Lines.Append('Cache removido por alteração no fonte: ' + CacheArquivo);
+    except
+      on E: Exception do
+        meLog.Lines.Append('Falha ao remover cache ' + CacheArquivo + ': ' + E.Message);
+    end;
+  end;
 end;
 
 { =====================  FS / ID resolução  ===================== }
@@ -263,7 +293,6 @@ begin
   try
     parts.Delimiter := '/';
     parts.StrictDelimiter := True;
-    // normaliza para “/” para garantir split estável
     parts.DelimitedText := StringReplace(StringReplace(RelPath, '\', '/', [rfReplaceAll]), '//', '/', [rfReplaceAll]);
 
     if parts.Count = 0 then Exit;
@@ -371,7 +400,6 @@ begin
     RelPath := Trim(ExtractPathFromItemJSON(Arquivos[i]));
     if RelPath = '' then Continue;
 
-    // sempre tratar como relativo aqui (para fs), mas validando existência
     FullPath := ResolveFullPath(RelPath);
     if not DentroDaRaiz(FullPath) then Continue;
 
@@ -396,7 +424,6 @@ begin
 
     Linguagem := AF_GuessLanguageByExt(ExtractFileExt(FullPath));
 
-    //Se documenta nao extrai sql
     if (Linguagem = 'word') or (Linguagem = 'pdf') then
       Exit;
 
@@ -407,7 +434,6 @@ begin
       'Responda ESTRITAMENTE em JSON puro (sem markdown). '+
       'Formato: {"tables":[{"database":"","name":""},...],"creates":[{"database":"","name":"","script":""},...]} '+
       'Se não houver nada, retorne {"tables":[],"creates":[]}';
-
 
     Ask :=
       'Extrair TABELAS e CREATE TABLE do código a seguir.'+LineEnding+
@@ -470,7 +496,6 @@ function TfrmFolders.ScannerRaw(const Root: string): TStringList;
             Walk(P, NewRel, SL)
           else
           begin
-            // Ignora caches .RIA e .PIA (ex.: arquivo.pas.RIA, arquivo.pas.PIA)
             if not (SameText(ExtractFileExt(SR.Name), '.ria') or
                     SameText(ExtractFileExt(SR.Name), '.pia')) then
               SL.Add(NewRel);
@@ -505,7 +530,6 @@ begin
   end;
 end;
 
-
 procedure TfrmFolders.MenuItem2Click(Sender: TObject);
 begin
   Fsetmain.Defaultfolder:= ShellTreeView1.Path;
@@ -519,11 +543,8 @@ begin
   meLog.Clear;
   meTecnica.clear;
   if(FSetMain.Project<>'') then
-  begin
-      // grava no SQLite
-      AtualizaProjeto;
-  end;
-  // mostra a árvore
+    AtualizaProjeto;
+
   tree := Scanner(edFolder.Text);
   try
     meLog.Lines.Assign(tree);
@@ -536,7 +557,6 @@ end;
 
 procedure TfrmFolders.meTecnicaChange(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmFolders.miAnalisaArquivoClick(Sender: TObject);
@@ -549,19 +569,16 @@ begin
     Exit;
   end;
 
-  // diretório atual (você já sincroniza edFolder com o ShellTreeView)
   dir  := edFolder.Text;
   nome := ShellListView1.Selected.Caption;
 
   arquivo := IncludeTrailingPathDelimiter(dir) + nome;
 
-  // fallback: alguns temas retornam melhor pelo GetNamePath
   if (not FileExists(arquivo)) and Assigned(ShellListView1.Selected) then
   begin
     try
-      arquivo := ShellListView1.Selected.GetNamePath; // se disponível no seu Lazarus
+      arquivo := ShellListView1.Selected.GetNamePath;
     except
-      // ignora
     end;
   end;
 
@@ -588,7 +605,6 @@ var
   folder : string;
   pathfolder : string;
 begin
-
    folder := InputBox ('Create dir','FOLDER:','NewFolder');
    if (folder <> '') then
    begin
@@ -600,23 +616,18 @@ begin
           ShellTreeView1.refresh;
         end
         else
-        begin
           MessageHint('Folder '+pathfolder+ ' create fail!');
-        end;
-
    end;
 end;
 
 procedure TfrmFolders.miDeleteClick(Sender: TObject);
 var
-
   pathfolder : string;
 begin
   pathfolder := edFolder.text;
 
   if ShowConfirm('Confirm delete '+pathfolder+'?') then
   begin
-    // implementar remoção conforme necessário
   end;
 end;
 
@@ -665,7 +676,6 @@ function TfrmFolders.Scanner(const Root: string): TStringList;
     SubDirs := TStringList.Create;
     Files   := TStringList.Create;
     try
-      // Lista conteúdo do diretório
       code := FindFirst(IncludeTrailingPathDelimiter(Dir) + '*', faAnyFile, SR);
       while code = 0 do
       begin
@@ -675,35 +685,29 @@ function TfrmFolders.Scanner(const Root: string): TStringList;
                SubDirs.Add(SR.Name)
              else
              begin
-               // Não lista arquivos .RIA / .PIA (são caches, não código/projeto)
                if not (SameText(ExtractFileExt(SR.Name), '.ria') or
                        SameText(ExtractFileExt(SR.Name), '.pia')) then
                  Files.Add(SR.Name);
              end;
-
         end;
         code := FindNext(SR);
       end;
       FindClose(SR);
 
-      // Ordena para saída mais estável
       SubDirs.Sort;
       Files.Sort;
 
-      // Emite subpastas
       for i := 0 to SubDirs.Count - 1 do
       begin
         hasMore := (i < SubDirs.Count - 1) or (Files.Count > 0);
         AddLine(not hasMore, SubDirs[i], True);
         base := IncludeTrailingPathDelimiter(Dir) + SubDirs[i];
-        // Recurse com prefixo adequado
         if hasMore then
           ScanDir(base, Prefix + '│   ', SL)
         else
           ScanDir(base, Prefix + '    ', SL);
       end;
 
-      // Emite arquivos
       for i := 0 to Files.Count - 1 do
         AddLine(i = Files.Count - 1, Files[i], False);
 
@@ -731,15 +735,11 @@ begin
       Exit;
     end;
 
-    // Cabeçalho
     Result.Add('[ROOT] ' + ExpandFileName(rootFixed));
-    // Varrimento
     ScanDir(rootFixed, '', Result);
   except
     on E: Exception do
-    begin
       Result.Add('*** Erro no Scanner: ' + E.Message + ' ***');
-    end;
   end;
 end;
 
@@ -747,7 +747,6 @@ procedure TfrmFolders.FormCreate(Sender: TObject);
 var
   norm: string;
 begin
-  // Normaliza pasta default antes de usar
   norm := Trim(FSetMain.DefaultFolder);
   if norm <> '' then
   begin
@@ -768,7 +767,6 @@ begin
   else
     Arquivos.Clear;
 
-  // <<< VALOR PADRÃO DO FLAG >>>
   flagMudanca := False;
 
   if ((edFolder.Text = '') or (not ValidateDirectory(edFolder.Text))) then
@@ -793,9 +791,7 @@ end;
 procedure TfrmFolders.edFolderKeyPress(Sender: TObject; var Key: char);
 begin
   if (key=#13) then
-  begin
-        ShellTreeView1.Path:=edFolder.text;
-  end;
+    ShellTreeView1.Path:=edFolder.text;
 end;
 
 procedure TfrmFolders.btScannerClick(Sender: TObject);
@@ -804,7 +800,7 @@ var
 begin
   tree := Scanner(edFolder.Text);
   try
-    meLog.Lines.Assign(tree); // mostra a árvore no memo
+    meLog.Lines.Assign(tree);
     meLog.Lines.Append('');
     meLog.Lines.Append(Format('Total de linhas: %d', [tree.Count]));
   finally
@@ -821,7 +817,6 @@ procedure TfrmFolders.AnalisaProjeto();
               '... (cortado; árvore muito grande, envie filtros/mais detalhes se necessário)';
   end;
 
-  // Previews construídos a partir da árvore RAW (caminhos relativos reais)
   function BuildSmallPreviews(const Root: string; const TreeRaw: TStrings;
                               MaxFiles, MaxBytesPerFile: Integer): string;
   var
@@ -839,7 +834,6 @@ procedure TfrmFolders.AnalisaProjeto();
         Rel := Trim(TreeRaw[i]);
         if (Rel = '') then Continue;
 
-        // filtra extensões úteis
         if not AnsiMatchText(LowerCase(ExtractFileExt(Rel)), ['.pas', '.pp', '.lfm', '.lpr', '.ini', '.json', '.yml', '.yaml','.php','.htm','.js', '.xml', '.c','.cpp','.txt','.doc','.docx','.pdf','.sql','.jsp','.py','.cob','.html','.md' ]) then
           Continue;
 
@@ -851,7 +845,6 @@ procedure TfrmFolders.AnalisaProjeto();
 
         try
           SL.LoadFromFile(Path);
-          // corta por bytes
           Buf := UTF8Encode(SL.Text);
           L := Length(Buf);
           if L > MaxBytesPerFile then
@@ -861,7 +854,6 @@ procedure TfrmFolders.AnalisaProjeto();
             '--- FILE: ' + Rel + ' ---' + LineEnding +
             UTF8ToString(Buf) + LineEnding + LineEnding;
         except
-          // ignora leitura com erro
         end;
       end;
     finally
@@ -874,12 +866,11 @@ var
   Chat : TCHATGPT;
   Dev, Prompt, Arvore, Previews, Raiz: widestring;
 begin
-  // gera as duas representações
-  TreePretty := Scanner(edFolder.Text);  // bonita, só para exibir
-  TreeRaw    := ScannerRaw(edFolder.Text); // caminhos relativos reais para a IA
+  TreePretty := Scanner(edFolder.Text);
+  TreeRaw    := ScannerRaw(edFolder.Text);
   try
     Raiz   := edFolder.Text;
-    Arvore := TreePretty.Text; // exibição
+    Arvore := TreePretty.Text;
     ArvoreDiretorios := Arvore;
 
     meLog.Lines.Append('');
@@ -887,13 +878,12 @@ begin
     meLog.Lines.Append(ArvoreDiretorios);
     meLog.Lines.Append('');
 
-    // trechos de arquivos — usa RAW!
-    Previews := BuildSmallPreviews(Raiz, TreeRaw, {MaxFiles=} 12, {MaxBytesPerFile=} 8000);
+    Previews := BuildSmallPreviews(Raiz, TreeRaw, 12, 8000);
 
     Dev :=
       'Voce é uma IA de respostas sintéticas, sua tarefa é responder de forma direta.' + LineEnding +
       'Responda de forma concisa e estruturada. '+ LineEnding +
-      ' Assuma que voce tem acesso as informações necessarias.';
+      'Assuma que voce terá acesso a todas as informações necessarias.';
 
     Prompt :=
       'Raiz do projeto: ' + Raiz + LineEnding + LineEnding +
@@ -910,7 +900,7 @@ begin
       Chat.Dev   := Dev;
 
       if Chat.SendQuestion(Prompt) then
-        meLog.Lines.Append( Chat.Response)
+        meLog.Lines.Append(Chat.Response)
       else
         meLog.Lines.append('Erro ao consultar IA: ' + Chat.Response);
     finally
@@ -934,18 +924,15 @@ function TfrmFolders.IA_GerarDevPrompt(const Pergunta: string): string;
 var
   DevMsg, Ask, Resp: widestring;
 begin
-  // Gera um prompt-guia (Dev system) para a etapa final
   DevMsg := 'Voce é um analista de IA, sua função é criar um prompt. ' +
             'Com base na Arvore de diretorio e na pergunta apresentada, monte uma pergunta.';
 
   Ask    := 'PERGUNTA:' + Pergunta + LineEnding +
             ' Arvore diretorio:'+
             ArvoreDiretorios  + LineEnding +
-
             ' Com base na pergunta crie um prompt para guiar a IA como ela deve se comportar perante o que se quer.';
   Result := '';
-  //if AF_SendToChatGPT(DevMsg, Ask, FSetMain.CHATGPT, Resp) then
-    Result := DevMsg+ ask;
+  Result := DevMsg+ ask;
 end;
 
 { === NOVA FUNÇÃO: RESUMO BASE (.RIA), INDEPENDENTE DA PERGUNTA === }
@@ -964,20 +951,27 @@ begin
   PathNorm := NormalizeAndExpand(FullPath);
   RIAPath  := PathNorm + '.RIA';
 
-  // Se já existir .RIA e não for forçado e NÃO houver flagMudanca, apenas reutiliza
-  if FileExists(RIAPath) and (not force) and (not flagMudanca) then
+  // se o fonte mudou depois do cache, apaga o .RIA antes de decidir reutilizar
+  ExcluiCacheSeFonteMudou(PathNorm, RIAPath);
+
+  // reaproveita apenas se:
+  // 1) existir .RIA
+  // 2) não forçado
+  // 3) flagMudanca = False
+  // 4) .RIA for de hoje
+  if FileExists(RIAPath) and (not force) and (not flagMudanca) and ArquivoEhDoDia(RIAPath) then
   begin
     Arquivo := TStringList.Create;
     try
       Arquivo.LoadFromFile(RIAPath);
       Resumo := Arquivo.Text;
+      meLog.Lines.Append('Resumo reutilizado do cache .RIA: ' + RIAPath);
     finally
       Arquivo.Free;
     end;
     Exit(True);
   end;
 
-  // Carrega conteúdo para mandar pra IA
   try
     Src := AF_LoadTextLimited(PathNorm);
   except
@@ -994,7 +988,6 @@ begin
   Linguagem := AF_GuessLanguageByExt(ExtractFileExt(PathNorm));
   SrcNum    := AF_AddLineNumbers(Src);
 
-  // Prompt: resumo técnico do arquivo, independente de qualquer pergunta
   DevMsg :=
     'Você é um analisador técnico de arquivos de código e texto.' + LineEnding +
     'Responda em TEXTO SIMPLES (sem JSON, sem markdown).' + LineEnding +
@@ -1025,6 +1018,7 @@ begin
       Arquivo.Append('Criado em:' + DateTimeToStr(Now));
       Arquivo.Append(Resumo);
       Arquivo.SaveToFile(RIAPath);
+      meLog.Lines.Append('Resumo .RIA gerado: ' + RIAPath);
     finally
       Arquivo.Free;
     end;
@@ -1037,8 +1031,6 @@ begin
   end;
 end;
 
-{ === ORQUESTRADOR: CHAMA RESUMO BASE (.RIA) + ANÁLISE COM PERGUNTA (.PIA) === }
-
 function TfrmFolders.IA_ResumoArquivo(const Pergunta, FullPath, RelPath: string;
   force: boolean; out Resumo: string): Boolean;
 var
@@ -1047,14 +1039,11 @@ var
 begin
   Resumo := '';
 
-  // 1) Resumo fixo do arquivo (.RIA) – cacheado, mas respeita flagMudanca
   okRIA := IA_ResumoArquivoBase(FullPath, RelPath, force, ResRIA);
-
-  // 2) Análise orientada à pergunta (.PIA) – SEM cache de leitura, sempre recalculada
   okPIA := IA_PontosImportantes(Pergunta, FullPath, RelPath, True, ResPIA);
 
   if not okRIA then
-    ResRIA := ResRIA; // já traz mensagem de erro/aviso
+    ResRIA := ResRIA;
   if not okPIA then
     ResPIA := ResPIA;
 
@@ -1064,12 +1053,8 @@ begin
     '--- ANÁLISE PARA A PERGUNTA (.PIA) ---' + LineEnding +
     ResPIA;
 
-  // Considera sucesso se pelo menos uma das duas análises funcionou
   Result := okRIA or okPIA;
 end;
-
-
-{ === ANÁLISE EM FUNÇÃO DA PERGUNTA (.PIA), SEM REUSO DE CACHE === }
 
 function TfrmFolders.IA_PontosImportantes(const Pergunta, FullPath, RelPath: string;
   force: boolean; out Resumo: string): Boolean;
@@ -1085,8 +1070,6 @@ begin
   PathNorm := NormalizeAndExpand(FullPath);
   PIAPath  := PathNorm + '.PIA';
 
-  // Sempre recarrega o conteúdo e sempre chama a IA,
-  // independentemente de já existir .PIA anterior.
   Src := AF_LoadTextLimited(PathNorm);
   if Src = '' then
   begin
@@ -1142,11 +1125,9 @@ end;
 
 function TfrmFolders.PreparaListasAnaliseSuplementar(const Pergunta, FullPath, RelPath: string; force: boolean; out Resumo: string): Boolean;
 begin
-  // Por enquanto não faz análise extra, só retorna falso de forma explícita
   Resumo := '';
   Result := False;
 end;
-
 
 function TfrmFolders.IA_GeraMapaMental(const Texto, Questao: string): string;
 var
@@ -1244,7 +1225,6 @@ begin
     DevMsg :=
       'Você é um analisador técnico. Responda ao que foi perguntado usando os resumos fornecidos.';
 
-  // usa apenas os resumos (não o meLog inteiro)
   Contexto := AnaliseArquivo.Text;
 
   if Length(Contexto) <= 14000 then
@@ -1261,7 +1241,6 @@ begin
       Exit('');
   end;
 
-  // grande demais → chunking + reduce
   Chunks := SplitIntoChunks(Contexto, 14000);
   Resumos := TStringList.Create;
   try
@@ -1293,9 +1272,8 @@ function TfrmFolders.Recomendacoes_FromPergunta(const Pergunta: widestring; out 
 var
   jsonLista: widestring;
 begin
-  // Gera árvore para exibição/preview e em seguida chama lista
   ArvoreDiretorios := '';
-  AnalisaProjeto(); // preenche ArvoreDiretorios (visual)
+  AnalisaProjeto();
 
   jsonLista := ListaCodigos(ArvoreDiretorios, Pergunta, 20);
 
@@ -1314,11 +1292,9 @@ begin
   P := Trim(RelPath);
   if P = '' then Exit('');
 
-  // Se já é absoluto, normaliza e retorna
   if IsAbsolutePathPortable(P) then
     Exit(NormalizeAndExpand(P));
 
-  // Caso contrário, trata como relativo à Defaultfolder
   P := NormalizeRelPath(P);
   Root := IncludeTrailingPathDelimiter(FSetMain.Defaultfolder);
   Result := NormalizeAndExpand(Root + P);
@@ -1344,8 +1320,6 @@ begin
   else
     AnaliseArquivo.Clear;
 end;
-
-
 
 procedure TfrmFolders.VarreArquivosEProduzResumos(const Pergunta: string);
 var
@@ -1376,7 +1350,6 @@ begin
 
     ext := LowerCase(ExtractFileExt(FullPath));
 
-    // Pula todos os caches .RIA / .PIA
     if (LowerCase(ext) = '.ria') or (LowerCase(ext) = '.pia') then
     begin
       AnaliseArquivo.Add('PATH: ' + RelPath);
@@ -1385,7 +1358,6 @@ begin
       Continue;
     end;
 
-    // Consulta tipos válidos: se for binário, NÃO lê
     if FileBinNotRead(FullPath) then
     begin
       AnaliseArquivo.Add('PATH: ' + RelPath);
@@ -1396,9 +1368,6 @@ begin
 
     UI_Step('Criando resumo técnico e análise para: ' + RelPath, 5);
 
-    // IA_ResumoArquivo agora já inclui:
-    // - Resumo fixo (.RIA) – cacheado, mas respeita flagMudanca
-    // - Análise para a pergunta (.PIA) – sempre refeita
     if IA_ResumoArquivo(Pergunta, FullPath, RelPath, False, Resumo) then
     begin
       AnaliseArquivo.Add('PATH: ' + RelPath);
@@ -1408,11 +1377,10 @@ begin
     else
     begin
       AnaliseArquivo.Add('PATH: ' + RelPath);
-      AnaliseArquivo.Add(Resumo); // já vem mensagem de falha/aviso
+      AnaliseArquivo.Add(Resumo);
       AnaliseArquivo.Add('');
     end;
 
-    // Ganchos para futuras análises suplementares, se forem ativadas
     if PreparaListasAnaliseSuplementar(Pergunta, FullPath, RelPath, False, Resumo) then
     begin
       AnaliseArquivo.Add('PATH: ' + RelPath);
@@ -1441,16 +1409,13 @@ end;
 
 procedure TfrmFolders.LevantamentoDados(const Pergunta: widestring; out DevPadrao, Solicit: widestring; out Qtd: Integer; out Obs: widestring);
 begin
-  // 0) Prompt Dev (guia de comportamento)
   meLog.Lines.Append('Inicia o guia de comportamento');
   meLog.Lines.Append('');
   UI_Step('Gera árvore e sugere arquivos relevantes', 1);
   meLog.Lines.Append('Gera árvore e sugere arquivos relevantes');
   meLog.Lines.Append('');
 
-  //DevPadrao := IA_GerarDevPrompt(Pergunta);
   meLog.Lines.Append('');
-  // 1) Recomendações a partir da pergunta
   meLog.Lines.Append('Recomendações a partir da pergunta');
   meLog.Lines.Append('');
 
@@ -1458,7 +1423,7 @@ begin
   meLog.Lines.Append('Solicitacoes:'+Solicit);
   meLog.Lines.Append('Observações:'+Obs);
   meLog.Lines.Append('');
-  // 2) Inicializa a lista de análises
+
   UI_Step('Inicializa a lista de análises', 2);
   meLog.Lines.Append('Inicializa a lista de análises');
   meLog.Lines.Append('');
@@ -1469,12 +1434,10 @@ begin
   PreparaListasAnalise;
   meLog.Lines.Append('');
 
-  // 3) Limite de leitura por arquivo
   UI_Step('Limite de leitura por arquivo', 3);
   meLog.Lines.Append('Limite de leitura por arquivo');
   meLog.Lines.Append('');
 
-  // 4) Varre arquivos e gera resumos técnicos + análises (.RIA + .PIA)
   UI_Step('Varre arquivos e gera resumos técnicos', 4);
   meLog.Lines.Append('Varre arquivos e gera resumos técnicos');
   meLog.Lines.Append('');
@@ -1482,12 +1445,10 @@ begin
   VarreArquivosEProduzResumos(Pergunta);
 
   UI_Step('Busca termos da pergunta', 5);
-  // 5) Busca termos da pergunta
   meLog.Lines.Append('Busca termos da pergunta');
   meLog.Lines.Append('');
   BuscaTermos(Pergunta);
 
-  // 6) Log consolidado
   UI_Step('Log Resultado', 6);
   meLog.Lines.Append('Log Resultado');
   meLog.Lines.Append('');
@@ -1500,10 +1461,9 @@ var
   DevPadrao, Solicit, Obs: widestring;
   Qtd: Integer;
   RespFinal: widestring;
-  MapaMental: widestring; // << novo
+  MapaMental: widestring;
   PromptMapa: widestring;
 begin
-  // Setup visual e limpeza
   pbScanning.Position := 0;
   pnScanner.Visible := True;
   Application.ProcessMessages;
@@ -1512,11 +1472,8 @@ begin
   meLog.Lines.Append('Inicio de Analise pela IA');
   meLog.Lines.Append('');
 
-  // Itens 0–6
   LevantamentoDados(Pergunta, DevPadrao, Solicit, Qtd, Obs);
 
-  // ===== NOVO PASSO =====
-  // Antes da resposta final, gerar um mapa mental a partir do meLog (somente itens relevantes para a questão)
   UI_Step('Gerando mapa mental (apenas itens relevantes)', 7);
   PromptMapa :=
     'Com base nas informações abaixo: ' + meLog.Lines.Text +
@@ -1536,7 +1493,6 @@ begin
     meLog.Lines.Append('--- Mapa mental não pôde ser gerado (sem retorno da IA) ---');
   end;
 
-  // 7) Pergunta final baseada nas ANÁLISES (usa somente AnaliseArquivo.Text)
   UI_Step('Pergunta final baseada nas ANÁLISES (NÃO usar meLog inteiro)', 8);
   RespFinal := IA_RespostaFinal(DevPadrao, Solicit);
   if RespFinal <> '' then
@@ -1554,7 +1510,6 @@ end;
 procedure TfrmFolders.btIAClick(Sender: TObject);
 begin
   meResposta.Lines.append(AnalisaFolderIA(mePergunta.Text));
-  //Armazena resultado no historico
   frmIA.meHistorico.Lines.Append(meResposta.Lines.text);
 end;
 
@@ -1567,12 +1522,10 @@ end;
 
 procedure TfrmFolders.FormShow(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmFolders.AtualizaProjeto;
 
-  // converte data de modificação para epoch (segundos)
   function FileMTimeUTC_OrNow(const FullPath: string): Int64;
   var
     dt: TDateTime;
@@ -1583,7 +1536,6 @@ procedure TfrmFolders.AtualizaProjeto;
       Result := DateTimeToUnix(Now);
   end;
 
-  // varre recursivamente o filesystem gravando na tabela fs
   procedure IndexDir(const DirPath: string; const ParentId: Integer);
   var
     SR: TSearchRec;
@@ -1611,9 +1563,7 @@ procedure TfrmFolders.AtualizaProjeto;
             IndexDir(full, subId);
           end
           else
-          begin
             dmbase.UpsertFile(ParentId, childName, full);
-          end;
         end;
         code := FindNext(SR);
       end;
@@ -1631,9 +1581,7 @@ begin
 
   MessageHint('Iniciando indexação no SQLite...');
   if(dmBase = nil) then
-  begin
     dmBase := Tdmbase.create(self);
-  end;
 
   if not dmBase.zconlocal.Connected then
   begin
@@ -1641,12 +1589,10 @@ begin
     begin
       MessageHint('*** SQLite não conectado (dmBase.zconlocal).');
       Exit;
-    end
-    else
-    begin
     end;
   end;
-  dmbase.DeleteFS; //Apaga base de dados anterior
+
+  dmbase.DeleteFS;
   RootPath := Trim(FSetMain.DefaultFolder);
   if (RootPath = '') or (not DirectoryExists(RootPath)) then
   begin
@@ -1655,10 +1601,9 @@ begin
   end;
   RootPath := NormalizeAndExpand(RootPath);
 
-  // transação (opcional, acelera bastante)
   dmBase.zconlocal.AutoCommit := False;
   try
-    RootFSId := dmbase.EnsureRootId; // cria “/” se precisar
+    RootFSId := dmbase.EnsureRootId;
     IndexDir(RootPath, RootFSId);
     dmBase.zconlocal.Commit;
     MessageHint('Indexação concluída com sucesso.');
@@ -1674,17 +1619,12 @@ begin
   Application.ProcessMessages;
 end;
 
-{ =====================  ANALISAFONTE ORQUESTRADORA  ===================== }
-
 procedure TfrmFolders.AnalisaFonte(const Fonte: string);
 var
   Src, SrcNum, DevMsg, Ask, Resp, Beautified, Linguagem: widestring;
-
 begin
   meLog.Clear;
   meLog.Lines.Append('Analisando: ' + Fonte);
-
-  // 1) Carrega o conteúdo com limite (ex: 200 KB)
 
   Src := AF_LoadTextLimited(Fonte);
   if Src = '' then
@@ -1693,31 +1633,24 @@ begin
     Exit;
   end;
 
-  // 2) Enriquecimentos de contexto
   Linguagem := AF_GuessLanguageByExt(ExtractFileExt(Fonte));
   SrcNum    := AF_AddLineNumbers(Src);
 
-  // 3) Monta mensagens para a IA
   DevMsg := AF_BuildDevMsg;
   Ask    := AF_BuildAsk(Fonte, Linguagem, SrcNum);
 
-  // 4) Consulta IA
   if not AF_SendToChatGPT(DevMsg, Ask, FSetMain.CHATGPT, Resp) then
   begin
     meLog.Lines.Append('Falha ao consultar a IA.');
     Exit;
   end;
 
-  // 5) Embeleza JSON (se possível) e registra
   Beautified := AF_BeautifyJson(Resp);
   if Beautified = '' then
-    Beautified := Resp; // se falhou, usa bruto
+    Beautified := Resp;
 
-  // 6) Persistência específica (suas tabelas/relacionamentos)
   RegistraTabelas(Fonte, Beautified);
 end;
-
-{ =====================  HELPERS (SEM FUNÇÕES ANINHADAS)  ===================== }
 
 function TfrmFolders.AF_LoadTextLimited(const Path: string): widestring;
 var
@@ -1728,7 +1661,6 @@ begin
   if not FileExists(normPath) then Exit;
 
   try
-    // Garante que o frmMNote carregue o arquivo e depois recupera o texto
     frmMNote.FileLoad(normPath);
     Result := frmMNote.GetFile(normPath);
   except
@@ -1828,13 +1760,11 @@ begin
     begin
       Resp   := Chat.Response;
       meTecnica.Lines.Append(Resp);
-
-      //Adiciona ao historico
       frmIA.meHistorico.Lines.Append(Resp);
       Result := True;
     end
     else
-      Resp := Chat.Response; // pode vir JSON de erro
+      Resp := Chat.Response;
   finally
     Chat.Free;
   end;
@@ -1859,7 +1789,6 @@ begin
       Parser.Free;
     end;
   except
-    // Se falhar o parse, devolve vazio e quem chama decide usar bruto
   end;
 end;
 
@@ -1881,13 +1810,11 @@ var
 
   procedure ReplaceDebugMarkers(var S: string);
   begin
-    // Remove prefixos do tipo “$08296158^: ” pegando do primeiro “{” até o último “}”
     p1 := Pos('{', S);
-    p2 := RPos('}', S); // requer StrUtils
+    p2 := RPos('}', S);
     if (p1 > 0) and (p2 >= p1) then
       S := Copy(S, p1, p2 - p1 + 1);
 
-    // Converte marcadores do depurador para quebras reais
     if Pos('#$0', S) > 0 then
     begin
       S := StringReplace(S, '''#$0D#$0A''', LineEnding, [rfReplaceAll]);
@@ -1918,11 +1845,9 @@ begin
   arquivo := ExtractFileName(normFonte);
   extensao:= ExtractFileExt(normFonte);
 
-  // 1) Sanitiza entrada
   Clean := json;
   ReplaceDebugMarkers(Clean);
 
-  // 2) Parse JSON
   Parser := TJSONParser.Create(Clean);
   try
     Data := Parser.Parse;
@@ -1931,7 +1856,6 @@ begin
         raise Exception.Create('JSON raiz não é objeto.');
       Obj := TJSONObject(Data);
 
-      // 3) Extrai campos
       SLUsadas        := TStringList.Create;
       SLRelacionadas  := TStringList.Create;
       SLFontes        := TStringList.Create;
@@ -1941,7 +1865,6 @@ begin
         FillListFromArray('fontes_vinculados',   SLFontes);
         Resumo := Obj.Get('resumo', '');
 
-        // 4) (Exemplo) Exibe no log — troque aqui pelo que quiser fazer com as listas
         meLog.Lines.Append('--- Resultado de ' + arquivo + ' ---');
         meLog.Lines.Append('resumo: ' + Resumo);
 
@@ -1954,19 +1877,14 @@ begin
         meLog.Lines.Append('fontes_vinculados:');
         for i := 0 to SLFontes.Count-1 do meLog.Lines.Append('  - ' + SLFontes[i]);
 
-        //Busca o id do diretorio
         iddir := dmbase.Buscafs_IDpeloDiretorio(caminho);
         if (iddir<>0) then
         begin
             id := dmbase.Buscafs_IDpeloNome (iddir, arquivo);
             if (id <> 0) then
-            begin
-              dmbase.AtualizarResumo(id, Resumo);
-            end
+              dmbase.AtualizarResumo(id, Resumo)
             else
-            begin
               MessageHint('Arquivo nao encontrado na base');
-            end;
         end;
 
       finally
@@ -1993,10 +1911,8 @@ begin
             '... (cortado para caber no prompt)';
 end;
 
-
 function TfrmFolders.AF_BuildDevMsg_ListaCodigos: widestring;
 begin
-  // Regras: resposta ESTRITAMENTE em JSON válido UTF-8, sem markdown
   Result :=
     'Você é um assistente técnico de engenharia de software.' + LineEnding +
     'Sua tarefa é, dada uma ÁRVORE DE ARQUIVOS  e uma SOLICITAÇÃO/OBJETIVO,' + LineEnding +
@@ -2019,7 +1935,6 @@ begin
     '}';
 end;
 
-
 function TfrmFolders.AF_BuildAsk_ListaCodigos(
   const ArvoreY, SolicitacaoX: widestring; MaxItens: Integer): widestring;
 begin
@@ -2041,7 +1956,6 @@ function TfrmFolders.ListaCodigos(
 var
   Dev, Ask, Resp: widestring;
 begin
-  // Proteção básica
   if Trim(FSetMain.CHATGPT) = '' then
   begin
     ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
@@ -2053,16 +1967,12 @@ begin
 
   if AF_SendToChatGPT(Dev, Ask, FSetMain.CHATGPT, Resp) then
   begin
-    //Result := AF_BeautifyJson(Resp);
     Result := Resp;
     if Result = '' then
       Result := Resp;
   end
   else
-  begin
-    // Se falhar, retorna a resposta de erro da API (geralmente JSON também)
     Result := Resp;
-  end;
 end;
 
 function TfrmFolders.ParseArquivosRecomendadosJSON(
@@ -2083,31 +1993,22 @@ begin
   if Dest <> nil then
     Dest.Clear;
 
-  // Se o JSON vier vazio (string em branco)
   if Trim(JSONText) = '' then
-  begin
-    // Nada para fazer, apenas retorna 0 e strings vazias
     Exit;
-  end;
 
   try
     Parser := TJSONParser.Create(JSONText);
     try
       Data := Parser.Parse;
       try
-        // Se não for um objeto JSON, trata como vazio/inválido
         if (Data = nil) or (Data.JSONType <> jtObject) then
-        begin
-          Exit; // Result já é 0, Dest já está limpa
-        end;
+          Exit;
 
         Obj := TJSONObject(Data);
 
-        // Campos opcionais
         Solicitacao := Obj.Get('solicitacao', '');
         Observacoes := Obj.Get('observacoes', '');
 
-        // Lista de arquivos recomendados (pode não existir)
         Arr := nil;
         if Obj.Find('arquivos_recomendados', Arr) and (Arr <> nil) then
         begin
@@ -2116,8 +2017,7 @@ begin
             if Arr.Items[i].JSONType = jtObject then
             begin
               ItemObj := TJSONObject(Arr.Items[i]);
-              // JSON compacto do item (uma linha)
-              itemJson := ItemObj.AsJSON;   // fpjson gera JSON sem quebras
+              itemJson := ItemObj.AsJSON;
               if (itemJson <> '') and (Dest <> nil) then
               begin
                 Dest.Add(itemJson);
@@ -2126,7 +2026,6 @@ begin
             end;
           end;
         end;
-        // Se não tiver 'arquivos_recomendados', resultado continua 0, sem erro
       finally
         Data.Free;
       end;
@@ -2145,7 +2044,6 @@ begin
     end;
   end;
 end;
-
 
 function TfrmFolders.ExtractPathFromItemJSON(const ItemJSON: string): string;
 var
@@ -2172,11 +2070,8 @@ begin
       P.Free;
     end;
   except
-    // silencioso
   end;
 end;
-
-{==================== NOVA FEATURE: BuscaTermos ====================}
 
 function TfrmFolders.BT_BuildDevMsg: string;
 begin
@@ -2245,8 +2140,8 @@ begin
           for i := 0 to A.Count-1 do
             if A.Items[i].JSONType = jtString then
             begin
-              entry := Trim(A.Strings[i]);         // pode vir relativo ou absoluto
-              Files.Add(entry);                    // não antepõe raiz aqui; tratar depois
+              entry := Trim(A.Strings[i]);
+              Files.Add(entry);
             end;
 
         Result := True;
@@ -2289,7 +2184,6 @@ var
 begin
   if (Terms = nil) or (Terms.Count = 0) then Exit;
 
-  // RelPath pode ser absoluto (IA) ou relativo — ResolveFullPath trata ambos
   FullPath := ResolveFullPath(RelPath);
   if not DentroDaRaiz(FullPath) then
   begin
@@ -2342,7 +2236,6 @@ var
 begin
   meLog.Lines.Add('=== BuscaTermos: consultando IA para obter termos/arquivos ===');
 
-  // já usa a árvore montada
   if Trim(ArvoreDiretorios) = '' then
   begin
     meLog.Lines.Add('[BuscaTermos] ArvoreDiretorios vazia — execute AnalisaProjeto antes.');
@@ -2372,7 +2265,6 @@ begin
     );
     meLog.Lines.append('[BuscaTermos] Observações: ' + Obs);
 
-    // Varredura real dos arquivos
     if DoSearch and (Terms.Count > 0) and (Files.Count > 0) then
     begin
       meLog.Lines.Add('=== Iniciando varredura de arquivos existentes ===');
@@ -2383,9 +2275,7 @@ begin
       end;
     end
     else
-    begin
       meLog.Lines.Add('[BuscaTermos] Busca por termos não autorizada ou listas vazias. Nada a varrer.');
-    end;
 
   finally
     Terms.Free;
@@ -2397,7 +2287,6 @@ end;
 
 function TfrmFolders.FileBinNotRead(FullPath: string): boolean;
 const
-  // Extensões consideradas realmente binárias, que NÃO serão analisadas
   BinExt: array[0..18] of string = (
     '.exe', '.dll', '.jpg', '.jpeg', '.png', '.gif',
     '.bmp', '.avi', '.mp4', '.mp3', '.wav', '.zip',
@@ -2409,30 +2298,25 @@ var
   Buffer: array[0..1023] of Byte;
   ReadBytes, i: Integer;
 begin
-  // Valor padrão: pode ler (texto)
   Result := False;
 
   if not FileExists(FullPath) then
   begin
-    // Se nem existe, não faz sentido tentar ler
     Result := True;
     Exit;
   end;
 
   ext := LowerCase(ExtractFileExt(FullPath));
 
-  // 1) Verifica pela extensão fixa
   for i := Low(BinExt) to High(BinExt) do
   begin
     if ext = BinExt[i] then
     begin
-      // É binário conhecido → NÃO ler
       Result := True;
       Exit;
     end;
   end;
 
-  // 2) Se a extensão não denuncia binário, inspeciona o conteúdo
   try
     FS := TFileStream.Create(FullPath, fmOpenRead or fmShareDenyNone);
     try
@@ -2440,14 +2324,12 @@ begin
 
       for i := 0 to ReadBytes - 1 do
       begin
-        // NULL (0) é típico de arquivo binário
         if Buffer[i] = 0 then
         begin
           Result := True;
           Exit;
         end;
 
-        // Caracteres de controle "estranhos" para texto
         if (Buffer[i] < 32) and not (Buffer[i] in [9, 10, 13]) then
         begin
           Result := True;
@@ -2458,10 +2340,8 @@ begin
       FS.Free;
     end;
   except
-    // Se der erro lendo, por segurança não tenta analisar
     Result := True;
   end;
 end;
 
 end.
-

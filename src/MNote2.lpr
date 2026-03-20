@@ -27,7 +27,6 @@ begin
   //Application.CreateForm(TfrmMQuery, frmMQuery);
   {$ifndef Darwin}
   {$ENDIF}
-  Application.CreateForm(TfrmChangeSource, frmChangeSource);
   Application.Run;
 end.
 

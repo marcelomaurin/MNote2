@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls,
   StdCtrls, Buttons, chatgpt, setmain, folders, mquery2, fpjson, jsonparser,
-  item, SynEditTypes, SynEdit;
+  item, SynEditTypes, SynEdit, DateUtils;
 
 type
   TTipoAcao = (
@@ -73,8 +73,16 @@ type
     FChatGPT: TCHATGPT;
     lstAcao: TStringList;
     lstRealizar: TStringList;
+
+    function EnsureRIAPath: string;
     procedure AddLog(const S: string);
     function TextoLimpo(const S: string): string;
+
+    // ===== cache RIA =====
+    function RIAFileName(const ANome: string): string;
+    function ArquivoEhDoDia(const AFileName: string): Boolean;
+    function CarregaRIASeValido(const AFileName: widestring; out ATexto: widestring): Boolean;
+    procedure SalvaRIA(const AFileName, ATexto: string);
   public
     procedure PerguntaIA();
     procedure AnalisaBanco();
@@ -88,6 +96,7 @@ type
     procedure AnalisaRespostaFolder();
     function BancoConectado(): boolean;
     function CriaDicionarioPost(): string;
+    function CriaDicionarioSQLite(): string;
     function VerificaContinuidade(): boolean;
     function GeraAcao(const Resposta: string): boolean;
     function AnalisaAcao(const Resposta: string): boolean;
@@ -168,8 +177,56 @@ end;
 
 function TfrmIA.TextoLimpo(const S: string): string;
 begin
-  // Mantém a ideia de garantir UTF-8.
   Result := UTF8Encode(S);
+end;
+
+function TfrmIA.RIAFileName(const ANome: string): string;
+begin
+  Result := IncludeTrailingPathDelimiter(FSetMain.Defaultfolder) + ANome;
+end;
+
+function TfrmIA.ArquivoEhDoDia(const AFileName: string): Boolean;
+var
+  Dt: TDateTime;
+begin
+  Result := False;
+  if not FileExists(AFileName) then Exit;
+  if not FileAge(AFileName, Dt) then Exit;
+  Result := SameDate(Dt, Now);
+end;
+
+function TfrmIA.CarregaRIASeValido(const AFileName: widestring; out ATexto: widestring): Boolean;
+var
+  SL: TStringList;
+begin
+  Result := False;
+  ATexto := '';
+
+  if frmFolders.flagMudanca then Exit;
+  if not ArquivoEhDoDia(AFileName) then Exit;
+
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(AFileName);
+    ATexto := SL.Text;
+    Result := True;
+  finally
+    SL.Free;
+  end;
+end;
+
+procedure TfrmIA.SalvaRIA(const AFileName, ATexto: string);
+var
+  SL: TStringList;
+begin
+  ForceDirectories(ExtractFileDir(AFileName));
+  SL := TStringList.Create;
+  try
+    SL.Text := ATexto;
+    SL.SaveToFile(AFileName);
+  finally
+    SL.Free;
+  end;
 end;
 
 { TfrmIA }
@@ -177,6 +234,7 @@ end;
 procedure TfrmIA.btLimpaHistClick(Sender: TObject);
 begin
   LimparHistorico();
+
 end;
 
 procedure TfrmIA.btPerguntarClick(Sender: TObject);
@@ -195,9 +253,12 @@ begin
   for ac := Low(TTipoAcao) to High(TTipoAcao) do
     lstAcao.Add(AcaoToStr(ac));
 
-  arquivo  := FSetMain.Defaultfolder + 'HISTORICO.RIA';
-  arquivo1 := FSetMain.Defaultfolder + 'mapamemoria.RIA';
-  arquivo2 := FSetMain.Defaultfolder + 'pensamento.RIA';
+  // garante que a pasta exista ao entrar
+  EnsureRIAPath;
+
+  arquivo  := RIAFileName('HISTORICO.RIA');
+  arquivo1 := RIAFileName('mapamemoria.RIA');
+  arquivo2 := RIAFileName('pensamento.RIA');
 
   if FileExists(arquivo) then
     meHistorico.Lines.LoadFromFile(arquivo);
@@ -205,18 +266,17 @@ begin
     meMapaMemoria.Lines.LoadFromFile(arquivo1);
   if FileExists(arquivo2) then
     mePensamento.Lines.LoadFromFile(arquivo2);
-
 end;
 
 procedure TfrmIA.meHistoricoChange(Sender: TObject);
 var
   arquivo: string;
 begin
-  arquivo := FSetMain.Defaultfolder + 'HISTORICO.RIA';
+  arquivo := RIAFileName('HISTORICO.RIA');
   try
+    EnsureRIAPath;
     meHistorico.Lines.SaveToFile(arquivo);
   except
-    // silencia erro de I/O
   end;
 end;
 
@@ -224,7 +284,7 @@ procedure TfrmIA.meMapaMemoriaChange(Sender: TObject);
 var
   arquivo: string;
 begin
-  arquivo := FSetMain.Defaultfolder + 'mapamemoria.RIA';
+  arquivo := RIAFileName('mapamemoria.RIA');
   try
     meMapaMemoria.Lines.SaveToFile(arquivo);
   except
@@ -235,7 +295,7 @@ procedure TfrmIA.mePensamentoChange(Sender: TObject);
 var
   arquivo: string;
 begin
-  arquivo := FSetMain.Defaultfolder + 'pensamento.RIA';
+  arquivo := RIAFileName('pensamento.RIA');
   try
     mePensamento.Lines.SaveToFile(arquivo);
   except
@@ -248,17 +308,30 @@ begin
     FazPerguntaIA();
 end;
 
+function TfrmIA.EnsureRIAPath: string;
+begin
+  Result := Trim(FSetMain.Defaultfolder);
+
+  if Result = '' then
+    Result := ExtractFilePath(Application.ExeName);
+
+  Result := IncludeTrailingPathDelimiter(Result);
+
+  if not DirectoryExists(Result) then
+    ForceDirectories(Result);
+end;
+
+function TfrmIA.RIAFileName(const ANome: string): string;
+begin
+  Result := IncludeTrailingPathDelimiter(EnsureRIAPath) + ANome;
+end;
+
 procedure TfrmIA.PerguntaIA();
 begin
   if not VerificaContinuidade() then
-  begin
-    LimparHistorico();
-
-  end
+    LimparHistorico()
   else
-  begin
-     frmFolders.flagMudanca:= false;
-  end;
+    frmFolders.flagMudanca := false;
 
   AnalisaBanco();
   AnalisaFolder();
@@ -270,6 +343,11 @@ function TfrmIA.CriaDicionarioPost(): string;
 var
   baseDir, fileName: string;
 begin
+  Result := '';
+
+  if frmmquery2 = nil then Exit;
+  if not frmmquery2.zconpost.Connected then Exit;
+
   {$IFDEF WINDOWS}
   baseDir := GetAppConfigDir(False);
   {$ELSE}
@@ -282,12 +360,34 @@ begin
   Result := frmmquery2.CriaDicionarioPost(fileName);
 end;
 
+function TfrmIA.CriaDicionarioSQLite(): string;
+var
+  baseDir, fileName: string;
+begin
+  Result := '';
+
+  if frmmquery2 = nil then Exit;
+  if not frmmquery2.zconsqlite.Connected then Exit;
+
+  {$IFDEF WINDOWS}
+  baseDir := GetAppConfigDir(False);
+  {$ELSE}
+  baseDir := GetUserDir;
+  {$ENDIF}
+
+  ForceDirectories(baseDir);
+  fileName := IncludeTrailingPathDelimiter(baseDir) + 'dicionario_sqlite.sql';
+
+  Result := frmmquery2.CriaDicionarioSQLite(fileName);
+end;
+
 function TfrmIA.VerificaContinuidade(): boolean;
 var
   DevMsg     : WideString;
   FullPrompt : WideString;
   Pergunta   : WideString;
   Resposta   : WideString;
+  CacheFile  : string;
 begin
   Result := False;
 
@@ -302,37 +402,47 @@ begin
     Exit(False);
   end;
 
-  if FChatGPT = nil then
-    FChatGPT := TCHATGPT.Create(Self);
-
-  if Trim(FSetMain.CHATGPT) = '' then
+  CacheFile := RIAFileName('continuidade.RIA');
+  if CarregaRIASeValido(CacheFile, Resposta) then
   begin
-    AddLog('Token do ChatGPT não configurado em FSetMain.CHATGPT.');
-    Exit(False);
-  end;
-
-  FChatGPT.TOKEN := FSetMain.CHATGPT;
-
-  DevMsg :=
-    'Você é um classificador.' + LineEnding +
-    'Sua função é responder apenas com "Sim" ou "Nao".' + LineEnding +
-    'Analise o histórico de conversas e a pergunta atual e diga se elas têm relação direta ou apresenta ideia de continuidade ao que esta sendo tratado.' + LineEnding +
-    'Responda apenas com uma palavra: Sim ou Não.' + LineEnding +
-    'Sem explicações, sem pontuação, sem comentários adicionais.';
-  FChatGPT.Dev := DevMsg;
-
-  FullPrompt :=
-    '--- HISTÓRICO DE CONVERSAS ---' + LineEnding +
-    meHistorico.Lines.Text + LineEnding + LineEnding +
-    '--- NOVA PERGUNTA ---' + LineEnding +
-    Pergunta + LineEnding +
-    'A pergunta tem relação direta com o histórico acima?';
-
-  AddLog('Enviando pergunta ao classificador de continuidade...');
-  if FChatGPT.SendQuestion(FullPrompt) then
-    Resposta := Trim(LowerCase(TextoLimpo(FChatGPT.Response)))
+    AddLog('VerificaContinuidade: reutilizando cache do dia.');
+  end
   else
-    Resposta := Trim(LowerCase(TextoLimpo(FChatGPT.Response)));
+  begin
+    if FChatGPT = nil then
+      FChatGPT := TCHATGPT.Create(Self);
+
+    if Trim(FSetMain.CHATGPT) = '' then
+    begin
+      AddLog('Token do ChatGPT não configurado em FSetMain.CHATGPT.');
+      Exit(False);
+    end;
+
+    FChatGPT.TOKEN := FSetMain.CHATGPT;
+
+    DevMsg :=
+      'Você é um classificador.' + LineEnding +
+      'Sua função é responder apenas com "Sim" ou "Nao".' + LineEnding +
+      'Analise o histórico de conversas e a pergunta atual e diga se elas têm relação direta ou apresenta ideia de continuidade ao que esta sendo tratado.' + LineEnding +
+      'Responda apenas com uma palavra: Sim ou Não.' + LineEnding +
+      'Sem explicações, sem pontuação, sem comentários adicionais.';
+    FChatGPT.Dev := DevMsg;
+
+    FullPrompt :=
+      '--- HISTÓRICO DE CONVERSAS ---' + LineEnding +
+      meHistorico.Lines.Text + LineEnding + LineEnding +
+      '--- NOVA PERGUNTA ---' + LineEnding +
+      Pergunta + LineEnding +
+      'A pergunta tem relação direta com o histórico acima?';
+
+    AddLog('Enviando pergunta ao classificador de continuidade...');
+    if FChatGPT.SendQuestion(FullPrompt) then
+      Resposta := Trim(LowerCase(TextoLimpo(FChatGPT.Response)))
+    else
+      Resposta := Trim(LowerCase(TextoLimpo(FChatGPT.Response)));
+
+    SalvaRIA(CacheFile, Resposta);
+  end;
 
   if (Resposta = 'sim') or (Resposta = 'yes') then
   begin
@@ -524,7 +634,6 @@ begin
           item := TItem(tb.Tag);
           item.ItemType := ti_SQL;
           syn  := item.syn;
-          // aqui você pode ajustar o SynEdit se quiser
         end;
       end
       else
@@ -572,7 +681,8 @@ var
   DevMsg   : string;
   Prompt   : string;
   Resp     : string;
-  JsonData : TJSONData;
+  JsonRaiz : TJSONData;
+  JsonAcoes: TJSONData;
   Obj      : TJSONObject;
   Arr      : TJSONArray;
   i        : Integer;
@@ -630,29 +740,22 @@ begin
   if Resp = '' then
     Exit(False);
 
+  JsonRaiz := nil;
   try
-    JsonData := GetJSON(Resp);
-  except
-    on E: Exception do
-    begin
-      AddLog('Erro ao parsear JSON de ações: ' + E.Message);
-      Exit(False);
-    end;
-  end;
+    JsonRaiz := GetJSON(Resp);
 
-  try
-    if not (JsonData is TJSONObject) then
+    if not (JsonRaiz is TJSONObject) then
       Exit(False);
 
-    Obj := TJSONObject(JsonData);
+    Obj := TJSONObject(JsonRaiz);
 
-    if not Obj.Find('acoes', JsonData) then
+    if not Obj.Find('acoes', JsonAcoes) then
       Exit(False);
 
-    if not (JsonData is TJSONArray) then
+    if not (JsonAcoes is TJSONArray) then
       Exit(False);
 
-    Arr := TJSONArray(JsonData);
+    Arr := TJSONArray(JsonAcoes);
 
     for i := 0 to Arr.Count - 1 do
     begin
@@ -662,25 +765,44 @@ begin
     end;
 
     Result := (lstRealizar.Count > 0);
-  finally
-    JsonData.Free;
+  except
+    on E: Exception do
+    begin
+      AddLog('Erro ao parsear JSON de ações: ' + E.Message);
+      Result := False;
+    end;
   end;
+  if Assigned(JsonRaiz) then
+    JsonRaiz.Free;
 end;
 
 procedure TfrmIA.AnalisaBanco();
+var
+  dicSqlite: string;
 begin
   if QuestoesBanco() then
   begin
     if BancoConectado then
     begin
-      if (frmmquery2.zconpost.Connected) or (frmmquery2.zconmysql.Connected) then
+      if (frmmquery2.zconpost.Connected) or
+         (frmmquery2.zconmysql.Connected) or
+         (frmmquery2.zconsqlite.Connected) then
       begin
         if frmmquery2.zconpost.Connected then
           meMapaMemoria.Lines.Add(CriaDicionarioPost());
 
         if frmmquery2.zconmysql.Connected then
         begin
-          // ponto para dicionário MySQL, se quiser no futuro
+        end;
+
+        if frmmquery2.zconsqlite.Connected then
+        begin
+          dicSqlite := CriaDicionarioSQLite();
+          if Trim(dicSqlite) <> '' then
+          begin
+            meMapaMemoria.Lines.Add('--[DICIONARIO SQLITE]------------------------------');
+            meMapaMemoria.Lines.Add(dicSqlite);
+          end;
         end;
       end;
     end
@@ -764,7 +886,7 @@ begin
     if QuestoesCaminho() then
     begin
       meMapaMemoria.Lines.Add('--[FOLDER/PROJETO]------------------------------');
-      meMapaMemoria.Lines.Add(frmFolders.AnalisaFolderIA(meHistorico.text+' '+mePergunta.Lines.Text));
+      meMapaMemoria.Lines.Add(frmFolders.AnalisaFolderIA(meHistorico.Text + ' ' + mePergunta.Lines.Text));
       meMapaMemoria.Lines.Add(frmFolders.meLog.Lines.Text);
 
       AnalisaRespostaFolder();
@@ -776,51 +898,60 @@ end;
 procedure TfrmIA.MapeiaPensamento();
 var
   DevMsg, FullPrompt, Pergunta, Resposta: WideString;
+  CacheFile: string;
 begin
   Pergunta := Trim(mePergunta.Text);
 
-  if FChatGPT = nil then
-    FChatGPT := TCHATGPT.Create(Self);
-
-  if Trim(FSetMain.CHATGPT) = '' then
+  CacheFile := RIAFileName('pensamento_gerado.RIA');
+  if CarregaRIASeValido(CacheFile, Resposta) then
   begin
-    AddLog('Token do ChatGPT não configurado em FSetMain.CHATGPT (MapeiaPensamento).');
-    Exit;
-  end;
-
-  DevMsg :=
-    'Você é um analisador de dados e sua missão é montar um mapa de Pensamento coerente com a pergunta.' + LineEnding +
-    'O histórico que será enviado representa as interações anteriores com o usuário,' + LineEnding +
-    'e deve ser considerado como base de contexto e aprendizado para manter a coerência.' + LineEnding +
-    LineEnding +
-    'Siga as regras:' + LineEnding +
-    '1) Crie um Mapa de pensamento coerente com que foi solicitado e embasado na conversa histórica.' + LineEnding +
-    '2) Use o histórico como base para lembrar do contexto da conversa.' + LineEnding +
-    '3) Trate a pergunta atual como o ponto principal a ser respondido.' + LineEnding +
-    '4) Se for código, retorne sempre o código completo e formatado.' + LineEnding +
-    '5) Se não houver contexto suficiente, peça mais detalhes.' + LineEnding;
-
-  FullPrompt :=
-    '--- CONTEXTO HISTÓRICO ---' + LineEnding +
-    'Abaixo está o histórico de toda a conversa até o momento. Use-o apenas para entender o contexto:' + LineEnding +
-    LineEnding +
-    meHistorico.Lines.Text + LineEnding + LineEnding +
-    '--- NOVA PERGUNTA ---' + LineEnding +
-    'A seguir está a nova pergunta feita pelo usuário, que deve ser respondida considerando o histórico acima:' + LineEnding +
-    Pergunta + LineEnding + LineEnding +
-    '--- MAPA DE MEMÓRIA ---' + LineEnding +
-    meMapaMemoria.Lines.Text + LineEnding + LineEnding +
-    '--- PENSAMENTO (INSTRUÇÕES INTERNAS) ---' + LineEnding +
-    mePensamento.Lines.Text;
-
-  FChatGPT.TOKEN := FSetMain.CHATGPT;
-  FChatGPT.Dev   := DevMsg;
-
-  AddLog('MapeiaPensamento: enviando contexto para gerar mapa de pensamento...');
-  if FChatGPT.SendQuestion(FullPrompt) then
-    Resposta := TextoLimpo(FChatGPT.Response)
+    AddLog('MapeiaPensamento: reutilizando cache do dia.');
+  end
   else
-    Resposta := TextoLimpo(FChatGPT.Response);
+  begin
+    if FChatGPT = nil then
+      FChatGPT := TCHATGPT.Create(Self);
+
+    if Trim(FSetMain.CHATGPT) = '' then
+    begin
+      AddLog('Token do ChatGPT não configurado em FSetMain.CHATGPT (MapeiaPensamento).');
+      Exit;
+    end;
+
+    DevMsg :=
+      'Você é um analisador de dados e sua missão é montar um mapa de Pensamento coerente com a pergunta.' + LineEnding +
+      'O histórico que será enviado representa as interações anteriores com o usuário,' +
+      ' e deve ser considerado como base de contexto e aprendizado para manter a coerência.' + LineEnding + LineEnding +
+      'Siga as regras:' + LineEnding +
+      '1) Crie um Mapa de pensamento coerente com que foi solicitado e embasado na conversa histórica.' + LineEnding +
+      '2) Use o histórico como base para lembrar do contexto da conversa.' + LineEnding +
+      '3) Trate a pergunta atual como o ponto principal a ser respondido.' + LineEnding +
+      '4) Se for código, retorne sempre o código completo e formatado.' + LineEnding +
+      '5) Se não houver contexto suficiente, peça mais detalhes.';
+
+    FullPrompt :=
+      '--- CONTEXTO HISTÓRICO ---' + LineEnding +
+      'Abaixo está o histórico de toda a conversa até o momento. Use-o apenas para entender o contexto:' + LineEnding + LineEnding +
+      meHistorico.Lines.Text + LineEnding + LineEnding +
+      '--- NOVA PERGUNTA ---' + LineEnding +
+      'A seguir está a nova pergunta feita pelo usuário, que deve ser respondida considerando o histórico acima:' + LineEnding +
+      Pergunta + LineEnding + LineEnding +
+      '--- MAPA DE MEMÓRIA ---' + LineEnding +
+      meMapaMemoria.Lines.Text + LineEnding + LineEnding +
+      '--- PENSAMENTO (INSTRUÇÕES INTERNAS) ---' + LineEnding +
+      mePensamento.Lines.Text;
+
+    FChatGPT.TOKEN := FSetMain.CHATGPT;
+    FChatGPT.Dev   := DevMsg;
+
+    AddLog('MapeiaPensamento: enviando contexto para gerar mapa de pensamento...');
+    if FChatGPT.SendQuestion(FullPrompt) then
+      Resposta := TextoLimpo(FChatGPT.Response)
+    else
+      Resposta := TextoLimpo(FChatGPT.Response);
+
+    SalvaRIA(CacheFile, Resposta);
+  end;
 
   if Trim(Resposta) <> '' then
   begin
@@ -832,7 +963,8 @@ end;
 
 procedure TfrmIA.RespondePergunta();
 var
-  Pergunta, DevMsg, FullPrompt, Resposta: string;
+  Pergunta, DevMsg, FullPrompt, Resposta: widestring;
+  CacheFile: widestring;
 begin
   Pergunta := Trim(mePergunta.Text);
   if Pergunta = '' then
@@ -841,48 +973,56 @@ begin
     Exit;
   end;
 
-  if FChatGPT = nil then
-    FChatGPT := TCHATGPT.Create(Self);
-
-  if Trim(FSetMain.CHATGPT) = '' then
+  CacheFile := RIAFileName('resposta_final.RIA');
+  if CarregaRIASeValido(CacheFile, Resposta) then
   begin
-    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
-    Exit;
-  end;
-
-  DevMsg :=
-    'Você é um assistente técnico e está participando de uma conversa contínua.' + LineEnding +
-    'O histórico que será enviado representa as interações anteriores com o usuário,' + LineEnding +
-    'e deve ser considerado como base de contexto e aprendizado para manter a coerência.' + LineEnding +
-    LineEnding +
-    'Siga as regras:' + LineEnding +
-    '1) Responda com clareza e objetividade.' + LineEnding +
-    '2) Use o histórico como base para lembrar do contexto da conversa.' + LineEnding +
-    '3) Trate a pergunta atual como o ponto principal a ser respondido.' + LineEnding +
-    '4) Se for código, retorne sempre o código completo e formatado.' + LineEnding +
-    '5) Se não houver contexto suficiente, peça mais detalhes.' + LineEnding;
-
-  FullPrompt :=
-    '--- CONTEXTO HISTÓRICO ---' + LineEnding +
-    'Abaixo está o histórico de toda a conversa até o momento. Use-o apenas para entender o contexto:' + LineEnding +
-    LineEnding +
-    meHistorico.Text + LineEnding + LineEnding +
-    '--- NOVA PERGUNTA ---' + LineEnding +
-    'A seguir está a nova pergunta feita pelo usuário, que deve ser respondida considerando o histórico acima:' + LineEnding +
-    Pergunta + LineEnding + LineEnding +
-    '--- MAPA DE MEMÓRIA ---' + LineEnding +
-    meMapaMemoria.Text + LineEnding + LineEnding +
-    '--- PENSAMENTO (INSTRUÇÕES INTERNAS) ---' + LineEnding +
-    mePensamento.Text;
-
-  FChatGPT.TOKEN := FSetMain.CHATGPT;
-  FChatGPT.Dev   := DevMsg;
-
-  AddLog('Enviando pergunta + histórico ao ChatGPT...');
-  if FChatGPT.SendQuestion(FullPrompt) then
-    Resposta := TextoLimpo(FChatGPT.Response)
+    AddLog('RespondePergunta: reutilizando cache do dia.');
+  end
   else
-    Resposta := TextoLimpo(FChatGPT.Response);
+  begin
+    if FChatGPT = nil then
+      FChatGPT := TCHATGPT.Create(Self);
+
+    if Trim(FSetMain.CHATGPT) = '' then
+    begin
+      ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+      Exit;
+    end;
+
+    DevMsg :=
+      'Você é um assistente técnico e está participando de uma conversa contínua.' + LineEnding +
+      'O histórico que será enviado representa as interações anteriores com o usuário,' +
+      ' e deve ser considerado como base de contexto e aprendizado para manter a coerência.' + LineEnding + LineEnding +
+      'Siga as regras:' + LineEnding +
+      '1) Responda com clareza e objetividade.' + LineEnding +
+      '2) Use o histórico como base para lembrar do contexto da conversa.' + LineEnding +
+      '3) Trate a pergunta atual como o ponto principal a ser respondido.' + LineEnding +
+      '4) Se for código, retorne sempre o código completo e formatado.' + LineEnding +
+      '5) Se não houver contexto suficiente, peça mais detalhes.';
+
+    FullPrompt :=
+      '--- CONTEXTO HISTÓRICO ---' + LineEnding +
+      'Abaixo está o histórico de toda a conversa até o momento. Use-o apenas para entender o contexto:' + LineEnding + LineEnding +
+      meHistorico.Text + LineEnding + LineEnding +
+      '--- NOVA PERGUNTA ---' + LineEnding +
+      'A seguir está a nova pergunta feita pelo usuário, que deve ser respondida considerando o histórico acima:' + LineEnding +
+      Pergunta + LineEnding + LineEnding +
+      '--- MAPA DE MEMÓRIA ---' + LineEnding +
+      meMapaMemoria.Text + LineEnding + LineEnding +
+      '--- PENSAMENTO (INSTRUÇÕES INTERNAS) ---' + LineEnding +
+      mePensamento.Text;
+
+    FChatGPT.TOKEN := FSetMain.CHATGPT;
+    FChatGPT.Dev   := DevMsg;
+
+    AddLog('Enviando pergunta + histórico ao ChatGPT...');
+    if FChatGPT.SendQuestion(FullPrompt) then
+      Resposta := TextoLimpo(FChatGPT.Response)
+    else
+      Resposta := TextoLimpo(FChatGPT.Response);
+
+    SalvaRIA(CacheFile, Resposta);
+  end;
 
   meResposta.Lines.Text := Resposta;
 
@@ -901,8 +1041,10 @@ begin
   mePensamento.Lines.Clear;
   meResposta.Lines.Clear;
   meLog.Lines.Clear;
-  frmFolders.flagMudanca:= true;
+  frmFolders.flagMudanca := true;
   AddLog('Histórico limpo.');
+  if Assigned(frmFolders) then
+    frmFolders.ApagaRIA;
 end;
 
 function TfrmIA.QuestoesFolder(): boolean;
@@ -1015,6 +1157,7 @@ end;
 procedure TfrmIA.AnalisaRespostaFolder();
 var
   Pergunta, DevMsg, Prompt, Resposta, Historico, LogTxt, Mapa: WideString;
+  CacheFile: string;
 begin
   Pergunta  := Trim(mePergunta.Text);
   Historico := meHistorico.Text;
@@ -1027,45 +1170,55 @@ begin
     Exit;
   end;
 
-  if FChatGPT = nil then
-    FChatGPT := TCHATGPT.Create(Self);
-
-  if Trim(FSetMain.CHATGPT) = '' then
+  CacheFile := RIAFileName('resumo_folder.RIA');
+  if CarregaRIASeValido(CacheFile, Resposta) then
   begin
-    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
-    Exit;
-  end;
-
-  DevMsg :=
-    'Você é um assistente técnico que extrai respostas objetivas do LOG.' + LineEnding +
-    'Use o histórico apenas como contexto mínimo.' + LineEnding +
-    'Retorne um texto sintetizando as informações relevantes para atender a questão.' + LineEnding +
-    'Se não houver nada útil, responda exatamente: Sem dados relevantes';
-
-  Prompt :=
-    '--- CONTEXTO HISTÓRICO (resumo) ---' + LineEnding +
-    Historico + LineEnding + LineEnding +
-    '--- CONTEXTO MAPA MENTAL (informações relevantes) ---' + LineEnding +
-    Mapa + LineEnding + LineEnding +
-    '--- LOG DO FOLDER (fonte factual) ---' + LineEnding +
-    LogTxt + LineEnding + LineEnding +
-    '--- PERGUNTA ---' + LineEnding +
-    Pergunta + LineEnding + LineEnding +
-    'TAREFA: Com base apenas no LOG, gere um texto curto com as respostas relevantes à pergunta.' + LineEnding +
-    'Não explique o procedimento, apenas responda objetivamente.' + LineEnding +
-    'Sem listas, sem títulos, sem rodapé.';
-
-  FChatGPT.TOKEN := FSetMain.CHATGPT;
-  FChatGPT.Dev   := DevMsg;
-
-  AddLog('AnalisaRespostaFolder: gerando resumo relevante do log...');
-  if FChatGPT.SendQuestion(Prompt) then
-    Resposta := TextoLimpo(Trim(FChatGPT.Response))
+    AddLog('AnalisaRespostaFolder: reutilizando cache do dia.');
+  end
   else
-    Resposta := TextoLimpo(Trim(FChatGPT.Response));
+  begin
+    if FChatGPT = nil then
+      FChatGPT := TCHATGPT.Create(Self);
 
-  if Resposta = '' then
-    Resposta := 'Sem dados relevantes';
+    if Trim(FSetMain.CHATGPT) = '' then
+    begin
+      ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+      Exit;
+    end;
+
+    DevMsg :=
+      'Você é um assistente técnico que extrai respostas objetivas do LOG.' + LineEnding +
+      'Use o histórico apenas como contexto mínimo.' + LineEnding +
+      'Retorne um texto sintetizando as informações relevantes para atender a questão.' + LineEnding +
+      'Se não houver nada útil, responda exatamente: Sem dados relevantes';
+
+    Prompt :=
+      '--- CONTEXTO HISTÓRICO (resumo) ---' + LineEnding +
+      Historico + LineEnding + LineEnding +
+      '--- CONTEXTO MAPA MENTAL (informações relevantes) ---' + LineEnding +
+      Mapa + LineEnding + LineEnding +
+      '--- LOG DO FOLDER (fonte factual) ---' + LineEnding +
+      LogTxt + LineEnding + LineEnding +
+      '--- PERGUNTA ---' + LineEnding +
+      Pergunta + LineEnding + LineEnding +
+      'TAREFA: Com base apenas no LOG, gere um texto curto com as respostas relevantes à pergunta.' + LineEnding +
+      'Não explique o procedimento, apenas responda objetivamente.' + LineEnding +
+      'Sem listas, sem títulos, sem rodapé.';
+
+    FChatGPT.TOKEN := FSetMain.CHATGPT;
+    FChatGPT.Dev   := DevMsg;
+
+    AddLog('AnalisaRespostaFolder: gerando resumo relevante do log...');
+    if FChatGPT.SendQuestion(Prompt) then
+      Resposta := TextoLimpo(Trim(FChatGPT.Response))
+    else
+      Resposta := TextoLimpo(Trim(FChatGPT.Response));
+
+    if Resposta = '' then
+      Resposta := 'Sem dados relevantes';
+
+    SalvaRIA(CacheFile, Resposta);
+  end;
 
   meMapaMemoria.Lines.Add('--- [FOLDER/RESUMO RELEVANTE] ---');
   meMapaMemoria.Lines.Add(Resposta);
@@ -1075,10 +1228,11 @@ end;
 function TfrmIA.BancoConectado(): boolean;
 begin
   if frmmquery2 <> nil then
-    Result := frmmquery2.zconpost.Connected or frmmquery2.zconmysql.Connected
+    Result := frmmquery2.zconpost.Connected or
+              frmmquery2.zconmysql.Connected or
+              frmmquery2.zconsqlite.Connected
   else
     Result := False;
 end;
 
 end.
-

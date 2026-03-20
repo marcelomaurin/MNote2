@@ -14,7 +14,7 @@ uses
   PairSplitter, DBCtrls, DBGrids, EditBtn, finds, ZClasses, ZCollections,
   ZCompatibility, ZTokenizer, ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging,
   ZVariant, ZPlainDriver, TypeDB, triggers, item, funcoes, chart, chatgpt,
-  codigo, setmain, ZDbcIntfs, math, hint, Variants, LConvEncoding, base; //ZURL
+  codigo, setmain, ZDbcIntfs, math, hint, Variants, LConvEncoding, base;
 
 const
   sqltabela   = 'Você poderia me fornecer a consulta SQL que deseja analisar? Assim que eu receber o SQL, irei extrair os nomes das tabelas envolvidas e gerar um código em JSON com esses nomes. A resposta será apresentada dentro de uma caixa de texto apropriada para cópia, Desta forma refaça a pergunta mesmo nao havendo certeza da resposta,claramente formatada como um código JSON:';
@@ -324,9 +324,6 @@ type
     procedure btExecute2Click(Sender: TObject);
     procedure btExecutar2Click(Sender: TObject);
     procedure btExecute1Click(Sender: TObject);
-    //procedure btExecutar1Click(Sender: TObject); overload; // já existe, manter
-    //procedure btExecutarClick(Sender: TObject); overload;  // já existe, manter
-    //procedure btExecutar2Click(Sender: TObject); overload; // já existe, manter
     procedure btJSON1Click(Sender: TObject);
     procedure btJSON2Click(Sender: TObject);
 
@@ -415,7 +412,6 @@ type
   private
     FCHATGPT : TCHATGPT;
 
-    // MySQL
     posicaofieldsmy : TTreeNode;
     tvitemmy : TTreeNode;
     posicaoViewmy : TTreeNode;
@@ -423,7 +419,6 @@ type
     posicaoFunctionmy : TTreeNode;
     viewsmy : TViews;
 
-    // Postgres
     posicaofieldspost : TTreeNode;
     tvitempost : TTreeNode;
     tvDatabasePost : TTreeNode;
@@ -435,7 +430,6 @@ type
     viewspost : TViews;
     sequences : TStringList;
 
-    // SQLite
     tvitemLite : TTreeNode;
     posicaofieldslite : TTreeNode;
 
@@ -464,6 +458,10 @@ type
 
     function ConectSQLite: Boolean;
   public
+    function CriaDicionarioSQLite(const ATargetFile: string): string;
+    function BuildCreateTableSQLite(const ATabela: string): string;
+    function CriaListaDependenciasSQLite(const outFile: string): string;
+    function QuestionarSQLSQLite(const pergunta, deps, ddl: string): string;
 
     procedure ChartView; overload;
     procedure ChartView(AType: TChartCommType); overload;
@@ -487,7 +485,7 @@ type
 
     function ConectPost: Boolean;
     function ConectMy: Boolean;
-    function DescreveTabelaIAPost(tabela : string): string; // stub se você não colar
+    function DescreveTabelaIAPost(tabela : string): string;
     function DescreveTabelaIAMy(const tabela: string): string;
     function CriaDicionarioPost(const ATargetFile: string): string;
     function CriaListaDependenciasPost(const outFile: string): string;
@@ -512,14 +510,11 @@ function SQLiteSelectedTableName: string;
 begin
   Result := '';
   if (frmmquery2 = nil) then Exit;
-
   if (frmmquery2.tvsqlite.Selected = nil) then Exit;
 
-  // Se clicou na tabela (filho de "tables")
   if frmmquery2.tvsqlite.Selected.Parent = frmmquery2.posicaofieldslite then
     Exit(frmmquery2.tvsqlite.Selected.Text);
 
-  // Se clicou em "fields" ou numa coluna, sobe até achar o nó-tabela
   if (frmmquery2.tvsqlite.Selected.Parent <> nil) and
      (frmmquery2.tvsqlite.Selected.Parent.Data = Pointer(ETDBCampos)) and
      (frmmquery2.tvsqlite.Selected.Parent.Parent <> nil) then
@@ -529,10 +524,6 @@ begin
      (frmmquery2.tvsqlite.Selected.Parent <> nil) then
     Exit(frmmquery2.tvsqlite.Selected.Parent.Text);
 end;
-
-{ =========================
-  ======= CHART ===========
-  ========================= }
 
 procedure Tfrmmquery2.ChartView;
 var
@@ -558,10 +549,6 @@ begin
   frmChart.CommType := AType;
   frmChart.Show;
 end;
-
-{ =========================
-  ======= CHAT SQL ========
-  ========================= }
 
 procedure Tfrmmquery2.QuestionSQLChatMy();
 var
@@ -638,11 +625,7 @@ begin
     edSQL.Text := frmMNote.meCodes.Text;
 end;
 
-{ =========================
-  ======= CSV -> SQL ======
-  ========================= }
-
-procedure Tfrmmquery2.CriaTabela(NomeTabela: string; CSVDataSet: TCSVDataSet; ZQuery: TZQuery);
+procedure Tfrmmquery2.CriaTabela(NomeTabela: string; CSVDataSet: TCSVDataset; ZQuery: TZQuery);
 var
   SQLCreateTable: string;
   i: Integer;
@@ -680,7 +663,7 @@ begin
   end;
 end;
 
-procedure Tfrmmquery2.MigraCampos(NomeTabela: string; CSVDataSet: TCSVDataSet; ZQuery: TZQuery);
+procedure Tfrmmquery2.MigraCampos(NomeTabela: string; CSVDataSet: TCSVDataset; ZQuery: TZQuery);
 var
   SQLInsert, colVals: string;
   i: Integer;
@@ -714,10 +697,6 @@ begin
   edSQL.Text := 'ok';
 end;
 
-{ =========================
-  ======= POST USER =======
-  ========================= }
-
 procedure Tfrmmquery2.ToggleBox2Change(Sender: TObject);
 var
   usuario, senha: string;
@@ -735,10 +714,6 @@ begin
   else
     ShowMessage('Postgres não conectado!');
 end;
-
-{ =========================
-  ======= FORMAT SQL ======
-  ========================= }
 
 function Tfrmmquery2.TrocarPalavra(Info: String; de: String; para: String): String;
 begin
@@ -786,10 +761,6 @@ begin
   edsql.Lines.Append(' FOR EACH ROW ');
   edsql.Lines.Append('execute function '+tabela.triggers.Triggername[posicao]+'();');
 end;
-
-{ =========================
-  ======= MYSQL TREE ======
-  ========================= }
 
 procedure Tfrmmquery2.tvMysqlChange(Sender: TObject; Node: TTreeNode);
 var
@@ -986,10 +957,6 @@ begin
   if (tv <> nil) then tvsqlite.Select(tv);
 end;
 
-{ =========================
-  ======= POST TREE =======
-  ========================= }
-
 procedure Tfrmmquery2.tvPostChange(Sender: TObject; Node: TTreeNode);
 begin
   if(node = tvDatabasePost) then
@@ -1020,10 +987,6 @@ procedure Tfrmmquery2.tvPostClick(Sender: TObject);
 begin
 end;
 
-{ =========================
-  ===== SQLITE TREE =======
-  ========================= }
-
 procedure Tfrmmquery2.tvsqliteChange(Sender: TObject; Node: TTreeNode);
 var
   tvPai, tvAvo: TTreeNode;
@@ -1036,42 +999,36 @@ begin
   if tvPai <> nil then
     tvAvo := tvPai.Parent;
 
-  // Raiz "SQLite"
   if Node = tvitemLite then
   begin
     tvsqlite.PopupMenu := pmDatabaseLite;
     Exit;
   end;
 
-  // Nó "tables"
   if Node = posicaofieldslite then
   begin
     tvsqlite.PopupMenu := pmTabelasLite;
     Exit;
   end;
 
-  // Tabela (filho direto de "tables")
   if (tvPai = posicaofieldslite) then
   begin
     tvsqlite.PopupMenu := pmTabelaLite;
     Exit;
   end;
 
-  // Nó "fields" (filho da tabela) -> usar popSQLLite
   if (Node.Data = Pointer(ETDBCampos)) then
   begin
     tvsqlite.PopupMenu := popSQLLite;
     Exit;
   end;
 
-  // Coluna/linha (neto: tabela -> fields -> "col : type ...") -> usar popSQLLite
   if (tvPai <> nil) and (tvPai.Data = Pointer(ETDBCampos)) then
   begin
     tvsqlite.PopupMenu := popSQLLite;
     Exit;
   end;
 
-  // fallback: sem menu
   tvsqlite.PopupMenu := nil;
 end;
 
@@ -1080,12 +1037,9 @@ var
   tbl: string;
 begin
   tbl := SQLiteSelectedTableName;
-
-  // Atualiza o campo de pesquisa (bom pra ficar igual MySQL/Post)
   if Trim(tbl) <> '' then
     edPesqsqlite.Text := tbl;
 
-  // Se clicou numa tabela (filho direto de "tables"), garante seleção/foco
   if (tvsqlite.Selected <> nil) and
      (tvsqlite.Selected.Parent = posicaofieldslite) then
   begin
@@ -1093,10 +1047,6 @@ begin
     Exit;
   end;
 end;
-
-{ =========================
-  ======= CREATE ==========
-  ========================= }
 
 procedure Tfrmmquery2.FormCreate(Sender: TObject);
 var
@@ -1140,6 +1090,7 @@ begin
   edusuarioPost.Text := FSetmain.UsernamePost;
   edPasswrdPost.Text := FSetmain.PasswordPost;
   edSchemaPost.Text := FSetmain.SchemaPost;
+  edDatabase.Text := FSetMain.BancoSQLite;
 end;
 
 procedure Tfrmmquery2.setSelLength(var textComponent:TSynEdit; newValue:integer);
@@ -1468,10 +1419,20 @@ begin
   {$ENDIF}
 
   ForceDirectories(baseDir);
-  fileName := IncludeTrailingPathDelimiter(baseDir) + 'dependencias_post.sql';
 
-  edSQLPost.Text := CriaListaDependenciasPost(fileName);
-  ShowMessage('Dependências salvas em:' + LineEnding + fileName);
+  if (pgMain.ActivePage = liteMain) or ((not zconpost.Connected) and zconsqlite.Connected) then
+  begin
+    fileName := IncludeTrailingPathDelimiter(baseDir) + 'dependencias_sqlite.sql';
+    edSQL1.Text := CriaListaDependenciasSQLite(fileName);
+    pgSQLite.ActivePage := tbSQL1;
+    ShowMessage('Dependências SQLite salvas em:' + LineEnding + fileName);
+  end
+  else
+  begin
+    fileName := IncludeTrailingPathDelimiter(baseDir) + 'dependencias_post.sql';
+    edSQLPost.Text := CriaListaDependenciasPost(fileName);
+    ShowMessage('Dependências salvas em:' + LineEnding + fileName);
+  end;
 end;
 
 procedure Tfrmmquery2.miselectClick(Sender: TObject);
@@ -1521,11 +1482,7 @@ end;
 
 procedure Tfrmmquery2.mnCriaDicionarioliteClick(Sender: TObject);
 var
-  outSQL: TStringList;
-  tbl: string;
-  node: TTreeNode;
   baseDir, fileName: string;
-  line: string;
 begin
   if not zconsqlite.Connected then
   begin
@@ -1538,78 +1495,14 @@ begin
   {$ELSE}
   baseDir := GetUserDir;
   {$ENDIF}
+
   ForceDirectories(baseDir);
   fileName := IncludeTrailingPathDelimiter(baseDir) + 'dicionario_sqlite.sql';
 
-  outSQL := TStringList.Create;
-  try
-    outSQL.Add('-- =========================================');
-    outSQL.Add('-- Dicionário de dados (SQLite) - MQuery2');
-    outSQL.Add('-- Gerado em: ' + FormatDateTime('yyyy-mm-dd hh:nn:ss', Now));
-    outSQL.Add('-- DB: ' + ExtractFileName(Trim(edDatabase.Text)));
-    outSQL.Add('-- =========================================');
-    outSQL.Add('');
+  edSQL1.Text := CriaDicionarioSQLite(fileName);
+  pgSQLite.ActivePage := tbSQL1;
 
-    if (posicaofieldslite = nil) or (posicaofieldslite.GetFirstChild = nil) then
-      RefreshSQLite;
-
-    node := posicaofieldslite.GetFirstChild;
-    while node <> nil do
-    begin
-      tbl := node.Text;
-
-      outSQL.Add('-- ' + tbl);
-
-      // tenta pegar CREATE do sqlite_master
-      zliteqry.Close;
-      zliteqry.SQL.Text :=
-        'SELECT sql FROM sqlite_master WHERE type=''table'' AND name=:n';
-      zliteqry.ParamByName('n').AsString := tbl;
-      zliteqry.Open;
-
-      if not zliteqry.IsEmpty and (Trim(zliteqry.Fields[0].AsString) <> '') then
-        outSQL.Add(zliteqry.Fields[0].AsString + ';')
-      else
-      begin
-        // fallback: gera "create básico" a partir do PRAGMA
-        outSQL.Add('CREATE TABLE ' + tbl + ' (');
-        zliteqry1.Close;
-        zliteqry1.SQL.Text := 'PRAGMA table_info(' + QuotedStr(tbl) + ')';
-        zliteqry1.Open;
-
-        while not zliteqry1.EOF do
-        begin
-          line := '  ' + zliteqry1.FieldByName('name').AsString + ' ' +
-                  zliteqry1.FieldByName('type').AsString;
-
-          if zliteqry1.FieldByName('notnull').AsInteger = 1 then
-            line := line + ' NOT NULL';
-
-          if not zliteqry1.FieldByName('dflt_value').IsNull then
-            line := line + ' DEFAULT ' + zliteqry1.FieldByName('dflt_value').AsString;
-
-          if zliteqry1.EOF then
-            outSQL.Add(line)
-          else
-            outSQL.Add(line + ',');
-
-          zliteqry1.Next;
-        end;
-
-        outSQL.Add(');');
-      end;
-
-      outSQL.Add('');
-      node := node.GetNextSibling;
-    end;
-
-    outSQL.SaveToFile(fileName);
-    edSQL1.Text := outSQL.Text;
-    pgSQLite.ActivePage := tbSQL1;
-    ShowMessage('Dicionário SQLite salvo em:' + LineEnding + fileName);
-  finally
-    outSQL.Free;
-  end;
+  ShowMessage('Dicionário SQLite salvo em:' + LineEnding + fileName);
 end;
 
 procedure Tfrmmquery2.mnCriarSeqClick(Sender: TObject);
@@ -1714,10 +1607,6 @@ procedure Tfrmmquery2.ToggleBox1Change(Sender: TObject);
 begin
 end;
 
-{ =========================
-  ======= CONEXÕES ========
-  ========================= }
-
 function Tfrmmquery2.ConectMy: Boolean;
 begin
   Result := False;
@@ -1807,6 +1696,12 @@ begin
   zconsqlite.Protocol := 'sqlite';
   zconsqlite.Database := Trim(edDatabase.Text);
 
+  if FSetMain <> nil then
+  begin
+    FSetMain.BancoSQLite := Trim(edDatabase.Text);
+    FSetMain.SalvaContexto(False);
+  end;
+
   try
     zconsqlite.Connect;
     Result := zconsqlite.Connected;
@@ -1815,9 +1710,373 @@ begin
   end;
 end;
 
-{ =========================
-  ======= REFRESH =========
-  ========================= }
+function Tfrmmquery2.CriaDicionarioSQLite(const ATargetFile: string): string;
+var
+  outSQL: TStringList;
+  node: TTreeNode;
+  tbl: string;
+  targetAbsPath, targetDir: string;
+begin
+  Result := '';
+
+  if not zconsqlite.Connected then
+  begin
+    ShowMessage('SQLite não conectado!');
+    Exit;
+  end;
+
+  if (dmBase = nil) then
+    dmBase := TdmBase.Create(Self);
+  dmBase.DeleteTabelas;
+
+  outSQL := TStringList.Create;
+  try
+    outSQL.Add('-- =========================================');
+    outSQL.Add('-- Dicionário de dados (SQLite) - MQuery2');
+    outSQL.Add('-- Gerado em: ' + FormatDateTime('yyyy-mm-dd hh:nn:ss', Now));
+    outSQL.Add('-- DB: ' + ExtractFileName(Trim(edDatabase.Text)));
+    outSQL.Add('-- =========================================');
+    outSQL.Add('');
+
+    if (posicaofieldslite = nil) or (posicaofieldslite.GetFirstChild = nil) then
+      RefreshSQLite;
+
+    if (posicaofieldslite = nil) or (posicaofieldslite.GetFirstChild = nil) then
+    begin
+      ShowMessage('Nenhuma tabela encontrada no SQLite.');
+      Exit;
+    end;
+
+    node := posicaofieldslite.GetFirstChild;
+    while node <> nil do
+    begin
+      tbl := node.Text;
+
+      outSQL.Add('-- ' + tbl);
+
+      zliteqry.Close;
+      zliteqry.SQL.Text :=
+        'SELECT sql FROM sqlite_master WHERE type=''table'' AND name=:n';
+      zliteqry.ParamByName('n').AsString := tbl;
+      zliteqry.Open;
+
+      if (not zliteqry.IsEmpty) and (Trim(zliteqry.Fields[0].AsString) <> '') then
+        outSQL.Add(zliteqry.Fields[0].AsString + ';')
+      else
+        outSQL.Add(BuildCreateTableSQLite(tbl));
+
+      if (FSetMain.Project <> '') then
+        dmBase.RegistraTabela(tbl, ExtractFileName(Trim(edDatabase.Text)), BuildCreateTableSQLite(tbl));
+
+      outSQL.Add('');
+      node := node.GetNextSibling;
+    end;
+
+    Result := outSQL.Text;
+
+    if Trim(ATargetFile) <> '' then
+    begin
+      targetAbsPath := ExpandFileName(ATargetFile);
+      targetDir := ExtractFilePath(targetAbsPath);
+
+      if targetDir <> '' then
+        ForceDirectories(targetDir);
+
+      outSQL.SaveToFile(targetAbsPath);
+      edLog1.Append('Dicionário SQLite gerado em: ' + targetAbsPath);
+    end;
+  finally
+    outSQL.Free;
+  end;
+end;
+
+function Tfrmmquery2.BuildCreateTableSQLite(const ATabela: string): string;
+var
+  cols, pkCols, fkLines: TStringList;
+  line, colName, colType, defVal: string;
+  notNull: Integer;
+  pkPos: Integer;
+  i: Integer;
+  fkMap: TStringList;
+  fkId, fromCol, refTable, refCol, onUpdate, onDelete, matchName: string;
+  idx: Integer;
+
+  function QIdent(const S: string): string;
+  begin
+    Result := '"' + StringReplace(S, '"', '""', [rfReplaceAll]) + '"';
+  end;
+
+begin
+  Result := '';
+
+  cols := TStringList.Create;
+  pkCols := TStringList.Create;
+  fkLines := TStringList.Create;
+  fkMap := TStringList.Create;
+  try
+    fkMap.NameValueSeparator := '=';
+    fkMap.StrictDelimiter := True;
+
+    zliteqry1.Close;
+    zliteqry1.SQL.Text := 'PRAGMA table_info(' + QuotedStr(ATabela) + ')';
+    zliteqry1.Open;
+
+    while not zliteqry1.EOF do
+    begin
+      colName := zliteqry1.FieldByName('name').AsString;
+      colType := Trim(zliteqry1.FieldByName('type').AsString);
+      if colType = '' then
+        colType := 'TEXT';
+
+      line := '  ' + QIdent(colName) + ' ' + colType;
+
+      notNull := zliteqry1.FieldByName('notnull').AsInteger;
+      if notNull = 1 then
+        line := line + ' NOT NULL';
+
+      if not zliteqry1.FieldByName('dflt_value').IsNull then
+      begin
+        defVal := Trim(zliteqry1.FieldByName('dflt_value').AsString);
+        if defVal <> '' then
+          line := line + ' DEFAULT ' + defVal;
+      end;
+
+      cols.Add(line);
+
+      pkPos := zliteqry1.FieldByName('pk').AsInteger;
+      if pkPos > 0 then
+      begin
+        while pkCols.Count < pkPos do
+          pkCols.Add('');
+        pkCols[pkPos - 1] := QIdent(colName);
+      end;
+
+      zliteqry1.Next;
+    end;
+    zliteqry1.Close;
+
+    zliteqry2.Close;
+    zliteqry2.SQL.Text := 'PRAGMA foreign_key_list(' + QuotedStr(ATabela) + ')';
+    zliteqry2.Open;
+
+    while not zliteqry2.EOF do
+    begin
+      fkId      := zliteqry2.FieldByName('id').AsString;
+      fromCol   := QIdent(zliteqry2.FieldByName('from').AsString);
+      refTable  := QIdent(zliteqry2.FieldByName('table').AsString);
+      refCol    := QIdent(zliteqry2.FieldByName('to').AsString);
+      onUpdate  := Trim(zliteqry2.FieldByName('on_update').AsString);
+      onDelete  := Trim(zliteqry2.FieldByName('on_delete').AsString);
+      matchName := Trim(zliteqry2.FieldByName('match').AsString);
+
+      idx := fkMap.IndexOfName(fkId);
+      if idx < 0 then
+      begin
+        fkMap.Add(fkId + '=' + fromCol + '|' + refTable + '|' + refCol + '|' +
+                  onUpdate + '|' + onDelete + '|' + matchName);
+      end
+      else
+      begin
+        line := fkMap.ValueFromIndex[idx];
+        line := Copy(line, 1, Pos('|', line) - 1) + ',' + fromCol +
+                Copy(line, Pos('|', line), MaxInt);
+
+        Delete(line, 1, Pos('|', line));
+        refTable := Copy(line, 1, Pos('|', line) - 1);
+        Delete(line, 1, Pos('|', line));
+        refCol := Copy(line, 1, Pos('|', line) - 1);
+        Delete(line, 1, Pos('|', line));
+
+        fkMap.ValueFromIndex[idx] :=
+          fkMap.Names[idx] + '=' +
+          Copy(fkMap.ValueFromIndex[idx], 1, Pos('|', fkMap.ValueFromIndex[idx]) - 1) + ',' + fromCol +
+          Copy(fkMap.ValueFromIndex[idx], Pos('|', fkMap.ValueFromIndex[idx]), MaxInt);
+      end;
+
+      zliteqry2.Next;
+    end;
+    zliteqry2.Close;
+
+    for i := 0 to fkMap.Count - 1 do
+    begin
+      line := fkMap.ValueFromIndex[i];
+
+      fromCol   := Copy(line, 1, Pos('|', line) - 1);
+      Delete(line, 1, Pos('|', line));
+
+      refTable  := Copy(line, 1, Pos('|', line) - 1);
+      Delete(line, 1, Pos('|', line));
+
+      refCol    := Copy(line, 1, Pos('|', line) - 1);
+      Delete(line, 1, Pos('|', line));
+
+      onUpdate  := Copy(line, 1, Pos('|', line) - 1);
+      Delete(line, 1, Pos('|', line));
+
+      onDelete  := Copy(line, 1, Pos('|', line) - 1);
+      Delete(line, 1, Pos('|', line));
+
+      matchName := line;
+
+      line := '  FOREIGN KEY (' + fromCol + ') REFERENCES ' + refTable + ' (' + refCol + ')';
+
+      if onUpdate <> '' then
+        if UpperCase(onUpdate) <> 'NO ACTION' then
+          line := line + ' ON UPDATE ' + onUpdate;
+
+      if onDelete <> '' then
+        if UpperCase(onDelete) <> 'NO ACTION' then
+          line := line + ' ON DELETE ' + onDelete;
+
+      if (matchName <> '') and (UpperCase(matchName) <> 'NONE') then
+        line := line + ' MATCH ' + matchName;
+
+      fkLines.Add(line);
+    end;
+
+    Result := 'CREATE TABLE ' + QIdent(ATabela) + ' (' + LineEnding;
+
+    for i := 0 to cols.Count - 1 do
+    begin
+      Result := Result + cols[i];
+      if (i < cols.Count - 1) or (pkCols.Count > 0) or (fkLines.Count > 0) then
+        Result := Result + ',';
+      Result := Result + LineEnding;
+    end;
+
+    if pkCols.Count > 0 then
+    begin
+      Result := Result + '  PRIMARY KEY (' + pkCols.CommaText + ')';
+      if fkLines.Count > 0 then
+        Result := Result + ',';
+      Result := Result + LineEnding;
+    end;
+
+    for i := 0 to fkLines.Count - 1 do
+    begin
+      Result := Result + fkLines[i];
+      if i < fkLines.Count - 1 then
+        Result := Result + ',';
+      Result := Result + LineEnding;
+    end;
+
+    Result := Result + ');';
+  finally
+    cols.Free;
+    pkCols.Free;
+    fkLines.Free;
+    fkMap.Free;
+  end;
+end;
+
+function Tfrmmquery2.CriaListaDependenciasSQLite(const outFile: string): string;
+var
+  outTxt          : TStringList;
+  nodeTable       : TTreeNode;
+  childTable      : string;
+  lastFkId        : string;
+  curFkId         : string;
+  parentTable     : string;
+  childCols       : TStringList;
+  parentCols      : TStringList;
+  outFileAbs      : string;
+begin
+  Result := '';
+
+  if not zconsqlite.Connected then
+  begin
+    ShowMessage('SQLite não conectado!');
+    Exit;
+  end;
+
+  if posicaofieldslite = nil then
+  begin
+    ShowMessage('Estrutura de tabelas não carregada (posicaofieldslite = nil). Atualize a árvore do SQLite.');
+    Exit;
+  end;
+
+  outTxt := TStringList.Create;
+  childCols := TStringList.Create;
+  parentCols := TStringList.Create;
+  try
+    outTxt.Add('-- =========================================');
+    outTxt.Add('-- Lista de dependências (FK) - SQLite');
+    outTxt.Add('-- DB: ' + ExtractFileName(Trim(edDatabase.Text)));
+    outTxt.Add('-- Gerado em: ' + FormatDateTime('yyyy-mm-dd hh:nn:ss', Now));
+    outTxt.Add('-- Formato: TabelaFilha (colunas) depende da TabelaPai (colunas)');
+    outTxt.Add('-- =========================================');
+    outTxt.Add('');
+
+    nodeTable := posicaofieldslite.GetFirstChild;
+    while nodeTable <> nil do
+    begin
+      childTable := nodeTable.Text;
+
+      zliteqry1.Close;
+      zliteqry1.SQL.Text := 'PRAGMA foreign_key_list(' + QuotedStr(childTable) + ')';
+      zliteqry1.Open;
+
+      if not zliteqry1.IsEmpty then
+      begin
+        lastFkId := '';
+        childCols.Clear;
+        parentCols.Clear;
+        parentTable := '';
+
+        zliteqry1.First;
+        while not zliteqry1.EOF do
+        begin
+          curFkId := zliteqry1.FieldByName('id').AsString;
+
+          if (lastFkId <> '') and (curFkId <> lastFkId) then
+          begin
+            outTxt.Add(Format('%s (%s) depende da %s (%s);',
+              [childTable,
+               StringReplace(childCols.CommaText, ',', ', ', [rfReplaceAll]),
+               parentTable,
+               StringReplace(parentCols.CommaText, ',', ', ', [rfReplaceAll])]));
+            childCols.Clear;
+            parentCols.Clear;
+          end;
+
+          parentTable := zliteqry1.FieldByName('table').AsString;
+          childCols.Add(zliteqry1.FieldByName('from').AsString);
+          parentCols.Add(zliteqry1.FieldByName('to').AsString);
+
+          lastFkId := curFkId;
+          zliteqry1.Next;
+        end;
+
+        if (lastFkId <> '') and (childCols.Count > 0) then
+        begin
+          outTxt.Add(Format('%s (%s) depende da %s (%s);',
+            [childTable,
+             StringReplace(childCols.CommaText, ',', ', ', [rfReplaceAll]),
+             parentTable,
+             StringReplace(parentCols.CommaText, ',', ', ', [rfReplaceAll])]));
+        end;
+
+        outTxt.Add('');
+      end;
+
+      nodeTable := nodeTable.GetNextSibling;
+    end;
+
+    Result := outTxt.Text;
+
+    if Trim(outFile) <> '' then
+    begin
+      outFileAbs := ExpandFileName(outFile);
+      ForceDirectories(ExtractFileDir(outFileAbs));
+      outTxt.SaveToFile(outFileAbs);
+      edLog1.Append('Dependências SQLite salvas em: ' + outFileAbs);
+    end;
+  finally
+    parentCols.Free;
+    childCols.Free;
+    outTxt.Free;
+  end;
+end;
 
 procedure Tfrmmquery2.RefreshMy();
 var
@@ -1916,10 +2175,6 @@ begin
   end;
 end;
 
-{ =========================
-  ======= BOTÕES ==========
-  ========================= }
-
 procedure Tfrmmquery2.btConectarMyClick(Sender: TObject); begin RefreshMy; end;
 procedure Tfrmmquery2.btConectarpostClick(Sender: TObject); begin RefreshPost; end;
 procedure Tfrmmquery2.btConectarLiteClick(Sender: TObject); begin RefreshSQLite; end;
@@ -1960,7 +2215,6 @@ procedure Tfrmmquery2.btBancoliteClick(Sender: TObject);
 var
   fn: string;
 begin
-  // Cria um arquivo SQLite vazio (conectar já cria o arquivo)
   if Trim(edDatabase.Text) = '' then
   begin
     ShowMessage('Informe o caminho do arquivo SQLite em edDatabase.');
@@ -1970,7 +2224,6 @@ begin
   fn := Trim(edDatabase.Text);
   ForceDirectories(ExtractFileDir(fn));
 
-  // Só conectar já cria o arquivo
   if ConectSQLite then
   begin
     ShowMessage('SQLite pronto: ' + fn);
@@ -1987,15 +2240,11 @@ end;
 
 procedure Tfrmmquery2.btAnaliseliteClick(Sender: TObject);
 begin
-  // Reaproveita o mesmo comportamento: limpar lista e perguntar para IA
   lbTables.Items.Clear;
 
   frmMNote.NewContext();
   frmMNote.edChat.Text := sqltabela + edSQL1.Text + ' faça em uma caixa de texto';
   frmMNote.FazPergunta();
-
-  // Se você quiser igual My/Post (parse JSON e preencher lbTables),
-  // copie a mesma lógica do QuestionSQLChatMy/Post e troque o editor.
 end;
 
 procedure Tfrmmquery2.btbenchmarkClick(Sender: TObject); begin end;
@@ -2009,30 +2258,53 @@ end;
 
 procedure Tfrmmquery2.btExecutar1Click(Sender: TObject); begin OpenSelectPost; end;
 procedure Tfrmmquery2.btExecutarClick(Sender: TObject); begin OpenSelectMy; end;
-
-procedure Tfrmmquery2.btExecutarliteClick(Sender: TObject);
-begin
-  OpenSelectLite;
-end;
-
-procedure Tfrmmquery2.btExecuteliteClick(Sender: TObject);
-begin
-  btExecute2Click(Sender);
-end;
-
+procedure Tfrmmquery2.btExecutarliteClick(Sender: TObject); begin OpenSelectLite; end;
+procedure Tfrmmquery2.btExecuteliteClick(Sender: TObject); begin btExecute2Click(Sender); end;
 procedure Tfrmmquery2.btExecutar2Click(Sender: TObject); begin OpenSelectLite; end;
 
 procedure Tfrmmquery2.btIAPostClick(Sender: TObject);
 var
   deps, ddl, sqlIA: string;
+  usingSQLite: Boolean;
 begin
-  deps  := CriaListaDependenciasPost('');
-  ddl   := CriaDicionarioPost('');
-  sqlIA := QuestionarSQLPost(meIA.Text, deps, ddl);
+  usingSQLite :=
+    (pgMain.ActivePage = liteMain) or
+    ((pgSQLite <> nil) and (pgSQLite.ActivePage <> nil) and zconsqlite.Connected and not zconpost.Connected);
 
-  edSQLPost.Text := sqlIA;
-  edLogPost.Append('Question:' + meIA.Text);
-  edLogPost.Append('Return:' + sqlIA);
+  if usingSQLite then
+  begin
+    if not zconsqlite.Connected then
+    begin
+      ShowMessage('SQLite não conectado!');
+      Exit;
+    end;
+
+    deps  := CriaListaDependenciasSQLite('');
+    ddl   := CriaDicionarioSQLite('');
+    sqlIA := QuestionarSQLSQLite(meIA.Text, deps, ddl);
+
+    edSQL1.Text := sqlIA;
+    edLog1.Append('Question:' + meIA.Text);
+    edLog1.Append('Return:' + sqlIA);
+    pgSQLite.ActivePage := tbSQL1;
+  end
+  else
+  begin
+    if not zconpost.Connected then
+    begin
+      ShowMessage('PostgreSQL não conectado!');
+      Exit;
+    end;
+
+    deps  := CriaListaDependenciasPost('');
+    ddl   := CriaDicionarioPost('');
+    sqlIA := QuestionarSQLPost(meIA.Text, deps, ddl);
+
+    edSQLPost.Text := sqlIA;
+    edLogPost.Append('Question:' + meIA.Text);
+    edLogPost.Append('Return:' + sqlIA);
+    pcPostgree.ActivePage := tsSQLPostgreSQL;
+  end;
 end;
 
 procedure Tfrmmquery2.btImportCSVClick(Sender: TObject);
@@ -2089,7 +2361,6 @@ begin
       tabela := InputBox('SQLite Table Create','table name:','newtable01');
       if tabela <> '' then
       begin
-        // >>>> AQUI: ZQryLiteTransf É O CERTO <<<<
         ZQryLiteTransf.Connection := zconsqlite;
         CriaTabela(tabela, CSVDataset1, ZQryLiteTransf);
         MigraCampos(tabela, CSVDataset1, ZQryLiteTransf);
@@ -2125,13 +2396,11 @@ end;
 
 procedure Tfrmmquery2.btJSON1Click(Sender: TObject);
 begin
-  // wrapper: reaproveita a mesma lógica do JSON do MySQL
   btJSONClick(Sender);
 end;
 
 procedure Tfrmmquery2.btJSON2Click(Sender: TObject);
 begin
-  // wrapper: se quiser, troque para exportar do Postgres (dbgridpost)
   btJSONClick(Sender);
 end;
 
@@ -2157,7 +2426,6 @@ end;
 
 procedure Tfrmmquery2.btExecute1Click(Sender: TObject);
 begin
-  // wrapper: executa o mesmo que btExecuteClick (Post) — ajuste se quiser
   btExecuteClick(Sender);
 end;
 
@@ -2170,7 +2438,6 @@ begin
   end;
 
   try
-    // >>>> AQUI: ZQryLiteTransf É O CERTO <<<<
     ZQryLiteTransf.Connection := zconsqlite;
     ZQryLiteTransf.Close;
     ZQryLiteTransf.SQL.Text := edSQL1.Lines.Text;
@@ -2188,10 +2455,6 @@ end;
 
 procedure Tfrmmquery2.Button3Click(Sender: TObject); begin end;
 procedure Tfrmmquery2.Button4Click(Sender: TObject); begin end;
-
-{ =========================
-  ======= SELECTS =========
-  ========================= }
 
 procedure Tfrmmquery2.OpenSelectPost();
 begin
@@ -2265,10 +2528,6 @@ begin
   end;
 end;
 
-{ =========================
-  ======= FIND UI =========
-  ========================= }
-
 procedure Tfrmmquery2.edPesqMyKeyPress(Sender: TObject; var Key: char);
 begin
   if key = #13 then ProcuraTVMysql(edPesqMy.Text);
@@ -2310,10 +2569,6 @@ begin
   strFind := findDialog1.FindText;
   Pesquisar(Sender);
 end;
-
-{ =========================
-  ======= LISTAGENS =======
-  ========================= }
 
 procedure Tfrmmquery2.ListarTabelasMy();
 var
@@ -2388,8 +2643,10 @@ end;
 
 procedure Tfrmmquery2.ListarTabelasSQLite();
 var
-  tvItem, tvCols, tvTemp: TTreeNode;
-  tbl, colLine: string;
+  tvItem, tvCols, tvTemp, tvPK, tvFK: TTreeNode;
+  tbl, colLine, fkLine: string;
+  lastFkId, curFkId, parentTable: string;
+  childCols, parentCols: TStringList;
 begin
   if posicaofieldslite = nil then Exit;
 
@@ -2403,44 +2660,106 @@ begin
     'ORDER BY name';
   zliteqry.Open;
 
-  while not zliteqry.EOF do
-  begin
-    tbl := zliteqry.FieldByName('name').AsString;
-
-    tvItem := TTreeNode.Create(tvsqlite.Items);
-    tvItem.ImageIndex := 14;
-    tvItem := tvsqlite.Items.AddNode(tvItem, posicaofieldslite, tbl, Pointer(nil), naAddChild);
-
-    tvCols := tvsqlite.Items.AddChildObject(tvItem, 'fields', Pointer(ETDBCampos));
-    tvCols.ImageIndex := 16;
-
-    zliteqry1.Close;
-    zliteqry1.SQL.Text := 'PRAGMA table_info(' + QuotedStr(tbl) + ')';
-    zliteqry1.Open;
-
-    while not zliteqry1.EOF do
+  childCols := TStringList.Create;
+  parentCols := TStringList.Create;
+  try
+    while not zliteqry.EOF do
     begin
-      colLine := zliteqry1.FieldByName('name').AsString + ' : ' +
-                 zliteqry1.FieldByName('type').AsString;
+      tbl := zliteqry.FieldByName('name').AsString;
 
-      if zliteqry1.FieldByName('notnull').AsInteger = 1 then
-        colLine := colLine + ' NOT NULL';
+      tvItem := TTreeNode.Create(tvsqlite.Items);
+      tvItem.ImageIndex := 14;
+      tvItem := tvsqlite.Items.AddNode(tvItem, posicaofieldslite, tbl, Pointer(nil), naAddChild);
 
-      if not zliteqry1.FieldByName('dflt_value').IsNull then
-        colLine := colLine + ' DEFAULT ' + zliteqry1.FieldByName('dflt_value').AsString;
+      tvCols := tvsqlite.Items.AddChildObject(tvItem, 'fields', Pointer(ETDBCampos));
+      tvCols.ImageIndex := 16;
 
-      tvTemp := tvsqlite.Items.AddChildObject(tvCols, colLine, Pointer(0));
-      tvTemp.ImageIndex := 19;
+      zliteqry1.Close;
+      zliteqry1.SQL.Text := 'PRAGMA table_info(' + QuotedStr(tbl) + ')';
+      zliteqry1.Open;
 
-      zliteqry1.Next;
+      tvPK := tvsqlite.Items.AddChildObject(tvItem, 'Primary Key', Pointer(ETDBPK));
+      tvPK.ImageIndex := 17;
+
+      while not zliteqry1.EOF do
+      begin
+        colLine := zliteqry1.FieldByName('name').AsString + ' : ' +
+                   zliteqry1.FieldByName('type').AsString;
+
+        if zliteqry1.FieldByName('notnull').AsInteger = 1 then
+          colLine := colLine + ' NOT NULL';
+
+        if not zliteqry1.FieldByName('dflt_value').IsNull then
+          colLine := colLine + ' DEFAULT ' + zliteqry1.FieldByName('dflt_value').AsString;
+
+        tvTemp := tvsqlite.Items.AddChildObject(tvCols, colLine, Pointer(0));
+        tvTemp.ImageIndex := 19;
+
+        if zliteqry1.FieldByName('pk').AsInteger > 0 then
+        begin
+          tvTemp := tvsqlite.Items.AddChildObject(tvPK,
+            zliteqry1.FieldByName('name').AsString, Pointer(0));
+          tvTemp.ImageIndex := 18;
+        end;
+
+        zliteqry1.Next;
+      end;
+
+      tvFK := tvsqlite.Items.AddChildObject(tvItem, 'Chave Estrangeira', Pointer(ETDBFK));
+
+      zliteqry2.Close;
+      zliteqry2.SQL.Text := 'PRAGMA foreign_key_list(' + QuotedStr(tbl) + ')';
+      zliteqry2.Open;
+
+      lastFkId := '';
+      childCols.Clear;
+      parentCols.Clear;
+      parentTable := '';
+
+      while not zliteqry2.EOF do
+      begin
+        curFkId := zliteqry2.FieldByName('id').AsString;
+
+        if (lastFkId <> '') and (curFkId <> lastFkId) then
+        begin
+          fkLine := Format('%s (%s) -> %s (%s)',
+            [tbl,
+             StringReplace(childCols.CommaText, ',', ', ', [rfReplaceAll]),
+             parentTable,
+             StringReplace(parentCols.CommaText, ',', ', ', [rfReplaceAll])]);
+          tvsqlite.Items.AddChildObject(tvFK, fkLine, Pointer(0));
+          childCols.Clear;
+          parentCols.Clear;
+        end;
+
+        parentTable := zliteqry2.FieldByName('table').AsString;
+        childCols.Add(zliteqry2.FieldByName('from').AsString);
+        parentCols.Add(zliteqry2.FieldByName('to').AsString);
+
+        lastFkId := curFkId;
+        zliteqry2.Next;
+      end;
+
+      if (lastFkId <> '') and (childCols.Count > 0) then
+      begin
+        fkLine := Format('%s (%s) -> %s (%s)',
+          [tbl,
+           StringReplace(childCols.CommaText, ',', ', ', [rfReplaceAll]),
+           parentTable,
+           StringReplace(parentCols.CommaText, ',', ', ', [rfReplaceAll])]);
+        tvsqlite.Items.AddChildObject(tvFK, fkLine, Pointer(0));
+      end;
+
+      SynCompletion1.ItemList.Append(tbl);
+      zliteqry.Next;
+      Application.ProcessMessages;
     end;
 
-    SynCompletion1.ItemList.Append(tbl);
-    zliteqry.Next;
-    Application.ProcessMessages;
+    zliteqry.Close;
+  finally
+    childCols.Free;
+    parentCols.Free;
   end;
-
-  zliteqry.Close;
 end;
 
 procedure Tfrmmquery2.BuscaSequence(qry: TZReadOnlyQuery; TypeDB: TypeDatabase);
@@ -2490,10 +2809,6 @@ begin
   for a := 0 to viewspost.items.Count-1 do
     tvPost.Items.AddChildObject(posicaoViewPost, viewspost.items[a], TObject(viewspost.items.Objects[a]));
 end;
-
-{ =========================
-  ======= POST TABELAS =====
-  ========================= }
 
 procedure Tfrmmquery2.ListarTabelasPost();
 var
@@ -2681,6 +2996,8 @@ var
     end;
   end;
 
+//var
+  //SchemaNome: string;
 begin
   SchemaNome := Trim(edSchemaPost.Text);
   if SchemaNome = '' then SchemaNome := 'public';
@@ -2716,10 +3033,6 @@ begin
     tvPost.FullExpand;
   end;
 end;
-
-{ =========================
-  ======= DESCREVE MY =====
-  ========================= }
 
 function Tfrmmquery2.DescreveTabelaIAMy(const tabela: string) : string;
 var
@@ -3003,7 +3316,6 @@ var
   begin
     Result := TStringList.Create;
 
-    // filtra índices de PK/UNIQUE (para não duplicar)
     zpostqry2.Close;
     zpostqry2.SQL.Text :=
       'SELECT c.conname '+
@@ -3396,7 +3708,87 @@ begin
   else
     outSQL := StripCodeFences(FCHATGPT.Response);
 
-  // UTF-8 -> ANSI (codepage do sistema)
+  outAnsi := UTF8ToAnsi(outSQL);
+  Result := String(outAnsi);
+end;
+
+function Tfrmmquery2.QuestionarSQLSQLite(const pergunta, deps, ddl: string): string;
+
+  function StripCodeFences(const S: string): string;
+  var
+    R: string;
+    p1, p2: SizeInt;
+  begin
+    R := S;
+    p1 := Pos('```', R);
+    if p1 > 0 then
+    begin
+      Delete(R, 1, p1 + 2);
+      if (Length(R) >= 3) and (LowerCase(Copy(R, 1, 3)) = 'sql') then
+        Delete(R, 1, 3);
+      p2 := RPos('```', R);
+      if p2 > 0 then
+        R := Copy(R, 1, p2 - 1);
+    end;
+    Result := Trim(R);
+  end;
+
+var
+  ctxDeps, ctxDDL, ask, outSQL: string;
+  outAnsi: AnsiString;
+begin
+  Result := '';
+
+  if not zconsqlite.Connected then
+  begin
+    ShowMessage('SQLite não conectado!');
+    Exit;
+  end;
+
+  if FCHATGPT = nil then
+    FCHATGPT := TCHATGPT.Create(Self);
+
+  if Trim(FSetMain.CHATGPT) = '' then
+  begin
+    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+    Exit;
+  end;
+
+  if Trim(deps) = '' then
+    ctxDeps := CriaListaDependenciasSQLite('')
+  else
+    ctxDeps := deps;
+
+  if Trim(ddl) = '' then
+    ctxDDL := CriaDicionarioSQLite('')
+  else
+    ctxDDL := ddl;
+
+  FCHATGPT.Dev :=
+    'Você é um assistente SQL para SQLite.' + LineEnding +
+    'REGRAS:' + LineEnding +
+    '1) Responda SOMENTE com SQL válido para SQLite, sem explicações ou comentários.' + LineEnding +
+    '2) Use exatamente os nomes de tabela/coluna informados.' + LineEnding +
+    '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
+    '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
+    '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
+
+  ask :=
+    'Pergunta do usuário:' + LineEnding +
+    pergunta + LineEnding + LineEnding +
+    '--- CONTEXTO: DEPENDÊNCIAS (FK) ---' + LineEnding +
+    ctxDeps + LineEnding + LineEnding +
+    '--- CONTEXTO: DDL COMPLETO DAS TABELAS ---' + LineEnding +
+    ctxDDL + LineEnding + LineEnding +
+    'Gere APENAS o SQL final (um único bloco).';
+
+  FCHATGPT.TOKEN := FSetMain.CHATGPT;
+
+  if FCHATGPT.SendQuestion(ask) then
+    outSQL := StripCodeFences(FCHATGPT.Response)
+  else
+    outSQL := StripCodeFences(FCHATGPT.Response);
+
   outAnsi := UTF8ToAnsi(outSQL);
   Result := String(outAnsi);
 end;
@@ -3409,7 +3801,6 @@ begin
   Result := False;
 
   try
-    // aplica schema no Postgres (opcional)
     if (TipoBanco = 1) and (Trim(FSetMain.SchemaPost) <> '') then
     begin
       Q := TZQuery.Create(nil);
@@ -3424,12 +3815,11 @@ begin
 
     conexao := False;
 
-    // garante instância do form (se sua lógica usa isso)
     if (frmmquery2 = nil) then
       frmmquery2 := Tfrmmquery2.Create(Self);
 
     case TipoBanco of
-      0: // MySQL
+      0:
       begin
         frmmquery2.edHostName.Text := FSetMain.HostnameMy;
         frmmquery2.edBanco.Text    := FSetMain.BancoMy;
@@ -3439,7 +3829,7 @@ begin
         conexao := frmmquery2.ConectMy;
       end;
 
-      1: // Postgres
+      1:
       begin
         frmmquery2.edHostNamePost.Text := FSetMain.HostnamePost;
         frmmquery2.edSchemaPost.Text   := FSetMain.SchemaPost;
@@ -3450,9 +3840,9 @@ begin
         conexao := frmmquery2.ConectPost;
       end;
 
-      2: // SQLite (se você estiver usando esse código também)
+      2:
       begin
-        frmmquery2.edDatabase.Text := FSetMain.BancoSQLite; // se existir no seu SetMain
+        frmmquery2.edDatabase.Text := FSetMain.BancoSQLite;
         conexao := frmmquery2.ConectSQLite;
       end;
 
@@ -3464,37 +3854,14 @@ begin
 
   except
     on E: Exception do
-    Result := False;
+      Result := False;
   end;
 end;
 
-{ =========================
-  ======= STUB POST =======
-  ========================= }
-
 function Tfrmmquery2.DescreveTabelaIAPost(tabela: string): string;
 begin
-  // Se você já tem essa função em outra versão, substitua aqui.
   Result := '-- TODO: implemente DescreveTabelaIAPost(' + tabela + ')';
 end;
-
-{ =========================
-  ======= DICIONÁRIO ======
-  ========================= }
-{  >>>>>>>>>>>>  AQUI VOCÊ JÁ COLAVA A SUA CriaDicionarioPost / CriaListaDependenciasPost / QuestionarSQLPost / ValidaConexao
-    EU NÃO REESCREVI ELAS AQUI DE NOVO PRA NÃO MUDAR NADA.
-    Como você colou na mensagem, eu preciso mantê-las no arquivo final — então:
-    COLE ABAIXO (sem alteração) AS SUAS IMPLEMENTAÇÕES COMPLETAS dessas funções.
-
-    - function Tfrmmquery2.CriaDicionarioPost(...)
-    - function Tfrmmquery2.CriaListaDependenciasPost(...)
-    - function Tfrmmquery2.QuestionarSQLPost(...)
-    - function Tfrmmquery2.ValidaConexao(...)
-}
-
-{ =========================
-  ======= FIND CORE =======
-  ========================= }
 
 procedure Tfrmmquery2.Pesquisar(sender: TObject);
 
@@ -3502,7 +3869,6 @@ procedure Tfrmmquery2.Pesquisar(sender: TObject);
   var
     sFind, txt: string;
     p, startPos: Integer;
-    f: TFinds;
   begin
     if syn = nil then Exit;
     if lst = nil then Exit;
@@ -3517,22 +3883,11 @@ procedure Tfrmmquery2.Pesquisar(sender: TObject);
     begin
       p := PosEx(sFind, txt, startPos);
       if p <= 0 then Break;
-      (*
-      f := TFinds.Create;
-      f.syn := syn;
-      f.IPOS := p - 1;        // SelStart é 0-based
-      f.FLen := Length(sFind);
-      f.strFind := sFind;
-
-      lst.Items.AddObject(Format('%s @%d', [Copy(txt, p, Min(40, Length(txt) - p + 1)), p]), f);
-
       startPos := p + Length(sFind);
-      *)
     end;
   end;
 
 begin
-  // limpa listas
   lstfind.Clear;
   lstfind1.Clear;
   lstfind2.Clear;
@@ -3543,13 +3898,8 @@ begin
     Exit;
   end;
 
-  // MySQL editor
   ScanSyn(edSQL, lstfind);
-
-  // SQLite editor
   ScanSyn(edSQL1, lstfind1);
-
-  // Postgres editor
   ScanSyn(edSQLPost, lstfind2);
 end;
 
@@ -3561,7 +3911,6 @@ begin
 
   MessageHint(message);
 end;
-
 
 function Tfrmmquery2.RectIsEmpty(const aRect: TRect): Boolean;
 begin

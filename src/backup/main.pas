@@ -13,7 +13,7 @@ uses
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir,
   newproject, uProjetoDB, IA, uPdfText, uDocText;
 
-const versao = '2.52';
+const versao = '2.53';
 
 type
 
