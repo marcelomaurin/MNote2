@@ -1,0 +1,14 @@
+Arquivo:D:\projetos\maurinsoft\MNote2\scripts\
+FullPath:D:\projetos\maurinsoft\MNote2\scripts\contafonte.py
+Criado em:20/03/2026 16:53:37
+O arquivo contafonte.py é um script escrito em Python que tem como finalidade principal contar a quantidade de linhas de código presentes em arquivos com uma determinada extensão dentro de um diretório especificado, percorrendo recursivamente suas subpastas. A principal função definida é contar_linhas_arquivos, que recebe dois parâmetros: o caminho do diretório a ser analisado e a extensão dos arquivos que devem ser considerados na contagem (por exemplo, ".py" ou ".txt").
+
+Dentro dessa função, utiliza-se o módulo os para realizar uma caminhada (os.walk) pela estrutura de diretórios a partir do caminho informado, identificando todos os arquivos presentes. Para cada arquivo, verifica-se se o nome termina com a extensão especificada e, caso positivo, o arquivo é aberto com codificação UTF-8 para leitura. A contagem de linhas é feita usando um gerador que itera sobre o arquivo uma linha por vez, somando o total de linhas daquele arquivo. A cada arquivo processado, o script imprime na saída padrão o caminho completo do arquivo e o número de linhas que ele contém. Além disso, mantém-se o controle do total geral de arquivos processados e do total acumulado de linhas para todos os arquivos daquela extensão.
+
+Ao final da execução da função, são impressos a quantidade total de arquivos encontrados com a extensão indicada e o total acumulado de linhas nesses arquivos.
+
+O ponto crítico do script está na manipulação dos arquivos para garantir a contagem correta e o tratamento de nomes e caminhos, onde assume-se que todos os arquivos podem ser lidos com UTF-8 sem erros. Caso haja um arquivo com codificação diferente, poderia ocorrer uma exceção não tratada. Também depende que a extensão seja passada corretamente, incluindo o ponto inicial (ex: ".py").
+
+A execução do script é feita via linha de comando, esperando exatamente dois argumentos adicionais: o diretório base e a extensão dos arquivos. Caso os argumentos não sejam fornecidos corretamente, o programa imprime uma mensagem de uso e encerra. As dependências internas são os módulos padrão do Python os e sys, não havendo dependências externas.
+
+Em resumo, contafonte.py é uma ferramenta simples e direta para análise quantitativa da base de código ou de arquivos texto em geral, útil para visualizar rapidamente o volume de linhas de arquivos com uma extensão específica em uma estrutura de diretórios.

@@ -1,0 +1,30 @@
+Arquivo:D:\projetos\maurinsoft\MNote2\src\
+FullPath:D:\projetos\maurinsoft\MNote2\src\udoctext.pas
+Criado em:20/03/2026 16:51:12
+O arquivo udoctext.pas é uma unidade escrita em Pascal/Delphi (com compatibilidade para Lazarus/FPC pelo uso de objfpc) que tem como finalidade extrair o texto contido em arquivos do Microsoft Word nos formatos .docx e .doc, retornando o conteúdo como uma string Unicode.
+
+As principais responsabilidades do arquivo são: identificar se um arquivo é .docx ou .doc, abrir e extrair o conteúdo textual relevante desses documentos, tratando seu formato interno, e retorná-lo limpo para uso posterior. Para isso, implementa funções que atuam em cima das estruturas de arquivos ZIP (pois documentos .docx são basicamente arquivos ZIP contendo um conjunto de XMLs) e também usa automação do Word via OLE em Windows para o antigo formato .doc.
+
+As funções mais importantes são:
+
+- GetDOCText: função principal que recebe o nome do arquivo, verifica sua existência e extensão, e executa a extração adequada para .docx ou .doc. Em caso de erro, lança exceções explicativas.
+
+- DocFileToText: alias de compatibilidade para GetDOCText, usado para manter suporte a códigos antigos.
+
+- IsDocx e IsDoc: funções auxiliares que determinam se um arquivo tem extensão .docx ou .doc, comparando a extensão do arquivo em letras minúsculas.
+
+- ExtractDocxTextOnly: função específica que extrai o texto de um arquivo .docx. Utiliza um destrinchador de ZIP (TUnZipper) para localizar e ler o arquivo "word/document.xml" interno, o principal arquivo XML que contém o texto do documento. Para isso, usa um objeto de contexto TZipCtx, que possui métodos para interceptar a criação e finalização dos streams dos arquivos ZIP ao extrair. Quando encontra "word/document.xml", carrega seu stream para memória e passa para o parser XML.
+
+- ParseXmlTextOnly: função que faz a leitura do XML do documento Word e delega a extração recursiva do texto ao procedimento ExtractTextOnly.
+
+- ExtractTextOnly: procedimento recursivo que percorre a árvore DOM XML, coletando os textos legíveis e interpretando elementos específicos usados para representar texto, tabulações, quebras de linha e parágrafos no formato DOCX. Por exemplo, textos em <w:t>, quebras de linha em <w:br> ou <w:cr>, tabulações em <w:tab> e parágrafos em <w:p>. Essa função concatena o texto extraído em um acumulador Unicode.
+
+- ExtractDocText (compilado somente no Windows): função que utiliza automação OLE para abrir o Microsoft Word via COM, carregar um arquivo .doc antigo (binário), extrair seu conteúdo textual via propriedade .Content.Text do documento, e fechar o Word. Essa função só está disponível em Windows com Word instalado.
+
+A estrutura TZipCtx é uma classe auxiliar usada para controlar e armazenar o conteúdo extraído do arquivo .docx dentro da rotina de descompactação, identificando o arquivo XML alvo (word/document.xml).
+
+Dependências: internamente, o arquivo depende das units Classes, SysUtils, Zipper (para lidar com arquivos ZIP), laz2_DOM e laz2_XMLRead (para manipulação e leitura XML no Lazarus). No Windows, depende das units Windows, ComObj e Variants para automação OLE com o Word. Além disso, usa funções do RTL para manipulação de strings, arquivos e exceções.
+
+Pontos críticos: A extração de documentos .docx depende estritamente da presença do arquivo word/document.xml dentro do ZIP; caso contrário, gera erro. Já a extração de arquivos .doc depende do ambiente Windows com o Word instalado (COM OLE Automation), o que limita sua portabilidade. A extração do XML considera apenas o texto básico, sem tentar recuperar formatações complexas, imagens ou outros conteúdos. O arquivo trata ações comuns de texto (parágrafos, quebras e tabulações) no XML conforme padrão OOXML.
+
+Em resumo, o udoctext.pas é uma unidade utilitária para extração simples de texto puro de documentos Word (.docx e .doc), usando técnicas de análise de XML no formato aberto .docx e automação Word para formato antigo .doc, apresentando uma interface simples para obtenção do texto a partir do caminho do arquivo.

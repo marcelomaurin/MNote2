@@ -1,0 +1,41 @@
+Arquivo:D:\projetos\maurinsoft\MNote2\src\
+FullPath:D:\projetos\maurinsoft\MNote2\src\ia.pas
+Criado em:20/03/2026 16:50:12
+O arquivo ia.pas é uma unidade em Pascal/Delphi que implementa uma interface gráfica para interação com uma Inteligência Artificial, baseada no ChatGPT, visando facilitar consultas, análises e geração de conteúdo relacionados principalmente a bancos de dados, código-fonte e manipulação de arquivos e pastas em um projeto de software. Basicamente, esta unidade cria um formulário (TfrmIA) que mantém um histórico de perguntas e respostas, interpreta comandos da IA, executa ações sugeridas e mantém contextos mnemônicos para dar continuidade à conversa.
+
+A principal finalidade do arquivo é atuar como um intermediário entre o usuário e o modelo de linguagem do ChatGPT, oferecendo funcionalidades de consulta inteligente, análise e execução guiada de comandos e textos técnicos automaticamente, incluindo a geração e modificação de código, consultas SQL e operações sobre estrutura de banco de dados, além de manipulação de arquivos/pastas do projeto.
+
+O arquivo define o tipo enumerado TTipoAcao, que lista seis tipos de ações possíveis que a IA pode sugerir: pesquisar informações (ex: gerar consultas SQL), criar tabelas, modificar tabelas, modificar código existente, gerar novo código e enviar e-mails. Para cada tipo de ação, existem métodos específicos iniciando com "Acao_Gerar_" que são acionados conforme a resposta do modelo indica a necessidade da ação correspondente.
+
+A classe TfrmIA contém vários componentes visuais (botões, memos, painéis, abas) para exibir histórico, mapa de memória, pensamentos da IA e as perguntas e respostas do usuário. Internamente, a classe mantem listas de ações possíveis e a serem realizadas, bem como uma instância de comunicação com o ChatGPT (objeto FChatGPT). Destacam-se métodos para garantir o caminho e cache em disco para persistência entre sessões (com arquivos .RIA), adicionando logs e limpando dados do histórico.
+
+As funções principais e fluxos são:
+
+- FazPerguntaIA: método que inicia a interação com a IA, enviando a pergunta e capturando a resposta, gerando a lista de ações via chamada GeraAcao e posteriormente AnalisaAcao para extrair ações em JSON, executando-as por meio do procedimento ExecutaAcao.
+- PerguntaIA: englobando vários passos de análise, como verificação da continuidade da conversa (VerificaContinuidade), análise de banco de dados (AnalisaBanco), análise do projeto/pastas (AnalisaFolder), atualização do mapa de pensamentos (MapeiaPensamento) e finalmente responder à pergunta (RespondePergunta).
+- VerificaContinuidade: questiona a IA se a pergunta atual está relacionada com o histórico para decidir se deve manter o contexto ou limpar o histórico.
+- AnalisaBanco: identifica se a pergunta envolve acesso a banco de dados e, caso conectado, extrai um dicionário ou esquema do banco (PostgreSQL, SQLite) para usar como contexto para a IA.
+- AnalisaFolder e relacionado ao contexto de arquivos do projeto, determinando se a pergunta envolve arquivos/pastas e se o conteúdo disponível é suficiente para responder, extraindo resumos relevantes a partir dos logs coletados.
+- AnalisaAcao: função que usa o ChatGPT para extrair um JSON contendo a lista de ações a serem realizadas pelo sistema, garantindo que são válidas.
+- ExecutaAcao: dispara os métodos correspondentes para executar as ações identificadas (ex: parsear blocos SQL para consultas que são abertas em abas de um editor interno).
+- Métodos para manipulação local de cache dos textos e históricos em arquivos nomeados pelo caminho default configurado.
+- Manipulação visual das entradas (ex: aperto da tecla Enter na pergunta chama FazPerguntaIA) e botões para limpar histórico ou sair.
+
+Dependências principais incluem:
+
+- ChatGPT: abstração da comunicação com o modelo de linguagem da OpenAI.
+- Outros módulos do sistema como setmain (para configurações globais), folders (gerenciamento de pastas e arquivos do projeto), mquery2 (conexões e interações com bancos de dados), item (componentes de edição e manipulação de código).
+- Componentes visuais do Delphi/Lazarus (Forms, Controls, TMemo, TSynEdit).
+- Bibliotecas para manipulação JSON (fpjson, jsonparser).
+
+Pontos críticos e considerações:
+
+- A comunicação com o ChatGPT requer um token configurado corretamente no SetMain.CHATGPT; a ausência do token impede operações e gera mensagens para o usuário.
+- A unidade implementa mecanismos de cache para evitar chamadas repetidas na mesma sessão/dia, melhorando desempenho e continuidade.
+- O parsing da resposta da IA para identificar blocos de código SQL é feito facilmente, buscando marcações ```sql e criando novas abas com consultas.
+- As decisões acerca se uma pergunta envolve arquivos, banco de dados ou ações práticas, são feitas com base em classificadores simples que recebem prompts específicos para responder "Sim" ou "Nao" diretamente do ChatGPT.
+- Suporta múltiplos tipos de banco (PostgreSQL, MySQL, SQLite) via conexões diferentes e gera dicionários que podem servir como contexto para o ChatGPT.
+- A modularidade do arquivo é boa, com funções bem definidas para cada responsabilidade, facilitando extensões, por exemplo, na implementação futura das ações para criação e modificação de tabelas, código e envio de emails que hoje são apenas consignadas no log.
+- A gestão do histórico, pensamento e mapa de memória permite manter um diálogo coerente com a IA, possibilitando interações mais naturais baseadas no contexto.
+
+Em resumo, o arquivo ia.pas funciona como um controlador/intermediário para uma aplicação que realiza consultas e ações assistidas por IA relacionadas a dados, código e projeto, integrando interface gráfica, persistência de estado, comunicação com modelo ChatGPT e execução de ações específicas determinando respostas mais inteligentes e automatizadas para o usuário.

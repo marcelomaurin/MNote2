@@ -15,7 +15,6 @@
         <TextName Value="Maurinsoft.MNote2"/>
         <TextDesc Value="Little editor"/>
       </XPManifest>
-      <Icon Value="0"/>
     </General>
     <i18n>
       <EnableI18N LFM="False"/>
@@ -40,73 +39,76 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="22">
+    <RequiredPackages Count="23">
       <Item1>
-        <PackageName Value="pkSalesSwitch"/>
+        <PackageName Value="atsynedit_ex_package"/>
       </Item1>
       <Item2>
-        <PackageName Value="indylaz"/>
+        <PackageName Value="pkSalesSwitch"/>
       </Item2>
       <Item3>
-        <PackageName Value="IPEdit_pkg"/>
+        <PackageName Value="indylaz"/>
       </Item3>
       <Item4>
-        <PackageName Value="zcomponentdesign"/>
+        <PackageName Value="IPEdit_pkg"/>
       </Item4>
       <Item5>
-        <PackageName Value="LazUtils"/>
+        <PackageName Value="zcomponentdesign"/>
       </Item5>
       <Item6>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="LazUtils"/>
       </Item6>
       <Item7>
-        <PackageName Value="synuni"/>
+        <PackageName Value="lnetbase"/>
       </Item7>
       <Item8>
-        <PackageName Value="synfacilsyn"/>
+        <PackageName Value="synuni"/>
       </Item8>
       <Item9>
-        <PackageName Value="SynEditDsgn"/>
+        <PackageName Value="synfacilsyn"/>
       </Item9>
       <Item10>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="SynEditDsgn"/>
       </Item10>
       <Item11>
-        <PackageName Value="myexamplepackage"/>
+        <PackageName Value="SynEdit"/>
       </Item11>
       <Item12>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="myexamplepackage"/>
       </Item12>
       <Item13>
-        <PackageName Value="FCL"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item13>
       <Item14>
-        <PackageName Value="poweredby"/>
+        <PackageName Value="FCL"/>
       </Item14>
       <Item15>
-        <PackageName Value="industrial"/>
+        <PackageName Value="poweredby"/>
       </Item15>
       <Item16>
-        <PackageName Value="pkg_gifanim"/>
+        <PackageName Value="industrial"/>
       </Item16>
       <Item17>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="pkg_gifanim"/>
       </Item17>
       <Item18>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="zcomponent"/>
       </Item18>
       <Item19>
-        <PackageName Value="rxnew"/>
+        <PackageName Value="multiloglaz"/>
       </Item19>
       <Item20>
-        <PackageName Value="python4lazarus_package"/>
+        <PackageName Value="rxnew"/>
       </Item20>
       <Item21>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="python4lazarus_package"/>
       </Item21>
       <Item22>
-        <PackageName Value="LCL"/>
+        <PackageName Value="lnetvisual"/>
       </Item22>
+      <Item23>
+        <PackageName Value="LCL"/>
+      </Item23>
     </RequiredPackages>
     <Units Count="51">
       <Unit0>

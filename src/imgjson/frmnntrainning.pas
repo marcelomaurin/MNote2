@@ -8,8 +8,8 @@ uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls,
   ValEdit, PairSplitter, DBGrids, EditBtn, ExtCtrls, Menus, SynEdit, setproject,
   SynHighlighterPython, SynCompletion, SynHighlighterSQL, myexamplecontrol,
-   SQLEditItem, NNTrainning;
-   //SynHighlighterJSON
+  SQLEditItem, NNTrainning;
+
 type
 
   { Tfrmnntrain }
@@ -85,7 +85,6 @@ type
     Panel1: TPanel;
     Panel2: TPanel;
     SynAutoComplete1: TSynAutoComplete;
-    //SynJSONSyn1: TSynJSONSyn;
     synJSONTrainning: TSynEdit;
     synJSONTrainning1: TSynEdit;
     synPython: TSynEdit;
@@ -115,14 +114,17 @@ type
     procedure synPythonChange(Sender: TObject);
   private
     fitem : TNNTrainning;
-    procedure reloadPython();
-
-
+    procedure ReloadPython;
+    procedure CarregaCombos;
+    procedure LimpaTela;
+    procedure AtualizaCamposCalculados;
+    function  GaranteItem: TNNTrainning;
+    function  ValidaCampos: Boolean;
+    function  SafeSQLItemByIndex(AIndex: Integer): TSQLEditItem;
   public
     flgsalvar: boolean;
     procedure Load(item : TNNTrainning);
-    function Save():  TNNTrainning;
-
+    function Save(): TNNTrainning;
   end;
 
 var
@@ -132,213 +134,401 @@ implementation
 
 {$R *.lfm}
 
+uses
+  Math;
+
 { Tfrmnntrain }
+
+procedure Tfrmnntrain.CarregaCombos;
+begin
+  cbquerytrainning.Items.Clear;
+  cbquerytest.Items.Clear;
+  cbtypenn.Items.Clear;
+
+  if Assigned(Fsetproject) then
+  begin
+    cbquerytrainning.Items.Text := Fsetproject.SQLEdit_ListName();
+    cbquerytest.Items.Text      := Fsetproject.SQLEdit_ListName();
+  end;
+
+  cbtypenn.Items.Text := 'CN_NONE' + LineEnding +
+                         'RecImg' + LineEnding +
+                         'NLPNeuralNetwork';
+end;
+
+procedure Tfrmnntrain.LimpaTela;
+begin
+  flgsalvar := False;
+  fitem := nil;
+
+  edNome.Clear;
+  meComentario.Clear;
+
+  cbquerytrainning.ItemIndex := -1;
+  cbquerytest.ItemIndex := -1;
+  cbtypenn.ItemIndex := -1;
+
+  mesqltrainning.Clear;
+  mesqltest.Clear;
+
+  edGroupBy.Clear;
+  edGroupByTester.Clear;
+
+  edInputField.Clear;
+  edInputRef.Clear;
+  edInputRefField.Clear;
+  edInputRefKey.Clear;
+  edInputCols.Clear;
+
+  edInputFieldTester.Clear;
+  edInputRefTester.Clear;
+  edInputRefFieldTester.Clear;
+  edInputRefKeyTester.Clear;
+
+  edOutputField.Clear;
+  edOutputFieldTester.Clear;
+  edOutputCols.Clear;
+
+  edFilterValue.Clear;
+  edFilterValueTester.Clear;
+
+  synPython.Clear;
+  synJSONTrainning.Clear;
+  synJSONTester.Clear;
+  fileJSONTester.Clear;
+  melog.Clear;
+
+  pnlog.Visible := False;
+  PageControl1.PageIndex := 0;
+end;
+
+procedure Tfrmnntrain.AtualizaCamposCalculados;
+begin
+  if Assigned(fitem) then
+  begin
+    edInputCols.Text  := IntToStr(fitem.InputCols);
+    edOutputCols.Text := IntToStr(fitem.OutputCols);
+  end
+  else
+  begin
+    edInputCols.Text  := '0';
+    edOutputCols.Text := '0';
+  end;
+end;
+
+function Tfrmnntrain.GaranteItem: TNNTrainning;
+begin
+  if not Assigned(fitem) then
+    fitem := TNNTrainning.Create;
+  Result := fitem;
+end;
+
+function Tfrmnntrain.SafeSQLItemByIndex(AIndex: Integer): TSQLEditItem;
+begin
+  Result := nil;
+  if Assigned(Fsetproject) and (AIndex >= 0) and (AIndex < Fsetproject.Querycount) then
+    Result := Fsetproject.SQLEdit_Indexof(AIndex);
+end;
+
+function Tfrmnntrain.ValidaCampos: Boolean;
+begin
+  Result := False;
+
+  if Trim(edNome.Text) = '' then
+  begin
+    ShowMessage('Informe o nome do treinamento.');
+    edNome.SetFocus;
+    Exit;
+  end;
+
+  if cbquerytrainning.ItemIndex < 0 then
+  begin
+    ShowMessage('Selecione a query de treinamento.');
+    cbquerytrainning.SetFocus;
+    Exit;
+  end;
+
+  if cbquerytest.ItemIndex < 0 then
+  begin
+    ShowMessage('Selecione a query de teste.');
+    cbquerytest.SetFocus;
+    Exit;
+  end;
+
+  if cbtypenn.ItemIndex < 0 then
+  begin
+    ShowMessage('Selecione o tipo de rede.');
+    cbtypenn.SetFocus;
+    Exit;
+  end;
+
+  Result := True;
+end;
 
 procedure Tfrmnntrain.FormCreate(Sender: TObject);
 begin
-  flgsalvar :=false;
-  meComentario.Lines.clear;
-  edNome.Text:= '';
-  PageControl1.PageIndex:=0;
-  cbquerytrainning.Items.text := Fsetproject.SQLEdit_ListName();
-  cbquerytest.Items.text := Fsetproject.SQLEdit_ListName();
+  LimpaTela;
+  CarregaCombos;
 end;
 
 procedure Tfrmnntrain.miReloadClick(Sender: TObject);
 begin
-  reloadPython();
+  ReloadPython;
 end;
 
 procedure Tfrmnntrain.PageControl1Change(Sender: TObject);
 begin
-
 end;
 
 procedure Tfrmnntrain.synJSONTesterChange(Sender: TObject);
 begin
-
 end;
 
 procedure Tfrmnntrain.synPythonChange(Sender: TObject);
 begin
-
 end;
 
-procedure Tfrmnntrain.reloadPython;
+procedure Tfrmnntrain.ReloadPython;
+var
+  arq: string;
 begin
-  if(cbtypenn.ItemIndex<>-1) then
+  if cbtypenn.ItemIndex <> -1 then
   begin
-    synPython.Lines.LoadFromFile('./models/model0'+inttostr(cbtypenn.ItemIndex)+'.py');
+    arq := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)) +
+           'models' + PathDelim + 'model0' + IntToStr(cbtypenn.ItemIndex) + '.py';
+
+    if FileExists(arq) then
+      synPython.Lines.LoadFromFile(arq)
+    else
+      ShowMessage('Modelo Python não encontrado: ' + arq);
   end;
 end;
 
 procedure Tfrmnntrain.Load(item: TNNTrainning);
 begin
+  LimpaTela;
+  CarregaCombos;
+
   fitem := item;
+  if not Assigned(fitem) then
+    Exit;
 
-  //Aba 1 - Description
-  edNome.Text:= fitem.Nome;
-  meComentario.Lines.Text:= fitem.Commentario;
+  edNome.Text := fitem.Nome;
+  meComentario.Lines.Text := fitem.Commentario;
 
+  if Assigned(Fsetproject) then
+  begin
+    cbquerytrainning.ItemIndex := Fsetproject.sqlEditItem_indexof(fitem.SQLTrainning);
+    cbquerytest.ItemIndex      := Fsetproject.sqlEditItem_indexof(fitem.SQLTest);
+  end;
 
-  //Aba 2 - Data Trainning
-  cbquerytrainning.Items.Text:= Fsetproject.SQLEdit_ListName();
-  cbquerytrainning.ItemIndex:= fsetproject.sqlEditItem_indexof(fitem.SQLTrainning);
+  if Assigned(fitem.SQLTrainning) then
+    mesqltrainning.Lines.Text := fitem.SQLTrainning.SQL
+  else
+    mesqltrainning.Clear;
 
-  mesqltrainning.Lines.Text:= fitem.SQLTrainning.SQL;
+  if Assigned(fitem.SQLTest) then
+    mesqltest.Lines.Text := fitem.SQLTest.SQL
+  else
+    mesqltest.Clear;
 
-  //Aba 3 - Data Test
-  cbquerytest.Items.text := Fsetproject.SQLEdit_ListName();
-  cbquerytest.ItemIndex:= fsetproject.sqlEditItem_indexof(fitem.SQLTest);
-  mesqltest.Lines.text := fitem.SQLTest.sql;
+  cbtypenn.ItemIndex := Integer(fitem.ClassNNTrainning);
 
-  //Aba 4 - Neural Network
-  cbtypenn.Items.text :=   fitem.ListClasseNNTrainning();
-  cbtypenn.ItemIndex :=  integer(fitem.ClassNNTrainning);
+  edGroupBy.Text       := fitem.GroupBy;
+  edGroupByTester.Text := fitem.GroupByTester;
 
-  //Aba 5 - Group
-  edGroupBy.Text:= fitem.groupby ;
+  edInputField.Text      := fitem.InputField;
+  edInputRef.Text        := fitem.InputRef;
+  edInputRefField.Text   := fitem.InputRefField;
+  edInputRefKey.Text     := fitem.InputRefKey;
+  edInputCols.Text       := IntToStr(fitem.InputCols);
 
-  //Aba 6 - Input
-  edInputField.Text := fitem.InputField;
-  edInputRef.text := fitem.InputRef;
-  edInputRefField.text := fitem.InputRefField;
-  edInputRefKey.text := fitem.InputRefKey;
-  edInputCols.text := inttostr(fitem.InputCols);
+  edInputFieldTester.Text    := fitem.InputFieldTester;
+  edInputRefTester.Text      := fitem.InputRefTester;
+  edInputRefFieldTester.Text := fitem.InputRefFieldTester;
+  edInputRefKeyTester.Text   := fitem.InputRefKeyTester;
 
+  edOutputField.Text       := fitem.OutputField;
+  edOutputCols.Text        := IntToStr(fitem.OutputCols);
+  edOutputFieldTester.Text := fitem.OutputFieldTester;
 
-  edInputFieldTester.Text := fitem.InputFieldTester;   //novo
-  edInputRefTester.text := fitem.InputRefTester;      //novo
-  edInputRefFieldTester.text := fitem.InputRefFieldTester; //novo
-  edInputRefKeyTester.text := fitem.InputRefKeyTester;     //novo
-
-
-  //Aba 7 - Output
-  edOutputField.text := fitem.OutputField;
-  edOutputCols.text := inttostr(fitem.OutputCols);
-
-  edOutputFieldTester.text := fitem.OutputFieldTester;     //NOVO
-
-
-
-  //Aba 8 - Python
   synPython.Text := fitem.Python;
-  melog.text := fitem.logtrainning;
+  melog.Text     := fitem.logtrainning;
 
-  //Aba 9 - JSON Trainning
-  synJSONTrainning.text := fitem.jsontrainning;
-  edFilterValue.text := fitem.FilterValue;
-  edFilterValueTester.text := fitem.FilterValueTester; //NOVO
+  synJSONTrainning.Text  := fitem.jsontrainning;
+  edFilterValue.Text     := fitem.FilterValue;
+  edFilterValueTester.Text := fitem.FilterValueTester;
 
-  //Aba 10 - RUN Test
-  fileJSONTester.Text:= fitem.fileJSONTester;
-  synJSONTester.text := fitem.JSONTester;
+  fileJSONTester.Text := fitem.fileJSONTester;
+  synJSONTester.Text  := fitem.JSONTester;
 
+  pnlog.Visible := Trim(melog.Text) <> '';
 end;
 
 function Tfrmnntrain.Save: TNNTrainning;
+var
+  itemTreino, itemTeste: TSQLEditItem;
 begin
-   if (flgsalvar) then
-   begin
-     //fitem := item;
+  Result := fitem;
 
-     //Aba 1 - Description
-     fitem.Nome := edNome.Text;
-     fitem.Commentario :=  meComentario.Lines.Text;
+  if not flgsalvar then
+    Exit;
 
+  if not ValidaCampos then
+    Exit(nil);
 
-     //Aba 2 - Data Trainning
-     fitem.SQLTrainning := Fsetproject.SQLEdit_Indexof(cbquerytrainning.ItemIndex ) ;
+  Result := GaranteItem;
 
-     fitem.SQLTrainning.SQL := mesqltrainning.Lines.Text;
+  Result.Nome        := Trim(edNome.Text);
+  Result.Commentario := meComentario.Lines.Text;
 
-     //Aba 3 - Data Test
+  itemTreino := SafeSQLItemByIndex(cbquerytrainning.ItemIndex);
+  itemTeste  := SafeSQLItemByIndex(cbquerytest.ItemIndex);
 
-     fitem.SQLTest := Fsetproject.SQLEdit_Indexof(cbquerytest.ItemIndex) ;
-     fitem.SQLTest.sql := mesqltest.Lines.text;
+  Result.SQLTrainning := itemTreino;
+  Result.SQLTest      := itemTeste;
 
-     //Aba 4 - Neural Network
+  if Assigned(Result.SQLTrainning) then
+    Result.SQLTrainning.SQL := mesqltrainning.Lines.Text;
 
-     fitem.ClassNNTrainning := TClasseNNTrainning(cbtypenn.ItemIndex) ;
+  if Assigned(Result.SQLTest) then
+    Result.SQLTest.SQL := mesqltest.Lines.Text;
 
-     //Aba 5 - Group
-     fitem.groupby := edGroupBy.Text;
+  Result.ClassNNTrainning := TClasseNNTrainning(Max(0, cbtypenn.ItemIndex));
 
-     //Aba 6 - Input
-     fitem.InputField := edInputField.Text;
-     fitem.InputRef := edInputRef.text;
-     fitem.InputRefField := edInputRefField.text;
-     fitem.InputRefKey := edInputRefKey.text;
-     //fitem.InputCols:= strtoint(edInputCols.text);
-     fitem.InputFieldTester := edInputFieldTester.Text;
-     fitem.InputRefTester := edInputRefTester.text;
-     fitem.InputRefFieldTester := edInputRefFieldTester.text;
-     fitem.InputRefKeyTester := edInputRefKeyTester.text;
+  Result.GroupBy       := Trim(edGroupBy.Text);
+  Result.GroupByTester := Trim(edGroupByTester.Text);
 
+  Result.InputField    := Trim(edInputField.Text);
+  Result.InputRef      := Trim(edInputRef.Text);
+  Result.InputRefField := Trim(edInputRefField.Text);
+  Result.InputRefKey   := Trim(edInputRefKey.Text);
 
-     //Aba 7 - Output
-     fitem.OutputField := edOutputField.text;
-     fitem.OutputFieldTester := edOutputFieldTester.text;
-     //fitem.OutputCols:= strtoint(edOutputCols.text);
+  Result.InputFieldTester    := Trim(edInputFieldTester.Text);
+  Result.InputRefTester      := Trim(edInputRefTester.Text);
+  Result.InputRefFieldTester := Trim(edInputRefFieldTester.Text);
+  Result.InputRefKeyTester   := Trim(edInputRefKeyTester.Text);
 
+  Result.OutputField       := Trim(edOutputField.Text);
+  Result.OutputFieldTester := Trim(edOutputFieldTester.Text);
 
+  Result.Python := synPython.Text;
 
-     //Aba 8 - Python
-     fitem.Python := synPython.Text;
+  Result.jsontrainning    := synJSONTrainning.Text;
+  Result.FilterValue      := Trim(edFilterValue.Text);
+  Result.FilterValueTester:= Trim(edFilterValueTester.Text);
 
-     //Aba 9 - JSON Trainning
-     fitem.jsontrainning := synJSONTrainning.Text;
-     fitem.FilterValue:= edFilterValue.Text;
-     fitem.FilterValueTester:= edFilterValueTester.Text;
+  Result.fileJSONTester := Trim(fileJSONTester.Text);
+  Result.JSONTester     := synJSONTester.Text;
 
-     //Aba 10 - RUN Test
-     fitem.fileJSONTester := fileJSONTester.Text;
-     fitem.JSONTester := synJSONTester.Text;
-   end;
-   result := fitem;
+  AtualizaCamposCalculados;
 end;
 
 procedure Tfrmnntrain.btSaveClick(Sender: TObject);
 begin
-  flgsalvar:= true;
-  close;
+  if not ValidaCampos then
+    Exit;
+
+  flgsalvar := True;
+  Save;
+  ModalResult := mrOk;
 end;
 
 procedure Tfrmnntrain.btRUNClick(Sender: TObject);
+var
+  ItemAtual: TNNTrainning;
+  marca: string;
 begin
+  ItemAtual := Save;
+  if not Assigned(ItemAtual) then
+    Exit;
 
+  marca := Trim(ItemAtual.FilterConditionTester);
+  if marca = '' then
+    marca := Trim(ItemAtual.FilterCondition);
+  if marca = '' then
+    marca := Trim(ItemAtual.FilterValueTester);
+  if marca = '' then
+    marca := Trim(ItemAtual.FilterValue);
+
+  if marca = '' then
+    marca := 'default';
+
+  if ItemAtual.testerJSON(marca) then
+  begin
+    synJSONTester.Text := ItemAtual.JSONTester;
+    fileJSONTester.Text := ItemAtual.fileJSONTester;
+    ShowMessage('JSON de teste gerado com sucesso.');
+  end;
 end;
 
 procedure Tfrmnntrain.btTrainningClick(Sender: TObject);
+var
+  ItemAtual: TNNTrainning;
 begin
+  ItemAtual := Save;
+  if not Assigned(ItemAtual) then
+    Exit;
 
+  if ItemAtual.trainnerJSON() then
+  begin
+    synJSONTrainning.Text := ItemAtual.jsontrainning;
+    AtualizaCamposCalculados;
+    ShowMessage('JSON de treinamento gerado com sucesso.');
+  end;
 end;
 
 procedure Tfrmnntrain.Button1Click(Sender: TObject);
+var
+  ItemAtual: TNNTrainning;
 begin
+  ItemAtual := Save;
+  if not Assigned(ItemAtual) then
+    Exit;
 
+  pnlog.Visible := True;
+  melog.Clear;
+  ItemAtual.Pythonlog := nil;
+
+  if ItemAtual.RunTrainning() then
+  begin
+    melog.Lines.Text := ItemAtual.logtrainning;
+    pnlog.Visible := Trim(melog.Text) <> '';
+    ShowMessage('Treinamento executado com sucesso.');
+  end
+  else
+  begin
+    melog.Lines.Text := ItemAtual.logtrainning;
+    pnlog.Visible := True;
+    ShowMessage('Falha ao executar treinamento.');
+  end;
 end;
 
 procedure Tfrmnntrain.cbquerytestChange(Sender: TObject);
+var
+  item: TSQLEditItem;
 begin
-  if(cbquerytest.ItemIndex<> -1) then
-  begin
-    mesqltest.Lines.Text:=  Fsetproject.SQLEdit_Indexof(cbquerytest.ItemIndex).SQL;
-  end;
+  item := SafeSQLItemByIndex(cbquerytest.ItemIndex);
+  if Assigned(item) then
+    mesqltest.Lines.Text := item.SQL
+  else
+    mesqltest.Clear;
 end;
 
 procedure Tfrmnntrain.cbquerytrainningChange(Sender: TObject);
+var
+  item: TSQLEditItem;
 begin
-  if(cbquerytrainning.ItemIndex<> -1) then
-  begin
-    mesqltrainning.Lines.Text:=  Fsetproject.SQLEdit_Indexof(cbquerytrainning.ItemIndex).SQL;
-  end;
+  item := SafeSQLItemByIndex(cbquerytrainning.ItemIndex);
+  if Assigned(item) then
+    mesqltrainning.Lines.Text := item.SQL
+  else
+    mesqltrainning.Clear;
 end;
 
 procedure Tfrmnntrain.cbtypennChange(Sender: TObject);
 begin
-     reloadPython();
+  ReloadPython;
 end;
 
 end.
-

@@ -2054,7 +2054,6 @@ object frmnntrain: Tfrmnntrain
             Top = 38
             Width = 281
             TabOrder = 0
-            Text = 'edFilterValue'
           end
           object Label9: TLabel
             Left = 17
@@ -2080,7 +2079,6 @@ object frmnntrain: Tfrmnntrain
             Top = 38
             Width = 281
             TabOrder = 0
-            Text = 'edFilterValue'
           end
           object Label25: TLabel
             Left = 17
@@ -3218,8 +3216,8 @@ object frmnntrain: Tfrmnntrain
     Top = 225
   end
   object pmPython: TPopupMenu
-    Left = 95
-    Top = 199
+    Left = 600
+    Top = 136
     object miReload: TMenuItem
       Caption = 'Reload'
       OnClick = miReloadClick

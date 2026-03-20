@@ -131,19 +131,7 @@ object frmMNote: TfrmMNote
         Width = 403
         Align = alTop
         Caption = 'Analise'
-        ClientHeight = 50
-        ClientWidth = 403
         TabOrder = 2
-        object btHide: TToggleBox
-          Left = 272
-          Height = 32
-          Top = 8
-          Width = 115
-          Anchors = [akTop, akLeft, akRight]
-          Caption = 'Hide IA this code'
-          TabOrder = 0
-          OnChange = btHideChange
-        end
       end
       object pnWait: TPanel
         Left = 1

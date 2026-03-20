@@ -1,21 +1,20 @@
 object frmnntrain: Tfrmnntrain
   Left = 867
-  Height = 721
+  Height = 577
   Top = 154
-  Width = 719
+  Width = 575
   Anchors = []
   Caption = 'Neural Network Tranning'
-  ClientHeight = 721
-  ClientWidth = 719
-  DesignTimePPI = 120
+  ClientHeight = 577
+  ClientWidth = 575
+  LCLVersion = '4.4.0.0'
   OnCreate = FormCreate
-  LCLVersion = '2.2.6.0'
   object PageControl1: TPageControl
     AnchorSideBottom.Control = pnBotton
     Left = 0
-    Height = 658
+    Height = 527
     Top = 0
-    Width = 719
+    Width = 575
     ActivePage = tsTrainning
     Align = alTop
     Anchors = [akTop, akLeft, akRight, akBottom]
@@ -24,36 +23,36 @@ object frmnntrain: Tfrmnntrain
     OnChange = PageControl1Change
     object TabSheet1: TTabSheet
       Caption = 'Description'
-      ClientHeight = 625
-      ClientWidth = 711
+      ClientHeight = 499
+      ClientWidth = 567
       object Label1: TLabel
-        Left = 18
-        Height = 20
-        Top = 16
-        Width = 43
+        Left = 14
+        Height = 15
+        Top = 13
+        Width = 35
         Caption = 'Name:'
         ParentColor = False
       end
       object edNome: TEdit
-        Left = 16
-        Height = 28
-        Top = 44
-        Width = 332
+        Left = 13
+        Height = 23
+        Top = 35
+        Width = 266
         TabOrder = 0
       end
       object Label2: TLabel
-        Left = 18
-        Height = 20
-        Top = 77
-        Width = 68
+        Left = 14
+        Height = 15
+        Top = 62
+        Width = 57
         Caption = 'Comment:'
         ParentColor = False
       end
       object meComentario: TMemo
-        Left = 18
-        Height = 113
-        Top = 104
-        Width = 438
+        Left = 14
+        Height = 90
+        Top = 83
+        Width = 350
         Lines.Strings = (
           'Memo1'
         )
@@ -62,58 +61,58 @@ object frmnntrain: Tfrmnntrain
     end
     object tsdados: TTabSheet
       Caption = 'Data Tranning'
-      ClientHeight = 625
-      ClientWidth = 711
+      ClientHeight = 499
+      ClientWidth = 567
       object Label3: TLabel
-        Left = 8
-        Height = 20
-        Top = 112
-        Width = 29
+        Left = 6
+        Height = 15
+        Top = 90
+        Width = 24
         Caption = 'SQL:'
         ParentColor = False
       end
       object Label10: TLabel
-        Left = 8
-        Height = 20
-        Top = 8
-        Width = 42
+        Left = 6
+        Height = 15
+        Top = 6
+        Width = 35
         Caption = 'Query:'
         ParentColor = False
       end
       object cbquerytrainning: TComboBox
-        Left = 7
-        Height = 28
-        Top = 32
-        Width = 273
-        ItemHeight = 20
-        OnChange = cbquerytrainningChange
+        Left = 6
+        Height = 23
+        Top = 26
+        Width = 218
+        ItemHeight = 15
         TabOrder = 0
         Text = 'cbquerytrainning'
+        OnChange = cbquerytrainningChange
       end
       object Panel3: TPanel
         Left = 0
-        Height = 483
-        Top = 142
-        Width = 711
+        Height = 385
+        Top = 114
+        Width = 567
         Align = alBottom
         Anchors = [akTop]
-        ClientHeight = 483
-        ClientWidth = 711
+        ClientHeight = 385
+        ClientWidth = 567
         TabOrder = 1
         inline mesqltrainning: TSynEdit
           Left = 1
-          Height = 481
+          Height = 383
           Top = 1
-          Width = 709
+          Width = 565
           Align = alClient
-          Font.Height = -13
+          Font.Height = -10
           Font.Name = 'Courier New'
           Font.Pitch = fpFixed
           Font.Quality = fqNonAntialiased
           ParentColor = False
           ParentFont = False
           TabOrder = 0
-          Gutter.Width = 68
+          Gutter.Width = 53
           Gutter.MouseActions = <>
           RightGutter.Width = 0
           RightGutter.MouseActions = <>
@@ -566,11 +565,15 @@ object frmnntrain: Tfrmnntrain
           LineHighlightColor.Foreground = clNone
           inline SynLeftGutterPartList1: TSynGutterPartList
             object SynGutterMarks1: TSynGutterMarks
-              Width = 30
+              Width = 24
               MouseActions = <>
+              MaxExtraMarksColums = 0
+              Options = [sgmoDeDuplicateMarksOnOverflow]
+              MarkupInfo.Background = clBtnFace
+              MarkupInfo.Foreground = clNone
             end
             object SynGutterLineNumber1: TSynGutterLineNumber
-              Width = 17
+              Width = 13
               MouseActions = <>
               MarkupInfo.Background = clBtnFace
               MarkupInfo.Foreground = clNone
@@ -580,19 +583,21 @@ object frmnntrain: Tfrmnntrain
               LeadingZeros = False
             end
             object SynGutterChanges1: TSynGutterChanges
-              Width = 5
+              Width = 4
               MouseActions = <>
               ModifiedColor = 59900
               SavedColor = clGreen
+              MarkupInfo.Background = clNone
+              MarkupInfo.Foreground = clGreen
+              MarkupInfo.FrameColor = 59900
             end
             object SynGutterSeparator1: TSynGutterSeparator
-              Width = 3
+              Width = 2
               MouseActions = <>
               MarkupInfo.Background = clWhite
               MarkupInfo.Foreground = clGray
             end
             object SynGutterCodeFolding1: TSynGutterCodeFolding
-              Width = 13
               MouseActions = <>
               MarkupInfo.Background = clNone
               MarkupInfo.Foreground = clGray
@@ -605,49 +610,49 @@ object frmnntrain: Tfrmnntrain
     end
     object tsDataTest: TTabSheet
       Caption = 'Data Test'
-      ClientHeight = 625
-      ClientWidth = 711
+      ClientHeight = 499
+      ClientWidth = 567
       object Label11: TLabel
-        Left = 8
-        Height = 20
-        Top = 8
-        Width = 42
+        Left = 6
+        Height = 15
+        Top = 6
+        Width = 35
         Caption = 'Query:'
         ParentColor = False
       end
       object cbquerytest: TComboBox
-        Left = 7
-        Height = 28
-        Top = 32
-        Width = 273
-        ItemHeight = 20
-        OnChange = cbquerytestChange
+        Left = 6
+        Height = 23
+        Top = 26
+        Width = 218
+        ItemHeight = 15
         TabOrder = 0
         Text = 'cbquerytest'
+        OnChange = cbquerytestChange
       end
       object Label12: TLabel
-        Left = 8
-        Height = 20
-        Top = 112
-        Width = 29
+        Left = 6
+        Height = 15
+        Top = 90
+        Width = 24
         Caption = 'SQL:'
         ParentColor = False
       end
       inline mesqltest: TSynEdit
         Left = 0
-        Height = 489
-        Top = 136
-        Width = 711
+        Height = 390
+        Top = 109
+        Width = 567
         Align = alBottom
         Anchors = [akTop]
-        Font.Height = -13
+        Font.Height = -10
         Font.Name = 'Courier New'
         Font.Pitch = fpFixed
         Font.Quality = fqNonAntialiased
         ParentColor = False
         ParentFont = False
         TabOrder = 1
-        Gutter.Width = 68
+        Gutter.Width = 53
         Gutter.MouseActions = <>
         RightGutter.Width = 0
         RightGutter.MouseActions = <>
@@ -1100,11 +1105,15 @@ object frmnntrain: Tfrmnntrain
         LineHighlightColor.Foreground = clNone
         inline SynLeftGutterPartList1: TSynGutterPartList
           object SynGutterMarks1: TSynGutterMarks
-            Width = 30
+            Width = 24
             MouseActions = <>
+            MaxExtraMarksColums = 0
+            Options = [sgmoDeDuplicateMarksOnOverflow]
+            MarkupInfo.Background = clBtnFace
+            MarkupInfo.Foreground = clNone
           end
           object SynGutterLineNumber1: TSynGutterLineNumber
-            Width = 17
+            Width = 13
             MouseActions = <>
             MarkupInfo.Background = clBtnFace
             MarkupInfo.Foreground = clNone
@@ -1114,19 +1123,21 @@ object frmnntrain: Tfrmnntrain
             LeadingZeros = False
           end
           object SynGutterChanges1: TSynGutterChanges
-            Width = 5
+            Width = 4
             MouseActions = <>
             ModifiedColor = 59900
             SavedColor = clGreen
+            MarkupInfo.Background = clNone
+            MarkupInfo.Foreground = clGreen
+            MarkupInfo.FrameColor = 59900
           end
           object SynGutterSeparator1: TSynGutterSeparator
-            Width = 3
+            Width = 2
             MouseActions = <>
             MarkupInfo.Background = clWhite
             MarkupInfo.Foreground = clGray
           end
           object SynGutterCodeFolding1: TSynGutterCodeFolding
-            Width = 13
             MouseActions = <>
             MarkupInfo.Background = clNone
             MarkupInfo.Foreground = clGray
@@ -1138,243 +1149,243 @@ object frmnntrain: Tfrmnntrain
     end
     object TabSheet3: TTabSheet
       Caption = 'Neural Networking'
-      ClientHeight = 625
-      ClientWidth = 711
+      ClientHeight = 499
+      ClientWidth = 567
       object Label4: TLabel
-        Left = 11
-        Height = 20
-        Top = 16
-        Width = 60
+        Left = 9
+        Height = 15
+        Top = 13
+        Width = 48
         Caption = 'Type NN:'
         ParentColor = False
       end
       object cbtypenn: TComboBox
-        Left = 11
-        Height = 28
-        Top = 40
-        Width = 261
-        ItemHeight = 20
+        Left = 9
+        Height = 23
+        Top = 32
+        Width = 209
+        ItemHeight = 15
         Items.Strings = (
           'NONE'
           'Rec Image'
           'NLP Neural Network'
         )
-        OnChange = cbtypennChange
         TabOrder = 0
         Text = 'cbtypenn'
+        OnChange = cbtypennChange
       end
     end
     object tbGroup: TTabSheet
       Caption = 'Group'
-      ClientHeight = 625
-      ClientWidth = 711
+      ClientHeight = 499
+      ClientWidth = 567
       object GroupBox7: TGroupBox
-        Left = 52
-        Height = 131
-        Top = 35
-        Width = 500
+        Left = 42
+        Height = 105
+        Top = 28
+        Width = 400
         Caption = 'Trainning'
-        ClientHeight = 106
-        ClientWidth = 496
+        ClientHeight = 85
+        ClientWidth = 396
         TabOrder = 0
         object Label5: TLabel
-          Left = 19
-          Height = 20
-          Top = 19
-          Width = 108
+          Left = 15
+          Height = 15
+          Top = 15
+          Width = 86
           Caption = 'Group by Select:'
           ParentColor = False
         end
         object edGroupBy: TEdit
-          Left = 19
-          Height = 28
-          Top = 47
-          Width = 412
+          Left = 15
+          Height = 23
+          Top = 38
+          Width = 330
           TabOrder = 0
         end
       end
       object GroupBox8: TGroupBox
-        Left = 52
-        Height = 131
-        Top = 208
-        Width = 500
+        Left = 42
+        Height = 105
+        Top = 166
+        Width = 400
         Caption = 'Tester'
-        ClientHeight = 106
-        ClientWidth = 496
+        ClientHeight = 85
+        ClientWidth = 396
         TabOrder = 1
         object Label26: TLabel
-          Left = 19
-          Height = 20
-          Top = 19
-          Width = 108
+          Left = 15
+          Height = 15
+          Top = 15
+          Width = 86
           Caption = 'Group by Select:'
           ParentColor = False
         end
         object edGroupByTester: TEdit
-          Left = 19
-          Height = 28
-          Top = 47
-          Width = 412
+          Left = 15
+          Height = 23
+          Top = 38
+          Width = 330
           TabOrder = 0
         end
       end
     end
     object tsInput: TTabSheet
       Caption = 'Input'
-      ClientHeight = 625
-      ClientWidth = 711
+      ClientHeight = 499
+      ClientWidth = 567
       object GroupBox1: TGroupBox
-        Left = 24
-        Height = 296
-        Top = 16
-        Width = 584
+        Left = 19
+        Height = 237
+        Top = 13
+        Width = 467
         Caption = 'Trainning'
-        ClientHeight = 271
-        ClientWidth = 580
+        ClientHeight = 217
+        ClientWidth = 463
         TabOrder = 0
         object edInputRefKey: TEdit
-          Left = 15
-          Height = 28
-          Top = 225
-          Width = 316
+          Left = 12
+          Height = 23
+          Top = 180
+          Width = 253
           TabOrder = 0
         end
         object Label14: TLabel
-          Left = 15
-          Height = 20
-          Top = 201
-          Width = 83
+          Left = 12
+          Height = 15
+          Top = 161
+          Width = 67
           Caption = 'InputRefKey:'
           ParentColor = False
         end
         object edInputRefField: TEdit
-          Left = 15
-          Height = 28
-          Top = 161
-          Width = 316
+          Left = 12
+          Height = 23
+          Top = 129
+          Width = 253
           TabOrder = 1
         end
         object Label15: TLabel
-          Left = 15
-          Height = 20
-          Top = 142
-          Width = 91
+          Left = 12
+          Height = 15
+          Top = 114
+          Width = 73
           Caption = 'InputRefField:'
           ParentColor = False
         end
         object edInputRef: TEdit
-          Left = 15
-          Height = 28
-          Top = 104
-          Width = 316
+          Left = 12
+          Height = 23
+          Top = 83
+          Width = 253
           TabOrder = 2
         end
         object Label13: TLabel
-          Left = 15
-          Height = 20
-          Top = 80
-          Width = 59
+          Left = 12
+          Height = 15
+          Top = 64
+          Width = 48
           Caption = 'InputRef:'
           ParentColor = False
         end
         object edInputField: TEdit
-          Left = 15
-          Height = 28
-          Top = 40
-          Width = 316
+          Left = 12
+          Height = 23
+          Top = 32
+          Width = 253
           TabOrder = 3
         end
         object Label6: TLabel
-          Left = 15
-          Height = 20
-          Top = 21
-          Width = 71
+          Left = 12
+          Height = 15
+          Top = 17
+          Width = 57
           Caption = 'Input field:'
           ParentColor = False
         end
         object edInputCols: TEdit
-          Left = 360
-          Height = 28
-          Top = 40
-          Width = 128
+          Left = 288
+          Height = 23
+          Top = 32
+          Width = 102
           ReadOnly = True
           TabOrder = 4
         end
         object Label16: TLabel
-          Left = 360
-          Height = 20
-          Top = 16
-          Width = 69
+          Left = 288
+          Height = 15
+          Top = 13
+          Width = 57
           Caption = 'Input Cols:'
           ParentColor = False
         end
       end
       object GroupBox2: TGroupBox
-        Left = 24
-        Height = 288
-        Top = 328
-        Width = 576
+        Left = 19
+        Height = 230
+        Top = 262
+        Width = 461
         Caption = 'Tester'
-        ClientHeight = 263
-        ClientWidth = 572
+        ClientHeight = 210
+        ClientWidth = 457
         TabOrder = 1
         object edInputRefKeyTester: TEdit
-          Left = 15
-          Height = 28
-          Top = 225
-          Width = 316
+          Left = 12
+          Height = 23
+          Top = 180
+          Width = 253
           TabOrder = 0
         end
         object Label18: TLabel
-          Left = 15
-          Height = 20
-          Top = 201
-          Width = 83
+          Left = 12
+          Height = 15
+          Top = 161
+          Width = 67
           Caption = 'InputRefKey:'
           ParentColor = False
         end
         object edInputRefFieldTester: TEdit
-          Left = 15
-          Height = 28
-          Top = 161
-          Width = 316
+          Left = 12
+          Height = 23
+          Top = 129
+          Width = 253
           TabOrder = 1
         end
         object Label19: TLabel
-          Left = 15
-          Height = 20
-          Top = 142
-          Width = 91
+          Left = 12
+          Height = 15
+          Top = 114
+          Width = 73
           Caption = 'InputRefField:'
           ParentColor = False
         end
         object edInputRefTester: TEdit
-          Left = 15
-          Height = 28
-          Top = 104
-          Width = 316
+          Left = 12
+          Height = 23
+          Top = 83
+          Width = 253
           TabOrder = 2
         end
         object Label20: TLabel
-          Left = 15
-          Height = 20
-          Top = 80
-          Width = 59
+          Left = 12
+          Height = 15
+          Top = 64
+          Width = 48
           Caption = 'InputRef:'
           ParentColor = False
         end
         object edInputFieldTester: TEdit
-          Left = 15
-          Height = 28
-          Top = 40
-          Width = 316
+          Left = 12
+          Height = 23
+          Top = 32
+          Width = 253
           TabOrder = 3
         end
         object Label21: TLabel
-          Left = 15
-          Height = 20
-          Top = 21
-          Width = 71
+          Left = 12
+          Height = 15
+          Top = 17
+          Width = 57
           Caption = 'Input field:'
           ParentColor = False
         end
@@ -1382,72 +1393,72 @@ object frmnntrain: Tfrmnntrain
     end
     object tsOutput: TTabSheet
       Caption = 'Output'
-      ClientHeight = 625
-      ClientWidth = 711
+      ClientHeight = 499
+      ClientWidth = 567
       object GroupBox3: TGroupBox
-        Left = 8
-        Height = 131
-        Top = 16
-        Width = 584
+        Left = 6
+        Height = 105
+        Top = 13
+        Width = 467
         Caption = 'Trainning'
-        ClientHeight = 106
-        ClientWidth = 580
+        ClientHeight = 85
+        ClientWidth = 463
         TabOrder = 0
         object Label7: TLabel
-          Left = 8
-          Height = 20
-          Top = 11
-          Width = 85
+          Left = 6
+          Height = 15
+          Top = 9
+          Width = 69
           Caption = 'Output Field:'
           ParentColor = False
         end
         object edOutputField: TEdit
-          Left = 7
-          Height = 28
-          Top = 32
-          Width = 385
+          Left = 6
+          Height = 23
+          Top = 26
+          Width = 308
           TabOrder = 0
           Text = 'edOutputField'
         end
         object edOutputCols: TEdit
-          Left = 432
-          Height = 28
-          Top = 32
-          Width = 128
+          Left = 346
+          Height = 23
+          Top = 26
+          Width = 102
           ReadOnly = True
           TabOrder = 1
         end
         object Label17: TLabel
-          Left = 432
-          Height = 20
-          Top = 8
-          Width = 81
+          Left = 346
+          Height = 15
+          Top = 6
+          Width = 67
           Caption = 'Output Cols:'
           ParentColor = False
         end
       end
       object GroupBox4: TGroupBox
-        Left = 8
-        Height = 131
-        Top = 168
-        Width = 584
+        Left = 6
+        Height = 105
+        Top = 134
+        Width = 467
         Caption = 'Tester'
-        ClientHeight = 106
-        ClientWidth = 580
+        ClientHeight = 85
+        ClientWidth = 463
         TabOrder = 1
         object Label23: TLabel
-          Left = 8
-          Height = 20
-          Top = 11
-          Width = 85
+          Left = 6
+          Height = 15
+          Top = 9
+          Width = 69
           Caption = 'Output Field:'
           ParentColor = False
         end
         object edOutputFieldTester: TEdit
-          Left = 7
-          Height = 28
-          Top = 32
-          Width = 385
+          Left = 6
+          Height = 23
+          Top = 26
+          Width = 308
           TabOrder = 0
           Text = 'edOutputField'
         end
@@ -1455,22 +1466,22 @@ object frmnntrain: Tfrmnntrain
     end
     object tsPython: TTabSheet
       Caption = 'Python Script'
-      ClientHeight = 625
-      ClientWidth = 711
+      ClientHeight = 499
+      ClientWidth = 567
       inline synPython: TSynEdit
         Left = 0
-        Height = 292
+        Height = 234
         Top = 0
-        Width = 711
+        Width = 567
         Align = alTop
-        Font.Height = -13
+        Font.Height = -10
         Font.Name = 'Courier New'
         Font.Pitch = fpFixed
         Font.Quality = fqNonAntialiased
         ParentColor = False
         ParentFont = False
         TabOrder = 0
-        Gutter.Width = 68
+        Gutter.Width = 53
         Gutter.MouseActions = <>
         RightGutter.Width = 0
         RightGutter.MouseActions = <>
@@ -1956,11 +1967,15 @@ object frmnntrain: Tfrmnntrain
         OnChange = synPythonChange
         inline SynLeftGutterPartList1: TSynGutterPartList
           object SynGutterMarks1: TSynGutterMarks
-            Width = 30
+            Width = 24
             MouseActions = <>
+            MaxExtraMarksColums = 0
+            Options = [sgmoDeDuplicateMarksOnOverflow]
+            MarkupInfo.Background = clBtnFace
+            MarkupInfo.Foreground = clNone
           end
           object SynGutterLineNumber1: TSynGutterLineNumber
-            Width = 17
+            Width = 13
             MouseActions = <>
             MarkupInfo.Background = clBtnFace
             MarkupInfo.Foreground = clNone
@@ -1970,19 +1985,21 @@ object frmnntrain: Tfrmnntrain
             LeadingZeros = False
           end
           object SynGutterChanges1: TSynGutterChanges
-            Width = 5
+            Width = 4
             MouseActions = <>
             ModifiedColor = 59900
             SavedColor = clGreen
+            MarkupInfo.Background = clNone
+            MarkupInfo.Foreground = clGreen
+            MarkupInfo.FrameColor = 59900
           end
           object SynGutterSeparator1: TSynGutterSeparator
-            Width = 3
+            Width = 2
             MouseActions = <>
             MarkupInfo.Background = clWhite
             MarkupInfo.Foreground = clGray
           end
           object SynGutterCodeFolding1: TSynGutterCodeFolding
-            Width = 13
             MouseActions = <>
             MarkupInfo.Background = clNone
             MarkupInfo.Foreground = clGray
@@ -1993,21 +2010,21 @@ object frmnntrain: Tfrmnntrain
       end
       object pnlog: TPanel
         Left = 0
-        Height = 328
-        Top = 297
-        Width = 711
+        Height = 261
+        Top = 238
+        Width = 567
         Align = alClient
         Anchors = [akBottom]
-        ClientHeight = 328
-        ClientWidth = 711
+        ClientHeight = 261
+        ClientWidth = 567
         TabOrder = 1
         object melog: TMemo
           AnchorSideTop.Control = pnlog
           AnchorSideBottom.Control = pnlog
           Left = 1
-          Height = 326
+          Height = 259
           Top = 1
-          Width = 709
+          Width = 565
           Align = alClient
           Anchors = []
           Lines.Strings = (
@@ -2019,72 +2036,72 @@ object frmnntrain: Tfrmnntrain
       object Splitter1: TSplitter
         Cursor = crVSplit
         Left = 0
-        Height = 5
-        Top = 292
-        Width = 711
+        Height = 4
+        Top = 234
+        Width = 567
         Align = alTop
         ResizeAnchor = akTop
       end
     end
     object tsTrainning: TTabSheet
       Caption = 'JSON Trainning'
-      ClientHeight = 625
-      ClientWidth = 711
+      ClientHeight = 499
+      ClientWidth = 567
       object Panel1: TPanel
         Left = 0
-        Height = 296
+        Height = 237
         Top = 0
-        Width = 711
+        Width = 567
         Align = alTop
-        ClientHeight = 296
-        ClientWidth = 711
+        ClientHeight = 237
+        ClientWidth = 567
         TabOrder = 0
         object GroupBox5: TGroupBox
-          Left = 8
-          Height = 96
-          Top = 8
-          Width = 471
+          Left = 6
+          Height = 77
+          Top = 6
+          Width = 377
           Caption = 'Trainning'
-          ClientHeight = 71
-          ClientWidth = 467
+          ClientHeight = 57
+          ClientWidth = 373
           TabOrder = 0
           object edFilterValue: TEdit
-            Left = 15
-            Height = 28
-            Top = 38
-            Width = 281
+            Left = 12
+            Height = 23
+            Top = 30
+            Width = 225
             TabOrder = 0
           end
           object Label9: TLabel
-            Left = 17
-            Height = 20
-            Top = 11
-            Width = 76
+            Left = 14
+            Height = 15
+            Top = 9
+            Width = 60
             Caption = 'Filter Value:'
             ParentColor = False
           end
         end
         object GroupBox6: TGroupBox
-          Left = 8
-          Height = 96
-          Top = 128
-          Width = 471
+          Left = 6
+          Height = 77
+          Top = 102
+          Width = 377
           Caption = 'Tester'
-          ClientHeight = 71
-          ClientWidth = 467
+          ClientHeight = 57
+          ClientWidth = 373
           TabOrder = 1
           object edFilterValueTester: TEdit
-            Left = 15
-            Height = 28
-            Top = 38
-            Width = 281
+            Left = 12
+            Height = 23
+            Top = 30
+            Width = 225
             TabOrder = 0
           end
           object Label25: TLabel
-            Left = 17
-            Height = 20
-            Top = 11
-            Width = 76
+            Left = 14
+            Height = 15
+            Top = 9
+            Width = 60
             Caption = 'Filter Value:'
             ParentColor = False
           end
@@ -2092,27 +2109,27 @@ object frmnntrain: Tfrmnntrain
       end
       object Panel2: TPanel
         Left = 0
-        Height = 329
-        Top = 296
-        Width = 711
+        Height = 262
+        Top = 237
+        Width = 567
         Align = alClient
-        ClientHeight = 329
-        ClientWidth = 711
+        ClientHeight = 262
+        ClientWidth = 567
         TabOrder = 1
         inline synJSONTrainning: TSynEdit
           Left = 1
-          Height = 327
+          Height = 260
           Top = 1
-          Width = 709
+          Width = 565
           Align = alClient
-          Font.Height = -13
+          Font.Height = -10
           Font.Name = 'Courier New'
           Font.Pitch = fpFixed
           Font.Quality = fqNonAntialiased
           ParentColor = False
           ParentFont = False
           TabOrder = 0
-          Gutter.Width = 68
+          Gutter.Width = 53
           Gutter.MouseActions = <>
           RightGutter.Width = 0
           RightGutter.MouseActions = <>
@@ -2578,11 +2595,15 @@ object frmnntrain: Tfrmnntrain
           LineHighlightColor.Foreground = clNone
           inline SynLeftGutterPartList1: TSynGutterPartList
             object SynGutterMarks1: TSynGutterMarks
-              Width = 30
+              Width = 24
               MouseActions = <>
+              MaxExtraMarksColums = 0
+              Options = [sgmoDeDuplicateMarksOnOverflow]
+              MarkupInfo.Background = clBtnFace
+              MarkupInfo.Foreground = clNone
             end
             object SynGutterLineNumber1: TSynGutterLineNumber
-              Width = 17
+              Width = 13
               MouseActions = <>
               MarkupInfo.Background = clBtnFace
               MarkupInfo.Foreground = clNone
@@ -2592,19 +2613,21 @@ object frmnntrain: Tfrmnntrain
               LeadingZeros = False
             end
             object SynGutterChanges1: TSynGutterChanges
-              Width = 5
+              Width = 4
               MouseActions = <>
               ModifiedColor = 59900
               SavedColor = clGreen
+              MarkupInfo.Background = clNone
+              MarkupInfo.Foreground = clGreen
+              MarkupInfo.FrameColor = 59900
             end
             object SynGutterSeparator1: TSynGutterSeparator
-              Width = 3
+              Width = 2
               MouseActions = <>
               MarkupInfo.Background = clWhite
               MarkupInfo.Foreground = clGray
             end
             object SynGutterCodeFolding1: TSynGutterCodeFolding
-              Width = 13
               MouseActions = <>
               MarkupInfo.Background = clNone
               MarkupInfo.Foreground = clGray
@@ -2617,45 +2640,45 @@ object frmnntrain: Tfrmnntrain
     end
     object tsRunTest: TTabSheet
       Caption = 'RUN Test'
-      ClientHeight = 625
-      ClientWidth = 711
+      ClientHeight = 499
+      ClientWidth = 567
       object fileJSONTester: TFileNameEdit
-        Left = 7
-        Height = 28
-        Top = 32
-        Width = 392
+        Left = 6
+        Height = 23
+        Top = 26
+        Width = 314
         FileName = 'fileJSONTester'
         FilterIndex = 0
         HideDirectories = False
-        ButtonWidth = 29
+        ButtonWidth = 23
         NumGlyphs = 1
         MaxLength = 0
         TabOrder = 0
         Text = 'fileJSONTester'
       end
       object Label8: TLabel
-        Left = 7
-        Height = 20
-        Top = 8
-        Width = 141
+        Left = 6
+        Height = 15
+        Top = 6
+        Width = 114
         Caption = 'Output Trainning File:'
         ParentColor = False
       end
       inline synJSONTester: TSynEdit
         Left = 0
-        Height = 553
-        Top = 72
-        Width = 711
+        Height = 441
+        Top = 58
+        Width = 567
         Align = alBottom
         Anchors = [akTop]
-        Font.Height = -13
+        Font.Height = -10
         Font.Name = 'Courier New'
         Font.Pitch = fpFixed
         Font.Quality = fqNonAntialiased
         ParentColor = False
         ParentFont = False
         TabOrder = 1
-        Gutter.Width = 68
+        Gutter.Width = 53
         Gutter.MouseActions = <>
         RightGutter.Width = 0
         RightGutter.MouseActions = <>
@@ -3122,11 +3145,15 @@ object frmnntrain: Tfrmnntrain
         OnChange = synJSONTesterChange
         inline SynLeftGutterPartList1: TSynGutterPartList
           object SynGutterMarks1: TSynGutterMarks
-            Width = 30
+            Width = 24
             MouseActions = <>
+            MaxExtraMarksColums = 0
+            Options = [sgmoDeDuplicateMarksOnOverflow]
+            MarkupInfo.Background = clBtnFace
+            MarkupInfo.Foreground = clNone
           end
           object SynGutterLineNumber1: TSynGutterLineNumber
-            Width = 17
+            Width = 13
             MouseActions = <>
             MarkupInfo.Background = clBtnFace
             MarkupInfo.Foreground = clNone
@@ -3136,19 +3163,21 @@ object frmnntrain: Tfrmnntrain
             LeadingZeros = False
           end
           object SynGutterChanges1: TSynGutterChanges
-            Width = 5
+            Width = 4
             MouseActions = <>
             ModifiedColor = 59900
             SavedColor = clGreen
+            MarkupInfo.Background = clNone
+            MarkupInfo.Foreground = clGreen
+            MarkupInfo.FrameColor = 59900
           end
           object SynGutterSeparator1: TSynGutterSeparator
-            Width = 3
+            Width = 2
             MouseActions = <>
             MarkupInfo.Background = clWhite
             MarkupInfo.Foreground = clGray
           end
           object SynGutterCodeFolding1: TSynGutterCodeFolding
-            Width = 13
             MouseActions = <>
             MarkupInfo.Background = clNone
             MarkupInfo.Foreground = clGray
@@ -3161,63 +3190,63 @@ object frmnntrain: Tfrmnntrain
   end
   object pnBotton: TPanel
     Left = 0
-    Height = 63
-    Top = 658
-    Width = 719
+    Height = 50
+    Top = 527
+    Width = 575
     Align = alBottom
-    ClientHeight = 63
-    ClientWidth = 719
+    ClientHeight = 50
+    ClientWidth = 575
     TabOrder = 1
     object btCancel: TButton
-      Left = 496
-      Height = 31
-      Top = 21
-      Width = 94
+      Left = 397
+      Height = 25
+      Top = 16
+      Width = 75
       Anchors = [akRight, akBottom]
       Caption = 'Cancel'
       TabOrder = 0
     end
     object btSave: TButton
-      Left = 608
-      Height = 31
-      Top = 21
-      Width = 94
+      Left = 486
+      Height = 25
+      Top = 16
+      Width = 75
       Anchors = [akRight, akBottom]
       Caption = 'Save'
-      OnClick = btSaveClick
       TabOrder = 1
+      OnClick = btSaveClick
     end
   end
   object SynPythonSyn1: TSynPythonSyn
     DefaultFilter = 'Python Files (*.py)|*.py'
     Enabled = False
-    Left = 330
-    Top = 104
+    Left = 264
+    Top = 83
   end
   object SynAutoComplete1: TSynAutoComplete
     EndOfTokenChr = '()[].'
     ShortCut = 8224
     ExecCommandID = ecSynAutoCompletionExecute
     Editor = synPython
-    Left = 232
-    Top = 112
+    Left = 186
+    Top = 90
   end
   object SynJSONSyn1: TSynJSONSyn
     DefaultFilter = 'JSON Files (*.json)|*.json'
     Enabled = False
-    Left = 346
-    Top = 228
+    Left = 277
+    Top = 182
   end
   object SynSQLSyn1: TSynSQLSyn
     DefaultFilter = 'SQL Files (*.sql)|*.sql'
     Enabled = False
     SQLDialect = sqlSybase
-    Left = 462
-    Top = 225
+    Left = 370
+    Top = 180
   end
   object pmPython: TPopupMenu
-    Left = 600
-    Top = 136
+    Left = 480
+    Top = 109
     object miReload: TMenuItem
       Caption = 'Reload'
       OnClick = miReloadClick

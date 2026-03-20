@@ -1,0 +1,107 @@
+Arquivo:D:\projetos\maurinsoft\MNote2\src\
+FullPath:D:\projetos\maurinsoft\MNote2\src\funcoes.pas
+Pergunta: 
+refaça o README.MD com base nas informações e arquivos do projeto
+Criado em:20/03/2026 16:32:28
+O arquivo "funcoes.pas" é uma unidade (unit) em Pascal/Delphi que contém diversas funções e procedimentos utilitários, voltados para o apoio em tarefas variadas no projeto. Esses recursos abrangem manipulação de dados, controle de processos, manipulação de strings, operações com JSON, interface com sistema operacional, tratamento de arquivos, e funcionalidades específicas para sistemas Windows, Linux e macOS. 
+
+Essa unidade é essencial como um repositório centralizado de funções auxiliares que facilitam o desenvolvimento e manutenção do sistema maior no qual ela está inserida.
+
+Abaixo estão os pontos importantes e detalhes relevantes do código que devem ser considerados para refazer o README.MD do projeto:
+
+1. **Finalidade Geral e Escopo da Unidade funcoes.pas**:  
+   - Esta unidade contém uma coleção extensa de funções utilitárias.  
+   - Ela suporta multiplataforma (Windows, Linux, macOS) com diretivas condicional compilação para chamadas específicas.  
+   - Utiliza várias bibliotecas padrão do Lazarus/FPC e outras, incluindo acesso a JSON, manipulação de processos, manipulação de fontes, etc.
+
+2. **Funções Principais e seus Propósitos**:  
+   - Funções para manipulação de strings:  
+     * `RetiraInfo(Value: string): string` — retira parte da string a partir do caractere ':'  
+     * `JuntaPalavras(Texto: string): string` e `JuntaNome(Nome: string): string` — substitui espaços por underline (_)  
+     * `UTF8ToANSI(const UTF8String: string): string` — converte strings UTF-8 para ANSI, removendo o BOM UTF-8 se presente  
+     * `splitstr(input: string): TStringList` — divisão de string em palavras (quebra pelos símbolos '-' e '_')  
+     * `retiraCRLF(texto: string): string` — remove caracteres de retorno de carro e nova linha  
+     * Conversões binárias e hexadecimais:  
+       + `StrtoBin`: converte string normal em representação binária  
+       + `BintoStr`: converte string binária para texto  
+       + `StrToHex`: converte string para hexadecimal  
+       + `HexToStr`: converte hexadecimal para string  
+      
+   - Funções para operações com JSON e Dataset:  
+     * `CriaJSON(ADataset: TDataSet; const AFileName: String)` — cria um arquivo JSON a partir de um dataset  
+     * `DatasetToJsonString(Dataset: TDataset): string` — converte dataset em string JSON formatada  
+     * `DatasetToCSVString(Dataset: TDataset): String` — converte dataset em string CSV  
+     * `ValidateJson(SynEdit: TSynEdit): Boolean` — valida se o conteúdo em SynEdit é JSON válido  
+     * `CapturaJSONTabela(resposta: string): TStringList` — extrai lista de tabelas de string JSON do campo 'tables'  
+     * `PegaTabelas(SQL: string): TStringList` — obtém nomes de tabelas em consulta SQL via expressão regular  
+     * `PegaFields(DataSet: TDataSet): TStringList` — obtém nomes dos campos de um dataset  
+
+   - Funções para manipulação/visualização na interface:  
+     * `AdicionarLinhaAGrid(Grid: TStringGrid; Valores: array of string)` — adiciona uma linha ao TStringGrid com valores arbitários  
+     * `PopulaPropertys(aGrid: TStringGrid; aObject: TObject)` — preenche um grid com propriedades do objeto TSetProject, mostrando atributos como Filename, Diretorio, tipo do banco, string de conexão, etc.  
+     * `RemoveCtrlMFromSynEdit(SynEdit: TSynEdit)` — remove caracteres CTRL-M (ASCII 13 no fim das linhas) em componente visual SynEdit  
+
+3. **Funções Relacionadas a Processos do Sistema e Controle de Aplicações**:  
+   - `GetProcessList: TProcessList` — obtém lista dos processos atuais em execução (Windows e Linux implementados) incluindo process ID e nome executável  
+   - `IsRun(const Executavel: string): boolean` — verifica se determinado executável está em execução no sistema  
+   - `KillAppByName(const ProcessName: string): boolean` — encerra processo pelo nome (Windows e Linux implementados com seus métodos)  
+   - `Callprg`, `RunBatch` — funções para executar programas e scripts batch/terminal, com diferenças para Windows e Linux/macOS  
+   - `ShowConfirm(Mensagem : string) : boolean` — exibe caixa de confirmação (sim/não) no Windows, retorna sempre true para Linux e macOS
+
+4. **Funções de Monitoramento ou Informações de Hardware**:  
+   - `GetTotalCpuUsagePct(): double` e `GetProcessorUsage: integer` — obtém porcentagem de uso do processador (Windows implementado, Linux/macOS retorna 0 ou vazio)  
+   - `GetCPUCount(): integer` — retorna quantidade de threads do sistema (núcleos do processador)  
+   - Funções relacionadas a GPUs Nvidia (utilizam o comando externo `nvidia-smi`):  
+     * `GetGPUCount: integer` — número de GPUs Nvidia detectadas  
+     * `GetGPUName(device: integer): string` — obtém nome da GPU pelo índice  
+     * `GetGPUTemperature(device: integer): string` — obtém temperatura da GPU respectiva  
+
+5. **Funções para Registro e Associação de Tipos de Arquivo no Sistema Windows**:  
+   - Funções para registrar e verificar associação de extensões e tipos de arquivo no registro do Windows.  
+   - Principais funções: `RegisterFileType`, `RegisterFileType2`, `RegistrarExtensao`, `VerificaRegExt`  
+   - Também verifica se o usuário é administrador pelo grupo de admin do Windows via SID (`IsAdministrator`)  
+   - Pode executar programas "como administrador" (`RunAsAdmin`), essencial para funções que alteram registro ou configuração do sistema.
+
+6. **Funções de Manipulação Visual e Fontes**:  
+   - `FontToString(AFont: TFont): string` — serializa propriedades da fonte em string  
+   - `StringToFont(const AFontStr: string; var AFont: TFont)` — converte string da fonte para objeto TFont restaurando suas propriedades (nome, tamanho, estilo, orientação, cor e qualidade)  
+
+7. **Outras Funções Utilitárias**:  
+   - `AdicionarLog(const Mensagem: string)` — escreve mensagem em arquivo de log cujo nome é igual ao executável com extensão ".log"  
+   - `ValidateDirectory(const DirectoryPath: string): Boolean` — verifica existência de diretório  
+   - `VerificaArea(X, Y: longint): Boolean` — verifica se área de trabalho tem dimensões superiores aos valores X e Y fornecidos  
+   
+8. **Arquitetura Multiplataforma**:  
+   - Usa diretivas {$IFDEF WINDOWS}, {$IFDEF LINUX}, {$IFDEF DARWIN} para implementar funcionalidades específicas, por exemplo:  
+     - Processos: OpenProcess e TerminateProcess usados no Windows, sinais Unix para Linux  
+     - Execução de programas e scripts  
+     - Acesso a registro no Windows para registro de tipos de arquivo  
+     - Autenticação de administrador no macOS com Authorization Services  
+
+9. **Estruturas e Tipos**:  
+   - Define tipos para uso dos processos:  
+     * `TProcessInfo` com ProcessID e Name  
+     * `TProcessList` array dinâmico de TProcessInfo  
+
+10. **Importância para o README.MD**:  
+    - Esta unidade é uma peça chave fornecendo funcionalidades básicas e avançadas à aplicação, incluindo manipulação de dados, interação com o sistema operacional, controle de processos, manipulação de interface visual, monitoramento de hardware, e suporte a JSON e banco de dados.  
+    - O README deve destacar que esse arquivo oferece uma base de funções reutilizáveis para todas as camadas do sistema, e seu escopo multifuncional explica parte do funcionamento interno do projeto.  
+    - Deve-se explicar que o suporte multiplataforma é garantido pelo uso das diretivas de compilação presentes no código.  
+    - As funções apresentadas oferecem suporte importante para integração com o sistema, registro de aplicativos, monitoramento, e tratamento de dados, elementos-chave para o funcionamento do software.  
+    - Indicar que para quem for manter ou estender o sistema, entender essa unidade é fundamental pela abrangência e variabilidade de funções fornecidas.
+
+Exemplo de fragmentos que podem ser usados para exemplificar explicações no README:
+
+- Função para converter dataset em JSON e salvar em arquivo:  
+  "CriaJSON(ADataset: TDataSet; const AFileName: String);" — converte os registros do dataset em JSON formatado e grava no arquivo especificado.
+
+- Função para verificar se programa está rodando:  
+  "IsRun(const Executavel: string): boolean;" — verifica se um processo com nome especificado está ativo.
+
+- Função para registrar associação de extensão no Windows:  
+  "RegistrarExtensao(const Extensao, TipoArquivo, NomeAplicacao, Executavel: string): boolean;" — associa extensão de arquivo ao programa no registro do Windows.
+
+- Função para coletar lista de processos em execução:  
+  "GetProcessList: TProcessList;" — retorna lista atual de processos com seus PID e nomes executáveis.
+
+Dessa forma, o README poderá descrever claramente a utilidade da unidade funcoes.pas, suas principais capacidades, exemplos de uso e relevância para a aplicação como um todo.

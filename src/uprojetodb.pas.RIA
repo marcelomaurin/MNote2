@@ -1,0 +1,20 @@
+Arquivo:D:\projetos\maurinsoft\MNote2\src\
+FullPath:D:\projetos\maurinsoft\MNote2\src\uprojetodb.pas
+Criado em:20/03/2026 16:42:08
+O arquivo "uprojetodb.pas" é uma unidade escrita em Pascal/Delphi destinada ao gerenciamento de um projeto baseado em banco de dados SQLite. Sua principal classe, TProjetoDB, atua como componente que encapsula a lógica para abrir, manter e fechar conexões com bancos SQLite, além de carregar metadados associados ao projeto.
+
+A classe TProjetoDB possui propriedades privadas que armazenam informações essenciais do projeto, como nome, caminho do banco (DBPath), descrição e caminho alvo (AlvoPath), além do objeto de conexão ao banco (FDb: TSQLiteDb) e um indicador booleano (FIsOpen) para determinar se a conexão está ativa.
+
+As responsabilidades centrais dessa classe são:
+
+- Abrir um banco SQLite utilizando o método CarregarProjeto, que recebe o caminho do banco e uma string para DLL, realizando a conexão via um objeto global dmBase, que parece gerenciar a conexão local, e depois carregando metadados através do método LoadMetaFromProjetoMeta.
+
+- Fechar a conexão via FecharProjeto, garantindo o encerramento adequado da sessão com o banco.
+
+- Verificar a existência de tabelas no banco com TableExists, que executa uma consulta na tabela especial sqlite_master para confirmar se uma tabela específica está presente.
+
+- Carregar metadados relevantes do projeto a partir de tabelas específicas e parâmetros de configuração conforme implementado em LoadMetaFromProjetoMeta. Esta rotina valida se a conexão está ativa, obtém parâmetros como HOSTNAME, SCHEMA, DATABASE, USER, PASSWORD, DEFAULTFOLDER e PROJECT via funções do módulo dmBase, e atualiza globalmente configurações no objeto FSetMain, que provavelmente mantém configurações globais da aplicação relacionadas ao projeto.
+
+Pontos críticos incluem a dependência da conexão SQLite ser gerenciada pelo objeto dmBase, que não está definido neste arquivo, mas é instanciado se estiver nil durante a criação do TProjetoDB. Além disso, o carregamento dos metadados pressupõe que a conexão está aberta e que as tabelas e parâmetros necessários existem, caso contrário, uma exceção é gerada.
+
+Resumidamente, o arquivo implementa a gestão de projetos baseados em banco SQLite, fornecendo interface para manipulação da conexão, verificação da existência de tabelas, carregamento de metainformações e atualização de configurações globais da aplicação. Utiliza dependências internas como dmBase (provavelmente um data module para conexão de banco), TSQLiteDb para manipulação do SQLite e módulos auxiliares para funções genéricas e configuração (funcoes, setmain). O código é estruturado para ser reutilizável como componente dentro de aplicações Delphi/Object Pascal.

@@ -8,8 +8,8 @@ uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls,
   ValEdit, PairSplitter, DBGrids, EditBtn, ExtCtrls, Menus, SynEdit, setproject,
   SynHighlighterPython, SynCompletion, SynHighlighterSQL, myexamplecontrol,
-  SynHighlighterJSON, SQLEditItem, NNTrainning;
-
+   SQLEditItem, NNTrainning;
+   //SynHighlighterJSON
 type
 
   { Tfrmnntrain }
@@ -85,7 +85,7 @@ type
     Panel1: TPanel;
     Panel2: TPanel;
     SynAutoComplete1: TSynAutoComplete;
-    SynJSONSyn1: TSynJSONSyn;
+    //SynJSONSyn1: TSynJSONSyn;
     synJSONTrainning: TSynEdit;
     synJSONTrainning1: TSynEdit;
     synPython: TSynEdit;

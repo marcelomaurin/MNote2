@@ -1,0 +1,26 @@
+Arquivo:D:\projetos\maurinsoft\MNote2\instalador\
+FullPath:D:\projetos\maurinsoft\MNote2\instalador\MNote2.iss
+Criado em:20/03/2026 16:52:46
+O arquivo MNote2.iss é um script de instalação gerado para o software "MNote2", versão 2.54, pela ferramenta Inno Setup Script Wizard. Sua principal finalidade é definir todo o processo de instalação do aplicativo MNote2 em sistemas Windows, especificamente configurado para ser instalado como um programa de 32 bits, mesmo em ambientes Windows 64 bits (modo WOW64).
+
+O script especifica que a instalação requer privilégios de administrador, garantindo acesso para copiar arquivos em diretórios protegidos, como a pasta de programas de 32 bits e o diretório raiz C:\db, onde há arquivos de banco de dados copiados na instalação. Ele define várias propriedades do instalador, incluindo nome, versão, editor, URLs de suporte e atualização, além de configurar a compactação do instalador usando o método LZMA com compressão sólida para reduzir o tamanho do pacote.
+
+As principais estruturas do script incluem:
+
+- Seção [Setup]: configura as propriedades gerais da instalação, como diretório padrão (Program Files 32-bit), permissões, IDs e versões.
+
+- Seção [Languages]: define os idiomas disponíveis no instalador, neste caso, inglês e português brasileiro.
+
+- Seção [Tasks]: define tarefas adicionais opcionais da instalação, como a criação do ícone na área de trabalho.
+
+- Seção [Files]: lista todos os arquivos e diretórios a serem copiados durante a instalação. Isso inclui o executável principal MNote2.exe, arquivos auxiliares com extensões .dci, .txt e .bat, bibliotecas DLL necessárias (limitadas a 32 bits para compatibilidade com o programa), ferramentas adicionais como "srvFalar_1.4.exe", exemplos de código-fonte em C e Python, e bancos de dados que serão copiados para a pasta C:\db, com recursão de subdiretórios e criação automática deles. O script comenta explicitamente que não se copiam versões 64 bits das DLLs junto do EXE 32-bit para evitar conflitos.
+
+- Seção [Icons]: cria os atalhos do programa no menu iniciar e, opcionalmente, no desktop, vinculando os ícones ao executável instalado.
+
+- Seção [Run]: comandos a serem executados após a instalação, iniciando a ferramenta srvFalar (possivelmente um serviço de fala ou síntese vocal) e lançando o aplicativo MNote2 em modo pós-instalação, tudo isso de forma assíncrona, sem bloquear o processo, e respeitando se a instalação foi feita de modo silencioso.
+
+Pontos críticos identificados incluem o cuidado com a arquitetura do aplicativo, garantindo que apenas componentes 32 bits sejam instalados no diretório principal do programa para evitar misturar DLLs incompatíveis. Há também o requisito de privilégios administrativos para operações de cópia em locais protegidos e para a criação dos atalhos comuns a todos os usuários. O script mantém estrutura organizada e divisão clara entre arquivos principais, auxiliares, bibliotecas e exemplos.
+
+Dependências externas do instalador são bibliotecas DLL que ficam na mesma pasta do executável, ferramentas complementares como srvFalar_1.4.exe para funcionalidades adicionais, e arquivos de banco de dados que o programa aparentemente utiliza e que são pré-instalados no diretório C:\db. O script também contém referências comentadas para diferentes dependências de banco de dados (SQLite, PostgreSQL, MySQL), indicando que o software pode trabalhar com múltiplos bancos, mas apenas copias para versões 32-bit são efetivamente habilitadas para evitar problemas com a aplicação.
+
+Resumindo, o arquivo MNote2.iss é um script completo e detalhado para montagem do instalador do aplicativo MNote2, configurado para garantir compatibilidade com sistemas Windows de 64 bits via instalação em modo 32 bits, com configurações específicas para cópia de arquivos, criação de atalhos e execução de serviços auxiliares, garantindo uma instalação consistente e funcional para o usuário final.

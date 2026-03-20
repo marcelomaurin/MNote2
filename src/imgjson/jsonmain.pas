@@ -10,8 +10,6 @@ uses
   setproject, Novo, funcoes, sqleditor, sqlEditItem, NNTrainning,
   frmnntrainning, PythonEngine;
 
-
-
 type
 
   { TfrmmainJSON }
@@ -62,6 +60,7 @@ type
     tspropriedades: TTabSheet;
     tsTreeview: TTabSheet;
     TreeView1: TTreeView;
+
     procedure DeleteItemClick(Sender: TObject);
     procedure Edit1Click(Sender: TObject);
     procedure EditClick(Sender: TObject);
@@ -102,14 +101,14 @@ type
     procedure TreeView1Click(Sender: TObject);
     procedure TreinaRedeNN(item: TSQLEditItem);
 
-
   private
-    tvProjeto : TTreenode;
-    tvDatabase : TTreenode;
-    tvNNTrainning : TTreenode;
-    tvItem : TTreenode;
+    tvProjeto : TTreeNode;
+    tvDatabase : TTreeNode;
+    tvNNTrainning : TTreeNode;
+    tvItem : TTreeNode;
 
     selecttreenode : TTreeNode;
+
     procedure controlelog(Sender: TObject; const OutputLine: UTF8String);
     procedure PopulaTV();
     procedure NewQuery();
@@ -118,19 +117,19 @@ type
     procedure RegistraQuery(Nome : string; sql : string);
     procedure IncluiQuery(Nome: string; sql: string);
 
-    procedure RegistraNNTrainning(nome: string;comentario : string ;
+    procedure RegistraNNTrainning(nome: string; comentario : string;
       sqlitemtrainning: TSQLEditItem;
       sqlitemtest: TSQLEditItem;
-      cbtypenn : integer ;
+      cbtypenn : integer;
       edGroupBy : string;
       InputField : string;
-      InputRef: string;        //Novo
-      InputRefField: string;   //Novo
-      InputRefKey: string;     //Novo
+      InputRef: string;
+      InputRefField: string;
+      InputRefKey: string;
       InputFieldTester : string;
-      InputRefTester: string;        //Novo
-      InputRefFieldTester: string;   //Novo
-      InputRefKeyTester: string;     //Novo
+      InputRefTester: string;
+      InputRefFieldTester: string;
+      InputRefKeyTester: string;
       OutputField: string;
       OutputFieldTester: string;
       Python : string;
@@ -139,7 +138,8 @@ type
       FilterValueTester: string;
       fileJSONTester : string;
       LJSONTester : string
-      );
+    );
+
     procedure IncluiNNTrainning(
       nome: string;
       comentario: string;
@@ -163,10 +163,15 @@ type
       FilterValueTester: string;
       fileJSONTester: string;
       LJSONTester: string
-      );
+    );
 
+    procedure LimpaTreeRefs;
+    procedure GaranteNosRaiz;
+    procedure LimpaGridPropriedades;
+    procedure AtualizaGridPorSelecao;
+    function NodeIsQuery(ANode: TTreeNode): Boolean;
+    function NodeIsNN(ANode: TTreeNode): Boolean;
   public
-
   end;
 
 var
@@ -174,7 +179,8 @@ var
 
 implementation
 
-uses main;
+uses
+  main;
 
 {$R *.lfm}
 
@@ -182,128 +188,214 @@ uses main;
 
 procedure TfrmmainJSON.mnSairClick(Sender: TObject);
 begin
-    SairPrograma();
-
+  SairPrograma();
 end;
 
 procedure TfrmmainJSON.mnSalvarClick(Sender: TObject);
 begin
-  if (Fsetproject <> nil) then
-  begin
-       Fsetproject.SalvaContexto(false);
-  end;
+  if Assigned(Fsetproject) then
+    Fsetproject.SalvaContexto(False);
 end;
 
 procedure TfrmmainJSON.FormCreate(Sender: TObject);
 begin
   selecttreenode := nil;
-  FSetImg := TSetImg.create();
+  tvProjeto := nil;
+  tvDatabase := nil;
+  tvNNTrainning := nil;
+  tvItem := nil;
+
+  pnPrincipal.Visible := False;
+  LimpaGridPropriedades;
+
+  FSetImg := TSetImg.Create();
   FSetImg.CarregaContexto();
 
+  OpenDialog1.Filter := 'Projeto JSON|*.json|Todos os arquivos|*.*';
 end;
 
 procedure TfrmmainJSON.EditClick(Sender: TObject);
 var
-   //item : TNNTrainning;
   item : TSQLEditItem;
 begin
-  //Edita valor ja registrado
-  item := TSQLEditItem(selecttreenode.Data);
-  frmSQLEditor := TfrmSQLEditor.create(self);
-  frmSQLEditor.edNome.text := item.Nome;
-  frmSQLEditor.SynEdit1.Text := item.SQL;
-  frmSQLEditor.showmodal;
-  if(frmSQLEditor.flgsalvar) then
+  if not NodeIsQuery(selecttreenode) then
   begin
-       item.Nome:= frmSQLEditor.edNome.text;
-       item.sql := frmSQLEditor.SynEdit1.Text;
-       selecttreenode.data := pointer(item);
+    ShowMessage('Selecione uma query.');
+    Exit;
   end;
-  frmSQLEditor.Free;
-  frmSQLEditor := nil;
 
+  item := TSQLEditItem(selecttreenode.Data);
+  if not Assigned(item) then
+  begin
+    ShowMessage('Item inválido.');
+    Exit;
+  end;
+
+  frmSQLEditor := TfrmSQLEditor.Create(Self);
+  try
+    frmSQLEditor.edNome.Text := item.Nome;
+    frmSQLEditor.SynEdit1.Text := item.SQL;
+    frmSQLEditor.ShowModal;
+
+    if frmSQLEditor.flgsalvar then
+    begin
+      item.Nome := frmSQLEditor.edNome.Text;
+      item.SQL := frmSQLEditor.SynEdit1.Text;
+      selecttreenode.Text := item.Nome;
+      selecttreenode.Data := Pointer(item);
+      AtualizaGridPorSelecao;
+      if Assigned(Fsetproject) then
+        Fsetproject.SalvaContexto(False);
+    end;
+  finally
+    FreeAndNil(frmSQLEditor);
+  end;
 end;
 
 procedure TfrmmainJSON.DeleteItemClick(Sender: TObject);
 begin
+  if not Assigned(selecttreenode) then
+  begin
+    ShowMessage('Selecione um item para excluir.');
+    Exit;
+  end;
 
+  if (selecttreenode = tvProjeto) or (selecttreenode = tvDatabase) or
+     (selecttreenode = tvNNTrainning) then
+  begin
+    ShowMessage('Selecione um item filho para excluir.');
+    Exit;
+  end;
+
+  if not ShowConfirm('Confirma excluir o item "' + selecttreenode.Text + '" ?') then
+    Exit;
+
+  {
+    OBSERVAÇÃO IMPORTANTE:
+    Aqui a exclusão está implementada visualmente no TreeView.
+    Para persistir no Fsetproject, a unit setproject precisa expor algo como:
+      DeleteSQL(...)
+      DeleteNNTrainning(...)
+      RemoveSQL(...)
+      RemoveNNTrainning(...)
+    Como esses métodos não apareceram no código enviado, esta unit não consegue
+    remover com segurança da estrutura interna sem adivinhar API inexistente.
+  }
+
+  selecttreenode.Delete;
+  selecttreenode := nil;
+  LimpaGridPropriedades;
+
+  if Assigned(Fsetproject) then
+    Fsetproject.SalvaContexto(False);
 end;
 
 procedure TfrmmainJSON.Edit1Click(Sender: TObject);
 var
-   item : TNNTrainning;
+  item : TNNTrainning;
 begin
-  //Edita valor ja registrado
-  item := TNNTrainning(selecttreenode.Data);
-  frmnntrain := Tfrmnntrain.Create(self);
-  frmnntrain.load(item); //Carrega o item no form
-  frmnntrain.ShowModal;
-  item := frmnntrain.save(); //Salva o item no form
-  selecttreenode.Data := pointer(item);
-  frmnntrain.Free;
-  frmnntrain := nil;
+  if not NodeIsNN(selecttreenode) then
+  begin
+    ShowMessage('Selecione um treinamento.');
+    Exit;
+  end;
 
+  item := TNNTrainning(selecttreenode.Data);
+  if not Assigned(item) then
+  begin
+    ShowMessage('Treinamento inválido.');
+    Exit;
+  end;
+
+  frmnntrain := Tfrmnntrain.Create(Self);
+  try
+    frmnntrain.Load(item);
+    frmnntrain.ShowModal;
+    item := frmnntrain.Save();
+
+    if Assigned(item) then
+    begin
+      selecttreenode.Data := Pointer(item);
+      selecttreenode.Text := item.Nome;
+      AtualizaGridPorSelecao;
+      if Assigned(Fsetproject) then
+        Fsetproject.SalvaContexto(False);
+    end;
+  finally
+    FreeAndNil(frmnntrain);
+  end;
 end;
 
 procedure TfrmmainJSON.FormDestroy(Sender: TObject);
 begin
-  FSetImg.SalvaContexto(true);
-  FSetImg.free;
-  FSetImg := nil;
+  if Assigned(FSetImg) then
+  begin
+    FSetImg.SalvaContexto(True);
+    FreeAndNil(FSetImg);
+  end;
+
+  FreeAndNil(Fsetproject);
 end;
 
 procedure TfrmmainJSON.MenuItem4Click(Sender: TObject);
 begin
-  if (Fsetproject <> nil) then
-  begin
-
-       Fsetproject.SalvaContexto(false);
-  end;
+  if Assigned(Fsetproject) then
+    Fsetproject.SalvaContexto(False);
 end;
 
 procedure TfrmmainJSON.miMakeTesteClick(Sender: TObject);
 var
-   item : TNNTrainning;
-   arquivo : Tstringlist;
-   marca : string;
-   filter : string;
+  item : TNNTrainning;
+  marca : string;
 begin
-  //Questiona o projeto que quer usar
-  //AbreProjetofield();
-  //Produzindo os dados de teste (JSON)
-  arquivo := TStringList.create();
-  //Edita valor ja registrado
+  if not NodeIsNN(selecttreenode) then
+  begin
+    ShowMessage('Selecione um treinamento.');
+    Exit;
+  end;
 
   item := TNNTrainning(selecttreenode.Data);
-  filter := item.FilterValueTester;
-  item.FilterValueTester:=filter;
-  marca := item.FilterCondition;
-  //Rodando Teste JSON
-  if( item.testerJSON(marca)) then
+  if not Assigned(item) then
   begin
-    ShowMessage('File Make!');
-    //Atualiza o json de treinamento
-    //item.jsontrainning :=  arquivo.LoadFromFile('training_data.json');
+    ShowMessage('Treinamento inválido.');
+    Exit;
   end;
-  selecttreenode.Data := pointer(item);
 
+  marca := Trim(item.FilterConditionTester);
+  if marca = '' then
+    marca := Trim(item.FilterCondition);
+  if marca = '' then
+    marca := 'default';
+
+  if item.testerJSON(marca) then
+    ShowMessage('Arquivo de teste gerado com sucesso!');
+
+  selecttreenode.Data := Pointer(item);
+  AtualizaGridPorSelecao;
 end;
 
 procedure TfrmmainJSON.miMakeTrainningClick(Sender: TObject);
 var
-   item : TNNTrainning;
-   arquivo : Tstringlist;
+  item : TNNTrainning;
 begin
-  arquivo := TStringList.create();
-  //Edita valor ja registrado
-  item := TNNTrainning(selecttreenode.Data);
-  if( item.trainnerJSON()) then
+  if not NodeIsNN(selecttreenode) then
   begin
-    ShowMessage('File Make!');
-    //Atualiza o json de treinamento
-    //item.jsontrainning :=  arquivo.LoadFromFile('training_data.json');
+    ShowMessage('Selecione um treinamento.');
+    Exit;
   end;
-  selecttreenode.Data := pointer(item);
+
+  item := TNNTrainning(selecttreenode.Data);
+  if not Assigned(item) then
+  begin
+    ShowMessage('Treinamento inválido.');
+    Exit;
+  end;
+
+  if item.trainnerJSON() then
+    ShowMessage('Arquivo de treinamento gerado com sucesso!');
+
+  selecttreenode.Data := Pointer(item);
+  AtualizaGridPorSelecao;
 end;
 
 procedure TfrmmainJSON.miNewItemClick(Sender: TObject);
@@ -313,47 +405,50 @@ end;
 
 procedure TfrmmainJSON.miruntrainningClick(Sender: TObject);
 var
-   item : TNNTrainning;
-   arquivo : Tstringlist;
-   //trainfile : TStringList;
+  item : TNNTrainning;
 begin
-  arquivo := TStringList.create();
+  if not NodeIsNN(selecttreenode) then
+  begin
+    ShowMessage('Selecione um treinamento.');
+    Exit;
+  end;
 
   item := TNNTrainning(selecttreenode.Data);
+  if not Assigned(item) then
+  begin
+    ShowMessage('Treinamento inválido.');
+    Exit;
+  end;
+
   item.Pythonlog := @controlelog;
 
+  if item.RunTrainning() then
+    ShowMessage('Treinamento executado com sucesso!');
 
-  if(item.RunTrainning()) then
-  begin
-    ShowMessage('File Make!');
-  end;
-  selecttreenode.Data := pointer(item);
+  selecttreenode.Data := Pointer(item);
+  AtualizaGridPorSelecao;
 end;
 
 procedure TfrmmainJSON.mitrainningClick(Sender: TObject);
 var
-
   item : TSQLEditItem;
 begin
   item := nil;
-  if (selecttreenode <> nil) then
+  if NodeIsQuery(selecttreenode) then
   begin
-       item := TSQLEditItem(selecttreenode.Data);
-       TreinaRedeNN(item);
-  end;
+    item := TSQLEditItem(selecttreenode.Data);
+    TreinaRedeNN(item);
+  end
+  else
+    ShowMessage('Selecione uma query para criar um treinamento.');
 end;
 
 procedure TfrmmainJSON.miCloseClick(Sender: TObject);
 begin
-  if(Fsetproject<>nil) then
-  begin
-     FechaProjeto();
-  end
+  if Assigned(Fsetproject) then
+    FechaProjeto()
   else
-  begin
     ShowMessage('Não existe projeto aberto');
-  end;
-
 end;
 
 procedure TfrmmainJSON.miQueryClick(Sender: TObject);
@@ -363,21 +458,20 @@ end;
 
 procedure TfrmmainJSON.mnConfigClick(Sender: TObject);
 begin
-  frmConfig := TfrmConfig.create(self);
-  frmConfig.showmodal();
-  frmConfig.free();
+  frmConfig := TfrmConfig.Create(Self);
+  try
+    frmConfig.ShowModal();
+  finally
+    FreeAndNil(frmConfig);
+  end;
 end;
 
 procedure TfrmmainJSON.mnNovoClick(Sender: TObject);
 begin
-  if(Fsetproject=nil) then
-  begin
-    CriaProjeto();
-  end
+  if not Assigned(Fsetproject) then
+    CriaProjeto()
   else
-  begin
-    ShowMessage('Projeto Já existe!');
-  end;
+    ShowMessage('Projeto já existe!');
 end;
 
 procedure TfrmmainJSON.mnsobreClick(Sender: TObject);
@@ -387,262 +481,270 @@ end;
 
 procedure TfrmmainJSON.nmOpenClick(Sender: TObject);
 begin
-  if(AbreProjeto()) then
-  begin
-
-       CarregaProjeto();
-  end;
+  if AbreProjeto() then
+    CarregaProjeto();
 end;
 
 procedure TfrmmainJSON.SairPrograma;
 begin
-  close;
+  Close;
 end;
 
 procedure TfrmmainJSON.ChamaAbout;
 begin
-  frmAbout := TfrmAbout.Create(self);
-  frmAbout.lbVersao.Caption := versao;
-  frmAbout.ShowModal;
-  frmAbout.free;
-  frmAbout := nil;
+  frmAbout := TfrmAbout.Create(Self);
+  try
+    frmAbout.lbVersao.Caption := versao;
+    frmAbout.ShowModal;
+  finally
+    FreeAndNil(frmAbout);
+  end;
+end;
+
+procedure TfrmmainJSON.LimpaTreeRefs;
+begin
+  tvProjeto := nil;
+  tvDatabase := nil;
+  tvNNTrainning := nil;
+  tvItem := nil;
+  selecttreenode := nil;
+end;
+
+procedure TfrmmainJSON.LimpaGridPropriedades;
+begin
+  StringGrid1.RowCount := 1;
+  StringGrid1.ColCount := 2;
+  StringGrid1.Cells[0,0] := '';
+  StringGrid1.Cells[1,0] := '';
 end;
 
 procedure TfrmmainJSON.FechaProjeto;
 begin
+  if Assigned(Fsetproject) then
+    Fsetproject.SalvaContexto(False);
 
+  TreeView1.Items.Clear;
+  LimpaGridPropriedades;
+  pnPrincipal.Visible := False;
+  LimpaTreeRefs;
+
+  FreeAndNil(Fsetproject);
 end;
 
 procedure TfrmmainJSON.CriaProjeto;
 begin
-     frmNovo := TfrmNovo.create(Self);
-     frmNovo.showmodal();
-     if (frmNovo.flgsalvar ) then
-     begin
-          Fsetproject := Tsetproject.create();
-          Fsetproject.NomeProjeto := frmNovo.edProjectName.text ;
-          Fsetproject.Diretorio := frmNovo.DirectoryEdit1.Text;
-          Fsetproject.DataBaseType:= TDatabaseType(frmNovo.cbDataBaseType.ItemIndex);
-          Fsetproject.StringConnection:= frmNovo.edStringConnection.text;
-          Fsetproject.Username:= frmNovo.edUsername.text;
-          Fsetproject.Password:= frmNovo.edPassword.text;
-          Fsetproject.HostName:= frmNovo.edHostname.text;
-          Fsetproject.Database:= frmNovo.edDatabase.text;
-          Fsetproject.SalvaContexto(false);
-          //CarregaProjeto();
-     end;
-     frmNovo.Free;
-     frmNovo := nil;
+  frmNovo := TfrmNovo.Create(Self);
+  try
+    frmNovo.ShowModal();
+    if frmNovo.flgsalvar then
+    begin
+      Fsetproject := Tsetproject.Create();
+      Fsetproject.NomeProjeto := frmNovo.edProjectName.Text;
+      Fsetproject.Diretorio := frmNovo.DirectoryEdit1.Text;
+      Fsetproject.DataBaseType := TDatabaseType(frmNovo.cbDataBaseType.ItemIndex);
+      Fsetproject.StringConnection := frmNovo.edStringConnection.Text;
+      Fsetproject.Username := frmNovo.edUsername.Text;
+      Fsetproject.Password := frmNovo.edPassword.Text;
+      Fsetproject.HostName := frmNovo.edHostname.Text;
+      Fsetproject.Database := frmNovo.edDatabase.Text;
+      Fsetproject.SalvaContexto(False);
+      CarregaProjeto();
+    end;
+  finally
+    FreeAndNil(frmNovo);
+  end;
 end;
 
-procedure TfrmmainJSON.PopulaTV();
-var
-  i: Integer;
-
+procedure TfrmmainJSON.GaranteNosRaiz;
 begin
-  TreeView1.Items.Clear; // Limpa todos os itens existentes
+  if not Assigned(Fsetproject) then Exit;
 
-  TreeView1.Items.BeginUpdate; // Inicia a atualização do TreeView
+  if not Assigned(tvProjeto) then
+  begin
+    tvProjeto := TreeView1.Items.Add(nil, Fsetproject.NomeProjeto);
+    tvProjeto.ImageIndex := 0;
+    tvProjeto.Data := Pointer(ptProject);
+  end;
+
+  if not Assigned(tvDatabase) then
+  begin
+    tvDatabase := TreeView1.Items.AddChild(tvProjeto, 'Database');
+    tvDatabase.ImageIndex := 1;
+    tvDatabase.Data := Pointer(ptDatabase);
+  end;
+
+  if not Assigned(tvNNTrainning) then
+  begin
+    tvNNTrainning := TreeView1.Items.AddChild(tvProjeto, 'Neural Network');
+    tvNNTrainning.ImageIndex := 8;
+    tvNNTrainning.Data := Pointer(ptNNGroupNN);
+  end;
+end;
+
+procedure TfrmmainJSON.PopulaTV;
+begin
+  TreeView1.Items.Clear;
+
+  TreeView1.Items.BeginUpdate;
   try
-      // Adiciona um novo item (nó) ao TreeView
-      tvProjeto := TreeView1.Items.Add(nil, Fsetproject.NomeProjeto);
-      tvProjeto.ImageIndex:= 0;
-      tvProjeto.Data := pointer(ptProject);
-
+    LimpaTreeRefs;
+    GaranteNosRaiz;
+    if Assigned(tvProjeto) then
+      tvProjeto.Expand(True);
   finally
-    TreeView1.Items.EndUpdate; // Finaliza a atualização do TreeView
+    TreeView1.Items.EndUpdate;
   end;
 end;
 
 procedure TfrmmainJSON.NewQuery;
 begin
-  if(frmSQLEditor= nil) then
+  if not Assigned(Fsetproject) then
   begin
-    frmSQLEditor := TfrmSQLEditor.create(self);
-    frmSQLEditor.showmodal;
-    if (frmSQLEditor.flgsalvar) then
-    begin
-      IncluiQuery(frmSQLEditor.edNome.text, frmSQLEditor.SynEdit1.Lines.Text);
-    end;
-    frmSQLEditor.Free;
-    frmSQLEditor := nil;
+    ShowMessage('Abra ou crie um projeto antes.');
+    Exit;
+  end;
 
+  frmSQLEditor := TfrmSQLEditor.Create(Self);
+  try
+    frmSQLEditor.ShowModal;
+    if frmSQLEditor.flgsalvar then
+      IncluiQuery(frmSQLEditor.edNome.Text, frmSQLEditor.SynEdit1.Lines.Text);
+  finally
+    FreeAndNil(frmSQLEditor);
   end;
 end;
 
-procedure TfrmmainJSON.NewNNTrainning();
+procedure TfrmmainJSON.NewNNTrainning;
 var
   fsqlitemtrainning : TSQLEditItem;
   fsqlitemtest : TSQLEditItem;
 begin
-  //Precisa implementar tela de trainamento
-  if(frmnntrain= nil) then
+  if not Assigned(Fsetproject) then
   begin
-    frmnntrain := Tfrmnntrain.create(self);
-    frmnntrain.showmodal;
-    if (frmnntrain.flgsalvar) then
+    ShowMessage('Abra ou crie um projeto antes.');
+    Exit;
+  end;
+
+  frmnntrain := Tfrmnntrain.Create(Self);
+  try
+    frmnntrain.ShowModal;
+    if frmnntrain.flgsalvar then
     begin
       fsqlitemtrainning := Fsetproject.SQLEdit_Indexof(frmnntrain.cbquerytrainning.ItemIndex);
       fsqlitemtest := Fsetproject.SQLEdit_Indexof(frmnntrain.cbquerytest.ItemIndex);
-      // RegistraNNTrainning(nome: string;comentario : string ; sql: string);
-      //RegistraNNTrainning(
+
       IncluiNNTrainning(
-         frmnntrain.edNome.text,
-         frmnntrain.meComentario.Lines.Text,
-         fsqlitemtrainning,
-         fsqlitemtest,
-         frmnntrain.cbtypenn.ItemIndex,
-         frmnntrain.edGroupBy.Text,
-         frmnntrain.edInputField.text,
-         frmnntrain.edInputRef.text,
-         frmnntrain.edInputRefField.text,
-         frmnntrain.edInputRefKey.text,
-         frmnntrain.edInputFieldTester.text,
-         frmnntrain.edInputRefTester.text,        //Novo
-         frmnntrain.edInputRefFieldTester.text,   //Novo
-         frmnntrain.edInputRefKeyTester.text,     //Novo
-
-         frmnntrain.edOutputField.text,
-         frmnntrain.edOutputFieldTester.text, //Novo
-         frmnntrain.synPython.Text,
-         frmnntrain.synJSONTrainning.text,
-         frmnntrain.edFilterValue.Text,
-         frmnntrain.edFilterValueTester.Text,
-         frmnntrain.fileJSONTester.Text,
-         frmnntrain.synJSONTester.text
-         );
+        frmnntrain.edNome.Text,
+        frmnntrain.meComentario.Lines.Text,
+        fsqlitemtrainning,
+        fsqlitemtest,
+        frmnntrain.cbtypenn.ItemIndex,
+        frmnntrain.edGroupBy.Text,
+        frmnntrain.edInputField.Text,
+        frmnntrain.edInputRef.Text,
+        frmnntrain.edInputRefField.Text,
+        frmnntrain.edInputRefKey.Text,
+        frmnntrain.edInputFieldTester.Text,
+        frmnntrain.edInputRefTester.Text,
+        frmnntrain.edInputRefFieldTester.Text,
+        frmnntrain.edInputRefKeyTester.Text,
+        frmnntrain.edOutputField.Text,
+        frmnntrain.edOutputFieldTester.Text,
+        frmnntrain.synPython.Text,
+        frmnntrain.synJSONTrainning.Text,
+        frmnntrain.edFilterValue.Text,
+        frmnntrain.edFilterValueTester.Text,
+        frmnntrain.fileJSONTester.Text,
+        frmnntrain.synJSONTester.Text
+      );
     end;
-    frmnntrain.free();
-    frmnntrain := nil;
-
+  finally
+    FreeAndNil(frmnntrain);
   end;
-
 end;
 
 procedure TfrmmainJSON.NewNNTrainning(sql: string);
 begin
-  //Precisa implementar tela de trainamento
-  if(Tfrmnntrain= nil) then
-  begin
-    frmnntrain := Tfrmnntrain.create(self);
-    //frmnntrain.mesql.Lines.text := sql;
-
-
-    frmnntrain.showmodal;
-    if (frmnntrain.flgsalvar) then
-    begin
-      //RegistraNNTrainning(
-      IncluiNNTrainning(
-         frmnntrain.edNome.text,
-         frmnntrain.meComentario.Lines.Text,
-         Fsetproject.SQLEdit_Indexof(frmnntrain.cbquerytrainning.ItemIndex),
-         Fsetproject.SQLEdit_Indexof(frmnntrain.cbquerytest.ItemIndex),
-         frmnntrain.cbtypenn.ItemIndex,
-         frmnntrain.edGroupBy.Text,
-         frmnntrain.edInputField.text,
-         frmnntrain.edInputRef.text,
-         frmnntrain.edInputRefField.text,
-         frmnntrain.edInputRefKey.text,
-         frmnntrain.edInputFieldTester.text,
-         frmnntrain.edInputRefTester.text,        //Novo
-         frmnntrain.edInputRefFieldTester.text,   //Novo
-         frmnntrain.edInputRefKeyTester.text,     //Novo
-         frmnntrain.edOutputField.text,
-         frmnntrain.edOutputFieldTester.text,
-         frmnntrain.synPython.Lines.text,
-         frmnntrain.synJSONTrainning.text,
-         frmnntrain.edFilterValue.text,
-         frmnntrain.edFilterValueTester.text,
-         frmnntrain.fileJSONTester.Text,
-         frmnntrain.synJSONTester.Text
-         );
-    end;
-    frmnntrain.free;
-    frmnntrain := nil;
-
-  end;
-
-
+  // mantido por compatibilidade
+  // se quiser depois dá para pré-carregar a SQL na tela
+  NewNNTrainning();
 end;
 
 procedure TfrmmainJSON.RegistraQuery(Nome: string; sql: string);
 var
   item : TSQLEditItem;
-
 begin
-  item := TSQLEditItem.Create;
-  item.Nome:= nome;
-  item.SQL:= sql;
-  tvItem := TreeView1.Items.AddChild(tvDatabase,Nome);
-  tvItem.ImageIndex:= 2;
-  tvItem.Data := pointer(item);
+  GaranteNosRaiz;
 
-  //Fsetproject.addsql(Item);   //Adiciona o sql ao conjunto de sql
+  item := TSQLEditItem.Create;
+  item.Nome := Nome;
+  item.SQL := sql;
+
+  tvItem := TreeView1.Items.AddChild(tvDatabase, Nome);
+  tvItem.ImageIndex := 2;
+  tvItem.Data := Pointer(item);
 end;
 
 procedure TfrmmainJSON.IncluiQuery(Nome: string; sql: string);
 var
   item : TSQLEditItem;
-
 begin
+  if not Assigned(Fsetproject) then Exit;
+
+  GaranteNosRaiz;
+
   item := TSQLEditItem.Create;
-  item.Nome:= nome;
-  item.SQL:= sql;
-  tvItem := TreeView1.Items.AddChild(tvDatabase,Nome);
-  tvItem.ImageIndex:= 2;
-  tvItem.Data := pointer(item);
+  item.Nome := Nome;
+  item.SQL := sql;
 
-  Fsetproject.addsql(Item);   //Adiciona o sql ao conjunto de sql
+  tvItem := TreeView1.Items.AddChild(tvDatabase, Nome);
+  tvItem.ImageIndex := 2;
+  tvItem.Data := Pointer(item);
+
+  Fsetproject.addsql(item);
+  Fsetproject.SalvaContexto(False);
 end;
-
 
 procedure TfrmmainJSON.RegistraNNTrainning(nome: string; comentario: string;
   sqlitemtrainning: TSQLEditItem; sqlitemtest: TSQLEditItem; cbtypenn: integer;
   edGroupBy: string; InputField: string; InputRef: string;
-  InputRefField: string; InputRefKey: string;
-  InputFieldTester: string; InputRefTester: string;
-  InputRefFieldTester: string; InputRefKeyTester: string; OutputField: string;
-  OutputFieldTester: string; Python: string; jsontrainning: string;
-  FilterValue: string; FilterValueTester: string; fileJSONTester: string;
-  LJSONTester: string);
+  InputRefField: string; InputRefKey: string; InputFieldTester: string;
+  InputRefTester: string; InputRefFieldTester: string;
+  InputRefKeyTester: string; OutputField: string; OutputFieldTester: string;
+  Python: string; jsontrainning: string; FilterValue: string;
+  FilterValueTester: string; fileJSONTester: string; LJSONTester: string);
 var
   item : TNNTrainning;
-
 begin
+  GaranteNosRaiz;
+
   item := TNNTrainning.Create;
-  item.Nome:= nome;
-  item.Commentario:= comentario;
-  item.SQLTrainning:= sqlitemtrainning;
+  item.Nome := nome;
+  item.Commentario := comentario;
+  item.SQLTrainning := sqlitemtrainning;
   item.SQLTest := sqlitemtest;
   item.ClassNNTrainning := TClasseNNTrainning(cbtypenn);
-  item.GroupBy :=  edGroupBy;
-  item.InputField :=  InputField;
+  item.GroupBy := edGroupBy;
+  item.InputField := InputField;
   item.InputRef := InputRef;
   item.InputRefField := InputRefField;
-  item.InputRefKey:= InputRefKey;
+  item.InputRefKey := InputRefKey;
+  item.InputFieldTester := InputFieldTester;
+  item.InputRefTester := InputRefTester;
+  item.InputRefFieldTester := InputRefFieldTester;
+  item.InputRefKeyTester := InputRefKeyTester;
+  item.OutputField := OutputField;
+  item.OutputFieldTester := OutputFieldTester;
+  item.Python := Python;
+  item.jsontrainning := jsontrainning;
+  item.FilterValue := FilterValue;
+  item.FilterValueTester := FilterValueTester;
+  item.fileJSONTester := fileJSONTester;
+  item.JSONTester := LJSONTester;
 
-  item.InputFieldTester :=  InputFieldTester;
-  item.InputRefTester := InputRefTester;             //Novo
-  item.InputRefFieldTester := InputRefFieldTester;   //Novo
-  item.InputRefKeyTester:= InputRefKeyTester;        //Novo
-
-
-  item.OutputField:=  OutputField;
-  item.OutputFieldTester:=  OutputFieldTester; //novo
-  item.Python :=  Python;
-  item.jsontrainning :=  jsontrainning;
-  item.FilterValue:= FilterValue;
-  item.FilterValueTester:= FilterValueTester;  //novo
-  item.fileJSONTester :=  fileJSONTester;
-  item.JSONTester:=  LJSONTester;
-
-  //Adiciona no treeview
-  tvItem := TreeView1.Items.AddChild(tvNNTrainning,Nome);
-  tvItem.ImageIndex:= 8;
-  tvItem.Data := pointer(item);
-  //Fsetproject.addnntrainning(Item);   //Adiciona o sql ao conjunto de sql
-
-
+  tvItem := TreeView1.Items.AddChild(tvNNTrainning, nome);
+  tvItem.ImageIndex := 8;
+  tvItem.Data := Pointer(item);
 end;
 
 procedure TfrmmainJSON.IncluiNNTrainning(
@@ -668,62 +770,64 @@ procedure TfrmmainJSON.IncluiNNTrainning(
   FilterValueTester: string;
   fileJSONTester: string;
   LJSONTester: string
-  );
+);
 var
   item : TNNTrainning;
-
 begin
+  if not Assigned(Fsetproject) then Exit;
+
+  GaranteNosRaiz;
+
   item := TNNTrainning.Create;
-  item.Nome:= nome;
-  item.Commentario:= comentario;
-  item.SQLTrainning:= sqlitemtrainning;
+  item.Nome := nome;
+  item.Commentario := comentario;
+  item.SQLTrainning := sqlitemtrainning;
   item.SQLTest := sqlitemtest;
   item.ClassNNTrainning := TClasseNNTrainning(cbtypenn);
-  item.GroupBy :=  edGroupBy;
-  item.InputField :=  InputField;
+  item.GroupBy := edGroupBy;
+  item.InputField := InputField;
   item.InputRef := InputRef;
   item.InputRefField := InputRefField;
-  item.InputRefKey:= InputRefKey;
+  item.InputRefKey := InputRefKey;
+  item.InputFieldTester := InputFieldTester;
+  item.InputRefTester := InputRefTester;
+  item.InputRefFieldTester := InputRefFieldTester;
+  item.InputRefKeyTester := InputRefKeyTester;
+  item.OutputField := OutputField;
+  item.OutputFieldTester := OutputFieldTester;
+  item.Python := Python;
+  item.jsontrainning := jsontrainning;
+  item.FilterValue := FilterValue;
+  item.FilterValueTester := FilterValueTester;
+  item.fileJSONTester := fileJSONTester;
+  item.JSONTester := LJSONTester;
 
-  item.InputFieldTester :=  InputFieldTester;        //Novo
-  item.InputRefTester := InputRefTester;             //Novo
-  item.InputRefFieldTester := InputRefFieldTester;   //Novo
-  item.InputRefKeyTester:= InputRefKeyTester;        //Novo
+  tvItem := TreeView1.Items.AddChild(tvNNTrainning, nome);
+  tvItem.ImageIndex := 8;
+  tvItem.Data := Pointer(item);
 
-  item.OutputField:=  OutputField;
-  item.OutputFieldTester:=  OutputFieldTester;       //Novo
-  item.Python :=  Python;
-  item.jsontrainning :=  jsontrainning;
-  item.FilterValue:= FilterValue;
-  item.fileJSONTester :=  fileJSONTester;  //Novo
-  item.JSONTester:=  LJSONTester;
-
-  //Adiciona no treeview
-  tvItem := TreeView1.Items.AddChild(tvNNTrainning,Nome);
-  tvItem.ImageIndex:= 8;
-  tvItem.Data := pointer(item);
-  Fsetproject.addnntrainning(Item);   //Adiciona o sql ao conjunto de sql
-
+  Fsetproject.addnntrainning(item);
+  Fsetproject.SalvaContexto(False);
 end;
 
-procedure TfrmmainJSON.CarregaQuerys();
+procedure TfrmmainJSON.CarregaQuerys;
 var
   a : integer;
   nome : string;
   sql : string;
   fitem : TSQLEditItem;
-
 begin
+  if not Assigned(Fsetproject) then Exit;
 
-  for a := 0 to Fsetproject.Querycount-1 do
+  for a := 0 to Fsetproject.Querycount - 1 do
   begin
-       fitem := Fsetproject.SQLEdit_Indexof(a);
-       if( fitem<>nil) then
-       begin
-            nome := fitem.Nome;
-            sql := fitem.SQL;
-            RegistraQuery(Nome, sql);
-       end;
+    fitem := Fsetproject.SQLEdit_Indexof(a);
+    if Assigned(fitem) then
+    begin
+      nome := fitem.Nome;
+      sql := fitem.SQL;
+      RegistraQuery(nome, sql);
+    end;
   end;
 end;
 
@@ -732,264 +836,236 @@ var
   a : integer;
   nome : string;
   comentario: string;
-  sql : string;
   fitem : TNNTrainning;
-
 begin
+  if not Assigned(Fsetproject) then Exit;
 
-  for a := 0 to Fsetproject.NNcount-1 do
+  for a := 0 to Fsetproject.NNcount - 1 do
   begin
-       fitem := Fsetproject.NNTrainning_Indexof(a);
-       if( fitem<>nil) then
-       begin
-            nome := fitem.Nome;
-            comentario := fitem.Commentario;
+    fitem := Fsetproject.NNTrainning_Indexof(a);
+    if Assigned(fitem) then
+    begin
+      nome := fitem.Nome;
+      comentario := fitem.Commentario;
 
-            RegistraNNTrainning(
-               nome,
-               comentario,
-               fitem.SQLTrainning,
-               fitem.SQLTest,
-               integer(fitem.ClassNNTrainning),
-               fitem.GroupBy,
-               fitem.InputField,
-               fitem.InputRef,
-               fitem.InputRefField,
-               fitem.InputRefKey,
-               fitem.InputFieldTester,      //NOVO
-               fitem.InputRefTester,        //NOVO
-               fitem.InputRefFieldTester,   //NOVO
-               fitem.InputRefKeyTester,     //NOVO
-               fitem.OutputField,
-               fitem.OutputFieldTester,    //NOVO
-               fitem.Python,
-               fitem.jsontrainning,
-               fitem.FilterValue,
-               fitem.FilterValueTester,   //NOVO
-               fitem.fileJSONTester,
-               fitem.JSONTester
-               );
-
-       end;
+      RegistraNNTrainning(
+        nome,
+        comentario,
+        fitem.SQLTrainning,
+        fitem.SQLTest,
+        Integer(fitem.ClassNNTrainning),
+        fitem.GroupBy,
+        fitem.InputField,
+        fitem.InputRef,
+        fitem.InputRefField,
+        fitem.InputRefKey,
+        fitem.InputFieldTester,
+        fitem.InputRefTester,
+        fitem.InputRefFieldTester,
+        fitem.InputRefKeyTester,
+        fitem.OutputField,
+        fitem.OutputFieldTester,
+        fitem.Python,
+        fitem.jsontrainning,
+        fitem.FilterValue,
+        fitem.FilterValueTester,
+        fitem.fileJSONTester,
+        fitem.JSONTester
+      );
+    end;
   end;
-
-
 end;
 
 procedure TfrmmainJSON.CarregaProjeto;
 begin
-  if ( Fsetproject <> nil) then
+  if Assigned(Fsetproject) then
   begin
-    pnPrincipal.Visible:= true;
+    pnPrincipal.Visible := True;
     PopulaTV();
     PopulaPropertys(StringGrid1, Fsetproject);
     CarregaDatabase();
     CarregaNN();
     CarregaQuerys();
     CarregaNNTrainning();
-
+    AtualizaGridPorSelecao;
   end
   else
-  begin
-    pnPrincipal.Visible:= false;
-  end;
+    pnPrincipal.Visible := False;
 end;
 
-procedure TfrmmainJSON.CarregaDatabase();
-var
-  filename : string;
+procedure TfrmmainJSON.CarregaDatabase;
 begin
-  (*
-  if (dmBase =nil) then
-  begin
-    try
-       if(Fsetproject.DataBaseType=dbMysql) then
-       begin
-         dmBase := TdmBase.Create(self);
-         filename := FSetImg.DLLPath+'\libs\mysql\win64\lib64\libmysql.dll';
-         if (not FileExists(filename)) then
-         begin
-            filename := ExtractFileDir(ApplicationName)+'\libs\mysql\win64\lib64\libmysql.dll';
-            if(not FileExists(filename)) then
-            begin
-              ShowMessage('Inclua a pasta libs no diretorio do seu projeto!');
-              Application.Terminate;
-            end;
-         end;
-         if FileExists(filename) then
-         begin
-             dmBase.loadlib(filename);
-             dmBase.Connect( Fsetproject.Username, Fsetproject.Password, Fsetproject.hostname, Fsetproject.Database);
-             //Cria grupo de sql
-             tvDatabase := TreeView1.Items.Add(nil, fsetproject.database);
-             tvDatabase.ImageIndex:= 1;
-             tvDatabase.Data := pointer(ptDatabase);
-             (*Só cria grupo de neural network com sql montado*)
-
-             //Cria grupo de rede
-             tvNNTrainning := TreeView1.Items.Add(nil, 'Neural Network');
-             tvNNTrainning.ImageIndex:= 8;
-             tvNNTrainning.Data := pointer(ptNNGroupNN);
-
-         end
-         else
-         begin
-           ShowMessage('Arquivo não existe');
-         end;
-       end;
-    except
-       showmessage('Falha na conexao!');
-    end;
-  end;
-  *)
+  GaranteNosRaiz;
 end;
 
-procedure TfrmmainJSON.CarregaNN();
-var
-  filename : string;
+procedure TfrmmainJSON.CarregaNN;
 begin
-  (*
-  if (dmBase =nil) then
-  begin
-    try
-       tvNNTrainning := TreeView1.Items.Add(nil, 'Neural Network');
-       tvNNTrainning.ImageIndex:= 8;
-       tvNNTrainning.Data := pointer(ptNNGroupNN);
-    except
-       showmessage('Falha na conexao!');
-    end;
-  end;
-  *)
+  GaranteNosRaiz;
 end;
 
 function TfrmmainJSON.AbreProjeto: boolean;
 begin
+  Result := False;
 
-  if(Fsetproject = nil) then
+  if not Assigned(Fsetproject) then
   begin
-    if (OpenDialog1.Execute) then
+    if OpenDialog1.Execute then
     begin
-      Fsetproject := Tsetproject.create();
+      Fsetproject := Tsetproject.Create();
       Fsetproject.Diretorio := ExtractFileDir(OpenDialog1.FileName);
-      Fsetproject.Filename:= ExtractFileName(OpenDialog1.FileName);
+      Fsetproject.Filename := ExtractFileName(OpenDialog1.FileName);
       Fsetproject.CarregaContexto();
-      result := true;
+      Result := True;
     end;
   end
-   else
-   begin
-     ShowMessage('Projeto já foi aberto');
-     result := false;
-   end;
-
+  else
+  begin
+    ShowMessage('Projeto já foi aberto');
+    Result := False;
+  end;
 end;
 
-
-//Abre  o projeto perguntando o parametro de teste do treinamento
 function TfrmmainJSON.AbreProjetofield: boolean;
 var
   nome : string;
   filename : string;
 begin
-  if(Fsetproject = nil) then
+  Result := False;
+
+  if not Assigned(Fsetproject) then
   begin
-    nome := InputBox('Qual a marca','Marca:','' );
-    if (nome <> '') then
+    nome := Trim(InputBox('Qual a marca', 'Marca:', ''));
+
+    if nome = '' then
     begin
-      showmessage('Marca vazia');
-      result := false;
+      ShowMessage('Marca vazia');
+      Exit(False);
     end;
-    filename := ExtractFileDir(ApplicationName)+'\'+nome+'\'+nome+'.json';
-    if(FileExists(filename)) then
+
+    filename := IncludeTrailingPathDelimiter(ExtractFileDir(ApplicationName)) +
+                nome + PathDelim + nome + '.json';
+
+    if FileExists(filename) then
     begin
-      Fsetproject := Tsetproject.create();
-      Fsetproject.Diretorio := ExtractFileDir(ApplicationName)+'\'+name;
-      Fsetproject.Filename:= nome+'.json';
+      Fsetproject := Tsetproject.Create();
+      Fsetproject.Diretorio := IncludeTrailingPathDelimiter(ExtractFileDir(ApplicationName)) + nome;
+      Fsetproject.Filename := nome + '.json';
       Fsetproject.CarregaContexto();
-      result := true;
+      Result := True;
     end
     else
-    begin
-         showmessage('Projeto JSON não foi encontrado');
-    end;
+      ShowMessage('Projeto JSON não foi encontrado');
   end
-   else
-   begin
-     ShowMessage('Projeto já foi aberto');
-     result := false;
-   end;
-
+  else
+  begin
+    ShowMessage('Projeto já foi aberto');
+    Result := False;
+  end;
 end;
 
 procedure TfrmmainJSON.Splitter1Moved(Sender: TObject);
 begin
-
 end;
 
 procedure TfrmmainJSON.StringGrid1EditingDone(Sender: TObject);
 begin
-
+  // ponto reservado para gravação reversa caso exista helper no projeto
 end;
 
 procedure TfrmmainJSON.StringGrid1Exit(Sender: TObject);
 begin
-
+  // ponto reservado para gravação reversa caso exista helper no projeto
 end;
 
-procedure TfrmmainJSON.StringGrid1GetEditText(Sender: TObject; ACol, ARow: Integer;
-  var Value: string);
+procedure TfrmmainJSON.StringGrid1GetEditText(Sender: TObject; ACol,
+  ARow: Integer; var Value: string);
 begin
-  showmessage(StringGrid1.Cells[acol,arow]);
+  // removido ShowMessage de debug
 end;
 
 procedure TfrmmainJSON.TreeView1Changing(Sender: TObject; Node: TTreeNode;
   var AllowChange: Boolean);
 begin
-  selecttreenode := node;
-  TreeView1.PopupMenu:= nil;
-  if(node=tvProjeto) then
-  begin
-    TreeView1.PopupMenu := pmProject;
-  end;
-  if(node=tvDatabase) then
-  begin
-      TreeView1.PopupMenu := pmDatabase;
-  end;
-  if(node=tvNNTrainning) then
-  begin
-      TreeView1.PopupMenu := pmNNGroup;
-  end;
-  if(node.Parent= tvDatabase) then
-  begin
-    TreeView1.PopupMenu := pmSQLEditItem;
-  end;
-  if(node.Parent= tvNNTrainning) then
-  begin
+  if Node = nil then Exit;
+
+  selecttreenode := Node;
+  TreeView1.PopupMenu := nil;
+
+  if Node = tvProjeto then
+    TreeView1.PopupMenu := pmProject
+  else
+  if Node = tvDatabase then
+    TreeView1.PopupMenu := pmDatabase
+  else
+  if Node = tvNNTrainning then
+    TreeView1.PopupMenu := pmNNGroup
+  else
+  if Assigned(Node.Parent) and (Node.Parent = tvDatabase) then
+    TreeView1.PopupMenu := pmSQLEditItem
+  else
+  if Assigned(Node.Parent) and (Node.Parent = tvNNTrainning) then
     TreeView1.PopupMenu := pmNNTrainning;
-  end;
-
-
-
 end;
 
 procedure TfrmmainJSON.TreeView1Click(Sender: TObject);
 begin
-
+  AtualizaGridPorSelecao;
 end;
 
 procedure TfrmmainJSON.TreinaRedeNN(item: TSQLEditItem);
 begin
-     NewNNTrainning();
+  NewNNTrainning();
 end;
 
 procedure TfrmmainJSON.controlelog(Sender: TObject; const OutputLine: UTF8String);
 begin
-  frmnntrain.pnlog.Visible := True;
-  frmnntrain.melog.Append(OutputLine);
+  if Assigned(frmnntrain) then
+  begin
+    frmnntrain.pnlog.Visible := True;
+    frmnntrain.melog.Append(OutputLine);
+  end;
 end;
 
+function TfrmmainJSON.NodeIsQuery(ANode: TTreeNode): Boolean;
+begin
+  Result := Assigned(ANode) and Assigned(ANode.Parent) and (ANode.Parent = tvDatabase);
+end;
 
+function TfrmmainJSON.NodeIsNN(ANode: TTreeNode): Boolean;
+begin
+  Result := Assigned(ANode) and Assigned(ANode.Parent) and (ANode.Parent = tvNNTrainning);
+end;
 
+procedure TfrmmainJSON.AtualizaGridPorSelecao;
+begin
+  if not Assigned(selecttreenode) then
+  begin
+    LimpaGridPropriedades;
+    Exit;
+  end;
+
+  if selecttreenode = tvProjeto then
+  begin
+    if Assigned(Fsetproject) then
+      PopulaPropertys(StringGrid1, Fsetproject)
+    else
+      LimpaGridPropriedades;
+    Exit;
+  end;
+
+  if NodeIsQuery(selecttreenode) and Assigned(selecttreenode.Data) then
+  begin
+    PopulaPropertys(StringGrid1, TObject(selecttreenode.Data));
+    Exit;
+  end;
+
+  if NodeIsNN(selecttreenode) and Assigned(selecttreenode.Data) then
+  begin
+    PopulaPropertys(StringGrid1, TObject(selecttreenode.Data));
+    Exit;
+  end;
+
+  LimpaGridPropriedades;
+end;
 
 end.
-

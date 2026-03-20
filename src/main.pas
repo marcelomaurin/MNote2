@@ -20,7 +20,6 @@ type
   { TfrmMNote }
 
   TfrmMNote = class(TForm)
-    btHide: TToggleBox;
     btIA2: TButton;
     edChat: TMemo;
     FindDialog1: TFindDialog;

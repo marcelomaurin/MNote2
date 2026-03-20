@@ -13,7 +13,7 @@ uses
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir,
   newproject, uProjetoDB, IA, uPdfText, uDocText;
 
-const versao = '2.53';
+const versao = '2.54';
 
 type
 
@@ -1351,7 +1351,7 @@ end;
 
 procedure TfrmMNote.btHideChange(Sender: TObject);
 begin
-  //pnChatGPT.Visible:= false;
+  pnChatGPT.Visible:= false;
 end;
 
 procedure TfrmMNote.btIA2Click(Sender: TObject);
