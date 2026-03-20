@@ -1,88 +1,126 @@
-# Sistema de Gestão Integrada de Ativos - Documentação Técnica Completa
+# MNote2
 
-## 1. Objetivo Geral do Projeto
-Desenvolver um sistema abrangente para a gestão integrada de ativos, focado principalmente em equipamentos (médicos, industriais ou similares), garantindo o controle completo do ciclo de vida dos equipamentos, seus contratos, manutenção, calibração, movimentação, documentação e comunicação, além da gestão das partes envolvidas como prestadores de serviços, unidades físicas e pessoas. O sistema promove a rastreabilidade, auditoria e suporte operacional eficiente, otimizando recursos e assegurando conformidade regulatória.
-
-## 2. Principais Entidades e Relacionamentos
-- **Equipamentos, Modelos, Marcas e Tipos de Equipamentos:** Gestão detalhada e hierarquizada da categorização e especificações técnicas.
-- **Prestadores PJ, Contratos e Vínculos:** Controle detalhado da rede de fornecedores, contratos vinculados e relacionamentos com pessoas e equipamentos.
-- **Pessoas, Unidades, Ordens de Serviço, Manutenções e Calibrações:** Administração integrada das operações técnicas e alocações físicas.
-- **Documentos, Emails e Eventos:** Gestão documental avançada e completa rastreabilidade da comunicação e atividades do sistema.
-- **Perfis, Usuários e Parâmetros:** Controle rigoroso de acesso e personalização do sistema segundo as necessidades operacionais.
-
-## 3. Plataforma do Sistema
-
-- **Linguagem de Programação:** Idealmente desenvolvida em linguagens robustas para aplicações web corporativas, tais como Java (Spring), C# (.NET Core), PHP (Laravel) ou Python (Django/Flask), dependendo do ambiente previsto.
-- **Arquitetura:** Aplicação web com arquitetura modular; suporte para multiusuário, permissões hierarquizadas, e várias interfaces (web, mobile).
-- **Sistema Operacional:** Compatível com servidores Linux (ex. Ubuntu, CentOS) e Windows Server, podendo ser hospedado localmente ou em nuvem.
-- **Servidor Web:** Apache, Nginx, IIS, conforme ambiente de escolha.
-- **Serviços Adicionais:** SMTP para envio de emails, serviços de backup e monitoramento para alta disponibilidade e segurança.
-
-## 4. Informações de Banco de Dados
-
-- **Tipo:** Banco de dados Relacional (SQL).
-- **Sgbd Recomendados:** PostgreSQL, MySQL/MariaDB ou Microsoft SQL Server.
-- **Estrutura e Tabelas:** Conforme apresentado, incluindo tabelas para Equipamentos, Modelos, Contratos, Manutenção, Calibração, Documentos, Emails, Eventos, Usuários, Perfis, Parâmetros, e Vínculos.
-- **Características Adicionais:**
-  - Índices otimizados para pesquisas rápidas.
-  - Triggers e procedures para regras de negócio.
-  - Auditoria incorporada para rastreamento detalhado.
-  - Suporte para relatórios customizados via tabela `relatorio_tpl`.
-- **Backup:** Estratégia regular automatizada, com possibilidade de restauração granular.
-
-## 5. Instalação do Sistema
-
-### Requisitos Mínimos:
-- Servidor com sistema operacional Linux ou Windows Server.
-- Banco de dados instalado (ex. PostgreSQL 12+ ou equivalente).
-- Servidor web configurado (Apache/Nginx/IIS) com suporte a linguagem da aplicação.
-- SMTP configurado para envio de emails.
-- Espaço de armazenamento para arquivos/documentos vinculados ao sistema.
-
-### Passos Básicos de Instalação:
-1. **Preparar Ambiente:**
-   - Instalar e configurar o banco de dados.
-   - Criar usuário e banco exclusivos para a aplicação.
-2. **Configurar Servidor Web:**
-   - Ajustar virtual host ou site para a aplicação.
-   - Instalar dependências de linguagem e runtimes necessários.
-3. **Migrar Banco de Dados:**
-   - Executar scripts SQL para criação das tabelas e estruturas.
-   - Popular dados base iniciais conforme necessidade.
-4. **Configurar Parâmetros da Aplicação:**
-   - Inserir configurações de conexão ao banco, SMTP, permissões e parâmetros gerais.
-5. **Deploy da Aplicação:**
-   - Upload dos arquivos do sistema para o servidor.
-   - Ajustar permissões de pastas e arquivos.
-6. **Testes de Funcionalidade:**
-   - Validar acesso, cadastro de equipamentos, contratos, envio de emails, geração de relatórios.
-7. **Treinamento Inicial:**
-   - Capacitar usuários-chave para utilização inicial.
-
-## 6. Utilização do Sistema
-
-- **Acesso:** Via navegador web acessando o endereço configurado (local ou remoto).
-- **Autenticação:** Login seguro com usuário e senha; controle de acesso via perfis.
-- **Cadastro e Gestão:**
-  - Inserção e edição de equipamentos, contratos, prestadores e documentos.
-  - Registro e acompanhamento de ordens de serviço, manutenções e calibrações.
-  - Controle de movimentações dos ativos entre unidades e setores.
-- **Comunicação Interna e Externa:**
-  - Envio e recebimento de emails relacionados aos processos.
-  - Registro cronológico das interações.
-- **Monitoramento e Auditoria:**
-  - Visualização de logs, eventos e notificações.
-- **Relatórios:**
-  - Geração de relatórios customizados para análise gerencial e operacional.
-- **Configurações Avançadas:**
-  - Ajuste de parâmetros do sistema conforme política da organização.
-  - Gestão de usuários, perfis e permissões detalhadas.
-
-## 7. Recomendação para Evolução
-
-- Implementar dashboards gráficos para indicadores de desempenho.
-- Integrar com sistemas externos via APIs (ex.: ERP, sistemas de compras).
-- Automatizar notificações e alertas por eventos críticos (manutenção próxima, vencimento de contratos).
-- Desenvolver módulos mobile para acessos em campo.
+MNote2 é um editor de texto multiplataforma avançado, focado em simplicidade, eficiência e produtividade. Desenvolvido principalmente em Pascal com Lazarus/Free Pascal, oferece uma ampla gama de funcionalidades para edição, organização e gerenciamento de notas e códigos, integrando recursos modernos como inteligência artificial, manipulação de banco de dados SQLite embutido, e integração com Python.
 
 ---
+
+## Funcionalidades Principais
+
+- Editor de texto com suporte a arquivos Plain Text (.txt) e extração de texto de arquivos PDF e DOC;
+- Suporte a múltiplas abas e sessões para edição simultânea;
+- Busca e substituição de texto facilitadas;
+- Salvamento automático para evitar perda de dados;
+- Gerenciamento interno completo por banco SQLite:
+  - Armazenamento e organização de notas, categorias e tags;
+  - Controle simples de versões baseado no banco;
+  - Importação e exportação de notas;
+  - Consulta rápida por data, título e conteúdo;
+  - Backup e restauração via exportação do arquivo banco;
+- Integração com scripts Python para automação e extensão direta no editor;
+- Assistência de inteligência artificial via ChatGPT, baseada no contexto do código fonte;
+- Ferramentas configuráveis para fala (ToolsFalar) e audição (ToolsOuvir);
+- Interface gráfica rica e responsiva, construída com Lazarus Component Library (LCL), com painéis para edição, histórico, inspeção e resultados;
+- Utilitários multiplataforma para manipulação de strings, JSON, processos do sistema, registro de tipos de arquivo no Windows, e monitoramento de hardware (CPU e GPUs Nvidia);
+- Associação de extensões de arquivo a programas via registro no Windows;
+- Compatibilidade com sistemas Windows e macOS, com possibilidade de compilação para Linux.
+
+---
+
+## Estrutura do Projeto
+
+- **/src**: Código-fonte Pascal/Lazarus, organizado por módulos:
+  - `main.pas`: Núcleo da aplicação, gestão de edição, integrações com AI e Python;
+  - `config.pas`: Formulário para configuração personalizada de scripts e ferramentas;
+  - `sqlite_db.pas`: Componente para manipulação do banco de dados SQLite (conexão, comandos, transações);
+  - `uprojetodb.pas`: Gerenciador de projetos baseado no banco SQLite, com leitura de metadados;
+  - `funcoes.pas`: Biblioteca utilitária multidisciplinar para operações diversas e suporte multiplataforma;
+  - `sobre.pas`: Janela "Sobre" para exibição de informações da aplicação e créditos;
+  - Múltiplas unidades adicionais para funcionalidades como IA, rede neural, visualização, SQL, e outras;
+- **/instalador**:
+  - `MNote2.iss`: Script de instalador para Windows via Inno Setup, com privilégios administrativos, suporte 32 bits, cópia de DLLs, exemplos e banco de dados local;
+  - `mac.pkgproj`: Projeto de pacote instalador para macOS, instalação na pasta `/Applications`, com permissões administrativas e estruturação adequada;
+- **/bin**: Pacotes e executáveis pré-compilados para Linux (.deb) e Windows (.exe);
+- **/db**: Banco de dados padrão SQLite do projeto;
+- **/imgs** e **/screenshots**: Imagens do projeto para a interface e documentação visual;
+- **/scripts**: Script auxiliar Python para contagem de linhas de código (`contafonte.py`);
+
+---
+
+## Tecnologias Utilizadas
+
+- Linguagem: Pascal/Delphi com Lazarus/Free Pascal IDE e compilador;
+- Interface gráfica: Lazarus Component Library (LCL) associada a Qt Widgets (nas versões com Qt);
+- Banco de dados: SQLite embutido, gerenciado pelo componente `TSQLiteDb`;
+- Integração com Python via pacote `python4lazarus_package`;
+- Inteligência Artificial: API ChatGPT para assistente de programação e análises de código;
+- Sistema multiplataforma: suporte principal para Windows e macOS; possibilidade de uso em Linux;
+- Ferramentas de build e controle: arquivo de projeto Lazarus (`.lpi`), arquivo principal Lazarus (`.lpr`), scripts auxiliares;
+
+---
+
+## Requisitos para Instalação e Compilação
+
+- **Windows**:
+  - Windows 7 ou superior (32 bits);
+  - Executar instalador `.exe` com privilégios administrativos;
+  - O instalador copia todas as bibliotecas, exemplo de códigos e banco em `C:\db`;
+  - Criação automática de atalhos no menu iniciar e opcionalmente na área de trabalho.
+- **macOS**:
+  - macOS 10.12 ou superior;
+  - Instalador `.pkg` que coloca o aplicativo em `/Applications`;
+  - Requer autenticação administrativa durante instalação.
+- **Linux** (compilação manual ou uso de pacotes `.deb`):
+  - Free Pascal e Lazarus instalados;
+  - Qt 5.x ou superior (caso se use a versão Qt);
+  - Biblioteca SQLite instalada;
+
+---
+
+## Como Usar
+
+1. Execute o MNote2 após a instalação;
+2. Crie, abra ou importe notas, armazenadas internamente no banco SQLite;
+3. Trabalhe com múltiplas abas para gerenciar vários documentos simultaneamente;
+4. Use funcionalidades de busca, substituição e salvamento automático;
+5. Execute scripts Python dentro das abas para automatização e testes;
+6. Consulte bancos de dados SQL e manipule dados com suporte a consultas integradas;
+7. Use a integração com ChatGPT para obter suporte inteligente baseado no código;
+8. Faça backup e restaure notas via exportação/importação do banco SQLite;
+9. Configure caminhos, scripts, e opções relacionadas à fala, audição e IA no menu de configurações;
+
+---
+
+## Contribuindo
+
+Contribuições são bem-vindas! Para colaborar:
+
+- Faça um fork no repositório oficial;
+- Crie branches separadas para alterações específicas;
+- Faça commits claros e frequentes documentando suas alterações;
+- Envie pull requests para revisão e integração no projeto principal.
+
+---
+
+## Licença
+
+MNote2 é licenciado sob a **GNU General Public License versão 3 (GPLv3)**, que garante aos usuários:
+
+- Direitos de uso, modificação e redistribuição livre do software;
+- Obrigatoriedade da disponibilização do código fonte nas distribuições;
+- Proibição de impor restrições adicionais às liberdades do software;
+- Ausência de garantias, software fornecido "no estado em que se encontra".
+
+Consulte o arquivo `LICENSE` para detalhes completos.
+
+---
+
+## Contato e Informações Adicionais
+
+- Autor e mantenedor: **Marcelo Maurin**  
+- GitHub: [https://github.com/marcelomaurin](https://github.com/marcelomaurin)  
+- Use a janela "Sobre" no aplicativo para obter informações sobre a versão e autores;  
+- Agradecimentos às ferramentas Qt, SQLite e Lazarus pelo suporte técnico e desenvolvimento.
+
+---
+
+Obrigado por usar e contribuir para o MNote2, uma solução moderna para gestão e edição integrada de notas e códigos em diversas plataformas.
