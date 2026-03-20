@@ -123,4 +123,4 @@ Inclua as imagens da pasta `screenshots`:
 MNote2 é um ambiente integrado para edição, organização e gestão de notas e códigos, combinando tecnologia moderna de inteligência artificial, execução Python, banco de dados local SQLite e interface gráfica rica e configurável, tudo dentro de uma aplicação leve escrita em Pascal com Lazarus/Free Pascal. É compatível com Windows, macOS e potencialmente Linux.
 
 ### Screen Shot
-![Editor](screenshots/Editor com IA integrada.jpg)
+![Editor](screenshots/Editor%20com%20IA%20integrada.jpg)
