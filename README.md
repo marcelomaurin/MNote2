@@ -46,6 +46,19 @@ MNote2 é um editor de texto multiplataforma avançado, desenvolvido principalme
   - Registro automático de associações de arquivos em Windows.
 
 ---
+### Screen Shot
+Editor integrado
+![Editor](screenshots/Editor%20com%20IA%20integrada.jpg)
+
+Gerenciamento de Arquivos
+![Gestão de Arquivos](screenshots/Gestão%20de%20Arquivos.jpg)
+
+Inteligência Artificial
+![Uso da IA](screenshots/IA.jpg)
+
+Gerenciador de Banco de dados
+![Banco de dados](screenshots/MQUERY.jpg)
+
 
 ### Estrutura do Projeto:
 
@@ -122,5 +135,3 @@ Inclua as imagens da pasta `screenshots`:
 
 MNote2 é um ambiente integrado para edição, organização e gestão de notas e códigos, combinando tecnologia moderna de inteligência artificial, execução Python, banco de dados local SQLite e interface gráfica rica e configurável, tudo dentro de uma aplicação leve escrita em Pascal com Lazarus/Free Pascal. É compatível com Windows, macOS e potencialmente Linux.
 
-### Screen Shot
-![Editor](screenshots/Editor%20com%20IA%20integrada.jpg)
