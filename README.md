@@ -4,6 +4,15 @@ MNote2 é um editor de texto e código multiplataforma desenvolvido em Lazarus/F
 
 Versão atual do fonte: **2.56**.
 
+## Versões
+
+- [Português](README.pt.md)
+- [English](README.en.md)
+- [Français](README.fr.md)
+- [Español](README.es.md)
+- [中文](README.zh.md)
+- [العربية](README.ar.md)
+
 ## Screenshots
 
 ### Editor integrado
