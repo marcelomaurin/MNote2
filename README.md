@@ -46,39 +46,53 @@ MNote2 é um editor de texto multiplataforma avançado, desenvolvido principalme
   - Registro automático de associações de arquivos em Windows.
 
 ---
+## Screenshots
+
+### Editor integrado
+![Editor](screenshots/Editor%20com%20IA%20integrada.jpg)
+
+### Gerenciamento de Arquivos
+![Gestão de Arquivos](screenshots/Gestão%20de%20Arquivos.jpg)
+
+### Inteligência Artificial
+![Uso da IA](screenshots/IA.jpg)
+
+### Gerenciador de Banco de Dados
+![Banco de dados](screenshots/MQUERY.jpg)
+
 
 ### Estrutura do Projeto:
 
-- **src/main.pas:**
+- **src/main.pas:** 
   - Núcleo da aplicação que gerencia o ciclo das abas, arquivos abertos, interação com IA, execução de scripts Python e SQL.
   - Implementa a interface principal e coordena eventos de interface e lógica.
 
-- **src/sqlite_db.pas:**
+- **src/sqlite_db.pas:** 
   - Classe `TSQLiteDb` para conexão e manipulação segura do banco SQLite embutido.
   - Aplicação de configurações essenciais via pragmas SQLite para segurança e performance.
   - Suporte a comandos SQL padrão e parametrizados, além de consultas retornando dados estruturados.
 
-- **src/uprojetodb.pas:**
+- **src/uprojetodb.pas:** 
   - Gerencia projetos e carregamento de metadados via banco SQLite.
   - Verifica existência de tabelas e importa parâmetros de configuração para o ambiente da aplicação.
 
-- **src/config.pas:**
+- **src/config.pas:** 
   - Formulário para configuração dos caminhos dos scripts, bibliotecas DLL, token ChatGPT, IPs e ativação das ferramentas de fala e audição.
   - Sincroniza as configurações com o objeto global `FSetMain`.
 
-- **src/ia.pas:**
+- **src/ia.pas:** 
   - Interface e controle do módulo de Inteligência Artificial, intermediando a comunicação e respostas da API ChatGPT.
   - Gera ações a partir das respostas da IA, mantém cache, histórico e mapa de memória para continuidade.
   - Executa ações automáticas, como abrir consultas SQL em abas, baseadas nas respostas da IA.
 
-- **src/udoctext.pas / src/updftext.pas:**
+- **src/udoctext.pas / src/updftext.pas:** 
   - Unidades para extração nativa de texto de arquivos do Word (.doc/.docx) e PDF, ampliando os tipos de documentos suportados.
 
-- **src/toolsfalar/toolsfalar.pas / src/toolsouvir/toolsouvir.pas:**
+- **src/toolsfalar/toolsfalar.pas / src/toolsouvir/toolsouvir.pas:** 
   - Formulários para comunicação TCP: envio de textos para voz e recepção de comandos para ações.
   - Integram funcionalidades multimodais para acessibilidade e interação.
 
-- **Instaladores:**
+- **Instaladores:** 
   - Windows: Script Inno Setup `MNote2.iss` com instalação em modo 32 bits e configuração dos arquivos/banco no caminho `C:\db`.
   - macOS: Projeto `mac.pkgproj` para instalação com privilégios administrativos em `/Applications`.
 

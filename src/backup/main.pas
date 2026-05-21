@@ -13,14 +13,13 @@ uses
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir,
   newproject, uProjetoDB, IA, uPdfText, uDocText;
 
-const versao = '2.54';
+const versao = '2.55';
 
 type
 
   { TfrmMNote }
 
   TfrmMNote = class(TForm)
-    btHide: TToggleBox;
     btIA2: TButton;
     edChat: TMemo;
     FindDialog1: TFindDialog;
@@ -1351,7 +1350,7 @@ end;
 
 procedure TfrmMNote.btHideChange(Sender: TObject);
 begin
-  pnChatGPT.Visible:= false;
+  //pnChatGPT.Visible:= false;
 end;
 
 procedure TfrmMNote.btIA2Click(Sender: TObject);
@@ -2016,37 +2015,117 @@ var
   codigo   : TCodigo;
   item     : TFonte;
   i        : integer;
-  pergunta: WideString;
-  fonte    : widestring;
-  mapa : widestring;
-  ritem : TItem;
-  syn : TSynEdit;
+  pergunta : WideString;
+  fonte    : WideString;
+  mapa     : WideString;
+  ritem    : TItem;
+  syn      : TSynEdit;
 begin
   if (FCHATGPT = nil) then
-    FCHATGPT := TCHATGPT.Create(self);
+    FCHATGPT := TCHATGPT.Create(Self);
 
+  // Atualiza provider conforme configuração salva no setmain
+  case FSetMain.Provider of
+    0:
+      begin
+        FCHATGPT.Provider := AIP_OPENAI;
+        FCHATGPT.CustomModel := '';
+      end;
+
+    1:
+      begin
+        FCHATGPT.Provider := AIP_OPENROUTER;
+        FCHATGPT.CustomModel := '';
+      end;
+
+    2:
+      begin
+        FCHATGPT.Provider := AIP_CEREBRAS;
+        FCHATGPT.CustomModel := '';
+      end;
+
+    3:
+      begin
+        FCHATGPT.Provider := AIP_LOCAL;
+
+        // Modelo padrão local/Ollama
+        FCHATGPT.CustomModel := 'llama3.2:3b';
+      end;
+  else
+    begin
+      FCHATGPT.Provider := AIP_OPENAI;
+      FCHATGPT.CustomModel := '';
+    end;
+  end;
+
+  if (pgMain = nil) or (pgMain.ActivePage = nil) then
+  begin
+    MessageHint('Nenhuma aba ativa para analisar.');
+    Exit;
+  end;
 
   ritem := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
+  if ritem = nil then
+  begin
+    MessageHint('Item da aba não encontrado.');
+    Exit;
+  end;
+
   syn := ritem.syn;
+  if syn = nil then
+  begin
+    MessageHint('Editor da aba não encontrado.');
+    Exit;
+  end;
+
   fonte := syn.Lines.Text;
   mequestion.Lines.Add(edChat.Text);
 
-  mapa := frmIA.mePensamento.Lines.text;
+  if Assigned(frmIA) then
+    mapa := frmIA.mePensamento.Lines.Text
+  else
+    mapa := '';
 
   FCHATGPT.TOKEN := FSetMain.CHATGPT;
-  FCHATGPT.Dev:= 'Voce é um assistente pessoal e teve as seguintes perguntas anteriores: '+meChatHist.Text+' , caso sugira alguma mudança sempre faça com alteração completa do fonte apresentado. ';
 
-  pergunta := 'Com base no fonte:'+fonte+ ' e no mapa de memoria da aplicacao '+mapa +', responda a seguinte pergunta: '+ edChat.Text;
-  FCHATGPT.SendQuestion( pergunta);
+  FCHATGPT.Dev :=
+    'Voce é um assistente pessoal e teve as seguintes perguntas anteriores: ' +
+    meChatHist.Text +
+    ' , caso sugira alguma mudança sempre faça com alteração completa do fonte apresentado. ';
+
+  pergunta :=
+    'Com base no fonte:' + fonte +
+    ' e no mapa de memoria da aplicacao ' + mapa +
+    ', responda a seguinte pergunta: ' + edChat.Text;
+
+  if not FCHATGPT.SendQuestion(pergunta) then
+  begin
+    resposta := FCHATGPT.Response;
+
+    if Trim(resposta) = '' then
+      resposta := 'Falha ao consultar a IA. Verifique provider, endpoint, modelo e rede.';
+
+    meChatHist.Lines.Add('');
+    meChatHist.Lines.Add('Question: ' + edChat.Text);
+    meChatHist.Lines.Add('Response: ' + resposta);
+
+    meDialog.Lines.Clear;
+    meDialog.Lines.Add('Question: ' + edChat.Text);
+    meDialog.Lines.Add('Response: ' + resposta);
+
+    MessageHint('Falha ao consultar IA.');
+    Exit;
+  end;
 
   resposta := FCHATGPT.Response;
 
   if FSetMain.ToolsFalar then
   begin
     if (frmToolsfalar = nil) then
-      frmToolsfalar := TfrmToolsFalar.Create(self);
+      frmToolsfalar := TfrmToolsFalar.Create(Self);
+
     frmToolsfalar.edFalar.Text := resposta;
-    frmToolsfalar.edIP.text := FSetMain.IPFALAR;
+    frmToolsfalar.edIP.Text := FSetMain.IPFALAR;
     frmToolsfalar.Conectar();
     Application.ProcessMessages;
     frmToolsfalar.Falar();
@@ -2063,23 +2142,24 @@ begin
   meCodes.Lines.BeginUpdate;
   try
     meCodes.Lines.Clear;
+
     codigo := TCodigo.Create;
     try
       codigo.AnalisaTexto(resposta);
+
       for i := 0 to codigo.Count - 1 do
       begin
         item := TFonte(codigo.Items[i]);
         meCodes.Lines.Add(item.codigo);
         meCodes.Lines.Add('');
       end;
-    finally
-      if(codigo.Count=1) then
+
+      if (codigo.Count = 1) then
       begin
-        if(ShowConfirm('Change code?')) then
-        begin
-            syn.Text:= meCodes.Text;
-        end;
+        if ShowConfirm('Change code?') then
+          syn.Text := meCodes.Text;
       end;
+    finally
       codigo.Free;
     end;
   finally

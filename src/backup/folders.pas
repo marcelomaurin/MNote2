@@ -154,10 +154,13 @@ type
     procedure ExcluiCacheSeFonteMudou(const FonteArquivo, CacheArquivo: string);
 
    public
+
      // <<< NOVO FLAG PÚBLICO >>>
      // Se True, força regerar o .RIA mesmo que já exista.
      // Valor padrão: False (inicializado no FormCreate).
      flagMudanca: Boolean;
+
+     procedure ApagaRIA;
      function  Scanner(const Root: string): TStringList;
      procedure AtualizaProjeto;
      procedure LevantamentoDados(const Pergunta: widestring; out DevPadrao, Solicit: widestring; out Qtd: Integer; out Obs: widestring);
@@ -275,6 +278,70 @@ begin
         meLog.Lines.Append('Falha ao remover cache ' + CacheArquivo + ': ' + E.Message);
     end;
   end;
+end;
+
+procedure TfrmFolders.ApagaRIA;
+
+  procedure VarreEApaga(const Dir: string);
+  var
+    SR: TSearchRec;
+    code: Integer;
+    FullPath: string;
+  begin
+    code := FindFirst(IncludeTrailingPathDelimiter(Dir) + '*', faAnyFile, SR);
+    try
+      while code = 0 do
+      begin
+        if (SR.Name <> '.') and (SR.Name <> '..') then
+        begin
+          FullPath := IncludeTrailingPathDelimiter(Dir) + SR.Name;
+
+          if (SR.Attr and faDirectory) <> 0 then
+          begin
+            VarreEApaga(FullPath);
+          end
+          else
+          begin
+            if SameText(ExtractFileExt(SR.Name), '.RIA') then
+            begin
+              try
+                DeleteFile(FullPath);
+                meLog.Lines.Append('RIA apagado: ' + FullPath);
+              except
+                on E: Exception do
+                  meLog.Lines.Append('Falha ao apagar RIA: ' + FullPath + ' -> ' + E.Message);
+              end;
+            end;
+          end;
+        end;
+        code := FindNext(SR);
+      end;
+    finally
+      FindClose(SR);
+    end;
+  end;
+
+var
+  RootPath: string;
+begin
+  RootPath := Trim(FSetMain.DefaultFolder);
+  if RootPath = '' then
+  begin
+    MessageHint('DefaultFolder não informado.');
+    Exit;
+  end;
+
+  RootPath := NormalizeAndExpand(RootPath);
+
+  if not DirectoryExists(RootPath) then
+  begin
+    MessageHint('Pasta inválida para apagar RIA: ' + RootPath);
+    Exit;
+  end;
+
+  meLog.Lines.Append('Iniciando limpeza de arquivos .RIA em: ' + RootPath);
+  VarreEApaga(RootPath);
+  meLog.Lines.Append('Limpeza de arquivos .RIA concluída.');
 end;
 
 { =====================  FS / ID resolução  ===================== }
@@ -896,21 +963,24 @@ begin
 
     Chat := TCHATGPT.Create(Self);
     try
-      Chat.TOKEN := FSetMain.CHATGPT;
+      case FSetMain.Provider of
+        1: Chat.Provider := AIP_OPENROUTER;
+        2: Chat.Provider := AIP_CEREBRAS;
+      else
+        Chat.Provider := AIP_OPENAI;
+      end;
+
+      Chat.TOKEN := Trim(FSetMain.CHATGPT);
       Chat.Dev   := Dev;
 
       if Chat.SendQuestion(Prompt) then
         meLog.Lines.Append(Chat.Response)
       else
-        meLog.Lines.append('Erro ao consultar IA: ' + Chat.Response);
+        meLog.Lines.Append('Erro ao consultar IA: ' + Chat.Response);
     finally
       Projeto := meLog.Lines.Text;
       Chat.Free;
     end;
-  finally
-    TreePretty.Free;
-    TreeRaw.Free;
-  end;
 end;
 
 function TfrmFolders.ClipForAsk(const S: string; Max: Integer = 15000): string;
@@ -942,7 +1012,7 @@ function TfrmFolders.IA_ResumoArquivoBase(const FullPath, RelPath: string;
 var
   Src, SrcNum, Linguagem: widestring;
   DevMsg, Ask, Resp: widestring;
-  Arquivo : TStringList;
+  Arquivo: TStringList;
   PathNorm, RIAPath: string;
 begin
   Resumo := '';
@@ -954,22 +1024,24 @@ begin
   // se o fonte mudou depois do cache, apaga o .RIA antes de decidir reutilizar
   ExcluiCacheSeFonteMudou(PathNorm, RIAPath);
 
-  // reaproveita apenas se:
-  // 1) existir .RIA
-  // 2) não forçado
-  // 3) flagMudanca = False
-  // 4) .RIA for de hoje
-  if FileExists(RIAPath) and (not force) and (not flagMudanca) and ArquivoEhDoDia(RIAPath) then
+  // só testa o resto se o arquivo existir
+  if FileExists(RIAPath) then
   begin
-    Arquivo := TStringList.Create;
-    try
-      Arquivo.LoadFromFile(RIAPath);
-      Resumo := Arquivo.Text;
-      meLog.Lines.Append('Resumo reutilizado do cache .RIA: ' + RIAPath);
-    finally
-      Arquivo.Free;
+    if (not force) and (not flagMudanca) then
+    begin
+      if ArquivoEhDoDia(RIAPath) then
+      begin
+        Arquivo := TStringList.Create;
+        try
+          Arquivo.LoadFromFile(RIAPath);
+          Resumo := Arquivo.Text;
+          meLog.Lines.Append('Resumo reutilizado do cache .RIA: ' + RIAPath);
+        finally
+          Arquivo.Free;
+        end;
+        Exit(True);
+      end;
     end;
-    Exit(True);
   end;
 
   try
@@ -1754,13 +1826,22 @@ begin
 
   Chat := TCHATGPT.Create(Self);
   try
-    Chat.TOKEN := Token;
+    case FSetMain.Provider of
+      1: Chat.Provider := AIP_OPENROUTER;
+      2: Chat.Provider := AIP_CEREBRAS;
+    else
+      Chat.Provider := AIP_OPENAI;
+    end;
+
+    Chat.TOKEN := Trim(Token);
     Chat.Dev   := DevMsg;
+
     if Chat.SendQuestion(Ask) then
     begin
-      Resp   := Chat.Response;
+      Resp := Chat.Response;
       meTecnica.Lines.Append(Resp);
-      frmIA.meHistorico.Lines.Append(Resp);
+      if Assigned(frmIA) then
+        frmIA.meHistorico.Lines.Append(Resp);
       Result := True;
     end
     else

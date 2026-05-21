@@ -77,7 +77,7 @@ type
     function EnsureRIAPath: string;
     procedure AddLog(const S: string);
     function TextoLimpo(const S: string): string;
-
+    procedure AtualizaProviderChatGPT;
     // ===== cache RIA =====
     function RIAFileName(const ANome: string): string;
     function ArquivoEhDoDia(const AFileName: string): Boolean;
@@ -178,6 +178,43 @@ end;
 function TfrmIA.TextoLimpo(const S: string): string;
 begin
   Result := UTF8Encode(S);
+end;
+
+procedure TfrmIA.AtualizaProviderChatGPT;
+begin
+  if FChatGPT = nil then
+    Exit;
+
+  case FSetMain.Provider of
+    0:
+      begin
+        FChatGPT.Provider := AIP_OPENAI;
+        FChatGPT.CustomModel := '';
+      end;
+
+    1:
+      begin
+        FChatGPT.Provider := AIP_OPENROUTER;
+        FChatGPT.CustomModel := '';
+      end;
+
+    2:
+      begin
+        FChatGPT.Provider := AIP_CEREBRAS;
+        FChatGPT.CustomModel := '';
+      end;
+
+    3:
+      begin
+        FChatGPT.Provider := AIP_LOCAL;
+        FChatGPT.CustomModel := 'llama3.2:3b';
+      end;
+  else
+    begin
+      FChatGPT.Provider := AIP_OPENAI;
+      FChatGPT.CustomModel := '';
+    end;
+  end;
 end;
 
 function TfrmIA.RIAFileName(const ANome: string): string;
@@ -408,7 +445,9 @@ begin
     if FChatGPT = nil then
       FChatGPT := TCHATGPT.Create(Self);
 
-    if Trim(FSetMain.CHATGPT) = '' then
+    AtualizaProviderChatGPT;
+
+    if (FChatGPT.Provider <> AIP_LOCAL) and (Trim(FSetMain.CHATGPT) = '') then
     begin
       AddLog('Token do ChatGPT não configurado em FSetMain.CHATGPT.');
       Exit(False);
@@ -422,6 +461,7 @@ begin
       'Analise o histórico de conversas e a pergunta atual e diga se elas têm relação direta ou apresenta ideia de continuidade ao que esta sendo tratado.' + LineEnding +
       'Responda apenas com uma palavra: Sim ou Não.' + LineEnding +
       'Sem explicações, sem pontuação, sem comentários adicionais.';
+
     FChatGPT.Dev := DevMsg;
 
     FullPrompt :=
@@ -432,6 +472,7 @@ begin
       'A pergunta tem relação direta com o histórico acima?';
 
     AddLog('Enviando pergunta ao classificador de continuidade...');
+
     if FChatGPT.SendQuestion(FullPrompt) then
       Resposta := Trim(LowerCase(TextoLimpo(FChatGPT.Response)))
     else
@@ -470,7 +511,9 @@ begin
   if FChatGPT = nil then
     FChatGPT := TCHATGPT.Create(Self);
 
-  if Trim(FSetMain.CHATGPT) = '' then
+  AtualizaProviderChatGPT;
+
+  if (FChatGPT.Provider <> AIP_LOCAL) and (Trim(FSetMain.CHATGPT) = '') then
   begin
     ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
     Exit(False);
@@ -694,7 +737,9 @@ begin
   if FChatGPT = nil then
     FChatGPT := TCHATGPT.Create(Self);
 
-  if Trim(FSetMain.CHATGPT) = '' then
+  AtualizaProviderChatGPT;
+
+  if (FChatGPT.Provider <> AIP_LOCAL) and (Trim(FSetMain.CHATGPT) = '') then
   begin
     ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
     Exit(False);
@@ -768,6 +813,7 @@ begin
       Result := False;
     end;
   end;
+
   if Assigned(JsonRaiz) then
     JsonRaiz.Free;
 end;
@@ -819,6 +865,8 @@ begin
 
   if FChatGPT = nil then
     FChatGPT := TCHATGPT.Create(Self);
+
+  AtualizaProviderChatGPT;
 
   if Trim(FSetMain.CHATGPT) = '' then
   begin
@@ -908,6 +956,8 @@ begin
     if FChatGPT = nil then
       FChatGPT := TCHATGPT.Create(Self);
 
+    AtualizaProviderChatGPT;
+
     if Trim(FSetMain.CHATGPT) = '' then
     begin
       AddLog('Token do ChatGPT não configurado em FSetMain.CHATGPT (MapeiaPensamento).');
@@ -978,6 +1028,8 @@ begin
   begin
     if FChatGPT = nil then
       FChatGPT := TCHATGPT.Create(Self);
+
+    AtualizaProviderChatGPT;
 
     if Trim(FSetMain.CHATGPT) = '' then
     begin
@@ -1056,6 +1108,8 @@ begin
   if FChatGPT = nil then
     FChatGPT := TCHATGPT.Create(Self);
 
+  AtualizaProviderChatGPT;
+
   if Trim(FSetMain.CHATGPT) = '' then
   begin
     ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
@@ -1112,6 +1166,8 @@ begin
 
   if FChatGPT = nil then
     FChatGPT := TCHATGPT.Create(Self);
+
+  AtualizaProviderChatGPT;
 
   if Trim(FSetMain.CHATGPT) = '' then
   begin
@@ -1175,6 +1231,8 @@ begin
   begin
     if FChatGPT = nil then
       FChatGPT := TCHATGPT.Create(Self);
+
+    AtualizaProviderChatGPT;
 
     if Trim(FSetMain.CHATGPT) = '' then
     begin

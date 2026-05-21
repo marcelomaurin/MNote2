@@ -901,7 +901,10 @@ procedure TfrmFolders.AnalisaProjeto();
         Rel := Trim(TreeRaw[i]);
         if (Rel = '') then Continue;
 
-        if not AnsiMatchText(LowerCase(ExtractFileExt(Rel)), ['.pas', '.pp', '.lfm', '.lpr', '.ini', '.json', '.yml', '.yaml','.php','.htm','.js', '.xml', '.c','.cpp','.txt','.doc','.docx','.pdf','.sql','.jsp','.py','.cob','.html','.md' ]) then
+        if not AnsiMatchText(LowerCase(ExtractFileExt(Rel)),
+          ['.pas', '.pp', '.lfm', '.lpr', '.ini', '.json', '.yml', '.yaml',
+           '.php', '.htm', '.js', '.xml', '.c', '.cpp', '.txt', '.doc',
+           '.docx', '.pdf', '.sql', '.jsp', '.py', '.cob', '.html', '.md']) then
           Continue;
 
         Path := IncludeTrailingPathDelimiter(Root) + Rel;
@@ -949,7 +952,7 @@ begin
 
     Dev :=
       'Voce é uma IA de respostas sintéticas, sua tarefa é responder de forma direta.' + LineEnding +
-      'Responda de forma concisa e estruturada. '+ LineEnding +
+      'Responda de forma concisa e estruturada. ' + LineEnding +
       'Assuma que voce terá acesso a todas as informações necessarias.';
 
     Prompt :=
@@ -963,13 +966,20 @@ begin
 
     Chat := TCHATGPT.Create(Self);
     try
-      Chat.TOKEN := FSetMain.CHATGPT;
+      case FSetMain.Provider of
+        1: Chat.Provider := AIP_OPENROUTER;
+        2: Chat.Provider := AIP_CEREBRAS;
+      else
+        Chat.Provider := AIP_OPENAI;
+      end;
+
+      Chat.TOKEN := Trim(FSetMain.CHATGPT);
       Chat.Dev   := Dev;
 
       if Chat.SendQuestion(Prompt) then
         meLog.Lines.Append(Chat.Response)
       else
-        meLog.Lines.append('Erro ao consultar IA: ' + Chat.Response);
+        meLog.Lines.Append('Erro ao consultar IA: ' + Chat.Response);
     finally
       Projeto := meLog.Lines.Text;
       Chat.Free;
@@ -1009,7 +1019,7 @@ function TfrmFolders.IA_ResumoArquivoBase(const FullPath, RelPath: string;
 var
   Src, SrcNum, Linguagem: widestring;
   DevMsg, Ask, Resp: widestring;
-  Arquivo : TStringList;
+  Arquivo: TStringList;
   PathNorm, RIAPath: string;
 begin
   Resumo := '';
@@ -1021,22 +1031,24 @@ begin
   // se o fonte mudou depois do cache, apaga o .RIA antes de decidir reutilizar
   ExcluiCacheSeFonteMudou(PathNorm, RIAPath);
 
-  // reaproveita apenas se:
-  // 1) existir .RIA
-  // 2) não forçado
-  // 3) flagMudanca = False
-  // 4) .RIA for de hoje
-  if FileExists(RIAPath) and (not force) and (not flagMudanca) and ArquivoEhDoDia(RIAPath) then
+  // só testa o resto se o arquivo existir
+  if FileExists(RIAPath) then
   begin
-    Arquivo := TStringList.Create;
-    try
-      Arquivo.LoadFromFile(RIAPath);
-      Resumo := Arquivo.Text;
-      meLog.Lines.Append('Resumo reutilizado do cache .RIA: ' + RIAPath);
-    finally
-      Arquivo.Free;
+    if (not force) and (not flagMudanca) then
+    begin
+      if ArquivoEhDoDia(RIAPath) then
+      begin
+        Arquivo := TStringList.Create;
+        try
+          Arquivo.LoadFromFile(RIAPath);
+          Resumo := Arquivo.Text;
+          meLog.Lines.Append('Resumo reutilizado do cache .RIA: ' + RIAPath);
+        finally
+          Arquivo.Free;
+        end;
+        Exit(True);
+      end;
     end;
-    Exit(True);
   end;
 
   try
@@ -1821,13 +1833,22 @@ begin
 
   Chat := TCHATGPT.Create(Self);
   try
-    Chat.TOKEN := Token;
+    case FSetMain.Provider of
+      1: Chat.Provider := AIP_OPENROUTER;
+      2: Chat.Provider := AIP_CEREBRAS;
+    else
+      Chat.Provider := AIP_OPENAI;
+    end;
+
+    Chat.TOKEN := Trim(Token);
     Chat.Dev   := DevMsg;
+
     if Chat.SendQuestion(Ask) then
     begin
-      Resp   := Chat.Response;
+      Resp := Chat.Response;
       meTecnica.Lines.Append(Resp);
-      frmIA.meHistorico.Lines.Append(Resp);
+      if Assigned(frmIA) then
+        frmIA.meHistorico.Lines.Append(Resp);
       Result := True;
     end
     else

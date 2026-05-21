@@ -7,7 +7,7 @@ object frmconfig: Tfrmconfig
   ClientHeight = 385
   ClientWidth = 443
   Position = poMainFormCenter
-  LCLVersion = '4.0.0.4'
+  LCLVersion = '4.4.0.0'
   OnCreate = FormCreate
   object btSave: TButton
     Left = 346
@@ -32,9 +32,9 @@ object frmconfig: Tfrmconfig
     Height = 339
     Top = 0
     Width = 443
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     Align = alTop
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 2
     object TabSheet1: TTabSheet
       Caption = 'Scripts'
@@ -157,22 +157,22 @@ object frmconfig: Tfrmconfig
       end
     end
     object TabSheet2: TTabSheet
-      Caption = 'OPENIA'
+      Caption = 'IA'
       ClientHeight = 311
       ClientWidth = 435
       object Label5: TLabel
         Left = 6
         Height = 15
-        Top = 6
-        Width = 87
-        Caption = 'Token CHATGPT:'
+        Top = 56
+        Width = 48
+        Caption = 'Token IA:'
         ParentColor = False
       end
       object edCHATGPT: TFileNameEdit
         Left = 6
         Height = 23
-        Hint = 'CHATGPT TOKEN'
-        Top = 26
+        Hint = 'TOKEN IA'
+        Top = 76
         Width = 336
         FilterIndex = 0
         HideDirectories = False
@@ -180,7 +180,51 @@ object frmconfig: Tfrmconfig
         NumGlyphs = 1
         MaxLength = 0
         TabOrder = 0
-        TextHint = 'CHATGPT TOKEN'
+        TextHint = 'TOKEN IA'
+      end
+      object Label10: TLabel
+        Left = 6
+        Height = 15
+        Top = 6
+        Width = 40
+        Caption = 'Tipo IA:'
+        ParentColor = False
+      end
+      object cbTipoIA: TComboBox
+        Left = 8
+        Height = 23
+        Top = 24
+        Width = 184
+        ItemHeight = 15
+        Items.Strings = (
+          'CHATGPT'
+          'OPENROUTE'
+        )
+        TabOrder = 1
+        Text = 'cbTipoIA'
+        OnChange = cbTipoIAChange
+      end
+      object lbVersao: TLabel
+        Left = 280
+        Height = 15
+        Top = 24
+        Width = 44
+        Caption = 'lbVersao'
+      end
+      object Label11: TLabel
+        Left = 8
+        Height = 15
+        Top = 112
+        Width = 44
+        Caption = 'IP Local:'
+      end
+      object edIPLocalIA: TEdit
+        Left = 8
+        Height = 23
+        Top = 128
+        Width = 208
+        TabOrder = 2
+        Text = 'edIPLocalIA'
       end
     end
     object TabSheet3: TTabSheet

@@ -11,7 +11,7 @@ object frmFolders: TfrmFolders
   ParentBiDiMode = False
   ParentDoubleBuffered = False
   Position = poMainFormCenter
-  LCLVersion = '4.0.0.4'
+  LCLVersion = '4.4.0.0'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow

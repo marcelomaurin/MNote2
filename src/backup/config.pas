@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, EditBtn,
-  ComCtrls, IPEdit, setmain;
+  ComCtrls, IPEdit, setmain, chatgpt;
 
 type
 
@@ -17,6 +17,7 @@ type
     btCancel: TButton;
     ckToolsFalar: TCheckBox;
     ckToolsOuvir: TCheckBox;
+    cbTipoIA: TComboBox;
     edCHATGPT: TFileNameEdit;
     edClean: TFileNameEdit;
     edDebug: TFileNameEdit;
@@ -26,9 +27,13 @@ type
     edDLLMyPATH: TFileNameEdit;
     edInstall: TFileNameEdit;
     edIPOuvir: TIPEdit;
+    edIPLocalIA: TEdit;
     edRun: TFileNameEdit;
     edIPFALAR: TIPEdit;
     Label1: TLabel;
+    Label10: TLabel;
+    Label11: TLabel;
+    lbVersao: TLabel;
     lbIP: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -48,6 +53,7 @@ type
     tsFalar: TTabSheet;
     procedure btCancelClick(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
+    procedure cbTipoIAChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
 
@@ -66,44 +72,76 @@ implementation
 
 procedure Tfrmconfig.btSaveClick(Sender: TObject);
 begin
-  FSetMain.Compile := edCompile.text;
-  FSetMain.Install := edInstall.text;
-  FSetMain.CleanScript:= edClean.text;
-  FSetMain.RunScript:=edRun.text;
-  FSetMain.DebugScript:=edDebug.text;
-  FSetMain.DLLPath:= edDLLPATH.text;
-  FSetMain.DLLMYPath:= edDLLMYPATH.text;
-  FSetMain.DLLPOSTPath:= edDLLPOSTPATH.text;
-  FSetMain.CHATGPT:= edCHATGPT.text;
-  FSetMain.ToolsFalar:=ckToolsFalar.Checked;
-  FSetMain.ToolsOuvir:=ckToolsOuvir.Checked;
-  FSetMain.IPFALAR:= edIPFALAR.text;
-  FSetMain.IPOUVIR:= edIPOUVIR.text;
-  FSetMain.SalvaContexto(false);
-  close;
+  FSetMain.Compile := edCompile.Text;
+  FSetMain.Install := edInstall.Text;
+  FSetMain.CleanScript := edClean.Text;
+  FSetMain.RunScript := edRun.Text;
+  FSetMain.DebugScript := edDebug.Text;
+  FSetMain.DLLPath := edDLLPATH.Text;
+  FSetMain.DLLMYPath := edDLLMYPATH.Text;
+  FSetMain.DLLPOSTPath := edDLLPOSTPATH.Text;
+  FSetMain.CHATGPT := edCHATGPT.Text;
+  FSetMain.ToolsFalar := ckToolsFalar.Checked;
+  FSetMain.ToolsOuvir := ckToolsOuvir.Checked;
+  FSetMain.IPFALAR := edIPFALAR.Text;
+  FSetMain.IPOUVIR := edIPOUVIR.Text;
+
+  // 0 = OpenAI
+  // 1 = OpenRouter
+  // 2 = Cerebras
+  if cbTipoIA.ItemIndex < 0 then
+    FSetMain.Provider := 0
+  else
+    FSetMain.Provider := cbTipoIA.ItemIndex;
+
+  FSetMain.SalvaContexto(False);
+  Close;
+end;
+
+procedure Tfrmconfig.cbTipoIAChange(Sender: TObject);
+begin
+
 end;
 
 procedure Tfrmconfig.FormCreate(Sender: TObject);
+var
+  Chat: TCHATGPT;
 begin
-  edcompile.text := FSetMain.Compile;
-  edinstall.text := FSetMain.Install;
-  edclean.text := FSetMain.CleanScript;
-  edRun.text := FSetMain.RunScript;
-  edDebug.text := FSetMain.DebugScript;
+  edCompile.Text := FSetMain.Compile;
+  edInstall.Text := FSetMain.Install;
+  edClean.Text := FSetMain.CleanScript;
+  edRun.Text := FSetMain.RunScript;
+  edDebug.Text := FSetMain.DebugScript;
   edCHATGPT.Text := FSetMain.CHATGPT;
-  edDLLPATH.text := FSetMain.DLLPath;    //lib do python
-  edDLLMyPATH.text := FSetMain.DLLMyPath;
-  edDLLPostPATH.text := FSetMain.DLLPostPath;
-  ckToolsFalar.Checked:= FSetMain.ToolsFalar;
-  ckToolsOuvir.Checked:= FSetMain.ToolsOuvir;
+  edDLLPATH.Text := FSetMain.DLLPath;
+  edDLLMyPATH.Text := FSetMain.DLLMyPath;
+  edDLLPostPATH.Text := FSetMain.DLLPostPath;
+  ckToolsFalar.Checked := FSetMain.ToolsFalar;
+  ckToolsOuvir.Checked := FSetMain.ToolsOuvir;
   edIPFALAR.Text := FSetMain.IPFALAR;
   edIPOUVIR.Text := FSetMain.IPOUVIR;
+
+  cbTipoIA.Items.Clear;
+  cbTipoIA.Items.Add('OpenAI');
+  cbTipoIA.Items.Add('OpenRouter');
+  cbTipoIA.Items.Add('Cerebras');
+
+  if (FSetMain.Provider >= 0) and (FSetMain.Provider < cbTipoIA.Items.Count) then
+    cbTipoIA.ItemIndex := FSetMain.Provider
+  else
+    cbTipoIA.ItemIndex := 0;
+
+  Chat := TCHATGPT.Create(nil);
+  try
+    lbVersao.Caption := 'Versão da biblioteca: ' + Chat.VersaoBiblioteca;
+  finally
+    Chat.Free;
+  end;
 end;
 
 procedure Tfrmconfig.btCancelClick(Sender: TObject);
 begin
-  close;
+  Close;
 end;
 
 end.
-

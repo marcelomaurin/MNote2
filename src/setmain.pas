@@ -41,6 +41,16 @@ type
     FInstall : string;      //Script de Instalacao
     FCompile : string;      //Script de Compilação
 
+    // ===== Provider IA =====
+    // 0 = OpenAI
+    // 1 = OpenRouter
+    // 2 = Cerebras
+    // 3 = Local / llama.cpp
+    FProvider : Integer;
+
+    // ===== IA Local =====
+    fIPLocalIA : String;
+
     // ===== MySQL =====
     FHostnameMy : String;
     FBancoMy : String;
@@ -80,10 +90,6 @@ type
     procedure SetDllPostPath(value : string);
     procedure SetToolsFalar(value : boolean);
 
-    // SQLite setters (opcional — aqui deixei direto via write field)
-    // procedure SetBancoSQLite(const Value: String);
-    // procedure SetProtocolSQLite(const Value: String);
-
     procedure Default();
 
   public
@@ -117,6 +123,12 @@ type
     property DLLMyPath : String read FDllMyPath write SetDllMyPath;
     property DLLPostPath : String read FDllPostPath write SetDllPostPath;
 
+    // ===== Provider IA =====
+    property Provider : Integer read FProvider write FProvider;
+
+    // ===== IA Local =====
+    property IPLocalIA : string read fIPLocalIA write fIPLocalIA;
+
     // ===== MySQL =====
     property HostnameMy: string read FHostnameMy write FHostnameMy;
     property BancoMy : String read FBancoMy write FBancoMy;
@@ -131,9 +143,9 @@ type
     property SchemaPost: String read FSchemaPost write FSchemaPost;
 
     // ===== SQLite (NOVO PADRÃO) =====
-    property BancoSQLite: String read FBancoSQLite write FBancoSQLite;           // arquivo
-    property ProtocolSQLite: String read FProtocolSQLite write FProtocolSQLite; // sqlite-3
-    property SchemaSQLite: String read FSchemaSQLite write FSchemaSQLite;       // opcional
+    property BancoSQLite: String read FBancoSQLite write FBancoSQLite;
+    property ProtocolSQLite: String read FProtocolSQLite write FProtocolSQLite;
+    property SchemaSQLite: String read FSchemaSQLite write FSchemaSQLite;
 
     // ===== Tools =====
     property ToolsFalar : Boolean read FToolsFalar write SetToolsFalar;
@@ -178,6 +190,12 @@ begin
   FInstall := '';
   FCompile := '';
 
+  // ===== Provider default =====
+  FProvider := 0; // OpenAI
+
+  // ===== IA Local =====
+  fIPLocalIA := 'http://172.17.241.200:8095';
+
   fIPFALAR := '127.0.0.1';
   fIPOUVIR := '127.0.0.1';
 
@@ -204,9 +222,9 @@ begin
   FSchemaPost := '';
 
   // ===== SQLite defaults (NOVO) =====
-  FBancoSQLite := '';          // arquivo vazio por padrão
+  FBancoSQLite := '';
   FProtocolSQLite := 'sqlite-3';
-  FSchemaSQLite := '';         // não usado, mas padrão
+  FSchemaSQLite := '';
 
   FDefaultfolder := '';
   FProject := '';
@@ -239,7 +257,6 @@ end;
 
 procedure TSetMain.SetFont(value: TFont);
 begin
-  // copia o conteúdo da fonte em vez de trocar o ponteiro
   if Assigned(value) then
     FFONT.Assign(value);
 end;
@@ -327,6 +344,16 @@ begin
   if BuscaChave(arquivo,'DLLPOSTPATH:',posicao) then
     FDLLPOSTPATH := RetiraInfo(arquivo.Strings[posicao]);
 
+  // ===== Provider =====
+  if BuscaChave(arquivo,'PROVIDER:',posicao) then
+    FProvider := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 0)
+  else
+    FProvider := 0;
+
+  // ===== IA Local =====
+  if BuscaChave(arquivo,'IPLOCALIA:',posicao) then
+    fIPLocalIA := RetiraInfo(arquivo.Strings[posicao]);
+
   // ===== MySQL =====
   if BuscaChave(arquivo,'HOSTNAMEMY:',posicao) then
     FHostnameMy := RetiraInfo(arquivo.Strings[posicao]);
@@ -357,7 +384,6 @@ begin
     FSchemaPost := RetiraInfo(arquivo.Strings[posicao]);
 
   // ===== SQLite (NOVO) =====
-  // (mantive chaves bem “padrão” como você usa)
   if BuscaChave(arquivo,'BANCOSQLITE:',posicao) then
     FBancoSQLite := RetiraInfo(arquivo.Strings[posicao]);
 
@@ -386,9 +412,14 @@ begin
   if BuscaChave(arquivo,'PROJECT:',posicao) then
     FProject := RetiraInfo(arquivo.Strings[posicao]);
 
-  // garante defaults mínimos do SQLite se vier vazio
   if Trim(FProtocolSQLite) = '' then
     FProtocolSQLite := 'sqlite-3';
+
+  if Trim(fIPLocalIA) = '' then
+    fIPLocalIA := 'http://172.17.241.200:8095';
+
+  if FProvider < 0 then
+    FProvider := 0;
 end;
 
 procedure TSetMain.IdentificaArquivo(flag: boolean);
@@ -450,6 +481,12 @@ begin
   arquivo.Append('DLLPATH:'+FDLLPATH);
   arquivo.Append('DLLMYPATH:'+FDLLMYPATH);
   arquivo.Append('DLLPOSTPATH:'+FDLLPOSTPATH);
+
+  // ===== Provider =====
+  arquivo.Append('PROVIDER:'+IntToStr(FProvider));
+
+  // ===== IA Local =====
+  arquivo.Append('IPLOCALIA:'+fIPLocalIA);
 
   // ===== MySQL =====
   arquivo.Append('HOSTNAMEMY:'+FHostnameMy);
