@@ -1,0 +1,15 @@
+[if | Shell If]
+if [ | ]; then
+fi
+
+[for | Shell For]
+for item in |; do
+done
+
+[while | Shell While]
+while |; do
+done
+
+[func | Shell Function]
+function |() {
+}

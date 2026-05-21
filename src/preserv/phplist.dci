@@ -1,0 +1,17 @@
+[class | PHP Class]
+class | {
+    public function __construct() {
+    }
+}
+
+[fun | PHP Function]
+function |() {
+}
+
+[if | PHP If]
+if (|) {
+}
+
+[foreach | PHP Foreach]
+foreach (| as $key => $value) {
+}

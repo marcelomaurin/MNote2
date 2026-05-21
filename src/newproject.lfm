@@ -7,7 +7,7 @@ object frmNewProject: TfrmNewProject
   ClientHeight = 358
   ClientWidth = 507
   Position = poMainFormCenter
-  LCLVersion = '4.0.0.4'
+  LCLVersion = '4.4.0.0'
   object PageControl1: TPageControl
     Left = 0
     Height = 358
@@ -17,6 +17,7 @@ object frmNewProject: TfrmNewProject
     Align = alClient
     TabIndex = 0
     TabOrder = 0
+    OnChange = PageControl1Change
     object tsProject: TTabSheet
       Caption = 'Project Master'
       ClientHeight = 330
@@ -6333,7 +6334,8 @@ object frmNewProject: TfrmNewProject
         Left = 188
         Height = 23
         Top = 32
-        Width = 284
+        Width = 294
+        Anchors = [akTop, akLeft, akRight]
         TabOrder = 0
       end
       object Label2: TLabel
@@ -6354,7 +6356,8 @@ object frmNewProject: TfrmNewProject
         Left = 189
         Height = 23
         Top = 185
-        Width = 280
+        Width = 294
+        Anchors = [akTop, akLeft, akRight]
         ShowHidden = False
         ButtonWidth = 23
         NumGlyphs = 1
@@ -6372,12 +6375,16 @@ object frmNewProject: TfrmNewProject
         Left = 189
         Height = 23
         Top = 232
-        Width = 211
+        Width = 294
+        Anchors = [akTop, akLeft, akRight]
         ItemHeight = 15
         ItemIndex = 0
         Items.Strings = (
           'Mysql'
           'Postgres'
+          'Sqlite'
+          'SQL Server'
+          'Oracle'
         )
         TabOrder = 2
         Text = 'Mysql'
@@ -6387,6 +6394,7 @@ object frmNewProject: TfrmNewProject
         Height = 25
         Top = 296
         Width = 75
+        Anchors = [akRight, akBottom]
         Caption = 'Next'
         TabOrder = 3
         OnClick = Button1Click
@@ -6395,7 +6403,8 @@ object frmNewProject: TfrmNewProject
         Left = 189
         Height = 82
         Top = 80
-        Width = 283
+        Width = 294
+        Anchors = [akTop, akLeft, akRight]
         TabOrder = 4
       end
     end
@@ -6414,7 +6423,8 @@ object frmNewProject: TfrmNewProject
         Left = 8
         Height = 242
         Top = 23
-        Width = 472
+        Width = 475
+        Anchors = [akTop, akLeft, akRight, akBottom]
         TabOrder = 0
       end
       object Button2: TButton
@@ -6422,6 +6432,7 @@ object frmNewProject: TfrmNewProject
         Height = 25
         Top = 296
         Width = 75
+        Anchors = [akRight, akBottom]
         Caption = 'Next'
         TabOrder = 1
         OnClick = Button2Click
@@ -6436,6 +6447,7 @@ object frmNewProject: TfrmNewProject
         Height = 25
         Top = 296
         Width = 75
+        Anchors = [akRight, akBottom]
         Caption = 'Process'
         TabOrder = 0
         OnClick = btProcessClick
@@ -6452,12 +6464,13 @@ object frmNewProject: TfrmNewProject
         Left = 24
         Height = 23
         Top = 32
-        Width = 216
+        Width = 459
+        Anchors = [akTop, akLeft, akRight]
         TabOrder = 1
         Text = '127.0.0.1'
       end
       object Label10: TLabel
-        Left = 25
+        Left = 24
         Height = 15
         Top = 71
         Width = 45
@@ -6465,10 +6478,11 @@ object frmNewProject: TfrmNewProject
         ParentColor = False
       end
       object edSchemaPost: TEdit
-        Left = 25
+        Left = 24
         Height = 23
         Top = 87
-        Width = 216
+        Width = 459
+        Anchors = [akTop, akLeft, akRight]
         TabOrder = 2
       end
       object Label7: TLabel
@@ -6480,10 +6494,11 @@ object frmNewProject: TfrmNewProject
         ParentColor = False
       end
       object edBancoPost: TEdit
-        Left = 25
+        Left = 24
         Height = 23
         Top = 136
-        Width = 215
+        Width = 459
+        Anchors = [akTop, akLeft, akRight]
         TabOrder = 3
         Text = 'localdb'
       end
@@ -6496,10 +6511,11 @@ object frmNewProject: TfrmNewProject
         ParentColor = False
       end
       object edusuarioPost: TEdit
-        Left = 25
+        Left = 24
         Height = 23
         Top = 192
-        Width = 168
+        Width = 459
+        Anchors = [akTop, akLeft, akRight]
         TabOrder = 4
         Text = 'root'
       end
@@ -6512,10 +6528,11 @@ object frmNewProject: TfrmNewProject
         ParentColor = False
       end
       object edPasswrdPost: TEdit
-        Left = 25
+        Left = 24
         Height = 23
         Top = 248
-        Width = 168
+        Width = 459
+        Anchors = [akTop, akLeft, akRight]
         EchoMode = emPassword
         PasswordChar = '*'
         TabOrder = 5

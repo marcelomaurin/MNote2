@@ -13,7 +13,7 @@ uses
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir,
   newproject, uProjetoDB, IA, uPdfText, uDocText;
 
-const versao = '2.56';
+const versao = '2.60';
 
 type
 
@@ -281,6 +281,8 @@ type
     procedure RodaScript();
     procedure RodaSQL();
     procedure MudaDoc();
+    procedure SalvarWorkspaceState;
+    procedure RestaurarWorkspaceState;
   end;
 
   function FileLoad(const FullName: string): Boolean;
@@ -293,7 +295,7 @@ implementation
 {$R *.lfm}
 
 uses
-  Sobre;
+  Sobre, base, ZDataset, DateUtils;
 
 { -------------------------------------------------------------------- }
 {  Helper para extrair texto de DOC/DOCX/PDF                           }
@@ -1051,6 +1053,11 @@ begin
   begin
      ProjetoDB := TProjetoDB.create(self);
      ProjetoDB.CarregarProjeto(FSetMain.Project,biblioteca);
+     try
+       RestaurarWorkspaceState;
+     except
+       // Silencia erros para nao interromper a carga inicial da IDE
+     end;
   end;
 
   if(frmHint= nil) then
@@ -1210,6 +1217,12 @@ end;
 
 procedure TfrmMNote.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
+  try
+    SalvarWorkspaceState;
+  except
+    // Silencia erros no fechamento para garantir encerramento limpo
+  end;
+
   if not Mudou() then
   begin
     if PerguntaSalvar() then
@@ -2363,9 +2376,19 @@ begin
 end;
 
 procedure TfrmMNote.pgMainChange(Sender: TObject);
-
+var
+  tb: TTabSheet;
+  item: TItem;
 begin
   MudaDoc();
+
+  if (frmFolders <> nil) and (pgMain.ActivePage <> nil) then
+  begin
+    tb := pgMain.ActivePage;
+    item := TItem(tb.Tag);
+    if (item <> nil) and (item.syn <> nil) then
+      frmFolders.AtualizarOutline(item.syn.Lines.Text);
+  end;
 end;
 
 procedure TfrmMNote.TabSheet1ContextPopup(Sender: TObject; MousePos: TPoint;
@@ -2376,6 +2399,145 @@ end;
 procedure TfrmMNote.TabSheet2ContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 begin
+end;
+
+procedure TfrmMNote.SalvarWorkspaceState;
+var
+  i, dirId, fsId, posX, posY, ativa, abaIndex: Integer;
+  item: TItem;
+  tb: TTabSheet;
+  caminhoCompleto: string;
+  Q: TZQuery;
+begin
+  if (dmBase = nil) or (dmBase.zconlocal = nil) or (not dmBase.zconlocal.Connected) then Exit;
+
+  Q := TZQuery.Create(Self);
+  try
+    Q.Connection := dmBase.zconlocal;
+    Q.SQL.Text := 'DELETE FROM workspace_tabs;';
+    Q.ExecSQL;
+
+    for i := 0 to pgMain.PageCount - 1 do
+    begin
+      tb := pgMain.Pages[i];
+      if tb = nil then Continue;
+      item := TItem(tb.Tag);
+      if item = nil then Continue;
+
+      caminhoCompleto := IncludeTrailingPathDelimiter(item.DirName) + item.FileName;
+      if (Trim(item.FileName) <> '') and FileExists(caminhoCompleto) then
+      begin
+        dirId := dmBase.Buscafs_IDpeloDiretorio(item.DirName);
+        if dirId <= 0 then
+        begin
+          dirId := dmBase.EnsureDirUnderParent(dmBase.EnsureRootId, item.DirName, DateTimeToUnix(Now));
+        end;
+
+        if dirId > 0 then
+        begin
+          dmBase.UpsertFile(dirId, item.FileName, caminhoCompleto);
+          fsId := dmBase.Buscafs_IDpeloNome(dirId, item.FileName);
+        end
+        else
+          fsId := 0;
+
+        if fsId > 0 then
+        begin
+          posX := 1;
+          posY := 1;
+          if item.syn <> nil then
+          begin
+            posX := item.syn.CaretX;
+            posY := item.syn.CaretY;
+          end;
+
+          if pgMain.ActivePageIndex = i then
+            ativa := 1
+          else
+            ativa := 0;
+
+          abaIndex := i;
+
+          Q.SQL.Text :=
+            'INSERT INTO workspace_tabs (id_fs, pos_x, pos_y, aba_index, ativa) ' +
+            'VALUES (:fs, :x, :y, :aba, :act);';
+          Q.ParamByName('fs').AsInteger := fsId;
+          Q.ParamByName('x').AsInteger := posX;
+          Q.ParamByName('y').AsInteger := posY;
+          Q.ParamByName('aba').AsInteger := abaIndex;
+          Q.ParamByName('act').AsInteger := ativa;
+          Q.ExecSQL;
+        end;
+      end;
+    end;
+  finally
+    Q.Free;
+  end;
+end;
+
+procedure TfrmMNote.RestaurarWorkspaceState;
+var
+  Q: TZQuery;
+  fsId, posX, posY, ativa, abaIndex, idxActive: Integer;
+  caminhoCompleto: string;
+  item: TItem;
+  tb: TTabSheet;
+begin
+  if (dmBase = nil) or (dmBase.zconlocal = nil) or (not dmBase.zconlocal.Connected) then Exit;
+
+  while pgMain.PageCount > 0 do
+    CloseTab();
+
+  Q := TZQuery.Create(Self);
+  try
+    Q.Connection := dmBase.zconlocal;
+    Q.SQL.Text :=
+      'SELECT id_fs, pos_x, pos_y, aba_index, ativa ' +
+      'FROM workspace_tabs ' +
+      'ORDER BY aba_index ASC;';
+    Q.Open;
+
+    idxActive := -1;
+    while not Q.EOF do
+    begin
+      fsId := Q.FieldByName('id_fs').AsInteger;
+      posX := Q.FieldByName('pos_x').AsInteger;
+      posY := Q.FieldByName('pos_y').AsInteger;
+      abaIndex := Q.FieldByName('aba_index').AsInteger;
+      ativa := Q.FieldByName('ativa').AsInteger;
+
+      caminhoCompleto := dmBase.ObterCaminhoCompletoFS(fsId);
+      if (caminhoCompleto <> '') and FileExists(caminhoCompleto) then
+      begin
+        if FileLoad(caminhoCompleto) then
+        begin
+          if pgMain.PageCount > 0 then
+          begin
+            tb := pgMain.Pages[pgMain.PageCount - 1];
+            if tb <> nil then
+            begin
+              item := TItem(tb.Tag);
+              if (item <> nil) and (item.syn <> nil) then
+              begin
+                item.syn.CaretX := posX;
+                item.syn.CaretY := posY;
+              end;
+            end;
+          end;
+
+          if ativa = 1 then
+            idxActive := pgMain.PageCount - 1;
+        end;
+      end;
+      Q.Next;
+    end;
+
+    if (idxActive >= 0) and (idxActive < pgMain.PageCount) then
+      pgMain.ActivePageIndex := idxActive;
+
+  finally
+    Q.Free;
+  end;
 end;
 
 end.

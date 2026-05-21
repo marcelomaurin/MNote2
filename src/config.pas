@@ -25,6 +25,8 @@ type
     edDLLPostPATH: TFileNameEdit;
     edDLLPATH: TFileNameEdit;
     edDLLMyPATH: TFileNameEdit;
+    edDLLMSSQLPATH: TFileNameEdit;
+    edDLLOraclePATH: TFileNameEdit;
     edInstall: TFileNameEdit;
     edIPOuvir: TIPEdit;
     edIPLocalIA: TEdit;
@@ -33,6 +35,8 @@ type
     Label1: TLabel;
     Label10: TLabel;
     Label11: TLabel;
+    Label12: TLabel;
+    Label13: TLabel;
     lbVersao: TLabel;
     lbIP: TLabel;
     Label2: TLabel;
@@ -80,6 +84,8 @@ begin
   FSetMain.DLLPath := edDLLPATH.Text;
   FSetMain.DLLMYPath := edDLLMYPATH.Text;
   FSetMain.DLLPOSTPath := edDLLPOSTPATH.Text;
+  FSetMain.DLLMSSQLPath := edDLLMSSQLPATH.Text;
+  FSetMain.DLLOraclePath := edDLLOraclePATH.Text;
   FSetMain.CHATGPT := edCHATGPT.Text;
   FSetMain.ToolsFalar := ckToolsFalar.Checked;
   FSetMain.ToolsOuvir := ckToolsOuvir.Checked;
@@ -122,6 +128,8 @@ begin
   edDLLPATH.Text := FSetMain.DLLPath;
   edDLLMyPATH.Text := FSetMain.DLLMyPath;
   edDLLPostPATH.Text := FSetMain.DLLPostPath;
+  edDLLMSSQLPATH.Text := FSetMain.DLLMSSQLPath;
+  edDLLOraclePATH.Text := FSetMain.DLLOraclePath;
   ckToolsFalar.Checked := FSetMain.ToolsFalar;
   ckToolsOuvir.Checked := FSetMain.ToolsOuvir;
   edIPFALAR.Text := FSetMain.IPFALAR;

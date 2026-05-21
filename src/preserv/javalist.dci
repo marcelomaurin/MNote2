@@ -1,0 +1,17 @@
+[class | Java Class]
+public class | {
+    public static void main(String[] args) {
+    }
+}
+
+[psvm | Java main method]
+public static void main(String[] args) {
+    |
+}
+
+[sout | Print to System.out]
+System.out.println(|);
+
+[if | Java If]
+if (|) {
+}

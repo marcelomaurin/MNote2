@@ -254,7 +254,7 @@ type
     SynPluginSyncroEdit1: TSynPluginSyncroEdit;
     SynSQLSyn2: TSynSQLSyn;
     TabSheet1: TTabSheet;
-    liteMain: TTabSheet;
+    tsSqlite: TTabSheet;
     TabSheet2: TTabSheet;
     tbConxao1: TTabSheet;
     tbLog1: TTabSheet;
@@ -269,14 +269,14 @@ type
     tsSQLPostgreSQL: TTabSheet;
     tsAbout: TTabSheet;
     tsSetupPostres: TTabSheet;
-    TabSheet7: TTabSheet;
+    tsSetup: TTabSheet;
     tbConxao: TTabSheet;
     tbLog: TTabSheet;
     tbSQL: TTabSheet;
     tbTools: TTabSheet;
     ToggleBox2: TToggleBox;
     tsMysql: TTabSheet;
-    tspostgree: TTabSheet;
+    tsPostgree: TTabSheet;
     TrayIcon1: TTrayIcon;
     tvsqlite: TTreeView;
     tvPost: TTreeView;
@@ -351,6 +351,7 @@ type
     procedure edSQLSynGutterChange(Sender: TObject);
     procedure FindDialog1Find(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure lstfindClick(Sender: TObject);
     procedure dropPostClick(Sender: TObject);
     procedure MenuItem12Click(Sender: TObject);
@@ -436,6 +437,72 @@ type
     FPos : integer;
     strFind : String;
 
+    // ===== SQL Server (MSSQL) Dynamic Controls =====
+    tsMSSQL: TTabSheet;
+    zconMSSQL: TZConnection;
+    zmssqlqry: TZQuery;
+    dsmssql: TDataSource;
+    tvMSSQL: TTreeView;
+    edHostMSSQL: TEdit;
+    edBancoMSSQL: TEdit;
+    edUserMSSQL: TEdit;
+    edPassMSSQL: TEdit;
+    edSchemaMSSQL: TEdit;
+    btConectarMSSQL: TButton;
+    edSQLMSSQL: TSynEdit;
+    btExecMSSQL: TButton;
+    dbgridMSSQL: TDBGrid;
+    edErroMSSQL: TMemo;
+    tvitemMSSQL: TTreeNode;
+    posicaofieldsMSSQL: TTreeNode;
+
+     // ===== Oracle Dynamic Controls =====
+    tsOracle: TTabSheet;
+    zconOracle: TZConnection;
+    zoracleqry: TZQuery;
+    dsoracle: TDataSource;
+    tvOracle: TTreeView;
+    edHostOracle: TEdit;
+    edBancoOracle: TEdit;
+    edUserOracle: TEdit;
+    edPassOracle: TEdit;
+    edSchemaOracle: TEdit;
+    btConectarOracle: TButton;
+    edSQLOracle: TSynEdit;
+    btExecOracle: TButton;
+    dbgridOracle: TDBGrid;
+    edErroOracle: TMemo;
+    tvitemOracle: TTreeNode;
+    posicaofieldsOracle: TTreeNode;
+
+    pmDatabaseMSSQL: TPopupMenu;
+    mnCriaDicionarioMSSQL: TMenuItem;
+    pmDatabaseOracle: TPopupMenu;
+    mnCriaDicionarioOracle: TMenuItem;
+
+    procedure mnCriaDicionarioMSSQLClick(Sender: TObject);
+    procedure mnCriaDicionarioOracleClick(Sender: TObject);
+
+    // Dynamic UI Creation Helper
+    procedure CreateDynamicDBTab(const ATitle: string; var ATab: TTabSheet;
+      var AConnection: TZConnection; var AQuery: TZQuery; var ADataSource: TDataSource;
+      var ATreeView: TTreeView; var AHostEdit, ABancoEdit, AUserEdit, APassEdit, ASchemaEdit: TEdit;
+      var AConnectBtn: TButton; var ASynEdit: TSynEdit; var AExecBtn: TButton;
+      var ADBGrid: TDBGrid; var AErrorMemo: TMemo; AConnectHandler, AExecHandler: TNotifyEvent;
+      ATreeChangeHandler: TTVChangedEvent);
+
+    procedure btConectarMSSQLClick(Sender: TObject);
+    procedure btExecutarMSSQLClick(Sender: TObject);
+    procedure tvMSSQLChange(Sender: TObject; Node: TTreeNode);
+    procedure ListarTabelasMSSQL();
+    function ConectMSSQL: Boolean;
+
+    procedure btConectarOracleClick(Sender: TObject);
+    procedure btExecutarOracleClick(Sender: TObject);
+    procedure tvOracleChange(Sender: TObject; Node: TTreeNode);
+    procedure ListarTabelasOracle();
+    function ConectOracle: Boolean;
+
     procedure MontaCreateTrigger(Tabela : TTabela; posicao : integer);
 
     procedure ListarTabelasMy();
@@ -488,6 +555,8 @@ type
     function DescreveTabelaIAPost(tabela : string): string;
     function DescreveTabelaIAMy(const tabela: string): string;
     function CriaDicionarioPost(const ATargetFile: string): string;
+    function CriaDicionarioMSSQL(const ATargetFile: string): string;
+    function CriaDicionarioOracle(const ATargetFile: string): string;
     function CriaListaDependenciasPost(const outFile: string): string;
     function QuestionarSQLPost(const pergunta, deps, ddl: string): string;
     function ValidaConexao(TipoBanco: Integer ): Boolean;
@@ -1048,6 +1117,11 @@ begin
   end;
 end;
 
+procedure Tfrmmquery2.FormShow(Sender: TObject);
+begin
+  tsSetup.PageIndex := pgMain.PageCount - 1;
+end;
+
 procedure Tfrmmquery2.FormCreate(Sender: TObject);
 var
   tvitem : TTreeNode;
@@ -1068,9 +1142,49 @@ begin
   tvitemLite := tvsqlite.Items.AddObject(tvitem,'SQLite', pointer(ETDBBanco));
   tvitemLite.ImageIndex := -1;
 
+  // Create SQL Server tab programmatically
+  CreateDynamicDBTab('SQL Server', tsMSSQL, zconMSSQL, zmssqlqry, dsmssql,
+    tvMSSQL, edHostMSSQL, edBancoMSSQL, edUserMSSQL, edPassMSSQL, edSchemaMSSQL,
+    btConectarMSSQL, edSQLMSSQL, btExecMSSQL, dbgridMSSQL, edErroMSSQL,
+    @btConectarMSSQLClick, @btExecutarMSSQLClick, @tvMSSQLChange);
+
+  // Initialize SQL Server tree node database parent
+  tvitem := TTreeNode.Create(tvMSSQL.Items);
+  tvitemMSSQL := tvMSSQL.Items.AddObject(tvitem,'SQL Server', pointer(ETDBBanco));
+  tvitemMSSQL.ImageIndex := -1;
+
+  // Create Oracle tab programmatically
+  CreateDynamicDBTab('Oracle', tsOracle, zconOracle, zoracleqry, dsoracle,
+    tvOracle, edHostOracle, edBancoOracle, edUserOracle, edPassOracle, edSchemaOracle,
+    btConectarOracle, edSQLOracle, btExecOracle, dbgridOracle, edErroOracle,
+    @btConectarOracleClick, @btExecutarOracleClick, @tvOracleChange);
+
+  // Initialize Oracle tree node database parent
+  tvitem := TTreeNode.Create(tvOracle.Items);
+  tvitemOracle := tvOracle.Items.AddObject(tvitem,'Oracle', pointer(ETDBBanco));
+  tvitemOracle.ImageIndex := -1;
+
+  // Initialize dynamic popups for MSSQL and Oracle
+  pmDatabaseMSSQL := TPopupMenu.Create(Self);
+  mnCriaDicionarioMSSQL := TMenuItem.Create(pmDatabaseMSSQL);
+  mnCriaDicionarioMSSQL.Caption := 'Criar Dicionário de Dados';
+  mnCriaDicionarioMSSQL.OnClick := @mnCriaDicionarioMSSQLClick;
+  pmDatabaseMSSQL.Items.Add(mnCriaDicionarioMSSQL);
+
+  pmDatabaseOracle := TPopupMenu.Create(Self);
+  mnCriaDicionarioOracle := TMenuItem.Create(pmDatabaseOracle);
+  mnCriaDicionarioOracle.Caption := 'Criar Dicionário de Dados';
+  mnCriaDicionarioOracle.OnClick := @mnCriaDicionarioOracleClick;
+  pmDatabaseOracle.Items.Add(mnCriaDicionarioOracle);
+
+  // Set setup tab sheet as the last tab sheet
+  tsSetup.PageIndex := pgMain.PageCount - 1;
+
   {$IFDEF WINDOWS}
   zconpost.LibraryLocation := FSetMain.DLLPostPath;
   zconmysql.LibraryLocation := FSetMain.DLLMyPath;
+  zconMSSQL.LibraryLocation := FSetMain.DLLMSSQLPath;
+  zconOracle.LibraryLocation := FSetMain.DLLOraclePath;
   {$ENDIF}
 
   {$IFDEF LINUX}
@@ -1091,6 +1205,22 @@ begin
   edPasswrdPost.Text := FSetmain.PasswordPost;
   edSchemaPost.Text := FSetmain.SchemaPost;
   edDatabase.Text := FSetMain.BancoSQLite;
+
+  // Load SQL Server inputs
+  edHostMSSQL.Text := FSetMain.HostnameMSSQL;
+  edBancoMSSQL.Text := FSetMain.BancoMSSQL;
+  edUserMSSQL.Text := FSetMain.UsernameMSSQL;
+  edPassMSSQL.Text := FSetMain.PasswordMSSQL;
+  edSchemaMSSQL.Text := FSetMain.SchemaMSSQL;
+
+  // Load Oracle inputs
+  edHostOracle.Text := FSetMain.HostnameOracle;
+  edBancoOracle.Text := FSetMain.BancoOracle;
+  edUserOracle.Text := FSetMain.UsernameOracle;
+  edPassOracle.Text := FSetMain.PasswordOracle;
+  edSchemaOracle.Text := FSetMain.SchemaOracle;
+
+  OnShow := @FormShow;
 end;
 
 procedure Tfrmmquery2.setSelLength(var textComponent:TSynEdit; newValue:integer);
@@ -1420,7 +1550,7 @@ begin
 
   ForceDirectories(baseDir);
 
-  if (pgMain.ActivePage = liteMain) or ((not zconpost.Connected) and zconsqlite.Connected) then
+  if (pgMain.ActivePage = tsSqlite) or ((not zconpost.Connected) and zconsqlite.Connected) then
   begin
     fileName := IncludeTrailingPathDelimiter(baseDir) + 'dependencias_sqlite.sql';
     edSQL1.Text := CriaListaDependenciasSQLite(fileName);
@@ -2268,7 +2398,7 @@ var
   usingSQLite: Boolean;
 begin
   usingSQLite :=
-    (pgMain.ActivePage = liteMain) or
+    (pgMain.ActivePage = tsSqlite) or
     ((pgSQLite <> nil) and (pgSQLite.ActivePage <> nil) and zconsqlite.Connected and not zconpost.Connected);
 
   if usingSQLite then
@@ -3846,8 +3976,30 @@ begin
         conexao := frmmquery2.ConectSQLite;
       end;
 
+      3:
+      begin
+        frmmquery2.edHostMSSQL.Text := FSetMain.HostnameMSSQL;
+        frmmquery2.edBancoMSSQL.Text := FSetMain.BancoMSSQL;
+        frmmquery2.edUserMSSQL.Text := FSetMain.UsernameMSSQL;
+        frmmquery2.edPassMSSQL.Text := FSetMain.PasswordMSSQL;
+        frmmquery2.edSchemaMSSQL.Text := FSetMain.SchemaMSSQL;
+
+        conexao := frmmquery2.ConectMSSQL;
+      end;
+
+      4:
+      begin
+        frmmquery2.edHostOracle.Text := FSetMain.HostnameOracle;
+        frmmquery2.edBancoOracle.Text := FSetMain.BancoOracle;
+        frmmquery2.edUserOracle.Text := FSetMain.UsernameOracle;
+        frmmquery2.edPassOracle.Text := FSetMain.PasswordOracle;
+        frmmquery2.edSchemaOracle.Text := FSetMain.SchemaOracle;
+
+        conexao := frmmquery2.ConectOracle;
+      end;
+
     else
-      raise Exception.Create('TipoBanco inválido. Use 0=MySQL, 1=Postgres, 2=SQLite.');
+      raise Exception.Create('TipoBanco inválido. Use 0=MySQL, 1=Postgres, 2=SQLite, 3=MSSQL, 4=Oracle.');
     end;
 
     Result := conexao;
@@ -3937,6 +4089,1171 @@ begin
             (aInnerRect.Right  >= aOuterRect.Left)   and (aInnerRect.Right  <= aOuterRect.Right)  and
             (aInnerRect.Top    >= aOuterRect.Top)    and (aInnerRect.Top    <= aOuterRect.Bottom) and
             (aInnerRect.Bottom >= aOuterRect.Top)    and (aInnerRect.Bottom <= aOuterRect.Bottom);
+end;
+
+procedure Tfrmmquery2.CreateDynamicDBTab(const ATitle: string; var ATab: TTabSheet;
+  var AConnection: TZConnection; var AQuery: TZQuery; var ADataSource: TDataSource;
+  var ATreeView: TTreeView; var AHostEdit, ABancoEdit, AUserEdit, APassEdit, ASchemaEdit: TEdit;
+  var AConnectBtn: TButton; var ASynEdit: TSynEdit; var AExecBtn: TButton;
+  var ADBGrid: TDBGrid; var AErrorMemo: TMemo; AConnectHandler, AExecHandler: TNotifyEvent;
+  ATreeChangeHandler: TTVChangedEvent);
+var
+  leftPanel, rightPanel, setupPanel, workPanel, sqlPanel, sqlBarPanel: TPanel;
+  splitter, workSplitter: TSplitter;
+  resultsPC: TPageControl;
+  tsResults, tsErrors: TTabSheet;
+
+  function CreateInputGroup(AParent: TWinControl; ALeft, ATop, AWidth: Integer; const ALabelText: string; var AEdit: TEdit): TLabel;
+  var
+    lbl: TLabel;
+  begin
+    lbl := TLabel.Create(Self);
+    lbl.Parent := AParent;
+    lbl.Left := ALeft;
+    lbl.Top := ATop;
+    lbl.Caption := ALabelText;
+
+    AEdit := TEdit.Create(Self);
+    AEdit.Parent := AParent;
+    AEdit.Left := ALeft;
+    AEdit.Top := ATop + 18;
+    AEdit.Width := AWidth;
+
+    Result := lbl;
+  end;
+
+begin
+  // Create TabSheet
+  ATab := TTabSheet.Create(Self);
+  ATab.PageControl := pgMain;
+  ATab.Caption := ATitle;
+
+  // Create Connection, Query, and DataSource
+  AConnection := TZConnection.Create(Self);
+  AQuery := TZQuery.Create(Self);
+  AQuery.Connection := AConnection;
+  ADataSource := TDataSource.Create(Self);
+  ADataSource.DataSet := AQuery;
+
+  // Left Panel for Explorer Tree
+  leftPanel := TPanel.Create(Self);
+  leftPanel.Parent := ATab;
+  leftPanel.Align := alLeft;
+  leftPanel.Width := 220;
+  leftPanel.BevelOuter := bvNone;
+
+  // TreeView
+  ATreeView := TTreeView.Create(Self);
+  ATreeView.Parent := leftPanel;
+  ATreeView.Align := alClient;
+  ATreeView.OnChange := ATreeChangeHandler;
+  ATreeView.ReadOnly := True;
+
+  // Vertical Splitter
+  splitter := TSplitter.Create(Self);
+  splitter.Parent := ATab;
+  splitter.Align := alLeft;
+  splitter.Width := 5;
+
+  // Right Panel for setup and workspace
+  rightPanel := TPanel.Create(Self);
+  rightPanel.Parent := ATab;
+  rightPanel.Align := alClient;
+  rightPanel.BevelOuter := bvNone;
+
+  // Connection Setup Panel
+  setupPanel := TPanel.Create(Self);
+  setupPanel.Parent := rightPanel;
+  setupPanel.Align := alTop;
+  setupPanel.Height := 75;
+  setupPanel.BevelOuter := bvNone;
+
+  // Create input edits
+  CreateInputGroup(setupPanel, 10, 10, 150, 'Servidor/Host:', AHostEdit);
+  CreateInputGroup(setupPanel, 170, 10, 120, 'Banco de Dados:', ABancoEdit);
+  CreateInputGroup(setupPanel, 300, 10, 100, 'Usuário:', AUserEdit);
+  CreateInputGroup(setupPanel, 410, 10, 100, 'Senha:', APassEdit);
+  APassEdit.PasswordChar := '*';
+  CreateInputGroup(setupPanel, 520, 10, 80, 'Schema/Porta:', ASchemaEdit);
+
+  // Connection Button
+  AConnectBtn := TButton.Create(Self);
+  AConnectBtn.Parent := setupPanel;
+  AConnectBtn.Left := 615;
+  AConnectBtn.Top := 28;
+  AConnectBtn.Width := 95;
+  AConnectBtn.Height := 25;
+  AConnectBtn.Caption := 'Conectar';
+  AConnectBtn.OnClick := AConnectHandler;
+
+  // Workbench Panel (SQL Editor and Results Split)
+  workPanel := TPanel.Create(Self);
+  workPanel.Parent := rightPanel;
+  workPanel.Align := alClient;
+  workPanel.BevelOuter := bvNone;
+
+  // Upper section: SQL Panel
+  sqlPanel := TPanel.Create(Self);
+  sqlPanel.Parent := workPanel;
+  sqlPanel.Align := alTop;
+  sqlPanel.Height := 180;
+  sqlPanel.BevelOuter := bvNone;
+
+  // SynEdit
+  ASynEdit := TSynEdit.Create(Self);
+  ASynEdit.Parent := sqlPanel;
+  ASynEdit.Align := alClient;
+  ASynEdit.Highlighter := SynSQLSyn2; // Shared Highlighter
+
+  // SQL Execution Bar at the bottom of the SQL Panel
+  sqlBarPanel := TPanel.Create(Self);
+  sqlBarPanel.Parent := sqlPanel;
+  sqlBarPanel.Align := alBottom;
+  sqlBarPanel.Height := 32;
+  sqlBarPanel.BevelOuter := bvNone;
+
+  AExecBtn := TButton.Create(Self);
+  AExecBtn.Parent := sqlBarPanel;
+  AExecBtn.Left := 10;
+  AExecBtn.Top := 3;
+  AExecBtn.Width := 100;
+  AExecBtn.Height := 26;
+  AExecBtn.Caption := 'Executar SQL';
+  AExecBtn.OnClick := AExecHandler;
+
+  // Horizontal Splitter inside workspace
+  workSplitter := TSplitter.Create(Self);
+  workSplitter.Parent := workPanel;
+  workSplitter.Align := alTop;
+  workSplitter.Height := 5;
+
+  // Lower section: results & logs TabControl
+  resultsPC := TPageControl.Create(Self);
+  resultsPC.Parent := workPanel;
+  resultsPC.Align := alClient;
+
+  // Results Tab
+  tsResults := TTabSheet.Create(Self);
+  tsResults.PageControl := resultsPC;
+  tsResults.Caption := 'Resultados';
+
+  ADBGrid := TDBGrid.Create(Self);
+  ADBGrid.Parent := tsResults;
+  ADBGrid.Align := alClient;
+  ADBGrid.DataSource := ADataSource;
+  ADBGrid.ReadOnly := True;
+
+  // Errors/Log Tab
+  tsErrors := TTabSheet.Create(Self);
+  tsErrors.PageControl := resultsPC;
+  tsErrors.Caption := 'Erros / Log';
+
+  AErrorMemo := TMemo.Create(Self);
+  AErrorMemo.Parent := tsErrors;
+  AErrorMemo.Align := alClient;
+  AErrorMemo.ReadOnly := True;
+  AErrorMemo.ScrollBars := ssAutoVertical;
+end;
+
+function Tfrmmquery2.ConectMSSQL: Boolean;
+begin
+  Result := False;
+
+  if zconMSSQL.Connected then
+    zconMSSQL.Disconnect;
+
+  zconMSSQL.Protocol := 'mssql';
+  zconMSSQL.HostName := edHostMSSQL.Text;
+  zconMSSQL.Database := edBancoMSSQL.Text;
+  zconMSSQL.User     := edUserMSSQL.Text;
+  zconMSSQL.Password := edPassMSSQL.Text;
+
+  // Set properties in settings
+  if FSetMain <> nil then
+  begin
+    FSetMain.HostnameMSSQL := edHostMSSQL.Text;
+    FSetMain.BancoMSSQL    := edBancoMSSQL.Text;
+    FSetMain.UsernameMSSQL := edUserMSSQL.Text;
+    FSetMain.PasswordMSSQL := edPassMSSQL.Text;
+    FSetMain.SchemaMSSQL   := edSchemaMSSQL.Text;
+    FSetMain.SalvaContexto(False);
+  end;
+
+  {$IFDEF WINDOWS}
+  if (FSetMain <> nil) and (FSetMain.DLLMSSQLPath <> '') then
+    zconMSSQL.LibraryLocation := FSetMain.DLLMSSQLPath;
+  {$ENDIF}
+
+  try
+    zconMSSQL.Connect;
+    Result := zconMSSQL.Connected;
+  except
+    on E: Exception do
+    begin
+      edErroMSSQL.Lines.Add('Erro de Conexão: ' + E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+function Tfrmmquery2.ConectOracle: Boolean;
+begin
+  Result := False;
+
+  if zconOracle.Connected then
+    zconOracle.Disconnect;
+
+  zconOracle.Protocol := 'oracle';
+  zconOracle.HostName := edHostOracle.Text;
+  zconOracle.Database := edBancoOracle.Text;
+  zconOracle.User     := edUserOracle.Text;
+  zconOracle.Password := edPassOracle.Text;
+
+  // Set properties in settings
+  if FSetMain <> nil then
+  begin
+    FSetMain.HostnameOracle := edHostOracle.Text;
+    FSetMain.BancoOracle    := edBancoOracle.Text;
+    FSetMain.UsernameOracle := edUserOracle.Text;
+    FSetMain.PasswordOracle := edPassOracle.Text;
+    FSetMain.SchemaOracle   := edSchemaOracle.Text;
+    FSetMain.SalvaContexto(False);
+  end;
+
+  {$IFDEF WINDOWS}
+  if (FSetMain <> nil) and (FSetMain.DLLOraclePath <> '') then
+    zconOracle.LibraryLocation := FSetMain.DLLOraclePath;
+  {$ENDIF}
+
+  try
+    zconOracle.Connect;
+    Result := zconOracle.Connected;
+  except
+    on E: Exception do
+    begin
+      edErroOracle.Lines.Add('Erro de Conexão: ' + E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+procedure Tfrmmquery2.btConectarMSSQLClick(Sender: TObject);
+var
+  tvitem: TTreeNode;
+begin
+  tvitemMSSQL.DeleteChildren;
+  edErroMSSQL.Clear;
+
+  if not ConectMSSQL then
+  begin
+    edErroMSSQL.Lines.Add('Falha ao conectar no SQL Server.');
+    Exit;
+  end;
+
+  try
+    tvitemMSSQL.Text := edBancoMSSQL.Text;
+    tvitemMSSQL.ImageIndex := 13;
+
+    posicaofieldsMSSQL := tvMSSQL.Items.AddChildObject(tvitemMSSQL, 'tables', Pointer(ETDTabelas));
+    posicaofieldsMSSQL.ImageIndex := 15;
+
+    ListarTabelasMSSQL();
+    edErroMSSQL.Lines.Add('Conectado com sucesso ao SQL Server!');
+  except
+    on E: Exception do
+      edErroMSSQL.Lines.Add('Erro ao listar tabelas: ' + E.Message);
+  end;
+end;
+
+procedure Tfrmmquery2.btConectarOracleClick(Sender: TObject);
+var
+  tvitem: TTreeNode;
+begin
+  tvitemOracle.DeleteChildren;
+  edErroOracle.Clear;
+
+  if not ConectOracle then
+  begin
+    edErroOracle.Lines.Add('Falha ao conectar no Oracle.');
+    Exit;
+  end;
+
+  try
+    tvitemOracle.Text := edBancoOracle.Text;
+    tvitemOracle.ImageIndex := 13;
+
+    posicaofieldsOracle := tvOracle.Items.AddChildObject(tvitemOracle, 'tables', Pointer(ETDTabelas));
+    posicaofieldsOracle.ImageIndex := 15;
+
+    ListarTabelasOracle();
+    edErroOracle.Lines.Add('Conectado com sucesso ao Oracle!');
+  except
+    on E: Exception do
+      edErroOracle.Lines.Add('Erro ao listar tabelas: ' + E.Message);
+  end;
+end;
+
+procedure Tfrmmquery2.ListarTabelasMSSQL();
+var
+  tvItem, tvColunas: TTreeNode;
+  SchemaNome, TabelaNome, ColLine: string;
+  colQry: TZQuery;
+begin
+  SchemaNome := Trim(edSchemaMSSQL.Text);
+  if SchemaNome = '' then
+    SchemaNome := 'dbo';
+
+  zmssqlqry.Close;
+  zmssqlqry.SQL.Text :=
+    'SELECT TABLE_SCHEMA, TABLE_NAME ' +
+    'FROM INFORMATION_SCHEMA.TABLES ' +
+    'WHERE TABLE_TYPE = ''BASE TABLE'' ' +
+    '  AND TABLE_SCHEMA = :schema ' +
+    'ORDER BY TABLE_NAME';
+  zmssqlqry.ParamByName('schema').AsString := SchemaNome;
+  zmssqlqry.Open;
+
+  colQry := TZQuery.Create(nil);
+  try
+    colQry.Connection := zconMSSQL;
+    while not zmssqlqry.EOF do
+    begin
+      TabelaNome := zmssqlqry.FieldByName('TABLE_NAME').AsString;
+      tvItem := tvMSSQL.Items.AddChildObject(posicaofieldsMSSQL, TabelaNome, Pointer(ETDTabelas));
+      tvItem.ImageIndex := 14;
+
+      colQry.Close;
+      colQry.SQL.Text :=
+        'SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE ' +
+        'FROM INFORMATION_SCHEMA.COLUMNS ' +
+        'WHERE TABLE_SCHEMA = :schema ' +
+        '  AND TABLE_NAME = :table ' +
+        'ORDER BY ORDINAL_POSITION';
+      colQry.ParamByName('schema').AsString := SchemaNome;
+      colQry.ParamByName('table').AsString := TabelaNome;
+      colQry.Open;
+
+      tvColunas := tvMSSQL.Items.AddChildObject(tvItem, 'fields', Pointer(ETDBCampos));
+      tvColunas.ImageIndex := 16;
+
+      while not colQry.EOF do
+      begin
+        ColLine := colQry.FieldByName('COLUMN_NAME').AsString + ' : ' +
+                   colQry.FieldByName('DATA_TYPE').AsString;
+
+        if not colQry.FieldByName('CHARACTER_MAXIMUM_LENGTH').IsNull then
+          ColLine := ColLine + '(' + colQry.FieldByName('CHARACTER_MAXIMUM_LENGTH').AsString + ')';
+
+        if colQry.FieldByName('IS_NULLABLE').AsString = 'NO' then
+          ColLine := ColLine + ' NOT NULL';
+
+        tvMSSQL.Items.AddChildObject(tvColunas, ColLine, Pointer(ETDBCampos));
+        colQry.Next;
+      end;
+
+      zmssqlqry.Next;
+    end;
+  finally
+    colQry.Free;
+  end;
+end;
+
+procedure Tfrmmquery2.ListarTabelasOracle();
+var
+  tvItem, tvColunas: TTreeNode;
+  SchemaNome, TabelaNome, ColLine: string;
+  colQry: TZQuery;
+begin
+  SchemaNome := UpperCase(Trim(edSchemaOracle.Text));
+  if SchemaNome = '' then
+    SchemaNome := UpperCase(Trim(edUserOracle.Text));
+
+  zoracleqry.Close;
+  zoracleqry.SQL.Text :=
+    'SELECT OWNER, TABLE_NAME ' +
+    'FROM ALL_TABLES ' +
+    'WHERE OWNER = :schema ' +
+    'ORDER BY TABLE_NAME';
+  zoracleqry.ParamByName('schema').AsString := SchemaNome;
+  zoracleqry.Open;
+
+  colQry := TZQuery.Create(nil);
+  try
+    colQry.Connection := zconOracle;
+    while not zoracleqry.EOF do
+    begin
+      TabelaNome := zoracleqry.FieldByName('TABLE_NAME').AsString;
+      tvItem := tvOracle.Items.AddChildObject(posicaofieldsOracle, TabelaNome, Pointer(ETDTabelas));
+      tvItem.ImageIndex := 14;
+
+      colQry.Close;
+      colQry.SQL.Text :=
+        'SELECT COLUMN_NAME, DATA_TYPE, DATA_LENGTH, NULLABLE ' +
+        'FROM ALL_TAB_COLUMNS ' +
+        'WHERE OWNER = :schema ' +
+        '  AND TABLE_NAME = :table ' +
+        'ORDER BY COLUMN_ID';
+      colQry.ParamByName('schema').AsString := SchemaNome;
+      colQry.ParamByName('table').AsString := TabelaNome;
+      colQry.Open;
+
+      tvColunas := tvOracle.Items.AddChildObject(tvItem, 'fields', Pointer(ETDBCampos));
+      tvColunas.ImageIndex := 16;
+
+      while not colQry.EOF do
+      begin
+        ColLine := colQry.FieldByName('COLUMN_NAME').AsString + ' : ' +
+                   colQry.FieldByName('DATA_TYPE').AsString;
+
+        if (colQry.FieldByName('DATA_TYPE').AsString = 'VARCHAR2') or
+           (colQry.FieldByName('DATA_TYPE').AsString = 'CHAR') then
+        begin
+          ColLine := ColLine + '(' + colQry.FieldByName('DATA_LENGTH').AsString + ')';
+        end;
+
+        if colQry.FieldByName('NULLABLE').AsString = 'N' then
+          ColLine := ColLine + ' NOT NULL';
+
+        tvOracle.Items.AddChildObject(tvColunas, ColLine, Pointer(ETDBCampos));
+        colQry.Next;
+      end;
+
+      zoracleqry.Next;
+    end;
+  finally
+    colQry.Free;
+  end;
+end;
+
+procedure Tfrmmquery2.btExecutarMSSQLClick(Sender: TObject);
+var
+  SQL: string;
+begin
+  edErroMSSQL.Clear;
+  SQL := Trim(edSQLMSSQL.Text);
+  if SQL = '' then
+  begin
+    edErroMSSQL.Lines.Add('Digite um comando SQL para executar.');
+    Exit;
+  end;
+
+  if not zconMSSQL.Connected then
+  begin
+    edErroMSSQL.Lines.Add('Banco de dados não conectado. Conecte primeiro.');
+    Exit;
+  end;
+
+  try
+    zmssqlqry.Close;
+    zmssqlqry.SQL.Text := SQL;
+
+    // Check if query is a SELECT statement to open or just execute
+    if UpperCase(Copy(SQL, 1, 6)) = 'SELECT' then
+    begin
+      zmssqlqry.Open;
+      edErroMSSQL.Lines.Add(Format('Consulta executada com sucesso! %d registros retornados.', [zmssqlqry.RecordCount]));
+    end
+    else
+    begin
+      zmssqlqry.ExecSQL;
+      edErroMSSQL.Lines.Add(Format('Comando executado com sucesso! %d linhas afetadas.', [zmssqlqry.RowsAffected]));
+    end;
+  except
+    on E: Exception do
+      edErroMSSQL.Lines.Add('Erro ao executar SQL: ' + E.Message);
+  end;
+end;
+
+procedure Tfrmmquery2.btExecutarOracleClick(Sender: TObject);
+var
+  SQL: string;
+begin
+  edErroOracle.Clear;
+  SQL := Trim(edSQLOracle.Text);
+  if SQL = '' then
+  begin
+    edErroOracle.Lines.Add('Digite um comando SQL para executar.');
+    Exit;
+  end;
+
+  if not zconOracle.Connected then
+  begin
+    edErroOracle.Lines.Add('Banco de dados não conectado. Conecte primeiro.');
+    Exit;
+  end;
+
+  try
+    zoracleqry.Close;
+    zoracleqry.SQL.Text := SQL;
+
+    // Check if query is a SELECT statement to open or just execute
+    if UpperCase(Copy(SQL, 1, 6)) = 'SELECT' then
+    begin
+      zoracleqry.Open;
+      edErroOracle.Lines.Add(Format('Consulta executada com sucesso! %d registros retornados.', [zoracleqry.RecordCount]));
+    end
+    else
+    begin
+      zoracleqry.ExecSQL;
+      edErroOracle.Lines.Add(Format('Comando executado com sucesso! %d linhas afetadas.', [zoracleqry.RowsAffected]));
+    end;
+  except
+    on E: Exception do
+      edErroOracle.Lines.Add('Erro ao executar SQL: ' + E.Message);
+  end;
+end;
+
+procedure Tfrmmquery2.tvMSSQLChange(Sender: TObject; Node: TTreeNode);
+begin
+  if (Node = tvitemMSSQL) then
+    tvMSSQL.PopupMenu := pmDatabaseMSSQL
+  else
+    tvMSSQL.PopupMenu := nil;
+end;
+
+procedure Tfrmmquery2.tvOracleChange(Sender: TObject; Node: TTreeNode);
+begin
+  if (Node = tvitemOracle) then
+    tvOracle.PopupMenu := pmDatabaseOracle
+  else
+    tvOracle.PopupMenu := nil;
+end;
+
+procedure Tfrmmquery2.mnCriaDicionarioMSSQLClick(Sender: TObject);
+var
+  baseDir, fileName: string;
+begin
+  if not zconMSSQL.Connected then
+  begin
+    ShowMessage('SQL Server não conectado!');
+    Exit;
+  end;
+
+  {$IFDEF WINDOWS}
+  baseDir := GetAppConfigDir(False);
+  {$ELSE}
+  baseDir := GetUserDir;
+  {$ENDIF}
+
+  ForceDirectories(baseDir);
+  fileName := IncludeTrailingPathDelimiter(baseDir) + 'dicionario_mssql.sql';
+
+  edSQLMSSQL.Text := CriaDicionarioMSSQL(fileName);
+  pgMain.ActivePage := tsMSSQL;
+
+  ShowMessage('Dicionário SQL Server salvo em:' + LineEnding + fileName);
+end;
+
+procedure Tfrmmquery2.mnCriaDicionarioOracleClick(Sender: TObject);
+var
+  baseDir, fileName: string;
+begin
+  if not zconOracle.Connected then
+  begin
+    ShowMessage('Oracle não conectado!');
+    Exit;
+  end;
+
+  {$IFDEF WINDOWS}
+  baseDir := GetAppConfigDir(False);
+  {$ELSE}
+  baseDir := GetUserDir;
+  {$ENDIF}
+
+  ForceDirectories(baseDir);
+  fileName := IncludeTrailingPathDelimiter(baseDir) + 'dicionario_oracle.sql';
+
+  edSQLOracle.Text := CriaDicionarioOracle(fileName);
+  pgMain.ActivePage := tsOracle;
+
+  ShowMessage('Dicionário Oracle salvo em:' + LineEnding + fileName);
+end;
+
+function Tfrmmquery2.CriaDicionarioMSSQL(const ATargetFile: string): string;
+var
+  outSQL        : TStringList;
+  schema        : string;
+  tblNode       : TTreeNode;
+  tblName       : string;
+  targetAbsPath : string;
+  targetDir     : string;
+  sqlCreate     : string;
+
+  function QIdent(const S: string): string;
+  begin
+    Result := '[' + StringReplace(S, ']', ']]', [rfReplaceAll]) + ']';
+  end;
+
+  function BuildColumnsSQL(const ASchema, ATable: string): TStringList;
+  var
+    qry: TZQuery;
+    line, colname, dtype, defval: string;
+    charlen: Integer;
+    isnull: Boolean;
+  begin
+    Result := TStringList.Create;
+    qry := TZQuery.Create(nil);
+    try
+      qry.Connection := zconMSSQL;
+      qry.SQL.Text :=
+        'SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE, COLUMN_DEFAULT ' +
+        'FROM INFORMATION_SCHEMA.COLUMNS ' +
+        'WHERE TABLE_SCHEMA = :schema ' +
+        '  AND TABLE_NAME = :table ' +
+        'ORDER BY ORDINAL_POSITION';
+      qry.ParamByName('schema').AsString := ASchema;
+      qry.ParamByName('table').AsString  := ATable;
+      qry.Open;
+
+      while not qry.EOF do
+      begin
+        colname := qry.FieldByName('COLUMN_NAME').AsString;
+        dtype   := qry.FieldByName('DATA_TYPE').AsString;
+        isnull  := qry.FieldByName('IS_NULLABLE').AsString = 'YES';
+
+        line := '  ' + QIdent(colname) + ' ' + dtype;
+
+        if not qry.FieldByName('CHARACTER_MAXIMUM_LENGTH').IsNull then
+        begin
+          charlen := qry.FieldByName('CHARACTER_MAXIMUM_LENGTH').AsInteger;
+          if charlen = -1 then
+            line := line + '(MAX)'
+          else if (dtype = 'varchar') or (dtype = 'nvarchar') or (dtype = 'char') or (dtype = 'nchar') then
+            line := line + '(' + IntToStr(charlen) + ')';
+        end;
+
+        if not isnull then
+          line := line + ' NOT NULL'
+        else
+          line := line + ' NULL';
+
+        if not qry.FieldByName('COLUMN_DEFAULT').IsNull then
+        begin
+          defval := Trim(qry.FieldByName('COLUMN_DEFAULT').AsString);
+          if defval <> '' then
+            line := line + ' DEFAULT ' + defval;
+        end;
+
+        Result.Add(line);
+        qry.Next;
+      end;
+    finally
+      qry.Free;
+    end;
+  end;
+
+  function BuildPKSQL(const ASchema, ATable: string): TStringList;
+  var
+    qry: TZQuery;
+    constraintName, cols, col: string;
+  begin
+    Result := TStringList.Create;
+    qry := TZQuery.Create(nil);
+    try
+      qry.Connection := zconMSSQL;
+      qry.SQL.Text :=
+        'SELECT tc.CONSTRAINT_NAME, kcu.COLUMN_NAME ' +
+        'FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc ' +
+        'JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS kcu ' +
+        '  ON tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME ' +
+        '  AND tc.TABLE_SCHEMA = kcu.TABLE_SCHEMA ' +
+        '  AND tc.TABLE_NAME = kcu.TABLE_NAME ' +
+        'WHERE tc.CONSTRAINT_TYPE = ''PRIMARY KEY'' ' +
+        '  AND tc.TABLE_SCHEMA = :schema ' +
+        '  AND tc.TABLE_NAME = :table ' +
+        'ORDER BY kcu.ORDINAL_POSITION';
+      qry.ParamByName('schema').AsString := ASchema;
+      qry.ParamByName('table').AsString  := ATable;
+      qry.Open;
+
+      constraintName := '';
+      cols := '';
+      while not qry.EOF do
+      begin
+        constraintName := qry.FieldByName('CONSTRAINT_NAME').AsString;
+        col := qry.FieldByName('COLUMN_NAME').AsString;
+        if cols <> '' then cols := cols + ', ';
+        cols := cols + QIdent(col);
+        qry.Next;
+      end;
+
+      if constraintName <> '' then
+      begin
+        Result.Add(
+          'ALTER TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) +
+          ' ADD CONSTRAINT ' + QIdent(constraintName) +
+          ' PRIMARY KEY (' + cols + ');'
+        );
+      end;
+    finally
+      qry.Free;
+    end;
+  end;
+
+  function BuildFKSQL(const ASchema, ATable: string): TStringList;
+  var
+    qry: TZQuery;
+    constraintName, lastConstraint, parentCols, refCols, refTable: string;
+    col, refCol: string;
+  begin
+    Result := TStringList.Create;
+    qry := TZQuery.Create(nil);
+    try
+      qry.Connection := zconMSSQL;
+      qry.SQL.Text :=
+        'SELECT fk.name AS constraint_name, c1.name AS column_name, ' +
+        '       t2.name AS referenced_table, c2.name AS referenced_column ' +
+        'FROM sys.foreign_keys fk ' +
+        'INNER JOIN sys.foreign_key_columns fkc ON fk.object_id = fkc.constraint_object_id ' +
+        'INNER JOIN sys.tables t1 ON fkc.parent_object_id = t1.object_id ' +
+        'INNER JOIN sys.columns c1 ON fkc.parent_object_id = c1.object_id AND fkc.parent_column_id = c1.column_id ' +
+        'INNER JOIN sys.tables t2 ON fkc.referenced_object_id = t2.object_id ' +
+        'INNER JOIN sys.columns c2 ON fkc.referenced_object_id = c2.object_id AND fkc.referenced_column_id = c2.column_id ' +
+        'WHERE t1.name = :table ' +
+        '  AND SCHEMA_NAME(t1.schema_id) = :schema ' +
+        'ORDER BY fk.name, fkc.constraint_column_id';
+      qry.ParamByName('schema').AsString := ASchema;
+      qry.ParamByName('table').AsString  := ATable;
+      qry.Open;
+
+      lastConstraint := '';
+      parentCols := '';
+      refCols := '';
+      refTable := '';
+
+      while not qry.EOF do
+      begin
+        constraintName := qry.FieldByName('constraint_name').AsString;
+        col := qry.FieldByName('column_name').AsString;
+        refTable := qry.FieldByName('referenced_table').AsString;
+        refCol := qry.FieldByName('referenced_column').AsString;
+
+        if (lastConstraint <> '') and (lastConstraint <> constraintName) then
+        begin
+          Result.Add(
+            'ALTER TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) +
+            ' ADD CONSTRAINT ' + QIdent(lastConstraint) +
+            ' FOREIGN KEY (' + parentCols + ') REFERENCES ' + QIdent(ASchema) + '.' + QIdent(refTable) + ' (' + refCols + ');'
+          );
+          parentCols := '';
+          refCols := '';
+        end;
+
+        lastConstraint := constraintName;
+        if parentCols <> '' then parentCols := parentCols + ', ';
+        parentCols := parentCols + QIdent(col);
+        if refCols <> '' then refCols := refCols + ', ';
+        refCols := refCols + QIdent(refCol);
+
+        qry.Next;
+      end;
+
+      if lastConstraint <> '' then
+      begin
+        Result.Add(
+          'ALTER TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) +
+          ' ADD CONSTRAINT ' + QIdent(lastConstraint) +
+          ' FOREIGN KEY (' + parentCols + ') REFERENCES ' + QIdent(ASchema) + '.' + QIdent(refTable) + ' (' + refCols + ');'
+        );
+      end;
+    finally
+      qry.Free;
+    end;
+  end;
+
+  function BuildCreateTableSQL(const ASchema, ATable: string): string;
+  var
+    cols, pks, fks: TStringList;
+    i: Integer;
+  begin
+    cols := nil; pks := nil; fks := nil;
+    try
+      cols := BuildColumnsSQL(ASchema, ATable);
+      pks  := BuildPKSQL(ASchema, ATable);
+      fks  := BuildFKSQL(ASchema, ATable);
+
+      Result := 'CREATE TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) + ' (' + sLineBreak;
+      for i := 0 to cols.Count - 1 do
+      begin
+        if i < cols.Count - 1 then
+          Result := Result + cols[i] + ',' + sLineBreak
+        else
+          Result := Result + cols[i] + sLineBreak;
+      end;
+      Result := Result + ');' + sLineBreak;
+
+      for i := 0 to pks.Count - 1 do Result := Result + pks[i] + sLineBreak;
+      for i := 0 to fks.Count - 1 do Result := Result + fks[i] + sLineBreak;
+    finally
+      cols.Free;
+      pks.Free;
+      fks.Free;
+    end;
+  end;
+
+begin
+  Result := '';
+
+  if (dmBase = nil) then
+    dmBase := TdmBase.Create(Self);
+  dmBase.DeleteTabelas;
+
+  if not zconMSSQL.Connected then
+  begin
+    ShowMessage('SQL Server não conectado.');
+    Exit;
+  end;
+
+  if (posicaofieldsMSSQL = nil) or (posicaofieldsMSSQL.GetFirstChild = nil) then
+  begin
+    ShowMessage('Nenhuma tabela encontrada no SQL Server.');
+    Exit;
+  end;
+
+  schema := Trim(edSchemaMSSQL.Text);
+  if schema = '' then schema := 'dbo';
+
+  outSQL := TStringList.Create;
+  try
+    outSQL.Add('-- =========================================');
+    outSQL.Add('-- Dicionário de dados gerado pelo MQuery2');
+    outSQL.Add('-- ' + FormatDateTime('yyyy-mm-dd hh:nn:ss', Now));
+    outSQL.Add('-- Database: ' + Trim(edBancoMSSQL.Text) + ' | Schema: ' + schema);
+    outSQL.Add('-- =========================================');
+    outSQL.Add('');
+
+    tblNode := posicaofieldsMSSQL.GetFirstChild;
+    while tblNode <> nil do
+    begin
+      tblName := tblNode.Text;
+
+      outSQL.Add('-- ' + tblName);
+      sqlCreate := BuildCreateTableSQL(schema, tblName);
+      outSQL.Add(sqlCreate);
+      outSQL.Add('');
+
+      if (FSetMain.Project <> '') then
+      begin
+        if (dmBase = nil) then
+          dmBase := TdmBase.Create(Self);
+        dmBase.RegistraTabela(tblName, '', sqlCreate);
+      end;
+
+      tblNode := tblNode.GetNextSibling;
+      Application.ProcessMessages;
+    end;
+
+    targetAbsPath := ExpandFileName(ATargetFile);
+    targetDir     := ExtractFilePath(targetAbsPath);
+    if targetDir <> '' then
+      ForceDirectories(targetDir);
+
+    if (ATargetFile <> '') then
+    begin
+      outSQL.SaveToFile(targetAbsPath);
+      edLog.Append('Dicionário gerado em: ' + targetAbsPath);
+    end;
+
+    Result := outSQL.Text;
+  finally
+    outSQL.Free;
+  end;
+end;
+
+function Tfrmmquery2.CriaDicionarioOracle(const ATargetFile: string): string;
+var
+  outSQL        : TStringList;
+  schema        : string;
+  tblNode       : TTreeNode;
+  tblName       : string;
+  targetAbsPath : string;
+  targetDir     : string;
+  sqlCreate     : string;
+
+  function QIdent(const S: string): string;
+  begin
+    Result := '"' + StringReplace(S, '"', '""', [rfReplaceAll]) + '"';
+  end;
+
+  function BuildColumnsSQL(const ASchema, ATable: string): TStringList;
+  var
+    qry: TZQuery;
+    line, colname, dtype, defval: string;
+    datalen, dataprec, datascale: Integer;
+    isnull: Boolean;
+  begin
+    Result := TStringList.Create;
+    qry := TZQuery.Create(nil);
+    try
+      qry.Connection := zconOracle;
+      qry.SQL.Text :=
+        'SELECT COLUMN_NAME, DATA_TYPE, DATA_LENGTH, DATA_PRECISION, DATA_SCALE, NULLABLE, DATA_DEFAULT ' +
+        'FROM ALL_TAB_COLUMNS ' +
+        'WHERE OWNER = :schema ' +
+        '  AND TABLE_NAME = :table ' +
+        'ORDER BY COLUMN_ID';
+      qry.ParamByName('schema').AsString := ASchema;
+      qry.ParamByName('table').AsString  := ATable;
+      qry.Open;
+
+      while not qry.EOF do
+      begin
+        colname := qry.FieldByName('COLUMN_NAME').AsString;
+        dtype   := qry.FieldByName('DATA_TYPE').AsString;
+        isnull  := qry.FieldByName('NULLABLE').AsString = 'Y';
+
+        line := '  ' + QIdent(colname) + ' ' + dtype;
+
+        if (dtype = 'VARCHAR2') or (dtype = 'VARCHAR') or (dtype = 'CHAR') or (dtype = 'RAW') then
+        begin
+          datalen := qry.FieldByName('DATA_LENGTH').AsInteger;
+          line := line + '(' + IntToStr(datalen) + ')';
+        end
+        else if dtype = 'NUMBER' then
+        begin
+          if not qry.FieldByName('DATA_PRECISION').IsNull then
+          begin
+            dataprec := qry.FieldByName('DATA_PRECISION').AsInteger;
+            if not qry.FieldByName('DATA_SCALE').IsNull then
+            begin
+              datascale := qry.FieldByName('DATA_SCALE').AsInteger;
+              line := line + '(' + IntToStr(dataprec) + ',' + IntToStr(datascale) + ')';
+            end
+            else
+              line := line + '(' + IntToStr(dataprec) + ')';
+          end;
+        end;
+
+        if not qry.FieldByName('DATA_DEFAULT').IsNull then
+        begin
+          defval := Trim(qry.FieldByName('DATA_DEFAULT').AsString);
+          if defval <> '' then
+            line := line + ' DEFAULT ' + defval;
+        end;
+
+        if not isnull then
+          line := line + ' NOT NULL';
+
+        Result.Add(line);
+        qry.Next;
+      end;
+    finally
+      qry.Free;
+    end;
+  end;
+
+  function BuildPKSQL(const ASchema, ATable: string): TStringList;
+  var
+    qry: TZQuery;
+    constraintName, cols, col: string;
+  begin
+    Result := TStringList.Create;
+    qry := TZQuery.Create(nil);
+    try
+      qry.Connection := zconOracle;
+      qry.SQL.Text :=
+        'SELECT c.constraint_name, cc.column_name ' +
+        'FROM all_constraints c ' +
+        'JOIN all_cons_columns cc ON c.constraint_name = cc.constraint_name AND c.owner = cc.owner ' +
+        'WHERE c.constraint_type = ''P'' ' +
+        '  AND c.owner = :schema ' +
+        '  AND c.table_name = :table ' +
+        'ORDER BY cc.position';
+      qry.ParamByName('schema').AsString := ASchema;
+      qry.ParamByName('table').AsString  := ATable;
+      qry.Open;
+
+      constraintName := '';
+      cols := '';
+      while not qry.EOF do
+      begin
+        constraintName := qry.FieldByName('constraint_name').AsString;
+        col := qry.FieldByName('column_name').AsString;
+        if cols <> '' then cols := cols + ', ';
+        cols := cols + QIdent(col);
+        qry.Next;
+      end;
+
+      if constraintName <> '' then
+      begin
+        Result.Add(
+          'ALTER TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) +
+          ' ADD CONSTRAINT ' + QIdent(constraintName) +
+          ' PRIMARY KEY (' + cols + ');'
+        );
+      end;
+    finally
+      qry.Free;
+    end;
+  end;
+
+  function BuildFKSQL(const ASchema, ATable: string): TStringList;
+  var
+    qry: TZQuery;
+    constraintName, lastConstraint, parentCols, refCols, refTable: string;
+    col, refCol: string;
+  begin
+    Result := TStringList.Create;
+    qry := TZQuery.Create(nil);
+    try
+      qry.Connection := zconOracle;
+      qry.SQL.Text :=
+        'SELECT c.constraint_name, cc.column_name, rc.table_name AS r_table, rcc.column_name AS r_column ' +
+        'FROM all_constraints c ' +
+        'JOIN all_cons_columns cc ON c.constraint_name = cc.constraint_name AND c.owner = cc.owner ' +
+        'JOIN all_constraints rc ON c.r_constraint_name = rc.constraint_name AND c.r_owner = rc.owner ' +
+        'JOIN all_cons_columns rcc ON rc.constraint_name = rcc.constraint_name AND rc.owner = rcc.owner AND cc.position = rcc.position ' +
+        'WHERE c.constraint_type = ''R'' ' +
+        '  AND c.owner = :schema ' +
+        '  AND c.table_name = :table ' +
+        'ORDER BY c.constraint_name, cc.position';
+      qry.ParamByName('schema').AsString := ASchema;
+      qry.ParamByName('table').AsString  := ATable;
+      qry.Open;
+
+      lastConstraint := '';
+      parentCols := '';
+      refCols := '';
+      refTable := '';
+
+      while not qry.EOF do
+      begin
+        constraintName := qry.FieldByName('constraint_name').AsString;
+        col := qry.FieldByName('column_name').AsString;
+        refTable := qry.FieldByName('r_table').AsString;
+        refCol := qry.FieldByName('r_column').AsString;
+
+        if (lastConstraint <> '') and (lastConstraint <> constraintName) then
+        begin
+          Result.Add(
+            'ALTER TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) +
+            ' ADD CONSTRAINT ' + QIdent(lastConstraint) +
+            ' FOREIGN KEY (' + parentCols + ') REFERENCES ' + QIdent(ASchema) + '.' + QIdent(refTable) + ' (' + refCols + ');'
+          );
+          parentCols := '';
+          refCols := '';
+        end;
+
+        lastConstraint := constraintName;
+        if parentCols <> '' then parentCols := parentCols + ', ';
+        parentCols := parentCols + QIdent(col);
+        if refCols <> '' then refCols := refCols + ', ';
+        refCols := refCols + QIdent(refCol);
+
+        qry.Next;
+      end;
+
+      if lastConstraint <> '' then
+      begin
+        Result.Add(
+          'ALTER TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) +
+          ' ADD CONSTRAINT ' + QIdent(lastConstraint) +
+          ' FOREIGN KEY (' + parentCols + ') REFERENCES ' + QIdent(ASchema) + '.' + QIdent(refTable) + ' (' + refCols + ');'
+        );
+      end;
+    finally
+      qry.Free;
+    end;
+  end;
+
+  function BuildCreateTableSQL(const ASchema, ATable: string): string;
+  var
+    cols, pks, fks: TStringList;
+    i: Integer;
+  begin
+    cols := nil; pks := nil; fks := nil;
+    try
+      cols := BuildColumnsSQL(ASchema, ATable);
+      pks  := BuildPKSQL(ASchema, ATable);
+      fks  := BuildFKSQL(ASchema, ATable);
+
+      Result := 'CREATE TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) + ' (' + sLineBreak;
+      for i := 0 to cols.Count - 1 do
+      begin
+        if i < cols.Count - 1 then
+          Result := Result + cols[i] + ',' + sLineBreak
+        else
+          Result := Result + cols[i] + sLineBreak;
+      end;
+      Result := Result + ');' + sLineBreak;
+
+      for i := 0 to pks.Count - 1 do Result := Result + pks[i] + sLineBreak;
+      for i := 0 to fks.Count - 1 do Result := Result + fks[i] + sLineBreak;
+    finally
+      cols.Free;
+      pks.Free;
+      fks.Free;
+    end;
+  end;
+
+begin
+  Result := '';
+
+  if (dmBase = nil) then
+    dmBase := TdmBase.Create(Self);
+  dmBase.DeleteTabelas;
+
+  if not zconOracle.Connected then
+  begin
+    ShowMessage('Oracle não conectado.');
+    Exit;
+  end;
+
+  if (posicaofieldsOracle = nil) or (posicaofieldsOracle.GetFirstChild = nil) then
+  begin
+    ShowMessage('Nenhuma tabela encontrada no Oracle.');
+    Exit;
+  end;
+
+  schema := Trim(edSchemaOracle.Text);
+  if schema = '' then schema := Trim(edUserOracle.Text);
+  schema := UpperCase(schema);
+
+  outSQL := TStringList.Create;
+  try
+    outSQL.Add('-- =========================================');
+    outSQL.Add('-- Dicionário de dados gerado pelo MQuery2');
+    outSQL.Add('-- ' + FormatDateTime('yyyy-mm-dd hh:nn:ss', Now));
+    outSQL.Add('-- Database: ' + Trim(edBancoOracle.Text) + ' | Schema: ' + schema);
+    outSQL.Add('-- =========================================');
+    outSQL.Add('');
+
+    tblNode := posicaofieldsOracle.GetFirstChild;
+    while tblNode <> nil do
+    begin
+      tblName := tblNode.Text;
+
+      outSQL.Add('-- ' + tblName);
+      sqlCreate := BuildCreateTableSQL(schema, tblName);
+      outSQL.Add(sqlCreate);
+      outSQL.Add('');
+
+      if (FSetMain.Project <> '') then
+      begin
+        if (dmBase = nil) then
+          dmBase := TdmBase.Create(Self);
+        dmBase.RegistraTabela(tblName, '', sqlCreate);
+      end;
+
+      tblNode := tblNode.GetNextSibling;
+      Application.ProcessMessages;
+    end;
+
+    targetAbsPath := ExpandFileName(ATargetFile);
+    targetDir     := ExtractFilePath(targetAbsPath);
+    if targetDir <> '' then
+      ForceDirectories(targetDir);
+
+    if (ATargetFile <> '') then
+    begin
+      outSQL.SaveToFile(targetAbsPath);
+      edLog.Append('Dicionário gerado em: ' + targetAbsPath);
+    end;
+
+    Result := outSQL.Text;
+  finally
+    outSQL.Free;
+  end;
 end;
 
 end.

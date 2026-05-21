@@ -302,6 +302,50 @@ object frmconfig: Tfrmconfig
         Caption = 'DLL/SO POSTGRE:'
         ParentColor = False
       end
+      object Label12: TLabel
+        Left = 6
+        Height = 15
+        Top = 138
+        Width = 94
+        Caption = 'DLL/SO MSSQL:'
+        ParentColor = False
+      end
+      object edDLLMSSQLPATH: TFileNameEdit
+        Left = 6
+        Height = 23
+        Hint = 'DLL PATH MSSQL'
+        Top = 158
+        Width = 336
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 18
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 2
+        TextHint = 'DLL PATH MSSQL'
+      end
+      object Label13: TLabel
+        Left = 6
+        Height = 15
+        Top = 204
+        Width = 94
+        Caption = 'DLL/SO Oracle:'
+        ParentColor = False
+      end
+      object edDLLOraclePATH: TFileNameEdit
+        Left = 6
+        Height = 23
+        Hint = 'DLL PATH Oracle'
+        Top = 224
+        Width = 336
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 18
+        NumGlyphs = 1
+        MaxLength = 0
+        TabOrder = 3
+        TextHint = 'DLL PATH Oracle'
+      end
     end
     object tsFalar: TTabSheet
       Caption = 'Tools Falar'

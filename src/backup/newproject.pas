@@ -72,7 +72,7 @@ begin
     begin
       frmhint := TfrmHint.create(self);
     end;
-    frmHint.MessageHint('Selecione a pasta de destino.');
+    MessageHint('Selecione a pasta de destino.');
     Exit;
   end;
   if Trim(edproject.Text) = '' then
@@ -81,7 +81,7 @@ begin
     begin
       frmhint := TfrmHint.create(self);
     end;
-    frmHint.MessageHint('Informe o nome do projeto.');
+    MessageHint('Informe o nome do projeto.');
     Exit;
   end;
 
@@ -104,11 +104,11 @@ begin
 
   if not FileExists(original) then
   begin
-    if(frmhint= nil) then
+    if(frmhint= nil) then      https://download.oracle.com/otn/nt/oracle18c/180000/OracleXE184_Win64.zip?AuthParam=1779390223_a92a4442592215863bcecd6d942b01c0
     begin
       frmhint := TfrmHint.create(self);
     end;
-    frmHint.MessageHint('Arquivo de base não encontrado: ' + original);
+    MessageHint('Arquivo de base não encontrado: ' + original);
     Exit;
   end;
 
@@ -124,7 +124,7 @@ begin
       begin
         frmhint := TfrmHint.create(self);
       end;
-      frmHint.MessageHint('Falha ao copiar o arquivo: ' + E.Message);
+      MessageHint('Falha ao copiar o arquivo: ' + E.Message);
       Exit;
     end;
   end;
@@ -142,7 +142,7 @@ begin
     begin
       frmhint := TfrmHint.create(self);
     end;
-    frmHint.MessageHint('Não foi possível conectar ao SQLite.');
+    MessageHint('Não foi possível conectar ao SQLite.');
 end;
 
 procedure TfrmNewProject.btProcessClick(Sender: TObject);
@@ -217,7 +217,7 @@ begin
     begin
       frmhint := TfrmHint.create(self);
     end;
-    frmHint.MessageHint('Conexão inválida');
+    MessageHint('Conexão inválida');
   end;
 end;
 
@@ -246,7 +246,7 @@ begin
     begin
       frmhint := TfrmHint.create(self);
     end;
-    frmHint.MessageHint('Spec not found');
+    MessageHint('Spec not found');
   end;
 end;
 

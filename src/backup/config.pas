@@ -25,6 +25,8 @@ type
     edDLLPostPATH: TFileNameEdit;
     edDLLPATH: TFileNameEdit;
     edDLLMyPATH: TFileNameEdit;
+    edDLLMSSQLPATH: TFileNameEdit;
+    edDLLOraclePATH: TFileNameEdit;
     edInstall: TFileNameEdit;
     edIPOuvir: TIPEdit;
     edIPLocalIA: TEdit;
@@ -33,6 +35,8 @@ type
     Label1: TLabel;
     Label10: TLabel;
     Label11: TLabel;
+    Label12: TLabel;
+    Label13: TLabel;
     lbVersao: TLabel;
     lbIP: TLabel;
     Label2: TLabel;
@@ -80,15 +84,22 @@ begin
   FSetMain.DLLPath := edDLLPATH.Text;
   FSetMain.DLLMYPath := edDLLMYPATH.Text;
   FSetMain.DLLPOSTPath := edDLLPOSTPATH.Text;
+  FSetMain.DLLMSSQLPath := edDLLMSSQLPATH.Text;
+  FSetMain.DLLOraclePath := edDLLOraclePATH.Text;
   FSetMain.CHATGPT := edCHATGPT.Text;
   FSetMain.ToolsFalar := ckToolsFalar.Checked;
   FSetMain.ToolsOuvir := ckToolsOuvir.Checked;
   FSetMain.IPFALAR := edIPFALAR.Text;
   FSetMain.IPOUVIR := edIPOUVIR.Text;
 
+  // Servidor da IA local / llama.cpp
+  FSetMain.IPLocalIA := edIPLocalIA.Text;
+
+  // Provider IA:
   // 0 = OpenAI
   // 1 = OpenRouter
   // 2 = Cerebras
+  // 3 = Local / llama.cpp
   if cbTipoIA.ItemIndex < 0 then
     FSetMain.Provider := 0
   else
@@ -100,7 +111,8 @@ end;
 
 procedure Tfrmconfig.cbTipoIAChange(Sender: TObject);
 begin
-
+  // Por enquanto não precisa fazer nada.
+  // Depois podemos usar para habilitar/desabilitar campos conforme o provedor.
 end;
 
 procedure Tfrmconfig.FormCreate(Sender: TObject);
@@ -116,15 +128,19 @@ begin
   edDLLPATH.Text := FSetMain.DLLPath;
   edDLLMyPATH.Text := FSetMain.DLLMyPath;
   edDLLPostPATH.Text := FSetMain.DLLPostPath;
+  edDLLMSSQLPATH.Text := FSetMain.DLLMSSQLPath;
+  edDLLOraclePATH.Text := FSetMain.DLLOraclePath;
   ckToolsFalar.Checked := FSetMain.ToolsFalar;
   ckToolsOuvir.Checked := FSetMain.ToolsOuvir;
   edIPFALAR.Text := FSetMain.IPFALAR;
   edIPOUVIR.Text := FSetMain.IPOUVIR;
+  edIPLocalIA.Text := FSetMain.IPLocalIA;
 
   cbTipoIA.Items.Clear;
-  cbTipoIA.Items.Add('OpenAI');
-  cbTipoIA.Items.Add('OpenRouter');
-  cbTipoIA.Items.Add('Cerebras');
+  cbTipoIA.Items.Add('OpenAI');      // 0
+  cbTipoIA.Items.Add('OpenRouter');  // 1
+  cbTipoIA.Items.Add('Cerebras');    // 2
+  cbTipoIA.Items.Add('Local');       // 3 - llama.cpp
 
   if (FSetMain.Provider >= 0) and (FSetMain.Provider < cbTipoIA.Items.Count) then
     cbTipoIA.ItemIndex := FSetMain.Provider

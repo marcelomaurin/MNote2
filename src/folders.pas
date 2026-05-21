@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ShellCtrls,
   ExtCtrls, Menus, StdCtrls, GifAnim, untsalesSwitch, funcoes, hint, setmain,
   chatgpt, Types, StrUtils, LConvEncoding, base, DateUtils, LazFileUtils,
-  fpjson, jsonparser, jsonscanner, Math, uDocText , uPdfText;
+  fpjson, jsonparser, jsonscanner, Math, uDocText , uPdfText, item;
 
 type
 
@@ -57,6 +57,7 @@ type
     tsTecnica: TTabSheet;
     tsFolders: TTabSheet;
     tsIA: TTabSheet;
+    miLimparRIAPIA: TMenuItem;
 
     procedure btScannerClick(Sender: TObject);
     procedure btIAClick(Sender: TObject);
@@ -77,11 +78,28 @@ type
     procedure ShellTreeView1Changing(Sender: TObject; Node: TTreeNode;
       var AllowChange: Boolean);
     procedure ShellTreeView1GetSelectedIndex(Sender: TObject; Node: TTreeNode);
+    procedure miLimparRIA_PIAClick(Sender: TObject);
   private
      ArvoreDiretorios : widestring;
      Projeto : string;
      Arquivos : TStringList;
      AnaliseArquivo: TStringList; // << novo
+
+     // Componentes dinâmicos de Outline e Busca
+     tsOutline: TTabSheet;
+     tvOutline: TTreeView;
+     tsSearch: TTabSheet;
+     pnSearchTop: TPanel;
+     btnSearch: TButton;
+     edSearchTerm: TEdit;
+     lstSearchResults: TListBox;
+
+     procedure tvOutlineDblClick(Sender: TObject);
+     procedure LimparRIAPIA_NaPasta(const Dir: string);
+     procedure edSearchTermKeyPress(Sender: TObject; var Key: char);
+     procedure btnSearchClick(Sender: TObject);
+     procedure lstSearchResultsDblClick(Sender: TObject);
+     procedure ExecutarBuscaGlobal;
 
      function Util_ClipText(const S: string; MaxChars: Integer): string;
      function AF_BuildDevMsg_ListaCodigos: widestring;
@@ -175,6 +193,7 @@ type
      // ==== NOVA PROCEDURE PÚBLICA ====
      procedure BuscaTermos(const Pergunta: string);
      function FileBinNotRead(FullPath : string): boolean;
+     procedure AtualizarOutline(const Texto: string);
    end;
 
 
@@ -698,6 +717,85 @@ begin
   end;
 end;
 
+procedure TfrmFolders.miLimparRIA_PIAClick(Sender: TObject);
+var
+  TargetDir: string;
+begin
+  TargetDir := Trim(ShellTreeView1.Path);
+  if TargetDir = '' then
+    TargetDir := Trim(edFolder.Text);
+  if TargetDir = '' then
+    TargetDir := Trim(FSetMain.DefaultFolder);
+
+  if TargetDir = '' then
+  begin
+    MessageHint('Nenhuma pasta selecionada.');
+    Exit;
+  end;
+
+  TargetDir := NormalizeAndExpand(TargetDir);
+
+  if not DirectoryExists(TargetDir) then
+  begin
+    MessageHint('Pasta não encontrada: ' + TargetDir);
+    Exit;
+  end;
+
+  if ShowConfirm('Confirma a exclusão de todos os arquivos .RIA e .PIA na pasta ' + ExtractFileName(TargetDir) + '?') then
+  begin
+    LimparRIAPIA_NaPasta(TargetDir);
+  end;
+end;
+
+procedure TfrmFolders.LimparRIAPIA_NaPasta(const Dir: string);
+
+  procedure VarreEApaga(const ADir: string);
+  var
+    SR: TSearchRec;
+    code: Integer;
+    FullPath, ext: string;
+  begin
+    code := FindFirst(IncludeTrailingPathDelimiter(ADir) + '*', faAnyFile, SR);
+    try
+      while code = 0 do
+      begin
+        if (SR.Name <> '.') and (SR.Name <> '..') then
+        begin
+          FullPath := IncludeTrailingPathDelimiter(ADir) + SR.Name;
+
+          if (SR.Attr and faDirectory) <> 0 then
+          begin
+            VarreEApaga(FullPath);
+          end
+          else
+          begin
+            ext := LowerCase(ExtractFileExt(SR.Name));
+            if (ext = '.ria') or (ext = '.pia') then
+            begin
+              try
+                DeleteFile(FullPath);
+                meLog.Lines.Append('Arquivo removido: ' + FullPath);
+              except
+                on E: Exception do
+                  meLog.Lines.Append('Falha ao remover ' + SR.Name + ': ' + E.Message);
+              end;
+            end;
+          end;
+        end;
+        code := FindNext(SR);
+      end;
+    finally
+      FindClose(SR);
+    end;
+  end;
+
+begin
+  meLog.Lines.Append('Iniciando limpeza de arquivos .RIA e .PIA em: ' + Dir);
+  VarreEApaga(Dir);
+  meLog.Lines.Append('Limpeza concluída.');
+  MessageHint('Limpeza de arquivos .RIA e .PIA concluída com sucesso!');
+end;
+
 procedure TfrmFolders.mirefreshClick(Sender: TObject);
 begin
   ShellListView1.Update;
@@ -853,6 +951,43 @@ begin
   end;
 
   ShellTreeView1.Path := edFolder.Text;
+
+  // Criação Dinâmica da Aba de Outline
+  tsOutline := PageControl1.AddTabSheet;
+  tsOutline.Caption := 'Outline';
+
+  tvOutline := TTreeView.Create(Self);
+  tvOutline.Parent := tsOutline;
+  tvOutline.Align := alClient;
+  tvOutline.ReadOnly := True;
+  tvOutline.OnDblClick := @tvOutlineDblClick;
+
+  // Criação Dinâmica da Aba de Busca Global
+  tsSearch := PageControl1.AddTabSheet;
+  tsSearch.Caption := 'Busca Global';
+
+  pnSearchTop := TPanel.Create(Self);
+  pnSearchTop.Parent := tsSearch;
+  pnSearchTop.Align := alTop;
+  pnSearchTop.Height := 40;
+  pnSearchTop.BevelOuter := bvNone;
+
+  edSearchTerm := TEdit.Create(Self);
+  edSearchTerm.Parent := pnSearchTop;
+  edSearchTerm.Align := alClient;
+  edSearchTerm.OnKeyPress := @edSearchTermKeyPress;
+
+  btnSearch := TButton.Create(Self);
+  btnSearch.Parent := pnSearchTop;
+  btnSearch.Align := alRight;
+  btnSearch.Width := 75;
+  btnSearch.Caption := 'Buscar';
+  btnSearch.OnClick := @btnSearchClick;
+
+  lstSearchResults := TListBox.Create(Self);
+  lstSearchResults.Parent := tsSearch;
+  lstSearchResults.Align := alClient;
+  lstSearchResults.OnDblClick := @lstSearchResultsDblClick;
 end;
 
 procedure TfrmFolders.edFolderKeyPress(Sender: TObject; var Key: char);
@@ -1036,18 +1171,15 @@ begin
   begin
     if (not force) and (not flagMudanca) then
     begin
-      if ArquivoEhDoDia(RIAPath) then
-      begin
-        Arquivo := TStringList.Create;
-        try
-          Arquivo.LoadFromFile(RIAPath);
-          Resumo := Arquivo.Text;
-          meLog.Lines.Append('Resumo reutilizado do cache .RIA: ' + RIAPath);
-        finally
-          Arquivo.Free;
-        end;
-        Exit(True);
+      Arquivo := TStringList.Create;
+      try
+        Arquivo.LoadFromFile(RIAPath);
+        Resumo := Arquivo.Text;
+        meLog.Lines.Append('Resumo reutilizado do cache .RIA: ' + RIAPath);
+      finally
+        Arquivo.Free;
       end;
+      Exit(True);
     end;
   end;
 
@@ -1119,7 +1251,7 @@ begin
   Resumo := '';
 
   okRIA := IA_ResumoArquivoBase(FullPath, RelPath, force, ResRIA);
-  okPIA := IA_PontosImportantes(Pergunta, FullPath, RelPath, True, ResPIA);
+  okPIA := IA_PontosImportantes(Pergunta, FullPath, RelPath, force, ResPIA);
 
   if not okRIA then
     ResRIA := ResRIA;
@@ -1148,6 +1280,29 @@ begin
 
   PathNorm := NormalizeAndExpand(FullPath);
   PIAPath  := PathNorm + '.PIA';
+
+  // se o fonte mudou depois do cache, apaga o .PIA antes de decidir reutilizar
+  ExcluiCacheSeFonteMudou(PathNorm, PIAPath);
+
+  // só reutiliza se o arquivo existir, não estamos forçando e a pergunta for a mesma
+  if FileExists(PIAPath) then
+  begin
+    if (not force) and (not flagMudanca) then
+    begin
+      Arquivo := TStringList.Create;
+      try
+        Arquivo.LoadFromFile(PIAPath);
+        if (Arquivo.Count >= 4) and SameText(Arquivo[2], 'Pergunta:' + Pergunta) then
+        begin
+          Resumo := Arquivo.Text;
+          meLog.Lines.Append('Análise reutilizada do cache .PIA: ' + PIAPath);
+          Exit(True);
+        end;
+      finally
+        Arquivo.Free;
+      end;
+    end;
+  end;
 
   Src := AF_LoadTextLimited(PathNorm);
   if Src = '' then
@@ -2429,6 +2584,220 @@ begin
     end;
   except
     Result := True;
+  end;
+end;
+
+procedure TfrmFolders.tvOutlineDblClick(Sender: TObject);
+var
+  node: TTreeNode;
+  linha: Integer;
+  item: TItem;
+  tb: TTabSheet;
+begin
+  if (tvOutline = nil) or (tvOutline.Selected = nil) then Exit;
+  node := tvOutline.Selected;
+  if node.Data <> nil then
+  begin
+    linha := PtrInt(node.Data);
+    if (frmMNote <> nil) and (frmMNote.pgMain <> nil) and (frmMNote.pgMain.ActivePage <> nil) then
+    begin
+      tb := frmMNote.pgMain.ActivePage;
+      item := TItem(tb.Tag);
+      if (item <> nil) and (item.syn <> nil) then
+      begin
+        item.syn.CaretY := linha;
+        item.syn.SetFocus;
+      end;
+    end;
+  end;
+end;
+
+procedure TfrmFolders.AtualizarOutline(const Texto: string);
+var
+  linhas: TStringList;
+  i, j, pClass, pProc: Integer;
+  linha, limpa, nomeClasse, nomeMetodo: string;
+  noClasse, noAtual: TTreeNode;
+  dictClasses: TStringList;
+begin
+  if tvOutline = nil then Exit;
+  tvOutline.Items.Clear;
+
+  linhas := TStringList.Create;
+  dictClasses := TStringList.Create;
+  try
+    linhas.Text := Texto;
+    dictClasses.Sorted := True;
+    dictClasses.Duplicates := dupIgnore;
+
+    tvOutline.BeginUpdate;
+    for i := 0 to linhas.Count - 1 do
+    begin
+      linha := Trim(linhas[i]);
+      limpa := UpperCase(linha);
+
+      if (limpa = '') or (Copy(limpa, 1, 2) = '//') then Continue;
+
+      // Declaração de Classe
+      if (Pos('=', limpa) > 0) and (Pos('CLASS', limpa) > 0) then
+      begin
+        nomeClasse := Trim(Copy(linha, 1, Pos('=', linha) - 1));
+        if nomeClasse <> '' then
+        begin
+          noClasse := tvOutline.Items.Add(nil, 'Class ' + nomeClasse);
+          dictClasses.AddObject(UpperCase(nomeClasse), noClasse);
+        end;
+      end;
+
+      // Procedures/Functions/Constructors/Destructors
+      if (Copy(limpa, 1, 9) = 'PROCEDURE') or (Copy(limpa, 1, 8) = 'FUNCTION') or
+         (Copy(limpa, 1, 11) = 'CONSTRUCTOR') or (Copy(limpa, 1, 10) = 'DESTRUCTOR') then
+      begin
+        nomeMetodo := linha;
+        if (nomeMetodo <> '') and (nomeMetodo[Length(nomeMetodo)] = ';') then
+          Delete(nomeMetodo, Length(nomeMetodo), 1);
+
+        pProc := Pos(' ', nomeMetodo);
+        if pProc > 0 then
+        begin
+          nomeClasse := Trim(Copy(nomeMetodo, pProc + 1, MaxInt));
+          pClass := Pos('.', nomeClasse);
+          if pClass > 0 then
+          begin
+            nomeMetodo := Copy(nomeClasse, pClass + 1, MaxInt);
+            nomeClasse := Copy(nomeClasse, 1, pClass - 1);
+
+            j := dictClasses.IndexOf(UpperCase(nomeClasse));
+            if j <> -1 then
+            begin
+              noClasse := TTreeNode(dictClasses.Objects[j]);
+              noAtual := tvOutline.Items.AddChild(noClasse, nomeMetodo);
+              noAtual.Data := Pointer(PtrInt(i + 1));
+            end
+            else
+            begin
+              noClasse := tvOutline.Items.Add(nil, 'Class ' + nomeClasse);
+              dictClasses.AddObject(UpperCase(nomeClasse), noClasse);
+              noAtual := tvOutline.Items.AddChild(noClasse, nomeMetodo);
+              noAtual.Data := Pointer(PtrInt(i + 1));
+            end;
+          end
+          else
+          begin
+            noAtual := tvOutline.Items.Add(nil, nomeClasse);
+            noAtual.Data := Pointer(PtrInt(i + 1));
+          end;
+        end;
+      end;
+    end;
+    tvOutline.EndUpdate;
+
+  finally
+    linhas.Free;
+    dictClasses.Free;
+  end;
+end;
+
+procedure TfrmFolders.edSearchTermKeyPress(Sender: TObject; var Key: char);
+begin
+  if Key = #13 then
+  begin
+    Key := #0;
+    ExecutarBuscaGlobal;
+  end;
+end;
+
+procedure TfrmFolders.btnSearchClick(Sender: TObject);
+begin
+  ExecutarBuscaGlobal;
+end;
+
+procedure TfrmFolders.ExecutarBuscaGlobal;
+var
+  termo, raiz, caminhoArq, linha: string;
+  listaArquivos, linhasArq: TStringList;
+  i, j: Integer;
+  matchText: string;
+begin
+  if lstSearchResults = nil then Exit;
+  lstSearchResults.Items.Clear;
+
+  termo := Trim(edSearchTerm.Text);
+  if termo = '' then Exit;
+
+  raiz := Trim(FSetMain.DefaultFolder);
+  if (raiz = '') or (not DirectoryExists(raiz)) then Exit;
+
+  listaArquivos := ScannerRaw(raiz);
+  linhasArq := TStringList.Create;
+  try
+    lstSearchResults.Items.BeginUpdate;
+    for i := 0 to listaArquivos.Count - 1 do
+    begin
+      caminhoArq := IncludeTrailingPathDelimiter(raiz) + listaArquivos[i];
+      if not FileExists(caminhoArq) then Continue;
+      if FileBinNotRead(caminhoArq) then Continue;
+
+      try
+        linhasArq.LoadFromFile(caminhoArq);
+        for j := 0 to linhasArq.Count - 1 do
+        begin
+          linha := linhasArq[j];
+          if Pos(UpperCase(termo), UpperCase(linha)) > 0 then
+          begin
+            matchText := listaArquivos[i] + ' (' + IntToStr(j + 1) + '): ' + Trim(linha);
+            lstSearchResults.Items.Add(matchText);
+          end;
+        end;
+      except
+      end;
+    end;
+    lstSearchResults.Items.EndUpdate;
+
+    if lstSearchResults.Count = 0 then
+      lstSearchResults.Items.Add('Nenhum resultado encontrado para: "' + termo + '"');
+
+  finally
+    listaArquivos.Free;
+    linhasArq.Free;
+  end;
+end;
+
+procedure TfrmFolders.lstSearchResultsDblClick(Sender: TObject);
+var
+  selecionado, arqRel, strLinha, caminhoAbs: string;
+  p1, p2: Integer;
+  linha: Integer;
+begin
+  if (lstSearchResults = nil) or (lstSearchResults.ItemIndex = -1) then Exit;
+  selecionado := lstSearchResults.Items[lstSearchResults.ItemIndex];
+
+  p1 := Pos(' (', selecionado);
+  p2 := Pos('):', selecionado);
+  if (p1 > 0) and (p2 > p1) then
+  begin
+    arqRel := Trim(Copy(selecionado, 1, p1 - 1));
+    strLinha := Trim(Copy(selecionado, p1 + 2, p2 - p1 - 2));
+    linha := StrToIntDef(strLinha, 1);
+
+    caminhoAbs := IncludeTrailingPathDelimiter(FSetMain.DefaultFolder) + arqRel;
+    if FileExists(caminhoAbs) then
+    begin
+      if (frmMNote <> nil) then
+      begin
+        if frmMNote.FocusFile(caminhoAbs) then
+        begin
+          if (frmMNote.pgMain.ActivePage <> nil) then
+          begin
+            if TItem(frmMNote.pgMain.ActivePage.Tag) <> nil then
+            begin
+              TItem(frmMNote.pgMain.ActivePage.Tag).syn.CaretY := linha;
+              TItem(frmMNote.pgMain.ActivePage.Tag).syn.SetFocus;
+            end;
+          end;
+        end;
+      end;
+    end;
   end;
 end;
 

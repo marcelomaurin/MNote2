@@ -1,0 +1,23 @@
+[html5 | HTML5 Boilerplate]
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>|</title>
+</head>
+<body>
+</body>
+</html>
+
+[a | Link]
+<a href="|"></a>
+
+[div | Div container]
+<div class="|">
+</div>
+
+[script | Script tag]
+<script src="|"></script>
+
+[link | Stylesheet link]
+<link rel="stylesheet" href="|">

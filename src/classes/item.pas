@@ -11,7 +11,7 @@ uses
   SynHighlighterUnixShellScript, SynHighlighterBat, SynHighlighterJava,
   SynHighlighterJScript, SynHighlighterCss,
   Graphics, SynEditKeyCmds, LCLType, Variants,
-  PythonEngine, PythonGUIInputOutput, setmain, funcoes, hint, Dialogs, StdCtrls;
+  PythonEngine, PythonGUIInputOutput, setmain, funcoes, hint, Dialogs, StdCtrls, Menus;
 
 type
   TFuncPosition = record
@@ -123,6 +123,7 @@ type
     FsynCompletion: TSynCompletion;
 
     function PesquisaPar(param: string; lst: TStringlist): string;
+    function GetPreservPath(const AFileName: string): string;
 
     procedure Default();
     procedure SetItemType(value: TTypeItem);
@@ -213,12 +214,15 @@ end;
 procedure TItem.SynCompletion1Execute(Sender: TObject);
 var
   i: Integer;
+  SearchStr, KeyStr: string;
 begin
   FSynCompletion.ItemList.Clear;
+  SearchStr := UpperCase(FSynCompletion.CurrentString);
 
   for i := 0 to FPalavrasReservadas.Count - 1 do
   begin
-    if Pos(FSynCompletion.CurrentString, FPalavrasReservadas[i]) = 1 then
+    KeyStr := UpperCase(FPalavrasReservadas[i]);
+    if Pos(SearchStr, KeyStr) = 1 then
       FSynCompletion.ItemList.Add(FPalavrasReservadas[i]);
   end;
 end;
@@ -313,6 +317,9 @@ begin
     FSynCompletion.OnCodeCompletion := @SynCompletion1CodeCompletion;
     FSynCompletion.OnExecute := @SynCompletion1Execute;
     FSynCompletion.OnSearchPosition := @SynCompletion1SearchPosition;
+    FSynCompletion.ShortCut := ShortCut(VK_SPACE, [ssCtrl]);
+    FSynCompletion.EndOfTokenChr := '()[].+-*/=<>;, ';
+    FSynCompletion.CaseSensitive := False;
   end;
 
   ItemType := ti_NODEFINE;
@@ -334,7 +341,7 @@ begin
     if FSynPasSyn1 = nil then
       FSynPasSyn1 := TSynPasSyn.Create(FSender);
     Fsyn.Highlighter := FSynPasSyn1;
-    FItemType := ti_PAS;
+    ItemType := ti_PAS;
   end
   else
   if FileExt = '.sh' then
@@ -342,7 +349,7 @@ begin
     if FSynUNIXShellScriptSyn1 = nil then
       FSynUNIXShellScriptSyn1 := TSynUNIXShellScriptSyn.Create(FSender);
     Fsyn.Highlighter := FSynUNIXShellScriptSyn1;
-    FItemType := ti_SHELL;
+    ItemType := ti_SHELL;
   end
   else
   if FileExt = '.php' then
@@ -351,7 +358,7 @@ begin
       FSynPHPSyn1 := TSynPHPSyn.Create(FSender);
     Fsyn.Highlighter := FSynPHPSyn1;
     ConfigurePHPHighlighter(FSynPHPSyn1);
-    FItemType := ti_PHP;
+    ItemType := ti_PHP;
   end
   else
   if (FileExt = '.c') or (FileExt = '.cpp') or (FileExt = '.h') then
@@ -359,7 +366,7 @@ begin
     if FSynCppSyn1 = nil then
       FSynCppSyn1 := TSynCppSyn.Create(FSender);
     Fsyn.Highlighter := FSynCppSyn1;
-    FItemType := ti_CCP;
+    ItemType := ti_CCP;
     ConfigureCppHighlighter(FSynCppSyn1);
   end
   else
@@ -368,7 +375,7 @@ begin
     if FSynSQLSyn1 = nil then
       FSynSQLSyn1 := TSynSQLSyn.Create(FSender);
     Fsyn.Highlighter := FSynSQLSyn1;
-    FItemType := ti_SQL;
+    ItemType := ti_SQL;
   end
   else
   if FileExt = '.py' then
@@ -376,7 +383,7 @@ begin
     if FSynPythonSyn1 = nil then
       FSynPythonSyn1 := TSynPythonSyn.Create(FSender);
     Fsyn.Highlighter := FSynPythonSyn1;
-    FItemType := ti_PY;
+    ItemType := ti_PY;
   end
   else
   if FileExt = '.java' then
@@ -385,7 +392,7 @@ begin
       FSynJavaSyn1 := TSynJavaSyn.Create(FSender);
     Fsyn.Highlighter := FSynJavaSyn1;
     ConfigureJavaHighlighter(FSynJavaSyn1);
-    FItemType := ti_JAVA;
+    ItemType := ti_JAVA;
   end
   else
   if FileExt = '.css' then
@@ -393,7 +400,7 @@ begin
     if FSynCssSyn1 = nil then
       FSynCssSyn1 := TSynCssSyn.Create(FSender);
     Fsyn.Highlighter := FSynCssSyn1;
-    FItemType := ti_CSS;
+    ItemType := ti_CSS;
   end
   else
   if FileExt = '.js' then
@@ -401,7 +408,7 @@ begin
     if FSynJScriptSyn1 = nil then
       FSynJScriptSyn1 := TSynJScriptSyn.Create(FSender);
     Fsyn.Highlighter := FSynJScriptSyn1;
-    FItemType := ti_JS;
+    ItemType := ti_JS;
     ConfigureJScriptHighlighter(FSynJScriptSyn1);
   end
   else
@@ -417,81 +424,103 @@ begin
     Fsyn.Highlighter := FSynAnySyn1;
 
     if FileExt = '.json' then
-      FItemType := ti_JSON
+      ItemType := ti_JSON
     else
     if FileExt = '.xml' then
-      FItemType := ti_XML
+      ItemType := ti_XML
     else
     if (FileExt = '.yaml') or (FileExt = '.yml') then
-      FItemType := ti_YAML
+      ItemType := ti_YAML
     else
     if FileExt = '.ini' then
-      FItemType := ti_INI
+      ItemType := ti_INI
     else
     if FileExt = '.md' then
-      FItemType := ti_MD
+      ItemType := ti_MD
     else
     if FileExt = '.html' then
-      FItemType := ti_HTML
+      ItemType := ti_HTML
     else
     if FileExt = '.cfg' then
-      FItemType := ti_CFG
+      ItemType := ti_CFG
     else
-      FItemType := ti_TXT;
+      ItemType := ti_TXT;
   end;
 end;
 
 procedure TItem.SetItemType(value: TTypeItem);
+var
+  TxtPath, DciPath: string;
 begin
   FItemType := value;
+  if FPalavrasReservadas <> nil then
+    FPalavrasReservadas.Clear;
+  if FSynAutoComplete <> nil then
+    FSynAutoComplete.AutoCompleteList.Clear;
+
   case FItemType of
     ti_PAS:
       begin
-        FSynAutoComplete.AutoCompleteList.Clear;
-        if FileExists(ExtractFilePath(ApplicationName) + 'delphi32.dci') then
-          FSynAutoComplete.AutoCompleteList.LoadFromFile(
-            ExtractFilePath(ApplicationName) + 'delphi32.dci');
+        TxtPath := GetPreservPath('pascallist.txt');
+        DciPath := GetPreservPath('delphi32.dci');
       end;
     ti_PY:
       begin
-        FSynAutoComplete.AutoCompleteList.Clear;
-        if FileExists(ExtractFilePath(ApplicationName) + 'pythonlist.dci') then
-          FSynAutoComplete.AutoCompleteList.LoadFromFile(
-            ExtractFilePath(ApplicationName) + 'pythonlist.dci');
+        TxtPath := GetPreservPath('pythonlist.txt');
+        DciPath := GetPreservPath('pythonlist.dci');
       end;
     ti_SQL:
       begin
-        FSynAutoComplete.AutoCompleteList.Clear;
-        if FileExists(ExtractFilePath(ApplicationName) + 'sqllist.dci') then
-          FSynAutoComplete.AutoCompleteList.LoadFromFile(
-            ExtractFilePath(ApplicationName) + 'sqllist.dci');
+        TxtPath := GetPreservPath('sqllist.txt');
+        DciPath := GetPreservPath('sqllist.dci');
       end;
-    ti_SHELL, ti_CCP, ti_H, ti_INO:
+    ti_SHELL:
       begin
-        FSynAutoComplete.AutoCompleteList.Clear;
-        if FileExists(ExtractFilePath(ApplicationName) + 'c.dci') then
-          FSynAutoComplete.AutoCompleteList.LoadFromFile(
-            ExtractFilePath(ApplicationName) + 'c.dci');
+        TxtPath := GetPreservPath('shelllist.txt');
+        DciPath := GetPreservPath('shelllist.dci');
+      end;
+    ti_CCP, ti_H, ti_INO:
+      begin
+        TxtPath := GetPreservPath('clist.txt');
+        DciPath := GetPreservPath('c.dci');
       end;
     ti_PHP:
       begin
-        FSynAutoComplete.AutoCompleteList.Clear;
-        if FileExists(ExtractFilePath(ApplicationName) + 'phplist.dci') then
-          FSynAutoComplete.AutoCompleteList.LoadFromFile(
-            ExtractFilePath(ApplicationName) + 'phplist.dci');
+        TxtPath := GetPreservPath('phplist.txt');
+        DciPath := GetPreservPath('phplist.dci');
       end;
     ti_JAVA:
       begin
-        FSynAutoComplete.AutoCompleteList.Clear;
-        if FileExists(ExtractFilePath(ApplicationName) + 'javalist.dci') then
-          FSynAutoComplete.AutoCompleteList.LoadFromFile(
-            ExtractFilePath(ApplicationName) + 'javalist.dci');
+        TxtPath := GetPreservPath('javalist.txt');
+        DciPath := GetPreservPath('javalist.dci');
       end;
-    ti_TXT, ti_CFG, ti_JSON, ti_XML, ti_YAML, ti_INI, ti_MD, ti_HTML:
+    ti_JS:
       begin
-        FSynAutoComplete.AutoCompleteList.Clear;
+        TxtPath := GetPreservPath('jslist.txt');
+        DciPath := GetPreservPath('jslist.dci');
+      end;
+    ti_CSS:
+      begin
+        TxtPath := GetPreservPath('csslist.txt');
+        DciPath := GetPreservPath('csslist.dci');
+      end;
+    ti_HTML:
+      begin
+        TxtPath := GetPreservPath('htmllist.txt');
+        DciPath := GetPreservPath('htmllist.dci');
+      end;
+    else
+      begin
+        TxtPath := '';
+        DciPath := '';
       end;
   end;
+
+  if (TxtPath <> '') and FileExists(TxtPath) and (FPalavrasReservadas <> nil) then
+    FPalavrasReservadas.LoadFromFile(TxtPath);
+
+  if (DciPath <> '') and FileExists(DciPath) and (FSynAutoComplete <> nil) then
+    FSynAutoComplete.AutoCompleteList.LoadFromFile(DciPath);
 end;
 
 procedure TItem.SetSyn(value: TSynEdit);
@@ -499,6 +528,8 @@ begin
   Fsyn := value;
   if FSynAutoComplete <> nil then
     FSynAutoComplete.Editor := value;
+  if FSynCompletion <> nil then
+    FSynCompletion.Editor := value;
 end;
 
 procedure TItem.TimerEvento(Sender: TObject);
@@ -634,6 +665,38 @@ begin
       resultado1 := Copy(lst.Strings[a], Length(param), Length(lst.Strings[a]));
   end;
   Result := resultado1;
+end;
+
+function TItem.GetPreservPath(const AFileName: string): string;
+var
+  AppPath, WorkPath: string;
+begin
+  // 1. Check in workspace source dir first (convenient for development)
+  WorkPath := 'D:\projetos\maurinsoft\MNote2\src\preserv\' + AFileName;
+  if FileExists(WorkPath) then
+    Exit(WorkPath);
+
+  // 2. Check in 'preserv' subdir of application executable path
+  AppPath := ExtractFilePath(ParamStr(0)) + 'preserv' + PathDelim + AFileName;
+  if FileExists(AppPath) then
+    Exit(AppPath);
+
+  // 3. Check in application directory directly
+  AppPath := ExtractFilePath(ParamStr(0)) + AFileName;
+  if FileExists(AppPath) then
+    Exit(AppPath);
+
+  // 4. Check using the original ApplicationName variable's location
+  AppPath := ExtractFilePath(ApplicationName) + AFileName;
+  if FileExists(AppPath) then
+    Exit(AppPath);
+
+  AppPath := ExtractFilePath(ApplicationName) + 'preserv' + PathDelim + AFileName;
+  if FileExists(AppPath) then
+    Exit(AppPath);
+
+  // Fallback to workspace path
+  Result := WorkPath;
 end;
 
 procedure TItem.Loadfile(arquivo: string);

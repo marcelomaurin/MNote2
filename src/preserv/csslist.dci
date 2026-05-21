@@ -1,0 +1,12 @@
+[media | Media Query]
+@media (max-width: |px) {
+}
+
+[flex | Flex container]
+display: flex;
+align-items: center;
+justify-content: |;
+
+[grid | Grid container]
+display: grid;
+grid-template-columns: repeat(|, 1fr);

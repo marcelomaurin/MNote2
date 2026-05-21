@@ -34,6 +34,8 @@ type
     FDllPath : string;
     FDllMyPath : string;
     FDllPostPath : string;
+    FDllMSSQLPath : string;
+    FDllOraclePath : string;
 
     FRunScript : string;    //Script de Compilação
     FDebugScript : string;  //Script de Debug
@@ -69,6 +71,20 @@ type
     FProtocolSQLite : String;  // default sqlite-3
     FSchemaSQLite   : String;  // opcional (não usado no SQLite, mas mantém padrão)
 
+    // ===== SQL Server (MSSQL) =====
+    FHostnameMSSQL : String;
+    FBancoMSSQL : String;
+    FUsernameMSSQL : String;
+    FPasswordMSSQL : String;
+    FSchemaMSSQL : String;
+
+    // ===== Oracle =====
+    FHostnameOracle : String;
+    FBancoOracle : String;
+    FUsernameOracle : String;
+    FPasswordOracle : String;
+    FSchemaOracle : String;
+
     FToolsFalar : Boolean;
     FToolsOuvir : Boolean;
     fIPFALAR : String;
@@ -88,6 +104,8 @@ type
     procedure SetDllPath(value : string);
     procedure SetDllMyPath(value : string);
     procedure SetDllPostPath(value : string);
+    procedure SetDllMSSQLPath(value : string);
+    procedure SetDllOraclePath(value : string);
     procedure SetToolsFalar(value : boolean);
 
     procedure Default();
@@ -122,6 +140,8 @@ type
     property DLLPath : String read FDllPath write SetDllPath;
     property DLLMyPath : String read FDllMyPath write SetDllMyPath;
     property DLLPostPath : String read FDllPostPath write SetDllPostPath;
+    property DLLMSSQLPath : String read FDllMSSQLPath write SetDllMSSQLPath;
+    property DLLOraclePath : String read FDllOraclePath write SetDllOraclePath;
 
     // ===== Provider IA =====
     property Provider : Integer read FProvider write FProvider;
@@ -146,6 +166,20 @@ type
     property BancoSQLite: String read FBancoSQLite write FBancoSQLite;
     property ProtocolSQLite: String read FProtocolSQLite write FProtocolSQLite;
     property SchemaSQLite: String read FSchemaSQLite write FSchemaSQLite;
+
+    // ===== SQL Server =====
+    property HostnameMSSQL : String read FHostnameMSSQL write FHostnameMSSQL;
+    property BancoMSSQL : String read FBancoMSSQL write FBancoMSSQL;
+    property UsernameMSSQL : String read FUsernameMSSQL write FUsernameMSSQL;
+    property PasswordMSSQL : String read FPasswordMSSQL write FPasswordMSSQL;
+    property SchemaMSSQL : String read FSchemaMSSQL write FSchemaMSSQL;
+
+    // ===== Oracle =====
+    property HostnameOracle : String read FHostnameOracle write FHostnameOracle;
+    property BancoOracle : String read FBancoOracle write FBancoOracle;
+    property UsernameOracle : String read FUsernameOracle write FUsernameOracle;
+    property PasswordOracle : String read FPasswordOracle write FPasswordOracle;
+    property SchemaOracle : String read FSchemaOracle write FSchemaOracle;
 
     // ===== Tools =====
     property ToolsFalar : Boolean read FToolsFalar write SetToolsFalar;
@@ -181,6 +215,8 @@ begin
   FDllPath := ExtractFilePath(ApplicationName);
   FDllMyPath := ExtractFilePath(ApplicationName);
   FDllPostPath := ExtractFilePath(ApplicationName);
+  FDllMSSQLPath := ExtractFilePath(ApplicationName);
+  FDllOraclePath := ExtractFilePath(ApplicationName);
 
   FHeight := 400;
   FWidth := 400;
@@ -225,6 +261,20 @@ begin
   FBancoSQLite := '';
   FProtocolSQLite := 'sqlite-3';
   FSchemaSQLite := '';
+
+  // ===== SQL Server defaults =====
+  FHostnameMSSQL := '';
+  FBancoMSSQL := '';
+  FUsernameMSSQL := '';
+  FPasswordMSSQL := '';
+  FSchemaMSSQL := '';
+
+  // ===== Oracle defaults =====
+  FHostnameOracle := '';
+  FBancoOracle := '';
+  FUsernameOracle := '';
+  FPasswordOracle := '';
+  FSchemaOracle := '';
 
   FDefaultfolder := '';
   FProject := '';
@@ -279,6 +329,16 @@ end;
 procedure TSetMain.SetDllPostPath(value: string);
 begin
   FDllPostPath := value;
+end;
+
+procedure TSetMain.SetDllMSSQLPath(value: string);
+begin
+  FDllMSSQLPath := value;
+end;
+
+procedure TSetMain.SetDllOraclePath(value: string);
+begin
+  FDllOraclePath := value;
 end;
 
 procedure TSetMain.SetToolsFalar(value: boolean);
@@ -344,6 +404,12 @@ begin
   if BuscaChave(arquivo,'DLLPOSTPATH:',posicao) then
     FDLLPOSTPATH := RetiraInfo(arquivo.Strings[posicao]);
 
+  if BuscaChave(arquivo,'DLLMSSQLPATH:',posicao) then
+    FDLLMSSQLPATH := RetiraInfo(arquivo.Strings[posicao]);
+
+  if BuscaChave(arquivo,'DLLORACLEPATH:',posicao) then
+    FDLLORACLEPATH := RetiraInfo(arquivo.Strings[posicao]);
+
   // ===== Provider =====
   if BuscaChave(arquivo,'PROVIDER:',posicao) then
     FProvider := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 0)
@@ -392,6 +458,38 @@ begin
 
   if BuscaChave(arquivo,'SCHEMASQLITE:',posicao) then
     FSchemaSQLite := RetiraInfo(arquivo.Strings[posicao]);
+
+  // ===== SQL Server (MSSQL) =====
+  if BuscaChave(arquivo,'HOSTNAMEMSSQL:',posicao) then
+    FHostnameMSSQL := RetiraInfo(arquivo.Strings[posicao]);
+
+  if BuscaChave(arquivo,'BANCOMSSQL:',posicao) then
+    FBancoMSSQL := RetiraInfo(arquivo.Strings[posicao]);
+
+  if BuscaChave(arquivo,'USERNAMEMSSQL:',posicao) then
+    FUsernameMSSQL := RetiraInfo(arquivo.Strings[posicao]);
+
+  if BuscaChave(arquivo,'PASSWORDMSSQL:',posicao) then
+    FPasswordMSSQL := RetiraInfo(arquivo.Strings[posicao]);
+
+  if BuscaChave(arquivo,'SCHEMAMSSQL:',posicao) then
+    FSchemaMSSQL := RetiraInfo(arquivo.Strings[posicao]);
+
+  // ===== Oracle =====
+  if BuscaChave(arquivo,'HOSTNAMEORACLE:',posicao) then
+    FHostnameOracle := RetiraInfo(arquivo.Strings[posicao]);
+
+  if BuscaChave(arquivo,'BANCOORACLE:',posicao) then
+    FBancoOracle := RetiraInfo(arquivo.Strings[posicao]);
+
+  if BuscaChave(arquivo,'USERNAMEORACLE:',posicao) then
+    FUsernameOracle := RetiraInfo(arquivo.Strings[posicao]);
+
+  if BuscaChave(arquivo,'PASSWORDORACLE:',posicao) then
+    FPasswordOracle := RetiraInfo(arquivo.Strings[posicao]);
+
+  if BuscaChave(arquivo,'SCHEMAORACLE:',posicao) then
+    FSchemaOracle := RetiraInfo(arquivo.Strings[posicao]);
 
   // ===== tools =====
   if BuscaChave(arquivo,'TOOLSFALAR:',posicao) then
@@ -481,6 +579,8 @@ begin
   arquivo.Append('DLLPATH:'+FDLLPATH);
   arquivo.Append('DLLMYPATH:'+FDLLMYPATH);
   arquivo.Append('DLLPOSTPATH:'+FDLLPOSTPATH);
+  arquivo.Append('DLLMSSQLPATH:'+FDLLMSSQLPATH);
+  arquivo.Append('DLLORACLEPATH:'+FDLLORACLEPATH);
 
   // ===== Provider =====
   arquivo.Append('PROVIDER:'+IntToStr(FProvider));
@@ -505,6 +605,20 @@ begin
   arquivo.Append('BANCOSQLITE:'+FBancoSQLite);
   arquivo.Append('PROTOCOLSQLITE:'+FProtocolSQLite);
   arquivo.Append('SCHEMASQLITE:'+FSchemaSQLite);
+
+  // ===== SQL Server (MSSQL) =====
+  arquivo.Append('HOSTNAMEMSSQL:'+FHostnameMSSQL);
+  arquivo.Append('BANCOMSSQL:'+FBancoMSSQL);
+  arquivo.Append('USERNAMEMSSQL:'+FUsernameMSSQL);
+  arquivo.Append('PASSWORDMSSQL:'+FPasswordMSSQL);
+  arquivo.Append('SCHEMAMSSQL:'+FSchemaMSSQL);
+
+  // ===== Oracle =====
+  arquivo.Append('HOSTNAMEORACLE:'+FHostnameOracle);
+  arquivo.Append('BANCOORACLE:'+FBancoOracle);
+  arquivo.Append('USERNAMEORACLE:'+FUsernameOracle);
+  arquivo.Append('PASSWORDORACLE:'+FPasswordOracle);
+  arquivo.Append('SCHEMAORACLE:'+FSchemaOracle);
 
   // ===== tools =====
   arquivo.Append('TOOLSFALAR:'+iif(FToolsFalar,'1','0'));

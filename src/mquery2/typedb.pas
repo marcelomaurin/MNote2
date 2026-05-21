@@ -8,7 +8,7 @@ uses
   Classes, SysUtils;
 
 type
-TypeDatabase = (DBMysql, DBPostgres);
+TypeDatabase = (DBMysql, DBPostgres, DBMSSQL, DBOracle);
 
 TEleTipoDB = (ETConection, ETDBBanco , ETDTabelas, ETDBCampos, ETDBPK, ETDBFK, ETDTriggers ,ETDViews, ETDProcedure, ETDFunctions, ETDSequence );
 

@@ -30,9 +30,9 @@ object frmmquery2: Tfrmmquery2
     Height = 720
     Top = 50
     Width = 1167
-    ActivePage = liteMain
+    ActivePage = tsAbout
     Align = alClient
-    TabIndex = 3
+    TabIndex = 0
     TabOrder = 2
     object tsAbout: TTabSheet
       Caption = 'About'
@@ -3225,7 +3225,7 @@ object frmmquery2: Tfrmmquery2
     Top = 520
   end
   object SynCompletion1: TSynCompletion
-    Position = -1
+    Position = 0
     LinesInWindow = 6
     OnPositionChanged = SynCompletion1PositionChanged
     SelectedColor = clHighlight

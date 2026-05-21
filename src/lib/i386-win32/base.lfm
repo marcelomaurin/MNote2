@@ -31,9 +31,9 @@ object dmBase: TdmBase
     )
     DisableSavepoints = False
     Port = 0
-    Database = 'D:\projetos\maurinsoft\MNote2\db\projeto_padrao.db'
+    Database = ''
     Protocol = 'sqlite'
-    LibraryLocation = 'D:\projetos\maurinsoft\MNote2\libs\sqlite\win32\sqlite3.dll'
+    LibraryLocation = ''
     Left = 56
     Top = 185
   end

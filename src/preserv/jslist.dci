@@ -1,0 +1,20 @@
+[class | JS Class]
+class | {
+  constructor() {
+  }
+}
+
+[fun | JS Function]
+function |() {
+}
+
+[if | JS If]
+if (|) {
+}
+
+[for | JS For loop]
+for (let i = 0; i < |; i++) {
+}
+
+[clg | Console Log]
+console.log(|);
