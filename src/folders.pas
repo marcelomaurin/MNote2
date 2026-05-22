@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ShellCtrls,
   ExtCtrls, Menus, StdCtrls, GifAnim, untsalesSwitch, funcoes, hint, setmain,
-  chatgpt, Types, StrUtils, LConvEncoding, base, DateUtils, LazFileUtils,
+  chatgpt, antigravity, Types, StrUtils, LConvEncoding, base, DateUtils, LazFileUtils,
   fpjson, jsonparser, jsonscanner, Math, uDocText , uPdfText, item;
 
 type
@@ -1976,40 +1976,67 @@ function TfrmFolders.AF_SendToChatGPT(
   const DevMsg, Ask, Token: widestring; out Resp: widestring): Boolean;
 var
   Chat: TCHATGPT;
+  AntiGrav: TAntigravity;
 begin
   Result := False;
   Resp   := '';
 
   if Trim(Token) = '' then
   begin
-    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+    if FSetMain.Provider = 4 then
+      ShowMessage('Configure a chave de API/Token em SetMain.CHATGPT.')
+    else
+      ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
     Exit;
   end;
 
-  Chat := TCHATGPT.Create(Self);
-  try
-    case FSetMain.Provider of
-      1: Chat.Provider := AIP_OPENROUTER;
-      2: Chat.Provider := AIP_CEREBRAS;
-    else
-      Chat.Provider := AIP_OPENAI;
+  if FSetMain.Provider = 4 then
+  begin
+    AntiGrav := TAntigravity.Create(Self);
+    try
+      AntiGrav.TOKEN := Trim(Token);
+      AntiGrav.Dev   := DevMsg;
+      if AntiGrav.SendQuestion(Ask) then
+      begin
+        Resp := AntiGrav.Response;
+        meTecnica.Lines.Append(Resp);
+        if Assigned(frmIA) then
+          frmIA.meHistorico.Lines.Append(Resp);
+        Result := True;
+      end
+      else
+        Resp := AntiGrav.Response;
+    finally
+      AntiGrav.Free;
     end;
+  end
+  else
+  begin
+    Chat := TCHATGPT.Create(Self);
+    try
+      case FSetMain.Provider of
+        1: Chat.Provider := AIP_OPENROUTER;
+        2: Chat.Provider := AIP_CEREBRAS;
+      else
+        Chat.Provider := AIP_OPENAI;
+      end;
 
-    Chat.TOKEN := Trim(Token);
-    Chat.Dev   := DevMsg;
+      Chat.TOKEN := Trim(Token);
+      Chat.Dev   := DevMsg;
 
-    if Chat.SendQuestion(Ask) then
-    begin
-      Resp := Chat.Response;
-      meTecnica.Lines.Append(Resp);
-      if Assigned(frmIA) then
-        frmIA.meHistorico.Lines.Append(Resp);
-      Result := True;
-    end
-    else
-      Resp := Chat.Response;
-  finally
-    Chat.Free;
+      if Chat.SendQuestion(Ask) then
+      begin
+        Resp := Chat.Response;
+        meTecnica.Lines.Append(Resp);
+        if Assigned(frmIA) then
+          frmIA.meHistorico.Lines.Append(Resp);
+        Result := True;
+      end
+      else
+        Resp := Chat.Response;
+    finally
+      Chat.Free;
+    end;
   end;
 end;
 

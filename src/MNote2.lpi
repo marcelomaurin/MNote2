@@ -23,7 +23,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="2"/>
-      <MinorVersionNr Value="26"/>
+      <MinorVersionNr Value="27"/>
       <BuildNr Value="2"/>
       <Language Value="0416"/>
     </VersionInfo>
@@ -110,7 +110,7 @@
         <PackageName Value="LCL"/>
       </Item23>
     </RequiredPackages>
-    <Units Count="51">
+    <Units Count="52">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -400,6 +400,10 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ChangeSource"/>
       </Unit50>
+      <Unit51>
+        <Filename Value="classes/antigravity.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit51>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

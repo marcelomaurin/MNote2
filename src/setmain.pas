@@ -48,7 +48,13 @@ type
     // 1 = OpenRouter
     // 2 = Cerebras
     // 3 = Local / llama.cpp
+    // 4 = Antigravity / Gemini
     FProvider : Integer;
+
+    // ===== Modelos IA =====
+    FModelOpenAI : string;
+    FModelLocal : string;
+    FModelGemini : string;
 
     // ===== IA Local =====
     fIPLocalIA : String;
@@ -149,6 +155,11 @@ type
     // ===== IA Local =====
     property IPLocalIA : string read fIPLocalIA write fIPLocalIA;
 
+    // ===== Modelos IA =====
+    property ModelOpenAI : string read FModelOpenAI write FModelOpenAI;
+    property ModelLocal : string read FModelLocal write FModelLocal;
+    property ModelGemini : string read FModelGemini write FModelGemini;
+
     // ===== MySQL =====
     property HostnameMy: string read FHostnameMy write FHostnameMy;
     property BancoMy : String read FBancoMy write FBancoMy;
@@ -228,6 +239,11 @@ begin
 
   // ===== Provider default =====
   FProvider := 0; // OpenAI
+
+  // ===== Modelos IA defaults =====
+  FModelOpenAI := 'gpt-4o-mini';
+  FModelLocal := 'llama3.2:3b';
+  FModelGemini := 'gemini-1.5-flash';
 
   // ===== IA Local =====
   fIPLocalIA := 'http://172.17.241.200:8095';
@@ -420,6 +436,22 @@ begin
   if BuscaChave(arquivo,'IPLOCALIA:',posicao) then
     fIPLocalIA := RetiraInfo(arquivo.Strings[posicao]);
 
+  // ===== Modelos IA =====
+  if BuscaChave(arquivo,'MODELOPENAI:',posicao) then
+    FModelOpenAI := RetiraInfo(arquivo.Strings[posicao])
+  else
+    FModelOpenAI := 'gpt-4o-mini';
+
+  if BuscaChave(arquivo,'MODELLOCAL:',posicao) then
+    FModelLocal := RetiraInfo(arquivo.Strings[posicao])
+  else
+    FModelLocal := 'llama3.2:3b';
+
+  if BuscaChave(arquivo,'MODELGEMINI:',posicao) then
+    FModelGemini := RetiraInfo(arquivo.Strings[posicao])
+  else
+    FModelGemini := 'gemini-1.5-flash';
+
   // ===== MySQL =====
   if BuscaChave(arquivo,'HOSTNAMEMY:',posicao) then
     FHostnameMy := RetiraInfo(arquivo.Strings[posicao]);
@@ -587,6 +619,11 @@ begin
 
   // ===== IA Local =====
   arquivo.Append('IPLOCALIA:'+fIPLocalIA);
+
+  // ===== Modelos IA =====
+  arquivo.Append('MODELOPENAI:'+FModelOpenAI);
+  arquivo.Append('MODELLOCAL:'+FModelLocal);
+  arquivo.Append('MODELGEMINI:'+FModelGemini);
 
   // ===== MySQL =====
   arquivo.Append('HOSTNAMEMY:'+FHostnameMy);

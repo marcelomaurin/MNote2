@@ -13,7 +13,7 @@ uses
   SynGutter, SynGutterCodeFolding, TAGraph, LCLType, Grids, Buttons,
   PairSplitter, DBCtrls, DBGrids, EditBtn, finds, ZClasses, ZCollections,
   ZCompatibility, ZTokenizer, ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging,
-  ZVariant, ZPlainDriver, TypeDB, triggers, item, funcoes, chart, chatgpt,
+  ZVariant, ZPlainDriver, TypeDB, triggers, item, funcoes, chart, chatgpt, antigravity,
   codigo, setmain, ZDbcIntfs, math, hint, Variants, LConvEncoding, base;
 
 const
@@ -412,6 +412,7 @@ type
       ProcessID: Integer; Payload: string);
   private
     FCHATGPT : TCHATGPT;
+    FAntigravity : TAntigravity;
 
     posicaofieldsmy : TTreeNode;
     tvitemmy : TTreeNode;
@@ -3791,12 +3792,12 @@ begin
     Exit;
   end;
 
-  if FCHATGPT = nil then
-    FCHATGPT := TCHATGPT.Create(Self);
-
   if Trim(FSetMain.CHATGPT) = '' then
   begin
-    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+    if FSetMain.Provider = 4 then
+      ShowMessage('Configure a chave de API/Token em SetMain.CHATGPT.')
+    else
+      ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
     Exit;
   end;
 
@@ -3813,15 +3814,6 @@ begin
   baseSchema := Trim(edSchemaPost.Text);
   if baseSchema = '' then baseSchema := 'public';
 
-  FCHATGPT.Dev :=
-    'Você é um assistente SQL para PostgreSQL.' + LineEnding +
-    'REGRAS:' + LineEnding +
-    '1) Responda SOMENTE com SQL válido, sem explicações ou comentários.' + LineEnding +
-    '2) Use exatamente os nomes de schema/tabela/coluna informados.' + LineEnding +
-    '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
-    '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
-    '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
-
   ask :=
     'Pergunta do usuário:' + LineEnding +
     pergunta + LineEnding + LineEnding +
@@ -3831,12 +3823,48 @@ begin
     ctxDDL + LineEnding + LineEnding +
     'Gere APENAS o SQL final (um único bloco).';
 
-  FCHATGPT.TOKEN := FSetMain.CHATGPT;
+  if FSetMain.Provider = 4 then
+  begin
+    if FAntigravity = nil then
+      FAntigravity := TAntigravity.Create(Self);
 
-  if FCHATGPT.SendQuestion(ask) then
-    outSQL := StripCodeFences(FCHATGPT.Response)
+    FAntigravity.Dev :=
+      'Você é um assistente SQL para PostgreSQL.' + LineEnding +
+      'REGRAS:' + LineEnding +
+      '1) Responda SOMENTE com SQL válido, sem explicações ou comentários.' + LineEnding +
+      '2) Use exatamente os nomes de schema/tabela/coluna informados.' + LineEnding +
+      '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
+      '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
+      '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
+
+    FAntigravity.TOKEN := FSetMain.CHATGPT;
+
+    if FAntigravity.SendQuestion(ask) then
+      outSQL := StripCodeFences(FAntigravity.Response)
+    else
+      outSQL := StripCodeFences(FAntigravity.Response);
+  end
   else
-    outSQL := StripCodeFences(FCHATGPT.Response);
+  begin
+    if FCHATGPT = nil then
+      FCHATGPT := TCHATGPT.Create(Self);
+
+    FCHATGPT.Dev :=
+      'Você é um assistente SQL para PostgreSQL.' + LineEnding +
+      'REGRAS:' + LineEnding +
+      '1) Responda SOMENTE com SQL válido, sem explicações ou comentários.' + LineEnding +
+      '2) Use exatamente os nomes de schema/tabela/coluna informados.' + LineEnding +
+      '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
+      '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
+      '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
+
+    FCHATGPT.TOKEN := FSetMain.CHATGPT;
+
+    if FCHATGPT.SendQuestion(ask) then
+      outSQL := StripCodeFences(FCHATGPT.Response)
+    else
+      outSQL := StripCodeFences(FCHATGPT.Response);
+  end;
 
   outAnsi := UTF8ToAnsi(outSQL);
   Result := String(outAnsi);
@@ -3875,12 +3903,12 @@ begin
     Exit;
   end;
 
-  if FCHATGPT = nil then
-    FCHATGPT := TCHATGPT.Create(Self);
-
   if Trim(FSetMain.CHATGPT) = '' then
   begin
-    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+    if FSetMain.Provider = 4 then
+      ShowMessage('Configure a chave de API/Token em SetMain.CHATGPT.')
+    else
+      ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
     Exit;
   end;
 
@@ -3894,15 +3922,6 @@ begin
   else
     ctxDDL := ddl;
 
-  FCHATGPT.Dev :=
-    'Você é um assistente SQL para SQLite.' + LineEnding +
-    'REGRAS:' + LineEnding +
-    '1) Responda SOMENTE com SQL válido para SQLite, sem explicações ou comentários.' + LineEnding +
-    '2) Use exatamente os nomes de tabela/coluna informados.' + LineEnding +
-    '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
-    '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
-    '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
-
   ask :=
     'Pergunta do usuário:' + LineEnding +
     pergunta + LineEnding + LineEnding +
@@ -3912,12 +3931,48 @@ begin
     ctxDDL + LineEnding + LineEnding +
     'Gere APENAS o SQL final (um único bloco).';
 
-  FCHATGPT.TOKEN := FSetMain.CHATGPT;
+  if FSetMain.Provider = 4 then
+  begin
+    if FAntigravity = nil then
+      FAntigravity := TAntigravity.Create(Self);
 
-  if FCHATGPT.SendQuestion(ask) then
-    outSQL := StripCodeFences(FCHATGPT.Response)
+    FAntigravity.Dev :=
+      'Você é um assistente SQL para SQLite.' + LineEnding +
+      'REGRAS:' + LineEnding +
+      '1) Responda SOMENTE com SQL válido para SQLite, sem explicações ou comentários.' + LineEnding +
+      '2) Use exatamente os nomes de tabela/coluna informados.' + LineEnding +
+      '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
+      '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
+      '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
+
+    FAntigravity.TOKEN := FSetMain.CHATGPT;
+
+    if FAntigravity.SendQuestion(ask) then
+      outSQL := StripCodeFences(FAntigravity.Response)
+    else
+      outSQL := StripCodeFences(FAntigravity.Response);
+  end
   else
-    outSQL := StripCodeFences(FCHATGPT.Response);
+  begin
+    if FCHATGPT = nil then
+      FCHATGPT := TCHATGPT.Create(Self);
+
+    FCHATGPT.Dev :=
+      'Você é um assistente SQL para SQLite.' + LineEnding +
+      'REGRAS:' + LineEnding +
+      '1) Responda SOMENTE com SQL válido para SQLite, sem explicações ou comentários.' + LineEnding +
+      '2) Use exatamente os nomes de tabela/coluna informados.' + LineEnding +
+      '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
+      '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
+      '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
+
+    FCHATGPT.TOKEN := FSetMain.CHATGPT;
+
+    if FCHATGPT.SendQuestion(ask) then
+      outSQL := StripCodeFences(FCHATGPT.Response)
+    else
+      outSQL := StripCodeFences(FCHATGPT.Response);
+  end;
 
   outAnsi := UTF8ToAnsi(outSQL);
   Result := String(outAnsi);

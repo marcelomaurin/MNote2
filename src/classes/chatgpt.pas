@@ -89,6 +89,9 @@ type
 
 implementation
 
+uses
+  antigravity;
+
 function JsonEscape(const S: WideString): WideString;
 var
   R: WideString;
@@ -181,7 +184,22 @@ begin
 end;
 
 function TCHATGPT.GetModelName: WideString;
+var
+  Model: WideString;
 begin
+  // Se o provedor no SetMain for Antigravity (Gemini = 4)
+  if Assigned(FSetMain) and (FSetMain.Provider = 4) then
+  begin
+    Model := Trim(FCustomModel);
+    if Model = '' then
+      Model := Trim(FSetMain.ModelGemini);
+
+    if (Model = '') or (LowerCase(Model) = 'gemini-1.5') then
+      Exit('gemini-1.5-flash')
+    else
+      Exit(Model);
+  end;
+
   // Se informou modelo customizado, respeita sempre.
   if Trim(FCustomModel) <> '' then
     Exit(Trim(FCustomModel));
@@ -336,9 +354,30 @@ end;
 function TCHATGPT.SendQuestion(ASK: WideString): Boolean;
 var
   LURL, AUX: WideString;
+  Antigrav: TAntigravity;
 begin
   Result := False;
   FQuestion := ASK;
+
+  // Se o provedor configurado no FSetMain for Antigravity (4),
+  // redirecionamos transparentemente para a classe TAntigravity!
+  if Assigned(FSetMain) and (FSetMain.Provider = 4) then
+  begin
+    Antigrav := TAntigravity.Create(nil);
+    try
+      Antigrav.TOKEN := FToken; // Repassa o token do ChatGPT
+      Antigrav.Dev := FDev;     // Repassa a instrução de sistema
+      Antigrav.CustomModel := FSetMain.ModelGemini; // Usa o modelo do Gemini selecionado
+
+      Result := Antigrav.SendQuestion(ASK);
+      FResponse := Antigrav.Response;
+      FLastJSON := Antigrav.LastJSON;
+      Exit;
+    finally
+      Antigrav.Free;
+    end;
+  end;
+
   CarregaProviderDoSetMain;
 
   try

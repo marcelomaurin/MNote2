@@ -204,10 +204,27 @@ object frmconfig: Tfrmconfig
         Text = 'cbTipoIA'
         OnChange = cbTipoIAChange
       end
-      object lbVersao: TLabel
-        Left = 280
+      object LabelModeloIA: TLabel
+        Left = 208
         Height = 15
+        Top = 6
+        Width = 60
+        Caption = 'Modelo IA:'
+        ParentColor = False
+      end
+      object cbModeloIA: TComboBox
+        Left = 208
+        Height = 23
         Top = 24
+        Width = 200
+        ItemHeight = 15
+        TabOrder = 3
+        Text = 'cbModeloIA'
+      end
+      object lbVersao: TLabel
+        Left = 8
+        Height = 15
+        Top = 168
         Width = 44
         Caption = 'lbVersao'
       end

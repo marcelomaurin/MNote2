@@ -157,6 +157,41 @@ object frmIA: TfrmIA
       Caption = 'Limpar Histórico'
       OnClick = btLimpaHistClick
     end
+    object lblTipoIA: TLabel
+      Left = 8
+      Height = 15
+      Top = 17
+      Width = 53
+      Caption = 'Provedor:'
+      ParentColor = False
+    end
+    object cbTipoIA: TComboBox
+      Left = 68
+      Height = 23
+      Top = 13
+      Width = 120
+      ItemHeight = 15
+      Style = csDropDownList
+      TabOrder = 1
+      OnChange = cbTipoIAChange
+    end
+    object lblModeloIA: TLabel
+      Left = 200
+      Height = 15
+      Top = 17
+      Width = 46
+      Caption = 'Modelo:'
+      ParentColor = False
+    end
+    object cbModeloIA: TComboBox
+      Left = 252
+      Height = 23
+      Top = 13
+      Width = 180
+      ItemHeight = 15
+      TabOrder = 2
+      OnChange = cbModeloIAChange
+    end
   end
   object pnBotton: TPanel
     Left = 0

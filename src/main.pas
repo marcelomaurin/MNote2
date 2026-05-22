@@ -9,7 +9,7 @@ uses
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types, finds,
   setmain, TypeDB, folders, funcoes, LCLType, ValEdit, PairSplitter, chgtext,
   hint, registro, splash, setFolders, config, SynEditKeyCmds, PythonEngine,
-  rxctrls, LogTreeView, uPoweredby, chatgpt, mquery2, porradawebapi,
+  rxctrls, LogTreeView, uPoweredby, chatgpt, antigravity, mquery2, porradawebapi,
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir,
   newproject, uProjetoDB, IA, uPdfText, uDocText;
 
@@ -242,6 +242,7 @@ type
   private
     { private declarations }
     FCHATGPT : TCHATGPT;
+    FAntigravity : TAntigravity;
     strFind : String;
     FPos : integer;
     procedure QuestionChat();
@@ -1410,6 +1411,9 @@ begin
 
   if FCHATGPT <> nil then
     FreeAndNil(FCHATGPT);
+
+  if FAntigravity <> nil then
+    FreeAndNil(FAntigravity);
 end;
 
 procedure TfrmMNote.FormShow(Sender: TObject);
@@ -2033,41 +2037,51 @@ var
   mapa     : WideString;
   ritem    : TItem;
   syn      : TSynEdit;
+  AntiGrav : Boolean;
 begin
-  if (FCHATGPT = nil) then
-    FCHATGPT := TCHATGPT.Create(Self);
+  AntiGrav := (FSetMain.Provider = 4);
 
-  // Atualiza provider conforme configuração salva no setmain
-  case FSetMain.Provider of
-    0:
+  if AntiGrav then
+  begin
+    if (FAntigravity = nil) then
+      FAntigravity := TAntigravity.Create(Self);
+    FAntigravity.CustomModel := FSetMain.ModelGemini;
+  end
+  else
+  begin
+    if (FCHATGPT = nil) then
+      FCHATGPT := TCHATGPT.Create(Self);
+
+    // Atualiza provider conforme configuração salva no setmain
+    case FSetMain.Provider of
+      0:
+        begin
+          FCHATGPT.Provider := AIP_OPENAI;
+          FCHATGPT.CustomModel := FSetMain.ModelOpenAI;
+        end;
+
+      1:
+        begin
+          FCHATGPT.Provider := AIP_OPENROUTER;
+          FCHATGPT.CustomModel := '';
+        end;
+
+      2:
+        begin
+          FCHATGPT.Provider := AIP_CEREBRAS;
+          FCHATGPT.CustomModel := '';
+        end;
+
+      3:
+        begin
+          FCHATGPT.Provider := AIP_LOCAL;
+          FCHATGPT.CustomModel := FSetMain.ModelLocal;
+        end;
+    else
       begin
         FCHATGPT.Provider := AIP_OPENAI;
-        FCHATGPT.CustomModel := '';
+        FCHATGPT.CustomModel := FSetMain.ModelOpenAI;
       end;
-
-    1:
-      begin
-        FCHATGPT.Provider := AIP_OPENROUTER;
-        FCHATGPT.CustomModel := '';
-      end;
-
-    2:
-      begin
-        FCHATGPT.Provider := AIP_CEREBRAS;
-        FCHATGPT.CustomModel := '';
-      end;
-
-    3:
-      begin
-        FCHATGPT.Provider := AIP_LOCAL;
-
-        // Modelo padrão local/Ollama
-        FCHATGPT.CustomModel := 'llama3.2:3b';
-      end;
-  else
-    begin
-      FCHATGPT.Provider := AIP_OPENAI;
-      FCHATGPT.CustomModel := '';
     end;
   end;
 
@@ -2099,38 +2113,76 @@ begin
   else
     mapa := '';
 
-  FCHATGPT.TOKEN := FSetMain.CHATGPT;
-
-  FCHATGPT.Dev :=
-    'Voce é um assistente pessoal e teve as seguintes perguntas anteriores: ' +
-    meChatHist.Text +
-    ' , caso sugira alguma mudança sempre faça com alteração completa do fonte apresentado. ';
-
   pergunta :=
     'Com base no fonte:' + fonte +
     ' e no mapa de memoria da aplicacao ' + mapa +
     ', responda a seguinte pergunta: ' + edChat.Text;
 
-  if not FCHATGPT.SendQuestion(pergunta) then
+  if AntiGrav then
   begin
+    if Trim(FSetMain.CHATGPT) = '' then
+    begin
+      ShowMessage('Configure a chave de API/Token em SetMain.CHATGPT.');
+      Exit;
+    end;
+
+    FAntigravity.TOKEN := FSetMain.CHATGPT;
+    FAntigravity.Dev :=
+      'Voce é um assistente pessoal e teve as seguintes perguntas anteriores: ' +
+      meChatHist.Text +
+      ' , caso sugira alguma mudança sempre faça com alteração completa do fonte apresentado. ';
+
+    if not FAntigravity.SendQuestion(pergunta) then
+    begin
+      resposta := FAntigravity.Response;
+
+      if Trim(resposta) = '' then
+        resposta := 'Falha ao consultar a IA. Verifique provider, endpoint, modelo e rede.';
+
+      meChatHist.Lines.Add('');
+      meChatHist.Lines.Add('Question: ' + edChat.Text);
+      meChatHist.Lines.Add('Response: ' + resposta);
+
+      meDialog.Lines.Clear;
+      meDialog.Lines.Add('Question: ' + edChat.Text);
+      meDialog.Lines.Add('Response: ' + resposta);
+
+      MessageHint('Falha ao consultar IA.');
+      Exit;
+    end;
+
+    resposta := FAntigravity.Response;
+  end
+  else
+  begin
+    FCHATGPT.TOKEN := FSetMain.CHATGPT;
+
+    FCHATGPT.Dev :=
+      'Voce é um assistente pessoal e teve as seguintes perguntas anteriores: ' +
+      meChatHist.Text +
+      ' , caso sugira alguma mudança sempre faça com alteração completa do fonte apresentado. ';
+
+    if not FCHATGPT.SendQuestion(pergunta) then
+    begin
+      resposta := FCHATGPT.Response;
+
+      if Trim(resposta) = '' then
+        resposta := 'Falha ao consultar a IA. Verifique provider, endpoint, modelo e rede.';
+
+      meChatHist.Lines.Add('');
+      meChatHist.Lines.Add('Question: ' + edChat.Text);
+      meChatHist.Lines.Add('Response: ' + resposta);
+
+      meDialog.Lines.Clear;
+      meDialog.Lines.Add('Question: ' + edChat.Text);
+      meDialog.Lines.Add('Response: ' + resposta);
+
+      MessageHint('Falha ao consultar IA.');
+      Exit;
+    end;
+
     resposta := FCHATGPT.Response;
-
-    if Trim(resposta) = '' then
-      resposta := 'Falha ao consultar a IA. Verifique provider, endpoint, modelo e rede.';
-
-    meChatHist.Lines.Add('');
-    meChatHist.Lines.Add('Question: ' + edChat.Text);
-    meChatHist.Lines.Add('Response: ' + resposta);
-
-    meDialog.Lines.Clear;
-    meDialog.Lines.Add('Question: ' + edChat.Text);
-    meDialog.Lines.Add('Response: ' + resposta);
-
-    MessageHint('Falha ao consultar IA.');
-    Exit;
   end;
-
-  resposta := FCHATGPT.Response;
 
   if FSetMain.ToolsFalar then
   begin

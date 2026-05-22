@@ -18,6 +18,8 @@ type
     ckToolsFalar: TCheckBox;
     ckToolsOuvir: TCheckBox;
     cbTipoIA: TComboBox;
+    cbModeloIA: TComboBox;
+    LabelModeloIA: TLabel;
     edCHATGPT: TFileNameEdit;
     edClean: TFileNameEdit;
     edDebug: TFileNameEdit;
@@ -72,6 +74,9 @@ implementation
 
 {$R *.lfm}
 
+uses
+  IA;
+
 { Tfrmconfig }
 
 procedure Tfrmconfig.btSaveClick(Sender: TObject);
@@ -100,19 +105,62 @@ begin
   // 1 = OpenRouter
   // 2 = Cerebras
   // 3 = Local / llama.cpp
+  // 4 = Antigravity (Gemini)
   if cbTipoIA.ItemIndex < 0 then
     FSetMain.Provider := 0
   else
     FSetMain.Provider := cbTipoIA.ItemIndex;
 
+  case FSetMain.Provider of
+    0: FSetMain.ModelOpenAI := cbModeloIA.Text;
+    3: FSetMain.ModelLocal := cbModeloIA.Text;
+    4: FSetMain.ModelGemini := cbModeloIA.Text;
+  end;
+
   FSetMain.SalvaContexto(False);
+  
+  if Assigned(frmIA) then
+    frmIA.CarregarConfiguracoes;
+    
   Close;
 end;
 
 procedure Tfrmconfig.cbTipoIAChange(Sender: TObject);
 begin
-  // Por enquanto não precisa fazer nada.
-  // Depois podemos usar para habilitar/desabilitar campos conforme o provedor.
+  cbModeloIA.Items.Clear;
+  case cbTipoIA.ItemIndex of
+    0: // OpenAI
+      begin
+        cbModeloIA.Items.Add('gpt-4o-mini');
+        cbModeloIA.Items.Add('gpt-4o');
+        cbModeloIA.Items.Add('gpt-4-turbo');
+        cbModeloIA.Items.Add('gpt-4');
+        cbModeloIA.Items.Add('gpt-3.5-turbo');
+        cbModeloIA.Items.Add('o1-mini');
+        cbModeloIA.Text := FSetMain.ModelOpenAI;
+      end;
+    3: // Local
+      begin
+        cbModeloIA.Items.Add('llama3.2:3b');
+        cbModeloIA.Items.Add('mistral');
+        cbModeloIA.Items.Add('gemma2');
+        cbModeloIA.Items.Add('deepseek-r1:1.5b');
+        cbModeloIA.Items.Add('deepseek-r1:8b');
+        cbModeloIA.Items.Add('qwen2.5:14b');
+        cbModeloIA.Text := FSetMain.ModelLocal;
+      end;
+    4: // Antigravity (Gemini)
+      begin
+        cbModeloIA.Items.Add('gemini-1.5-flash');
+        cbModeloIA.Items.Add('gemini-1.5-pro');
+        cbModeloIA.Items.Add('gemini-2.0-flash');
+        cbModeloIA.Items.Add('gemini-2.5-flash');
+        cbModeloIA.Items.Add('gemini-3.5-flash');
+        cbModeloIA.Text := FSetMain.ModelGemini;
+      end;
+  else
+    cbModeloIA.Text := '';
+  end;
 end;
 
 procedure Tfrmconfig.FormCreate(Sender: TObject);
@@ -141,6 +189,7 @@ begin
   cbTipoIA.Items.Add('OpenRouter');  // 1
   cbTipoIA.Items.Add('Cerebras');    // 2
   cbTipoIA.Items.Add('Local');       // 3 - llama.cpp
+  cbTipoIA.Items.Add('Antigravity'); // 4 - Gemini
 
   if (FSetMain.Provider >= 0) and (FSetMain.Provider < cbTipoIA.Items.Count) then
     cbTipoIA.ItemIndex := FSetMain.Provider
@@ -153,6 +202,9 @@ begin
   finally
     Chat.Free;
   end;
+
+  // Carrega e preenche o combo box de modelos inicialmente
+  cbTipoIAChange(nil);
 end;
 
 procedure Tfrmconfig.btCancelClick(Sender: TObject);
