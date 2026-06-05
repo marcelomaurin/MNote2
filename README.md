@@ -1,184 +1,166 @@
 # MNote2
 
-MNote2 é um editor de texto e código multiplataforma desenvolvido em Lazarus/Free Pascal. A aplicação combina editor com abas, execução de scripts, gerenciador de bancos de dados, integração com IA, leitura de documentos e ferramentas auxiliares de voz.
+**MNote2** é uma mini IDE multiplataforma desenvolvida em **Lazarus/Free Pascal**. O projeto reúne editor de código com abas, análise de pastas com IA, cliente para modelos de linguagem, execução Python, leitura de documentos, gerenciador SQL integrado e ferramentas auxiliares de voz.
 
-Versão atual do fonte: **2.56**.
+O objetivo do MNote2 é oferecer uma ferramenta leve para programadores, estudantes e técnicos que precisam editar fontes, consultar bancos de dados, analisar projetos e usar IA local ou remota dentro de uma aplicação desktop.
 
-## Versões
+## Versão do projeto
 
-- [Português](README.pt.md)
-- [English](README.en.md)
-- [Français](README.fr.md)
-- [Español](README.es.md)
-- [中文](README.zh.md)
-- [العربية](README.ar.md)
+- Versão declarada em `src/main.pas`: **2.60**.
+- Versão de projeto em `src/MNote2.lpi`: **2.61**.
+- Biblioteca interna `TCHATGPT`: **1.5**.
+
+## Documentação
+
+A documentação foi separada em três níveis:
+
+- [Visão geral da documentação](docs/README.md)
+- [Manual de uso](docs/manual_usuario.md)
+- [Documentação do sistema](docs/documentacao_sistema.md)
 
 ## Screenshots
 
 ### Editor integrado
+
 ![Editor](screenshots/Editor%20com%20IA%20integrada.jpg)
 
 ### Gerenciamento de arquivos
+
 ![Gestão de Arquivos](screenshots/Gest%C3%A3o%20de%20Arquivos.jpg)
 
 ### Inteligência Artificial
+
 ![Uso da IA](screenshots/IA.jpg)
 
 ### Gerenciador de Banco de Dados
+
 ![Banco de dados](screenshots/MQUERY.jpg)
 
-## Funcionalidades Principais
+## Principais recursos
 
-### Editor e arquivos
+### Editor de código
 
 - Editor multiabas baseado em SynEdit.
-- Realce e apoio de edição para Pascal, Python, Java, SQL, PHP, C e outros tipos configurados por listas auxiliares.
-- Busca, substituição, copiar/colar, desfazer/refazer, seleção de blocos e configuração de fonte.
+- Realce de sintaxe para Pascal, C/C++, SQL, Python, PHP, Java, JavaScript, HTML, CSS, shell script e outros formatos.
+- Suporte a JSON, XML, YAML, INI, Markdown e Arduino `.ino`.
+- Busca, substituição, seleção de bloco, copiar, colar, desfazer e refazer.
 - Carregamento e salvamento de arquivos em abas independentes.
-- Extração de texto de PDF, DOC e DOCX.
-- Histórico de conversa por arquivo usando arquivos .RIA associados.
-- Integração com organização de pastas e projetos.
-
-### Projetos, pastas e análise IA
-
-- Varredura de pastas com análise de arquivos fonte e documentos.
-- Gera resumos técnicos por arquivo em cache .RIA.
-- Gera análises orientadas à pergunta em cache .PIA.
-- Remove cache .RIA quando o arquivo fonte é alterado depois do resumo.
-- Gera mapa mental textual para consolidar pontos relevantes de uma pergunta.
-- Ignora automaticamente arquivos de cache .RIA e .PIA durante novas análises.
-- Suporte a leitura de extensões como .pas, .pp, .lfm, .lpr, .ini, .json, .yml, .yaml, .php, .htm, .html, .js, .xml, .c, .cpp, .txt, .doc, .docx, .pdf, .sql, .jsp, .py, .cob e .md.
+- Histórico e contexto por arquivo.
 
 ### Inteligência Artificial
 
-- Cliente de IA encapsulado em TCHATGPT, versão interna 1.5.
-- Providers suportados: OpenAI, OpenRouter, Cerebras e Local/llama.cpp compatível com API /v1/chat/completions.
-- Modelos previstos no código: gpt-3.5-turbo, gpt-4, gpt-4-turbo-preview, gpt-4o, gpt-o3-mini, gpt-4.1, gpt-4.1-mini e gpt-5.
-- Modelos locais/Ollama previstos, incluindo llama3.2:3b, Qwen e DeepSeek.
-- Suporte a modelo customizado quando configurado.
-- Configuração de endpoint local por IPLocalIA.
-- Histórico, mapa de memória e pensamento persistidos em arquivos .RIA.
-- Classificação de continuidade da conversa.
-- Preparação de contexto a partir de histórico, mapa de memória, projeto, banco de dados e arquivos analisados.
-- Ações assistidas pela IA, incluindo geração de consultas SQL e criação de estruturas de tabela.
+- Cliente de IA encapsulado em `TCHATGPT`.
+- Suporte a OpenAI, OpenRouter, Cerebras e servidor local compatível com `/v1/chat/completions`.
+- Suporte adicional ao provider Antigravity/Gemini por classe própria.
+- Configuração de modelo, token, provider e endpoint local.
+- Histórico de conversa, mapa de memória e pensamento persistidos em arquivos `.RIA`.
+- Geração de respostas com contexto de projeto, banco de dados e arquivos analisados.
+
+### Análise de projeto e pastas
+
+- Varredura de diretórios.
+- Geração de resumo técnico por arquivo em cache `.RIA`.
+- Geração de análise orientada à pergunta em cache `.PIA`.
+- Leitura de arquivos de código e documentos.
+- Extração de texto de PDF, DOC e DOCX.
+- Busca global por termos dentro dos arquivos analisados.
+- Geração de mapa mental textual para consolidar respostas.
 
 ### Python e automação
 
-- Execução de código Python aberto no editor usando PythonEngine.
-- Uso configurável do caminho da DLL Python.
-- Saída de execução direcionada para a área de resultados.
-- Inspeção de variáveis globais e locais após a execução.
+- Execução de código Python via Python4Lazarus/PythonEngine.
+- Configuração de DLL/biblioteca Python.
+- Exibição da saída na área de resultados.
+- Inspeção de variáveis globais e locais.
 - Execução de scripts externos configuráveis para run, debug, clean, install e compile.
-- Amostras em sample/python, sample/gcc e scripts auxiliares em src.
 
 ### Banco de dados e MQuery2
 
-O módulo MQuery2 funciona como gerenciador SQL integrado.
+O módulo **MQuery2** é um gerenciador SQL integrado ao MNote2.
 
 - Conexão com MySQL, PostgreSQL e SQLite usando Zeos.
-- Configuração de bibliotecas DLL/SO para MySQL, PostgreSQL e SQLite.
-- Navegação por árvores de banco, tabelas, campos, views, procedures, functions, triggers e sequences conforme o banco conectado.
-- Execução de SQL livre por editor integrado.
-- Geração de SQL a partir de tabelas selecionadas.
-- Criação de tabela a partir de dataset CSV.
-- Criação de usuário no PostgreSQL.
-- Geração de dicionário de dados para PostgreSQL e SQLite.
-- Geração de lista de dependências/foreign keys para SQLite e PostgreSQL.
-- Integração com IA para analisar SQL, sugerir melhorias, embelezar consultas e responder perguntas com base em DDL/dependências.
-- Classe TSQLiteDb para conexão SQLite, transações, pragmas recomendados, execução parametrizada e consultas utilitárias.
-- Classe TProjetoDB para abrir projeto SQLite, verificar tabelas e carregar metadados/configurações.
+- Navegação por bancos, tabelas, campos, views, triggers, procedures, functions e sequences.
+- Execução de SQL livre em editor com realce.
+- Importação de CSV.
+- Geração de SQL, dicionário de dados, dependências e análises de consultas.
+- Integração com IA para análise, melhoria e formatação de SQL.
 
 ### Ferramentas de voz
 
-- ToolsFalar envia texto por TCP para um serviço de síntese de voz, como srvFalar.
-- ToolsOuvir conecta por TCP para receber comandos/mensagens externas.
-- Ativação automática opcional ao iniciar, conforme configuração.
-- Configuração de IP e porta pela interface.
+- `ToolsFalar`: envia texto por TCP para serviço de síntese de voz.
+- `ToolsOuvir`: recebe mensagens/comandos por TCP.
+- Configuração de IP, porta e ativação automática.
 
-### Instalação e distribuição
+## Estrutura resumida
 
-- Instalador Windows por Inno Setup em instalador/MNote2.iss.
-- Versão do instalador Windows: 2.56.
-- Copia MNote2.exe, DLLs, arquivos .dci, listas .txt, scripts .bat, amostras e banco padrão.
-- Copia o banco padrão para C:\db.
-- Inclui opção pós-instalação para iniciar srvFalar_1.4.exe.
-- Pacotes e binários históricos ficam em bin.
-- Script buildlinux.sh mantém fluxo de empacotamento Linux/deb.
+```text
+MNote2/
+├── README.md
+├── docs/
+│   ├── README.md
+│   ├── manual_usuario.md
+│   └── documentacao_sistema.md
+├── src/
+│   ├── MNote2.lpr
+│   ├── MNote2.lpi
+│   ├── main.pas
+│   ├── folders.pas
+│   ├── ia.pas
+│   ├── config.pas
+│   ├── setmain.pas
+│   ├── classes/
+│   │   ├── item.pas
+│   │   └── chatgpt.pas
+│   ├── mquery2/
+│   │   └── mquery2.pas
+│   ├── toolsfalar/
+│   └── toolsouvir/
+├── screenshots/
+├── sample/
+├── db/
+├── instalador/
+├── libs/
+└── tools/
+```
 
-## Estrutura do Projeto
+## Requisitos gerais
 
-- src/MNote2.lpr: ponto de entrada da aplicação Lazarus.
-- src/main.pas: formulário principal, abas, editor, carga/salvamento, chat, histórico, ferramentas e integração geral.
-- src/classes/item.pas: encapsula cada aba/item editável, execução Python e execução de scripts configurados.
-- src/classes/chatgpt.pas: cliente HTTP para providers de IA.
-- src/setmain.pas: configuração global e persistência em mnote.cfg.
-- src/config.pas: formulário de configuração de scripts, DLLs, IA, bancos e ferramentas TCP.
-- src/folders.pas: gerenciamento de pastas, análise de arquivos, caches .RIA/.PIA e análise de projeto por IA.
-- src/ia.pas: interface de IA com histórico, mapa de memória, pensamento, continuidade e ações.
-- src/mquery2/mquery2.pas: gerenciador de bancos e SQL.
-- src/sqlite_db.pas: wrapper SQLite.
-- src/uprojetodb.pas: carregamento de projeto SQLite e metadados.
-- src/uPdfText.pas: extração nativa simples de texto de PDF.
-- src/uDocText.pas: extração de texto de DOC/DOCX.
-- src/toolsfalar e src/toolsouvir: ferramentas TCP de fala e escuta.
-- db/projeto_padrao.db: banco padrão do projeto.
-- screenshots: imagens usadas no README.
-- instalador: scripts de empacotamento Windows.
-- sample: exemplos de Python, C e processamento de imagem.
-- libs, sqlite e tools: bibliotecas e utilitários externos distribuídos com o projeto.
+### Para uso
 
-## Requisitos
+- Windows ou Linux.
+- Bibliotecas necessárias para os recursos utilizados: SQLite, MySQL, PostgreSQL/libpq, Python e OpenSSL conforme configuração.
+- Token de IA para provedores remotos ou servidor local compatível com API OpenAI.
+- Serviço TCP externo quando usar ToolsFalar/ToolsOuvir.
 
-### Desenvolvimento
+### Para desenvolvimento
 
-- Lazarus IDE e Free Pascal Compiler.
-- Pacotes Lazarus usados pelo projeto, incluindo LCL, SynEdit, TAChart, Indy, Zeos, RX, Python4Lazarus, lNet e componentes adicionais listados em src/MNote2.lpi.
-- Bibliotecas de banco conforme o uso: SQLite, MySQL client e PostgreSQL/libpq/ODBC conforme configuração.
-- Python 3 compatível com a DLL configurada quando a execução Python estiver habilitada.
-- Inno Setup para gerar o instalador Windows.
+- Lazarus IDE.
+- Free Pascal Compiler.
+- Pacotes Lazarus usados no projeto, incluindo LCL, SynEdit, TAChart, Indy, Zeos, RX, Python4Lazarus, lNet e demais pacotes declarados no `src/MNote2.lpi`.
+- Inno Setup para gerar instalador Windows.
 
-### Uso
+## Configuração principal
 
-- Windows e Linux são os alvos principais presentes no projeto.
-- DOC clássico (.doc) exige Windows com Microsoft Word instalado.
-- Funcionalidades de IA exigem token/provider configurado ou servidor local compatível.
-- Ferramentas de fala/escuta exigem serviço TCP correspondente ativo.
+A configuração é persistida em `mnote.cfg` pela unit `setmain.pas`. O arquivo pode conter:
 
-## Configuração
+- posição e tamanho da janela;
+- fonte do editor;
+- últimos arquivos;
+- scripts externos;
+- token de IA;
+- provider e modelo;
+- endpoint de IA local;
+- caminhos de DLLs/bibliotecas;
+- dados de conexão com bancos;
+- ativação de ferramentas TCP;
+- pasta padrão e projeto atual.
 
-A configuração principal fica em mnote.cfg, gerenciada por TSetMain. Ela inclui:
+> Atenção: `mnote.cfg` pode conter tokens e senhas. Não publique esse arquivo com dados reais.
 
-- Posição/tamanho da janela e fonte.
-- Últimos arquivos.
-- Scripts de run/debug/clean/install/compile.
-- Token de IA e provider.
-- Endpoint de IA local.
-- Caminhos de DLLs de Python, MySQL e PostgreSQL.
-- Dados de conexão MySQL, PostgreSQL e SQLite.
-- Ativação e IPs das ferramentas ToolsFalar e ToolsOuvir.
-- Pasta padrão e projeto atual.
+## Status técnico
 
-Observação: mnote.cfg pode conter token de IA e senhas de banco. Proteja esse arquivo no ambiente local.
-
-## Uso Básico
-
-1. Abra o MNote2.
-2. Configure caminhos de DLLs, scripts, bancos e IA em Configurações.
-3. Abra ou crie arquivos nas abas do editor.
-4. Use o menu de linguagem para selecionar o tipo de arquivo/código.
-5. Execute Python diretamente ou scripts externos configurados.
-6. Abra o MQuery2 para conectar em MySQL, PostgreSQL ou SQLite.
-7. Use a tela de IA para perguntas com histórico, mapa de memória e análise de projeto.
-8. Use o gerenciador de pastas para gerar resumos .RIA e análises .PIA.
-9. Ative ToolsFalar/ToolsOuvir quando precisar de integração TCP de voz.
-
-## Observações de Manutenção
-
-- O código atual concentra bastante lógica em main.pas, folders.pas, ia.pas e mquery2.pas.
-- O repositório contém binários, pacotes e bibliotecas externas versionadas porque o projeto distribui artefatos junto com o fonte.
-- Arquivos .RIA e .PIA são usados como cache/resultado de IA e podem ser regenerados pela aplicação.
-- src/lib contém artefatos de compilação Lazarus/Free Pascal para plataformas usadas no projeto.
+O MNote2 é funcional e possui vários módulos maduros, mas parte da lógica ainda está concentrada em formulários grandes, especialmente `main.pas`, `folders.pas`, `ia.pas` e `mquery2.pas`. A documentação técnica em `docs/documentacao_sistema.md` descreve esses módulos e aponta melhorias recomendadas.
 
 ## Licença
 
-Consulte o arquivo LICENSE.
+Consulte o arquivo [LICENSE](LICENSE).
