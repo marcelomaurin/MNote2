@@ -101,6 +101,9 @@ type
     FDefaultfolder : string;
     FProject : string;
 
+    FUsePythonConnector: Boolean;
+    FPythonExecutionMode: Integer;
+
     procedure SetDevice(const Value : Boolean);
     procedure SetPOSX(value : integer);
     procedure SetPOSY(value : integer);
@@ -204,6 +207,9 @@ type
 
     property Defaultfolder : string read FDefaultfolder write FDefaultfolder;
     property Project : string read FProject write FProject;
+
+    property UsePythonConnector: Boolean read FUsePythonConnector write FUsePythonConnector;
+    property PythonExecutionMode: Integer read FPythonExecutionMode write FPythonExecutionMode;
   end;
 
 var
@@ -300,6 +306,9 @@ begin
 
   FDefaultfolder := '';
   FProject := '';
+
+  FUsePythonConnector := False;
+  FPythonExecutionMode := 1;
 end;
 
 procedure TSetMain.SetPOSX(value: integer);
@@ -554,9 +563,19 @@ begin
 
   if BuscaChave(arquivo,'DEFAULTFOLDER:',posicao) then
     FDefaultfolder := RetiraInfo(arquivo.Strings[posicao]);
-
+ 
   if BuscaChave(arquivo,'PROJECT:',posicao) then
     FProject := RetiraInfo(arquivo.Strings[posicao]);
+
+  if BuscaChave(arquivo,'USEPYTHONCONNECTOR:',posicao) then
+    FUsePythonConnector := (RetiraInfo(arquivo.Strings[posicao])='1')
+  else
+    FUsePythonConnector := False;
+
+  if BuscaChave(arquivo,'PYTHONEXECUTIONMODE:',posicao) then
+    FPythonExecutionMode := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 1)
+  else
+    FPythonExecutionMode := 1;
 
   if Trim(FProtocolSQLite) = '' then
     FProtocolSQLite := 'sqlite-3';
@@ -683,6 +702,9 @@ begin
 
   arquivo.Append('DEFAULTFOLDER:'+FDefaultfolder);
   arquivo.Append('PROJECT:'+FPROJECT);
+ 
+  arquivo.Append('USEPYTHONCONNECTOR:'+iif(FUsePythonConnector,'1','0'));
+  arquivo.Append('PYTHONEXECUTIONMODE:'+IntToStr(FPythonExecutionMode));
 
   arquivo.SaveToFile(FPath + filename);
 end;

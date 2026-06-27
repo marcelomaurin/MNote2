@@ -74,9 +74,10 @@ begin
   if FPython = nil then
     Exit;
 
-  // Primeiro modo recomendado para integração segura:
-  // processo separado evita travar o MNote2 caso o Python quebre.
-  FPython.ExecutionMode := pemProcess;
+  if FSetMain.PythonExecutionMode = 0 then
+    FPython.ExecutionMode := pemDLL
+  else
+    FPython.ExecutionMode := pemProcess;
   FPython.LoadMode := plmAuto;
 
   // Se o usuário configurou DLLPath no MNote2, reaproveita.

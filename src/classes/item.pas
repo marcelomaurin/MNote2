@@ -11,7 +11,7 @@ uses
   SynHighlighterUnixShellScript, SynHighlighterBat, SynHighlighterJava,
   SynHighlighterJScript, SynHighlighterCss,
   Graphics, SynEditKeyCmds, LCLType, Variants,
-  PythonEngine, PythonGUIInputOutput, setmain, funcoes, hint, Dialogs, StdCtrls, Menus;
+  PythonEngine, PythonGUIInputOutput, setmain, funcoes, hint, Dialogs, StdCtrls, Menus, mnote_python_service;
 
 type
   TFuncPosition = record
@@ -124,6 +124,7 @@ type
 
     function PesquisaPar(param: string; lst: TStringlist): string;
     function GetPreservPath(const AFileName: string): string;
+    function RunPythonComponente: Boolean;
 
     procedure Default();
     procedure SetItemType(value: TTypeItem);
@@ -744,6 +745,59 @@ begin
   end;
 end;
 
+function TItem.RunPythonComponente: Boolean;
+var
+  Py: TMNotePythonService;
+  Report: TStringList;
+begin
+  Result := False;
+  FError := False;
+  FFileError := '';
+  FLinhaError := 0;
+  FColumError := 0;
+
+  if Fsyn = nil then
+  begin
+    FError := True;
+    FFileError := 'Editor não atribuído.';
+    Exit(False);
+  end;
+
+  Py := TMNotePythonService.Create(Self);
+  Report := TStringList.Create;
+  try
+    if Assigned(FResultado) then
+      FResultado.Lines.Clear;
+
+    Result := Py.ExecuteLines(Fsyn.Lines);
+
+    if Assigned(FResultado) then
+    begin
+      if Py.LastOutput <> '' then
+        FResultado.Lines.Add(Py.LastOutput);
+
+      if not Result then
+      begin
+        FResultado.Lines.Add('Erro Python:');
+        FResultado.Lines.Add(Py.LastError);
+        FResultado.Lines.Add('');
+        FResultado.Lines.Add('Diagnóstico:');
+        Py.GetDiagnosticReport(Report);
+        FResultado.Lines.AddStrings(Report);
+      end;
+    end;
+
+    if not Result then
+    begin
+      FError := True;
+      FFileError := Py.LastError;
+    end;
+  finally
+    Report.Free;
+    Py.Free;
+  end;
+end;
+
 procedure TItem.Run();
 var
   Output: string;
@@ -753,6 +807,12 @@ begin
   case FItemType of
     ti_PY:
       begin
+        if FSetMain.UsePythonConnector then
+        begin
+          RunPythonComponente;
+          Exit;
+        end;
+
         if (FSetMain.DLLPath <> '') then
         begin
           if (FPythonCtrl.PythonEngine = nil) then

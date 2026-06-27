@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, EditBtn,
-  ComCtrls, IPEdit, setmain, chatgpt;
+  ComCtrls, IPEdit, setmain, chatgpt, mnote_python_service, pythonconnector;
 
 type
 
@@ -57,10 +57,14 @@ type
     TabSheet4: TTabSheet;
     tsToolsOuvir: TTabSheet;
     tsFalar: TTabSheet;
+    chkUsePythonConnector: TCheckBox;
+    cbPythonExecutionMode: TComboBox;
+    btTestarPython: TButton;
     procedure btCancelClick(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
     procedure cbTipoIAChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure btTestarPythonClick(Sender: TObject);
   private
 
   public
@@ -96,6 +100,8 @@ begin
   FSetMain.ToolsOuvir := ckToolsOuvir.Checked;
   FSetMain.IPFALAR := edIPFALAR.Text;
   FSetMain.IPOUVIR := edIPOUVIR.Text;
+  FSetMain.UsePythonConnector := chkUsePythonConnector.Checked;
+  FSetMain.PythonExecutionMode := cbPythonExecutionMode.ItemIndex;
 
   // Servidor da IA local / llama.cpp
   FSetMain.IPLocalIA := edIPLocalIA.Text;
@@ -201,6 +207,8 @@ begin
   edIPFALAR.Text := FSetMain.IPFALAR;
   edIPOUVIR.Text := FSetMain.IPOUVIR;
   edIPLocalIA.Text := FSetMain.IPLocalIA;
+  chkUsePythonConnector.Checked := FSetMain.UsePythonConnector;
+  cbPythonExecutionMode.ItemIndex := FSetMain.PythonExecutionMode;
 
   cbTipoIA.Items.Clear;
   cbTipoIA.Items.Add('OpenAI');      // 0
@@ -228,6 +236,34 @@ end;
 procedure Tfrmconfig.btCancelClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure Tfrmconfig.btTestarPythonClick(Sender: TObject);
+var
+  Py: TMNotePythonService;
+  Report: TStringList;
+  Code: string;
+begin
+  Py := TMNotePythonService.Create(Self);
+  Report := TStringList.Create;
+  try
+    if cbPythonExecutionMode.ItemIndex = 0 then
+      Py.Python.ExecutionMode := pemDLL
+    else
+      Py.Python.ExecutionMode := pemProcess;
+
+    Code := 'import sys' + LineEnding + 'print("Versao Python:", sys.version)';
+    if Py.ExecuteCode(Code) then
+      ShowMessage('Sucesso!' + LineEnding + Py.LastOutput)
+    else
+    begin
+      Py.GetDiagnosticReport(Report);
+      ShowMessage('Erro: ' + Py.LastError + LineEnding + LineEnding + Report.Text);
+    end;
+  finally
+    Report.Free;
+    Py.Free;
+  end;
 end;
 
 end.
