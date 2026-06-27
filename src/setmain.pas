@@ -55,6 +55,8 @@ type
     FModelOpenAI : string;
     FModelLocal : string;
     FModelGemini : string;
+    FModelOpenRouter : string;
+    FModelCerebras : string;
 
     // ===== IA Local =====
     fIPLocalIA : String;
@@ -159,6 +161,8 @@ type
     property ModelOpenAI : string read FModelOpenAI write FModelOpenAI;
     property ModelLocal : string read FModelLocal write FModelLocal;
     property ModelGemini : string read FModelGemini write FModelGemini;
+    property ModelOpenRouter : string read FModelOpenRouter write FModelOpenRouter;
+    property ModelCerebras : string read FModelCerebras write FModelCerebras;
 
     // ===== MySQL =====
     property HostnameMy: string read FHostnameMy write FHostnameMy;
@@ -244,6 +248,8 @@ begin
   FModelOpenAI := 'gpt-4o-mini';
   FModelLocal := 'llama3.2:3b';
   FModelGemini := 'gemini-1.5-flash';
+  FModelOpenRouter := 'google/gemma-2-9b-it:free';
+  FModelCerebras := 'llama3.1-8b';
 
   // ===== IA Local =====
   fIPLocalIA := 'http://172.17.241.200:8095';
@@ -452,6 +458,16 @@ begin
   else
     FModelGemini := 'gemini-1.5-flash';
 
+  if BuscaChave(arquivo,'MODELOPENROUTER:',posicao) then
+    FModelOpenRouter := RetiraInfo(arquivo.Strings[posicao])
+  else
+    FModelOpenRouter := 'google/gemma-2-9b-it:free';
+
+  if BuscaChave(arquivo,'MODELCEREBRAS:',posicao) then
+    FModelCerebras := RetiraInfo(arquivo.Strings[posicao])
+  else
+    FModelCerebras := 'llama3.1-8b';
+
   // ===== MySQL =====
   if BuscaChave(arquivo,'HOSTNAMEMY:',posicao) then
     FHostnameMy := RetiraInfo(arquivo.Strings[posicao]);
@@ -624,6 +640,8 @@ begin
   arquivo.Append('MODELOPENAI:'+FModelOpenAI);
   arquivo.Append('MODELLOCAL:'+FModelLocal);
   arquivo.Append('MODELGEMINI:'+FModelGemini);
+  arquivo.Append('MODELOPENROUTER:'+FModelOpenRouter);
+  arquivo.Append('MODELCEREBRAS:'+FModelCerebras);
 
   // ===== MySQL =====
   arquivo.Append('HOSTNAMEMY:'+FHostnameMy);

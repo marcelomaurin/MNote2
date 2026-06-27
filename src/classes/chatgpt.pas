@@ -214,7 +214,19 @@ begin
   // Cerebras
   if FProvider = AIP_CEREBRAS then
   begin
-    Exit('qwen-3-235b-a22b-instruct-2507');
+    if Assigned(FSetMain) and (Trim(FSetMain.ModelCerebras) <> '') then
+      Exit(FSetMain.ModelCerebras)
+    else
+      Exit('qwen-3-235b-a22b-instruct-2507');
+  end;
+
+  // OpenRouter
+  if FProvider = AIP_OPENROUTER then
+  begin
+    if Assigned(FSetMain) and (Trim(FSetMain.ModelOpenRouter) <> '') then
+      Exit(FSetMain.ModelOpenRouter)
+    else
+      Exit('google/gemma-2-9b-it:free');
   end;
 
   // OpenAI / OpenRouter

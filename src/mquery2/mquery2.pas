@@ -3838,6 +3838,7 @@ begin
       '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
 
     FAntigravity.TOKEN := FSetMain.CHATGPT;
+    FAntigravity.CustomModel := FSetMain.ModelGemini;
 
     if FAntigravity.SendQuestion(ask) then
       outSQL := StripCodeFences(FAntigravity.Response)
@@ -3946,6 +3947,7 @@ begin
       '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
 
     FAntigravity.TOKEN := FSetMain.CHATGPT;
+    FAntigravity.CustomModel := FSetMain.ModelGemini;
 
     if FAntigravity.SendQuestion(ask) then
       outSQL := StripCodeFences(FAntigravity.Response)

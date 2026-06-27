@@ -205,13 +205,13 @@ begin
     1:
       begin
         FChatGPT.Provider := AIP_OPENROUTER;
-        FChatGPT.CustomModel := '';
+        FChatGPT.CustomModel := FSetMain.ModelOpenRouter;
       end;
 
     2:
       begin
         FChatGPT.Provider := AIP_CEREBRAS;
-        FChatGPT.CustomModel := '';
+        FChatGPT.CustomModel := FSetMain.ModelCerebras;
       end;
 
     3:
@@ -408,6 +408,22 @@ begin
         cbModeloIA.Items.Add('o1-mini');
         cbModeloIA.Text := FSetMain.ModelOpenAI;
       end;
+    1: // OpenRouter
+      begin
+        cbModeloIA.Items.Add('google/gemma-2-9b-it:free');
+        cbModeloIA.Items.Add('meta-llama/llama-3-8b-instruct:free');
+        cbModeloIA.Items.Add('mistralai/mistral-7b-instruct:free');
+        cbModeloIA.Items.Add('microsoft/phi-3-medium-128k-instruct:free');
+        cbModeloIA.Items.Add('deepseek/deepseek-chat');
+        cbModeloIA.Text := FSetMain.ModelOpenRouter;
+      end;
+    2: // Cerebras
+      begin
+        cbModeloIA.Items.Add('llama3.1-8b');
+        cbModeloIA.Items.Add('llama3.1-70b');
+        cbModeloIA.Items.Add('llama-3.3-70b');
+        cbModeloIA.Text := FSetMain.ModelCerebras;
+      end;
     3: // Local
       begin
         cbModeloIA.Items.Add('llama3.2:3b');
@@ -436,6 +452,8 @@ procedure TfrmIA.cbModeloIAChange(Sender: TObject);
 begin
   case FSetMain.Provider of
     0: FSetMain.ModelOpenAI := cbModeloIA.Text;
+    1: FSetMain.ModelOpenRouter := cbModeloIA.Text;
+    2: FSetMain.ModelCerebras := cbModeloIA.Text;
     3: FSetMain.ModelLocal := cbModeloIA.Text;
     4: FSetMain.ModelGemini := cbModeloIA.Text;
   end;

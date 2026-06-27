@@ -30,9 +30,9 @@ object frmmquery2: Tfrmmquery2
     Height = 720
     Top = 50
     Width = 1167
-    ActivePage = tsAbout
+    ActivePage = tsSetup
     Align = alClient
-    TabIndex = 0
+    TabIndex = 4
     TabOrder = 2
     object tsAbout: TTabSheet
       Caption = 'About'
@@ -1038,7 +1038,7 @@ object frmmquery2: Tfrmmquery2
         Width = 5
       end
     end
-    object tspostgree: TTabSheet
+    object tsPostgree: TTabSheet
       Caption = 'Postgree'
       ClientHeight = 692
       ClientWidth = 1159
@@ -1990,7 +1990,7 @@ object frmmquery2: Tfrmmquery2
         Width = 5
       end
     end
-    object liteMain: TTabSheet
+    object tsSqlite: TTabSheet
       Caption = 'SQLite'
       ClientHeight = 692
       ClientWidth = 1159
@@ -2885,7 +2885,7 @@ object frmmquery2: Tfrmmquery2
         Width = 5
       end
     end
-    object TabSheet7: TTabSheet
+    object tsSetup: TTabSheet
       Caption = 'Setup'
       ClientHeight = 692
       ClientWidth = 1159
@@ -3225,7 +3225,7 @@ object frmmquery2: Tfrmmquery2
     Top = 520
   end
   object SynCompletion1: TSynCompletion
-    Position = 0
+    Position = -1
     LinesInWindow = 6
     OnPositionChanged = SynCompletion1PositionChanged
     SelectedColor = clHighlight
