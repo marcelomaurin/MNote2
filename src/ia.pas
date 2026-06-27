@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls,
   StdCtrls, Buttons, chatgpt, antigravity, setmain, folders, mquery2, fpjson, jsonparser,
-  item, SynEditTypes, SynEdit, DateUtils;
+  mnote_chatgpt_config, item, SynEditTypes, SynEdit, DateUtils;
 
 type
   TTipoAcao = (
@@ -240,43 +240,18 @@ begin
   Result := False;
   Resposta := '';
 
-  if FSetMain.Provider = 4 then
-  begin
-    if FAntigravity = nil then
-      FAntigravity := TAntigravity.Create(Self);
+  if FChatGPT = nil then
+    FChatGPT := TCHATGPT.Create(Self);
 
-    if Trim(FSetMain.CHATGPT) = '' then
-    begin
-      ShowMessage('Configure a chave de API/Token em SetMain.CHATGPT.');
-      Exit(False);
-    end;
+  ConfiguraChatGPTPorSetMain(FChatGPT);
+  FChatGPT.Dev := DevMsg;
 
-    FAntigravity.TOKEN := FSetMain.CHATGPT;
-    FAntigravity.Dev := DevMsg;
-    FAntigravity.CustomModel := FSetMain.ModelGemini;
+  Result := FChatGPT.SendQuestion(Prompt);
 
-    Result := FAntigravity.SendQuestion(Prompt);
-    Resposta := FAntigravity.Response;
-  end
+  if Result then
+    Resposta := FChatGPT.Response
   else
-  begin
-    if FChatGPT = nil then
-      FChatGPT := TCHATGPT.Create(Self);
-
-    AtualizaProviderChatGPT;
-
-    if (FChatGPT.Provider <> AIP_LOCAL) and (Trim(FSetMain.CHATGPT) = '') then
-    begin
-      ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
-      Exit(False);
-    end;
-
-    FChatGPT.TOKEN := FSetMain.CHATGPT;
-    FChatGPT.Dev := DevMsg;
-
-    Result := FChatGPT.SendQuestion(Prompt);
-    Resposta := FChatGPT.Response;
-  end;
+    Resposta := FChatGPT.LastError + LineEnding + FChatGPT.LastJSON;
 end;
 
 
