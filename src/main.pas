@@ -11,7 +11,7 @@ uses
   hint, registro, splash, setFolders, config, SynEditKeyCmds, PythonEngine,
   rxctrls, LogTreeView, uPoweredby, chatgpt, antigravity, mquery2, porradawebapi,
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir,
-  newproject, uProjetoDB, IA, uPdfText, uDocText;
+  newproject, uProjetoDB, IA, uPdfText, uDocText, mnote_python_service;
 
 const versao = '2.62';
 
@@ -49,6 +49,8 @@ type
     MenuItem18: TMenuItem;
     miporrada: TMenuItem;
     miChatGPT: TMenuItem;
+    miTestarPython: TMenuItem;
+    miDiagnosticoPython: TMenuItem;
     mniJSONVALID: TMenuItem;
     mnidos2unix: TMenuItem;
     PageControl1: TPageControl;
@@ -176,6 +178,8 @@ type
     procedure miIMGJSONClick(Sender: TObject);
     procedure miPasteClick(Sender: TObject);
     procedure miporradaClick(Sender: TObject);
+    procedure miTestarPythonClick(Sender: TObject);
+    procedure miDiagnosticoPythonClick(Sender: TObject);
     procedure miRedoClick(Sender: TObject);
     procedure miSelectAllClick(Sender: TObject);
     procedure miSelectBlockClick(Sender: TObject);
@@ -284,6 +288,8 @@ type
     procedure MudaDoc();
     procedure SalvarWorkspaceState;
     procedure RestaurarWorkspaceState;
+    procedure TestarPythonConnector;
+    procedure DiagnosticoPythonConnector;
   end;
 
   function FileLoad(const FullName: string): Boolean;
@@ -2590,6 +2596,77 @@ begin
   finally
     Q.Free;
   end;
+end;
+
+procedure TfrmMNote.TestarPythonConnector;
+var
+  Py: TMNotePythonService;
+  Report: TStringList;
+begin
+  Py := TMNotePythonService.Create(Self);
+  Report := TStringList.Create;
+  try
+    if Py.ExecuteCode(
+      'print("MNOTE2_PYTHON_OK")' + LineEnding +
+      'x = 10 + 20' + LineEnding +
+      'print("x=", x)'
+    ) then
+    begin
+      if Assigned(meResult) then
+      begin
+        meResult.Lines.Add('Python executado com sucesso.');
+        meResult.Lines.Add(Py.LastOutput);
+        meResult.Lines.Add('x = ' + Py.GetVar('x'));
+      end;
+    end
+    else
+    begin
+      Py.GetDiagnosticReport(Report);
+
+      if Assigned(meResult) then
+      begin
+        meResult.Lines.Add('Erro no Python Connector:');
+        meResult.Lines.Add(Py.LastError);
+        meResult.Lines.Add('');
+        meResult.Lines.AddStrings(Report);
+      end;
+    end;
+  finally
+    Report.Free;
+    Py.Free;
+  end;
+end;
+
+procedure TfrmMNote.DiagnosticoPythonConnector;
+var
+  Py: TMNotePythonService;
+  Report: TStringList;
+begin
+  Py := TMNotePythonService.Create(Self);
+  Report := TStringList.Create;
+  try
+    Py.Start;
+    Py.GetDiagnosticReport(Report);
+
+    if Assigned(meResult) then
+    begin
+      meResult.Lines.Clear;
+      meResult.Lines.AddStrings(Report);
+    end;
+  finally
+    Report.Free;
+    Py.Free;
+  end;
+end;
+
+procedure TfrmMNote.miTestarPythonClick(Sender: TObject);
+begin
+  TestarPythonConnector;
+end;
+
+procedure TfrmMNote.miDiagnosticoPythonClick(Sender: TObject);
+begin
+  DiagnosticoPythonConnector;
 end;
 
 end.

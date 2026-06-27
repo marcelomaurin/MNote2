@@ -1513,6 +1513,14 @@ object frmMNote: TfrmMNote
         Caption = 'Stress WebApi Tester'
         OnClick = miporradaClick
       end
+      object miTestarPython: TMenuItem
+        Caption = 'Testar Python Connector'
+        OnClick = miTestarPythonClick
+      end
+      object miDiagnosticoPython: TMenuItem
+        Caption = 'Diagnóstico Python'
+        OnClick = miDiagnosticoPythonClick
+      end
     end
     object mnSetup: TMenuItem
       Caption = 'Setup'
