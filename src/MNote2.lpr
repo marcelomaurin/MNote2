@@ -29,7 +29,7 @@ var
   NeuralApiBootstrap: TMNoteNeuralApiBootstrap;
   NeuralApiStatus: TMNoteNeuralApiStatus;
   NeuralApiInstaller, NeuralApiError: string;
-  RunCloseTabTest: Boolean;
+  RunCloseTabTest, RunSolutionTreeTest: Boolean;
 
 function ConsoleAvailable: Boolean;
 begin
@@ -43,6 +43,8 @@ end;
 begin
   RunCloseTabTest := (ParamCount > 0) and
     SameText(ParamStr(1), '--close-tab-test');
+  RunSolutionTreeTest := (ParamCount > 1) and
+    SameText(ParamStr(1), '--solution-tree-test');
   if (ParamCount > 0) and SameText(ParamStr(1), '--neural-api-check') then
   begin
     NeuralApiBootstrap := TMNoteNeuralApiBootstrap.Create;
@@ -97,6 +99,8 @@ begin
     Application.CreateForm(TfrmMNote, frmMNote);
     if RunCloseTabTest then
       Application.QueueAsyncCall(@frmMNote.RunCloseTabTest, 0);
+    if RunSolutionTreeTest then
+      Application.QueueAsyncCall(@frmMNote.RunSolutionExplorerTest, 0);
     //Application.CreateForm(TfrmMQuery, frmMQuery);
     {$ifndef Darwin}
     {$ENDIF}

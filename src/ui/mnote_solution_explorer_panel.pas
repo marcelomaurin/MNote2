@@ -13,7 +13,8 @@ type
   TMNoteSolutionPathEvent = procedure(Sender: TObject;
     const APath: string) of object;
 
-  TMNoteSolutionNodeKind = (snkProject, snkFolder, snkFile, snkVirtual);
+  TMNoteSolutionNodeKind = (snkSolution, snkProject, snkFolder, snkFile,
+    snkDatabase, snkTableGroup, snkTable);
 
   TMNoteSolutionNodeData = class
   public
@@ -34,6 +35,8 @@ type
     FProjectName: string;
     FProjectFile: string;
     FProjectKind: TMNoteProjectKind;
+    FDatabaseName: string;
+    FDatabaseTables: TStringList;
     FOnOpenFile: TMNoteSolutionPathEvent;
     FOnNewProject: TNotifyEvent;
     FOnOpenProject: TNotifyEvent;
@@ -64,6 +67,8 @@ type
     procedure ProjectProperties(Sender: TObject);
     function SelectedData: TMNoteSolutionNodeData;
     function SelectedFolder: string;
+    function ProjectNode: TTreeNode;
+    procedure AddDatabaseNodes(ARoot: TTreeNode);
     procedure BuildPopup;
   public
     constructor Create(AOwner: TComponent); override;
@@ -73,6 +78,10 @@ type
       AProjectFile: string; AKind: TMNoteProjectKind);
     procedure ClearProject;
     procedure Refresh;
+    procedure SetDatabase(const ADatabaseName: string; ATables: TStrings);
+    procedure ClearDatabase;
+    function ContainsNode(const ACaption: string): Boolean;
+    procedure GetTreeSnapshot(AItems: TStrings);
     procedure SelectFile(const AFileName: string);
     property RootPath: string read FRootPath;
     property OnOpenFile: TMNoteSolutionPathEvent read FOnOpenFile
@@ -91,10 +100,14 @@ constructor TMNoteSolutionExplorerPanel.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FNodeData := TObjectList.Create(True);
+  FDatabaseTables := TStringList.Create;
+  FDatabaseTables.Sorted := True;
+  FDatabaseTables.Duplicates := dupIgnore;
 end;
 
 destructor TMNoteSolutionExplorerPanel.Destroy;
 begin
+  FDatabaseTables.Free;
   FNodeData.Free;
   inherited Destroy;
 end;
@@ -116,6 +129,22 @@ begin
   Result.Data := AddData(AKind, APath);
   if AKind in [snkProject, snkFolder] then
     FTree.Items.AddChild(Result, '');
+end;
+
+procedure TMNoteSolutionExplorerPanel.AddDatabaseNodes(ARoot: TTreeNode);
+var
+  DatabaseNode, TablesNode: TTreeNode;
+  I: Integer;
+begin
+  if (ARoot = nil) or (Trim(FDatabaseName) = '') then Exit;
+  DatabaseNode := AddPathNode(ARoot, 'Banco de dados ''' + FDatabaseName + '''',
+    '', snkDatabase);
+  TablesNode := AddPathNode(DatabaseNode,
+    Format('Tabelas (%d)', [FDatabaseTables.Count]), '', snkTableGroup);
+  for I := 0 to FDatabaseTables.Count - 1 do
+    AddPathNode(TablesNode, FDatabaseTables[I], '', snkTable);
+  DatabaseNode.Expand(False);
+  TablesNode.Expand(False);
 end;
 
 function TMNoteSolutionExplorerPanel.IsIgnored(const AName: string;
@@ -287,6 +316,8 @@ begin
   FProjectName := '';
   FProjectFile := '';
   FProjectKind := mpkNone;
+  FDatabaseName := '';
+  FDatabaseTables.Clear;
   if FTree <> nil then
   begin
     FTree.Items.Clear;
@@ -298,7 +329,7 @@ end;
 
 procedure TMNoteSolutionExplorerPanel.Refresh;
 var
-  Root: TTreeNode;
+  Root, AProjectNode: TTreeNode;
 begin
   if (FTree = nil) or not DirectoryExists(FRootPath) then
   begin
@@ -309,14 +340,69 @@ begin
   try
     FTree.Items.Clear;
     FNodeData.Clear;
-    Root := AddPathNode(nil, 'Solution ''' + FProjectName + '''',
+    Root := AddPathNode(nil, 'Solution ''' + FProjectName + '''', '',
+      snkSolution);
+    AProjectNode := AddPathNode(Root, 'Projeto ''' + FProjectName + '''',
       FRootPath, snkProject);
-    PopulateFolder(Root);
+    PopulateFolder(AProjectNode);
+    AddDatabaseNodes(Root);
     Root.Expand(False);
+    AProjectNode.Expand(False);
   finally
     FTree.Items.EndUpdate;
   end;
   FStatus.Caption := MNoteProjectKindName(FProjectKind) + ': ' + FRootPath;
+end;
+
+procedure TMNoteSolutionExplorerPanel.SetDatabase(const ADatabaseName: string;
+  ATables: TStrings);
+begin
+  FDatabaseName := Trim(ADatabaseName);
+  FDatabaseTables.BeginUpdate;
+  try
+    FDatabaseTables.Clear;
+    if ATables <> nil then FDatabaseTables.AddStrings(ATables);
+  finally
+    FDatabaseTables.EndUpdate;
+  end;
+  if (FTree <> nil) and DirectoryExists(FRootPath) then Refresh;
+end;
+
+procedure TMNoteSolutionExplorerPanel.ClearDatabase;
+begin
+  FDatabaseName := '';
+  FDatabaseTables.Clear;
+  if (FTree <> nil) and DirectoryExists(FRootPath) then Refresh;
+end;
+
+function TMNoteSolutionExplorerPanel.ContainsNode(
+  const ACaption: string): Boolean;
+var
+  Node: TTreeNode;
+begin
+  Result := False;
+  if FTree = nil then Exit;
+  Node := FTree.Items.GetFirstNode;
+  while Node <> nil do
+  begin
+    if SameText(Node.Text, ACaption) then Exit(True);
+    Node := Node.GetNext;
+  end;
+end;
+
+procedure TMNoteSolutionExplorerPanel.GetTreeSnapshot(AItems: TStrings);
+var
+  Node: TTreeNode;
+begin
+  if AItems = nil then Exit;
+  AItems.Clear;
+  if FTree = nil then Exit;
+  Node := FTree.Items.GetFirstNode;
+  while Node <> nil do
+  begin
+    AItems.Add(StringOfChar(' ', Node.Level * 2) + Node.Text);
+    Node := Node.GetNext;
+  end;
 end;
 
 procedure TMNoteSolutionExplorerPanel.RefreshClick(Sender: TObject);
@@ -373,7 +459,25 @@ begin
   Data := SelectedData;
   if Data = nil then Exit;
   if Data.Kind in [snkProject, snkFolder] then Result := Data.FullPath
-  else Result := ExtractFileDir(Data.FullPath);
+  else if Data.Kind = snkFile then Result := ExtractFileDir(Data.FullPath);
+end;
+
+function TMNoteSolutionExplorerPanel.ProjectNode: TTreeNode;
+var
+  Data: TMNoteSolutionNodeData;
+begin
+  Result := nil;
+  if FTree = nil then Exit;
+  Result := FTree.Items.GetFirstNode;
+  while Result <> nil do
+  begin
+    if Result.Data <> nil then
+    begin
+      Data := TMNoteSolutionNodeData(Result.Data);
+      if Data.Kind = snkProject then Exit;
+    end;
+    Result := Result.GetNext;
+  end;
 end;
 
 procedure TMNoteSolutionExplorerPanel.TreeDoubleClick(Sender: TObject);
@@ -392,9 +496,13 @@ end;
 
 procedure TMNoteSolutionExplorerPanel.NewFile(Sender: TObject);
 var
+  Data: TMNoteSolutionNodeData;
   ItemName, FileName: string;
   Stream: TFileStream;
 begin
+  Data := SelectedData;
+  if (Data <> nil) and not (Data.Kind in [snkProject, snkFolder, snkFile]) then
+    Exit;
   ItemName := '';
   if not InputQuery('Novo arquivo', 'Nome:', ItemName) or
     (Trim(ItemName) = '') then Exit;
@@ -424,8 +532,12 @@ end;
 
 procedure TMNoteSolutionExplorerPanel.NewFolder(Sender: TObject);
 var
+  Data: TMNoteSolutionNodeData;
   ItemName, Folder: string;
 begin
+  Data := SelectedData;
+  if (Data <> nil) and not (Data.Kind in [snkProject, snkFolder, snkFile]) then
+    Exit;
   ItemName := '';
   if not InputQuery('Nova pasta', 'Nome:', ItemName) or
     (Trim(ItemName) = '') then Exit;
@@ -448,7 +560,7 @@ var
   ItemName, Target: string;
 begin
   Data := SelectedData;
-  if (Data = nil) or (Data.Kind = snkProject) then Exit;
+  if (Data = nil) or not (Data.Kind in [snkFolder, snkFile]) then Exit;
   ItemName := ExtractFileName(Data.FullPath);
   if not InputQuery('Renomear', 'Novo nome:', ItemName) or
     (Trim(ItemName) = '') then Exit;
@@ -471,7 +583,7 @@ var
   Removed: Boolean;
 begin
   Data := SelectedData;
-  if (Data = nil) or (Data.Kind = snkProject) then Exit;
+  if (Data = nil) or not (Data.Kind in [snkFolder, snkFile]) then Exit;
   if MessageDlg('Excluir item', 'Excluir definitivamente ' +
     ExtractFileName(Data.FullPath) + '?', mtConfirmation,
     [mbYes, mbNo], 0) <> mrYes then Exit;
@@ -489,7 +601,8 @@ var
   Data: TMNoteSolutionNodeData;
 begin
   Data := SelectedData;
-  if Data <> nil then Clipboard.AsText := Data.FullPath;
+  if (Data <> nil) and (Data.FullPath <> '') then
+    Clipboard.AsText := Data.FullPath;
 end;
 
 procedure TMNoteSolutionExplorerPanel.ProjectProperties(Sender: TObject);
@@ -506,7 +619,7 @@ var
   I: Integer;
 begin
   if (FTree = nil) or (AFileName = '') or (FRootPath = '') then Exit;
-  Node := FTree.Items.GetFirstNode;
+  Node := ProjectNode;
   if Node = nil then Exit;
   RelativeName := ExtractRelativePath(IncludeTrailingPathDelimiter(FRootPath),
     ExpandFileName(AFileName));

@@ -28,6 +28,7 @@
 - [Validação da versão 2.64](release_validation_2_64.md)
 - [Validação da versão 2.65](release_validation_2_65.md)
 - [Validação da versão 2.66](release_validation_2_66.md)
+- [Validação da versão 2.67](release_validation_2_67.md)
 
 O arquivo `mnote.cfg` é local e pode conter segredos; ele não deve ser
 versionado. Use `mnote.example.cfg`.

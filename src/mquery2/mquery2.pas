@@ -536,6 +536,8 @@ type
     procedure RefreshPost();
     procedure RefreshMy();
     procedure RefreshSQLite();
+    function GetActiveDatabaseTree(out ADatabaseName: string;
+      ATables: TStrings): Boolean;
 
     procedure Pesquisar(sender: TObject);
     procedure ProcessaErro(message : string);
@@ -2233,6 +2235,7 @@ begin
 
     ListarTabelasMy();
     ListarViewsMy();
+    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   except
     on E: Exception do
       MessageHint('Erro ao preparar estrutura do MySQL: ' + E.Message);
@@ -2269,6 +2272,7 @@ begin
     ListarTabelasPost();
     BuscaSequence(zpostqry1, DBPostgres);
     ListarViewsPost();
+    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   except
     on E: Exception do
       MessageHint('Erro ao preparar estrutura do PostgreSQL: ' + E.Message);
@@ -2299,6 +2303,7 @@ begin
 
     ListarTabelasSQLite;
     tvsqlite.FullExpand;
+    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   except
     on E: Exception do
       MessageHint('Erro ao preparar estrutura do SQLite: ' + E.Message);
@@ -4147,6 +4152,57 @@ begin
     suffixes.Free;
     definitions.Free;
   end;
+end;
+
+function Tfrmmquery2.GetActiveDatabaseTree(out ADatabaseName: string;
+  ATables: TStrings): Boolean;
+var
+  ParentNode, Node: TTreeNode;
+begin
+  Result := False;
+  ADatabaseName := '';
+  if ATables = nil then Exit;
+  ATables.Clear;
+  ParentNode := nil;
+  if (pgMain.ActivePage = tsSqlite) and zconsqlite.Connected then
+  begin
+    ADatabaseName := ExtractFileName(Trim(edDatabase.Text));
+    ParentNode := posicaofieldslite;
+  end
+  else if (pgMain.ActivePage = tsPostgree) and zconpost.Connected then
+  begin
+    ADatabaseName := Trim(edBancoPost.Text);
+    ParentNode := posicaofieldspost;
+  end
+  else if (pgMain.ActivePage = tsMysql) and zconmysql.Connected then
+  begin
+    ADatabaseName := Trim(edBanco.Text);
+    ParentNode := posicaofieldsmy;
+  end
+  else if zconpost.Connected then
+  begin
+    ADatabaseName := Trim(edBancoPost.Text);
+    ParentNode := posicaofieldspost;
+  end
+  else if zconsqlite.Connected then
+  begin
+    ADatabaseName := ExtractFileName(Trim(edDatabase.Text));
+    ParentNode := posicaofieldslite;
+  end
+  else if zconmysql.Connected then
+  begin
+    ADatabaseName := Trim(edBanco.Text);
+    ParentNode := posicaofieldsmy;
+  end;
+  if ParentNode = nil then Exit;
+  Node := ParentNode.GetFirstChild;
+  while Node <> nil do
+  begin
+    ATables.Add(Node.Text);
+    Node := Node.GetNextSibling;
+  end;
+  if ADatabaseName = '' then ADatabaseName := 'conexão ativa';
+  Result := True;
 end;
 
 procedure Tfrmmquery2.Pesquisar(sender: TObject);

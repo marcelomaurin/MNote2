@@ -1,6 +1,6 @@
 # Manual do usuário — MNote2 IDE com IA
 
-Este manual descreve a interface e os recursos entregues na versão 2.66 do
+Este manual descreve a interface e os recursos entregues na versão 2.67 do
 MNote2.
 
 ![Tela principal do MNote2](../screenshots/MNote2_IDE_IA_2_63.png)

@@ -343,6 +343,7 @@ type
     procedure CommandSQLExecute(Sender: TObject);
     procedure CommandShowDatabase(Sender: TObject);
     procedure GenerateDataDictionary(Sender: TObject);
+    procedure RefreshSolutionDatabase;
     procedure AskDatabaseAI(Sender: TObject);
     procedure GenerateDatabaseSQL(Sender: TObject);
     procedure ProjectTaskCreated(Sender: TObject);
@@ -425,6 +426,8 @@ type
     procedure TestarPythonConnector;
     procedure DiagnosticoPythonConnector;
     procedure RunCloseTabTest(Data: PtrInt);
+    procedure RunSolutionExplorerTest(Data: PtrInt);
+    procedure SyncSolutionDatabaseFromMQuery;
   end;
 
   function FileLoad(const FullName: string): Boolean;
@@ -437,7 +440,7 @@ implementation
 {$R *.lfm}
 
 uses
-  Sobre, base, ZDataset, DateUtils;
+  Sobre, base, ZDataset, DateUtils, aidb_types;
 
 { -------------------------------------------------------------------- }
 {  Helper para extrair texto de DOC/DOCX/PDF                           }
@@ -1169,6 +1172,49 @@ begin
   Application.Terminate;
 end;
 
+procedure TfrmMNote.RunSolutionExplorerTest(Data: PtrInt);
+var
+  Tables: TStringList;
+begin
+  if (ParamCount < 2) or not DirectoryExists(ParamStr(2)) or
+    (FSolutionExplorer = nil) then Halt(1);
+  Tables := TStringList.Create;
+  try
+    Tables.Add('public.clientes');
+    Tables.Add('public.pedidos');
+    FSolutionExplorer.SetProject(ParamStr(2), 'Projeto de teste', '',
+      mpkFolder);
+    FSolutionExplorer.SetDatabase('teste.db', Tables);
+    if not FSolutionExplorer.ContainsNode('projeto.lpi') then Halt(1);
+    if not FSolutionExplorer.ContainsNode('src') then Halt(1);
+    if not FSolutionExplorer.ContainsNode('Banco de dados ''teste.db''') then
+      Halt(1);
+    if not FSolutionExplorer.ContainsNode('Tabelas (2)') then Halt(1);
+    if not FSolutionExplorer.ContainsNode('public.clientes') then Halt(1);
+    if not FSolutionExplorer.ContainsNode('public.pedidos') then Halt(1);
+  finally
+    Tables.Free;
+  end;
+  Application.Terminate;
+end;
+
+procedure TfrmMNote.SyncSolutionDatabaseFromMQuery;
+var
+  DatabaseName: string;
+  Tables: TStringList;
+begin
+  if (FSolutionExplorer = nil) or (frmmquery2 = nil) then Exit;
+  Tables := TStringList.Create;
+  try
+    if frmmquery2.GetActiveDatabaseTree(DatabaseName, Tables) then
+      FSolutionExplorer.SetDatabase(DatabaseName, Tables)
+    else
+      FSolutionExplorer.ClearDatabase;
+  finally
+    Tables.Free;
+  end;
+end;
+
 procedure TfrmMNote.AnalisaFonte();
 begin
    pnChatGPT.Visible:=true;
@@ -1558,10 +1604,54 @@ begin
     finally
       Completions.Free;
     end;
+    RefreshSolutionDatabase;
   end;
   if (not Generated) and (FOutputPanel <> nil) then
     FOutputPanel.Add(mocDatabase, 'Dicionário não gerado: ' +
       FDBDictionaryPanel.Service.LastError + LineEnding);
+end;
+
+procedure TfrmMNote.RefreshSolutionDatabase;
+var
+  Tables: TStringList;
+  Table: TAIDBTableInfo;
+  DatabaseName, TableName: string;
+  I: Integer;
+begin
+  if FSolutionExplorer = nil then Exit;
+  if (FDBDictionaryPanel = nil) or
+    (FDBDictionaryPanel.Service.Dictionary = nil) or
+    (FDBDictionaryPanel.Service.Dictionary.DataDictionary = nil) then
+  begin
+    if frmmquery2 <> nil then SyncSolutionDatabaseFromMQuery
+    else FSolutionExplorer.ClearDatabase;
+    Exit;
+  end;
+  DatabaseName := '';
+  if FDBDictionaryPanel.Service.Connection <> nil then
+  begin
+    DatabaseName := Trim(FDBDictionaryPanel.Service.Connection.Database);
+    if Pos('sqlite', LowerCase(
+      FDBDictionaryPanel.Service.Connection.Protocol)) > 0 then
+      DatabaseName := ExtractFileName(DatabaseName);
+    if DatabaseName = '' then
+      DatabaseName := FDBDictionaryPanel.Service.Connection.Protocol;
+  end;
+  if DatabaseName = '' then DatabaseName := 'conexão ativa';
+  Tables := TStringList.Create;
+  try
+    for I := 0 to FDBDictionaryPanel.Service.Dictionary.DataDictionary.Tables.Count - 1 do
+    begin
+      Table := FDBDictionaryPanel.Service.Dictionary.DataDictionary.Tables[I];
+      TableName := Table.TableName;
+      if Trim(Table.SchemaName) <> '' then
+        TableName := Table.SchemaName + '.' + TableName;
+      Tables.Add(TableName);
+    end;
+    FSolutionExplorer.SetDatabase(DatabaseName, Tables);
+  finally
+    Tables.Free;
+  end;
 end;
 
 procedure TfrmMNote.ProjectTaskCreated(Sender: TObject);
@@ -2325,6 +2415,7 @@ begin
     FSolutionExplorer.SetProject(Root, ProjectDisplayName,
       FProjectContext.ProjectFile,
       FProjectContext.Kind);
+  RefreshSolutionDatabase;
   if FFilesPanel <> nil then FFilesPanel.SetProjectRoot(Root);
   if FComponentsLabPanel <> nil then FComponentsLabPanel.SetProjectRoot(Root);
   if FTerminalPanel <> nil then FTerminalPanel.SetWorkingDirectory(Root);
@@ -2442,6 +2533,7 @@ end;
 procedure TfrmMNote.CommandProjectRefresh(Sender: TObject);
 begin
   if FSolutionExplorer <> nil then FSolutionExplorer.Refresh;
+  RefreshSolutionDatabase;
   if FFilesPanel <> nil then FFilesPanel.Refresh;
   if FTaskListPanel <> nil then
   begin
