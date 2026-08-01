@@ -29,6 +29,7 @@ var
   NeuralApiBootstrap: TMNoteNeuralApiBootstrap;
   NeuralApiStatus: TMNoteNeuralApiStatus;
   NeuralApiInstaller, NeuralApiError: string;
+  RunCloseTabTest: Boolean;
 
 function ConsoleAvailable: Boolean;
 begin
@@ -40,6 +41,8 @@ begin
 end;
 
 begin
+  RunCloseTabTest := (ParamCount > 0) and
+    SameText(ParamStr(1), '--close-tab-test');
   if (ParamCount > 0) and SameText(ParamStr(1), '--neural-api-check') then
   begin
     NeuralApiBootstrap := TMNoteNeuralApiBootstrap.Create;
@@ -92,6 +95,8 @@ begin
     //RequireDerivedFormResource := True;
     Application.Initialize;
     Application.CreateForm(TfrmMNote, frmMNote);
+    if RunCloseTabTest then
+      Application.QueueAsyncCall(@frmMNote.RunCloseTabTest, 0);
     //Application.CreateForm(TfrmMQuery, frmMQuery);
     {$ifndef Darwin}
     {$ENDIF}

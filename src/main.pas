@@ -424,6 +424,7 @@ type
     procedure RestaurarWorkspaceState;
     procedure TestarPythonConnector;
     procedure DiagnosticoPythonConnector;
+    procedure RunCloseTabTest(Data: PtrInt);
   end;
 
   function FileLoad(const FullName: string): Boolean;
@@ -1141,11 +1142,31 @@ begin
   page := pgMain.ActivePage;
   item := TItem(page.Tag);
 
-  page.PageControl := nil;
-  page.Free;
+  // Os painéis mantêm referências ao editor ativo para busca, caret e status.
+  // Desconecte-os enquanto o editor ainda existe; após remover a aba,
+  // UpdateIDEStatus ligará a próxima aba ativa.
+  if FSearchPanel <> nil then
+    FSearchPanel.SetActiveEditor(nil, '');
+  if FIDEShell <> nil then
+    FIDEShell.SetActiveEditor(nil, '', '');
 
+  // O item ainda precisa do editor vivo para remover handlers, completion e
+  // highlighter no destrutor. Limpe o Tag e libere-o antes da aba, que é dona
+  // do TSynEdit.
+  page.Tag := 0;
   if item <> nil then
     item.Free;
+
+  page.PageControl := nil;
+  page.Free;
+  UpdateIDEStatus;
+end;
+
+procedure TfrmMNote.RunCloseTabTest(Data: PtrInt);
+begin
+  NovoItem;
+  CloseTab;
+  Application.Terminate;
 end;
 
 procedure TfrmMNote.AnalisaFonte();
