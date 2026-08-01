@@ -25,7 +25,8 @@ uses
   mnote_ai_actions, mnote_database_completion_provider,
   mnote_sql_validation_service, mnote_ai_plan_contract,
   mnote_git_read_service, mnote_files_panel, mnote_components_lab_panel,
-  mnote_project_context, mnote_solution_explorer_panel;
+  mnote_project_context, mnote_solution_explorer_panel,
+  mnote_neural_api_bootstrap;
 
 type
 
@@ -284,6 +285,8 @@ type
     FComponentsLabPanel: TMNoteComponentsLabPanel;
     FProjectContext: TMNoteProjectContext;
     FSolutionExplorer: TMNoteSolutionExplorerPanel;
+    FNeuralApiBootstrap: TMNoteNeuralApiBootstrap;
+    FNeuralApiCheckStarted: Boolean;
     FPendingAIQuestion: string;
     FPendingAIInputWasVoice: Boolean;
     FPendingAIProposal: Boolean;
@@ -376,6 +379,8 @@ type
     procedure PresentAIResponse(const AResponse: string; ASuccess: Boolean);
     procedure SpeakAIResponse(const AResponse: string);
     procedure VoiceCommandReceived(Sender: TObject; const ACommand: string);
+    procedure NeuralApiBootstrapCompleted(Sender: TObject;
+      AStatus: TMNoteNeuralApiStatus; const AInstallerFile, AError: string);
     procedure InitializeProjectSymbolIndex;
     procedure QuestionChat();
     procedure AplicarEstilo(SynEdit: TSynEdit; StartLine, EndLine: Integer);
@@ -2610,6 +2615,8 @@ begin
   FBuildService := TMNoteBuildService.Create;
   FBuildService.OnOutput := @BuildOutput;
   FBuildService.OnCompleted := @BuildCompleted;
+  FNeuralApiBootstrap := TMNoteNeuralApiBootstrap.Create;
+  FNeuralApiBootstrap.OnCompleted := @NeuralApiBootstrapCompleted;
   FAIMonitorPanel := TMNoteAIMonitorPanel.Create(Self);
   FAIMonitorPanel.Initialize(FIDEShell.MonitorPage, MNoteAI);
   FDBDictionaryPanel := TMNoteDBDictionaryPanel.Create(Self);
@@ -2979,6 +2986,11 @@ var
   LeftVisible, RightVisible, BottomVisible: Boolean;
   ProjectRoot, CacheFile: string;
 begin
+  if FNeuralApiBootstrap <> nil then
+  begin
+    FNeuralApiBootstrap.OnCompleted := nil;
+    FreeAndNil(FNeuralApiBootstrap);
+  end;
   MNoteAI.OnCompleted := nil;
   MNoteAI.OnStateChanged := nil;
   MNoteAI.OnSessionChanged := nil;
@@ -3063,6 +3075,11 @@ begin
     frmSplash.Free;
     frmSplash := nil;
   end;
+  if (not FNeuralApiCheckStarted) and (FNeuralApiBootstrap <> nil) then
+  begin
+    FNeuralApiCheckStarted := True;
+    FNeuralApiBootstrap.Start;
+  end;
   if(Fsetmain.ToolsFalar) then
   begin
     if(frmToolsfalar= nil) then
@@ -3086,6 +3103,33 @@ begin
     frmFolders := TfrmFolders.Create(self);
     frmFolders.flagMudanca:= true;
   end;
+end;
+
+procedure TfrmMNote.NeuralApiBootstrapCompleted(Sender: TObject;
+  AStatus: TMNoteNeuralApiStatus; const AInstallerFile, AError: string);
+var
+  PromptText: string;
+begin
+  case AStatus of
+    nasInstalled: Exit;
+    nasUnavailable, nasError:
+      begin
+        if Trim(AError) <> '' then
+          MessageHint('neural-api: ' + AError);
+        Exit;
+      end;
+    nasDownloaded:
+      PromptText := 'O instalador mais recente do neural-api foi baixado e ' +
+        'validado.' + LineEnding + LineEnding + 'Deseja instalá-lo agora?';
+    nasInstallerReady:
+      PromptText := 'A pasta neural-api ainda não existe, mas já há um ' +
+        'instalador validado.' + LineEnding + LineEnding +
+        'Deseja instalá-lo agora?';
+  end;
+  if (AInstallerFile <> '') and
+    (MessageDlg('neural-api', PromptText, mtConfirmation,
+      [mbYes, mbNo], 0) = mrYes) and not OpenDocument(AInstallerFile) then
+    MessageHint('Não foi possível abrir o instalador: ' + AInstallerFile);
 end;
 
 procedure TfrmMNote.lstFindChangeBounds(Sender: TObject);

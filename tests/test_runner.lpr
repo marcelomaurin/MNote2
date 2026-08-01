@@ -24,7 +24,8 @@ uses
   mnote_ai_plan_contract, mnote_project_inventory_service,
   mnote_project_context,
   mnote_document_export_service, mnote_capability_catalog,
-  mnote_dependency_graph_service, mnote_sql_validation_service;
+  mnote_dependency_graph_service, mnote_sql_validation_service,
+  mnote_neural_api_bootstrap;
 
 type
   TTestService = class(TMNoteServiceBase)
@@ -1469,6 +1470,63 @@ begin
   end;
 end;
 
+procedure TestNeuralApiBootstrap;
+const
+  ContentsJSON =
+    '[' +
+    '{"name":"neural-api-setup-2.9.exe","type":"file","size":10,' +
+      '"sha":"1111111111111111111111111111111111111111",' +
+      '"download_url":"https://raw.githubusercontent.com/marcelomaurin/neural-api/master/bin/neural-api-setup-2.9.exe"},' +
+    '{"name":"neural-api-setup-2.10.exe","type":"file","size":18,' +
+      '"sha":"542608d621468510258166510c45164956338fde",' +
+      '"download_url":"https://raw.githubusercontent.com/marcelomaurin/neural-api/master/bin/neural-api-setup-2.10.exe"},' +
+    '{"name":"neural-api-setup-99.exe","type":"file","size":10,' +
+      '"sha":"9999999999999999999999999999999999999999",' +
+      '"download_url":"https://example.invalid/setup.exe"},' +
+    '{"name":"readme.txt","type":"file","size":10,' +
+      '"sha":"2222222222222222222222222222222222222222",' +
+      '"download_url":"https://raw.githubusercontent.com/marcelomaurin/neural-api/master/bin/readme.txt"}' +
+    ']';
+var
+  Name, URL, GitSHA, Root, ExecutableFile, NeuralFolder, FixtureFile: string;
+  Size: Int64;
+begin
+  Check(TMNoteNeuralApiBootstrap.SelectLatestInstaller(ContentsJSON,
+    Name, URL, GitSHA, Size),
+    'Descoberta não encontrou um instalador válido na pasta bin');
+  Check((Name = 'neural-api-setup-2.10.exe') and (Size = 18) and
+    (GitSHA = '542608d621468510258166510c45164956338fde') and
+    (Pos('raw.githubusercontent.com/marcelomaurin/neural-api/', URL) > 0),
+    'Descoberta não selecionou a versão semântica mais recente e confiável');
+  Check(not TMNoteNeuralApiBootstrap.SelectLatestInstaller('{}',
+    Name, URL, GitSHA, Size),
+    'Resposta sem lista de arquivos deveria ser recusada');
+
+  Root := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) +
+    'neural_api_bootstrap_fixture';
+  ExecutableFile := IncludeTrailingPathDelimiter(Root) + 'MNote2.exe';
+  NeuralFolder := IncludeTrailingPathDelimiter(Root) + 'neural-api';
+  FixtureFile := IncludeTrailingPathDelimiter(Root) + 'installer.exe';
+  RemoveFixtureTree(Root);
+  ForceDirectories(Root);
+  try
+    Check(not TMNoteNeuralApiBootstrap.IsInstalledAt(ExecutableFile),
+      'Pasta neural-api ausente foi detectada como instalada');
+    ForceDirectories(NeuralFolder);
+    Check(TMNoteNeuralApiBootstrap.IsInstalledAt(ExecutableFile),
+      'Pasta neural-api ao lado do executável não foi detectada');
+    SaveFixtureText(FixtureFile, 'fixture neural api');
+    Check(TMNoteNeuralApiBootstrap.VerifyGitBlob(FixtureFile,
+      '542608d621468510258166510c45164956338fde', 18),
+      'Validação de tamanho e Git blob SHA-1 recusou a fixture íntegra');
+    Check(not TMNoteNeuralApiBootstrap.VerifyGitBlob(FixtureFile,
+      '542608d621468510258166510c45164956338fde', 17),
+      'Validação de integridade aceitou tamanho divergente');
+  finally
+    RemoveFixtureTree(Root);
+  end;
+end;
+
 var
   CommandRegistry: TMNoteCommandRegistry;
   CommandObserver: TCommandObserver;
@@ -1493,6 +1551,8 @@ var
 
 begin
   try
+    TestNeuralApiBootstrap;
+    Writeln('OK: descoberta, pasta e integridade do instalador neural-api');
     TestProjectCore;
     TestProjectContext;
     Writeln('OK: contexto integrado de projeto e compatibilidade legado/Lazarus');

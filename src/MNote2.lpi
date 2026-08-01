@@ -23,7 +23,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="False"/>
       <MajorVersionNr Value="2"/>
-      <MinorVersionNr Value="64"/>
+      <MinorVersionNr Value="65"/>
       <BuildNr Value="0"/>
       <Language Value="0416"/>
     </VersionInfo>
@@ -134,7 +134,7 @@
         <PackageName Value="openai_graphcore"/>
       </Item31>
     </RequiredPackages>
-    <Units Count="51">
+    <Units Count="52">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -424,6 +424,10 @@
         <Filename Value="services/mnote_python_service.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit50>
+      <Unit51>
+        <Filename Value="services/mnote_neural_api_bootstrap.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit51>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

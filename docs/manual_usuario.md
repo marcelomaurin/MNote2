@@ -1,6 +1,6 @@
 # Manual do usuário — MNote2 IDE com IA
 
-Este manual descreve a interface e os recursos entregues na versão 2.64 do
+Este manual descreve a interface e os recursos entregues na versão 2.65 do
 MNote2.
 
 ![Tela principal do MNote2](../screenshots/MNote2_IDE_IA_2_63.png)
@@ -18,6 +18,16 @@ O menu **View** mostra ou oculta cada painel. **View > Reset Layout** recupera
 as posições e tamanhos iniciais. O layout é preservado ao fechar normalmente o
 programa. A barra de status mostra linha, coluna, linguagem, codificação, estado
 da IA e estado do projeto.
+
+### Componente neural-api
+
+Ao abrir, o MNote2 verifica se existe a pasta `neural-api` ao lado do
+executável. Se ela não existir, a busca pelo instalador ocorre em segundo plano
+na pasta `bin` do repositório `marcelomaurin/neural-api`. O arquivo é salvo na
+pasta local de downloads do MNote2 e só é oferecido para execução depois da
+validação de tamanho e integridade. O instalador nunca é executado sem uma
+confirmação do usuário. Se o repositório ainda não tiver a pasta `bin`, a IDE
+continua funcionando e apresenta um aviso.
 
 ## 2. Arquivos, comandos e atalhos
 

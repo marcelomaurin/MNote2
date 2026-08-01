@@ -18,7 +18,7 @@ uses
 newproject, uProjetoDB, sqlite_db, IA
   {$ENDIF}
   ,uDocText, uPdfText, ChangeSource, mnote_ai_service, mnote_smoke_test,
-  mnote_token_calibration;
+  mnote_token_calibration, mnote_neural_api_bootstrap;
 
 
 {$R *.res}
@@ -26,6 +26,9 @@ newproject, uProjetoDB, sqlite_db, IA
 var
   SmokeReport: string;
   CalibrationReport: string;
+  NeuralApiBootstrap: TMNoteNeuralApiBootstrap;
+  NeuralApiStatus: TMNoteNeuralApiStatus;
+  NeuralApiInstaller, NeuralApiError: string;
 
 function ConsoleAvailable: Boolean;
 begin
@@ -37,6 +40,24 @@ begin
 end;
 
 begin
+  if (ParamCount > 0) and SameText(ParamStr(1), '--neural-api-check') then
+  begin
+    NeuralApiBootstrap := TMNoteNeuralApiBootstrap.Create;
+    try
+      NeuralApiBootstrap.CheckAndDownload(NeuralApiStatus,
+        NeuralApiInstaller, NeuralApiError);
+      if ConsoleAvailable then
+      begin
+        if NeuralApiError <> '' then WriteLn(NeuralApiError)
+        else if NeuralApiInstaller <> '' then WriteLn(NeuralApiInstaller)
+        else WriteLn(NeuralApiBootstrap.InstalledFolder);
+      end;
+      if NeuralApiStatus = nasError then Halt(1);
+      Halt(0);
+    finally
+      NeuralApiBootstrap.Free;
+    end;
+  end;
   if (ParamCount > 0) and SameText(ParamStr(1), '--smoke-test') then
   begin
     if RunMNoteSmokeTest(SmokeReport) then
