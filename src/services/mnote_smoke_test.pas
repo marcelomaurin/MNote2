@@ -11,7 +11,9 @@ implementation
 
 uses
   Classes, SysUtils, mnote_search_types, mnote_text_search_service,
-  mnote_project_service;
+  mnote_project_service, mnote_ai_profile, mnote_ai_profile_defaults,
+  mnote_ai_types, chatgpt, aivoicesynthesizer, setmain,
+  mnote_visual_identity;
 
 function SaveText(const AFileName, AText: string): Boolean;
 var
@@ -69,6 +71,11 @@ var
   Results: TMNoteSearchResults;
   Search: TMNoteTextSearchService;
   Project, Loaded: TMNoteProjectService;
+  Profiles: TMNoteAIProfiles;
+  VoiceSynthesizer: TAIVoiceSynthesizer;
+  VoiceSettings: TSetMain;
+  Voices: TStringList;
+  Role: TMNoteAIRole;
   ReplaceCount: Integer;
 begin
   Result := False;
@@ -84,6 +91,10 @@ begin
   Results := TMNoteSearchResults.Create;
   Project := TMNoteProjectService.Create;
   Loaded := TMNoteProjectService.Create;
+  Profiles := TMNoteAIProfiles.Create;
+  VoiceSynthesizer := TAIVoiceSynthesizer.Create(nil);
+  VoiceSettings := TSetMain.Create;
+  Voices := TStringList.Create;
   try
     OriginalText := 'Olá MNote2' + LineEnding + 'buscar e substituir' + LineEnding;
     if not SaveText(DocumentName, OriginalText) then
@@ -109,12 +120,50 @@ begin
     if not Loaded.Load(ProjectName) or (Loaded.Project.Name <> 'Smoke') or
       (Loaded.Tasks.Count <> 1) then
       raise Exception.Create('falha ao reabrir o projeto salvo');
-    AReport := 'OK: criar, salvar, abrir, buscar, substituir, projeto e fechar';
+    ApplyMainAIToProfiles(Profiles, 3, 'modelo-local-smoke',
+      'http://127.0.0.1:8095');
+    for Role := Low(TMNoteAIRole) to High(TMNoteAIRole) do
+    begin
+      Profiles.Profile(Role).ApplyConfig;
+      if (Profiles.Profile(Role).Config.Provider <> 3) or
+        (Profiles.Profile(Role).Client.Provider <> AIP_LOCAL) or
+        (Profiles.Profile(Role).Config.ModelName <> 'modelo-local-smoke') or
+        (Profiles.Profile(Role).Config.Endpoint <> 'http://127.0.0.1:8095') or
+        (Profiles.Profile(Role).Client.TOKEN <> '') then
+        raise Exception.Create('perfil multi-IA não herdou a IA local sem token');
+    end;
+    if (VoiceSettings.VoiceOutputEngine < 0) or
+      (VoiceSettings.VoiceOutputEngine > 2) or
+      (VoiceSettings.VoiceOutputVolume < 0) or
+      (VoiceSettings.VoiceOutputVolume > 100) or
+      (VoiceSettings.VoiceOutputRate < -10) or
+      (VoiceSettings.VoiceOutputRate > 10) then
+      raise Exception.Create('parâmetros persistidos de Voice Output inválidos');
+    {$IFDEF WINDOWS}
+    VoiceSynthesizer.Engine := seSAPI;
+    {$ELSE}
+    VoiceSynthesizer.Engine := seEspeak;
+    {$ENDIF}
+    VoiceSynthesizer.GetAvailableVoices(Voices);
+    if VoiceSynthesizer.LastError <> '' then
+      raise Exception.Create('sintetizador de voz indisponível: ' +
+        VoiceSynthesizer.LastError);
+    if (MNoteIconForCaption('AI Monitor') <> MNOTE_ICON_MONITOR) or
+      (MNoteIconForCaption('Voice Output') <> MNOTE_ICON_VOICE) or
+      (MNoteIconForCaption('Salvar') <> MNOTE_ICON_SAVE) or
+      (MNoteIconForCaption('Diagnostico Python') = MNOTE_ICON_AI) then
+      raise Exception.Create('mapeamento da identidade visual inconsistente');
+    AReport := 'OK: criar, salvar, abrir, buscar, substituir, projeto, ' +
+      'perfis de IA local sem token, Voice Output, identidade visual e fechar';
     Result := True;
   except
     on E: Exception do AReport := 'FALHA: ' + E.Message;
   end;
   Loaded.Free;
+  Voices.Free;
+  VoiceSettings.Free;
+  VoiceSynthesizer.Free;
+  Profiles.Free;
   Project.Free;
   Results.Free;
   Search.Free;

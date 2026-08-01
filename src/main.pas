@@ -21,12 +21,13 @@ uses
   mnote_source_change_types, mnote_db_dictionary_panel, mnote_task_list_panel,
   mnote_output_panel, mnote_output_model, mnote_problems_panel,
   mnote_build_service, mnote_terminal_panel, mnote_ai_types,
-  mnote_ai_session, mnote_ai_monitor_panel, mnote_ai_profiles_form, LCLIntf,
+  mnote_ai_session, mnote_ai_monitor_panel, ia_config, LCLIntf,
   mnote_ai_actions, mnote_database_completion_provider,
   mnote_sql_validation_service, mnote_ai_plan_contract,
   mnote_git_read_service, mnote_files_panel, mnote_components_lab_panel,
   mnote_project_context, mnote_solution_explorer_panel,
-  mnote_neural_api_bootstrap;
+  mnote_neural_api_bootstrap, mnote_memory_map_panel,
+  voice_output_config, mnote_voice_output_service, mnote_visual_identity;
 
 type
 
@@ -109,6 +110,8 @@ type
     pmResult: TPopupMenu;
     Separator1: TMenuItem;
     miConfig: TMenuItem;
+    miIAConfig: TMenuItem;
+    miVoiceOutputConfig: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem4: TMenuItem;
     MenuItem9: TMenuItem;
@@ -218,6 +221,8 @@ type
     procedure mnrunClick(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure miConfigClick(Sender: TObject);
+    procedure miIAConfigClick(Sender: TObject);
+    procedure miVoiceOutputConfigClick(Sender: TObject);
     procedure miUndoClick(Sender: TObject);
     procedure mnFixWClick(Sender: TObject);
     procedure mnOnTopWClick(Sender: TObject);
@@ -285,6 +290,7 @@ type
     FComponentsLabPanel: TMNoteComponentsLabPanel;
     FProjectContext: TMNoteProjectContext;
     FSolutionExplorer: TMNoteSolutionExplorerPanel;
+    FChatMemoryMapPanel: TMNoteMemoryMapPanel;
     FNeuralApiBootstrap: TMNoteNeuralApiBootstrap;
     FNeuralApiCheckStarted: Boolean;
     FPendingAIQuestion: string;
@@ -1344,7 +1350,7 @@ begin
     'Propor correção com IA', 'IA', 0, @CommandAIProposeChange);
   FCommandRegistry.RegisterCommand('ai.stop', 'Parar IA', 'IA', 0,
     @CommandAIStop);
-  FCommandRegistry.RegisterCommand('ai.profiles', 'Configurar perfis multi-IA',
+  FCommandRegistry.RegisterCommand('ai.profiles', 'Configurar IAs',
     'IA', 0, @CommandAIProfiles);
   FCommandRegistry.RegisterCommand('ai.components_lab', 'AI Components Lab',
     'IA', 0, @CommandAIComponentsLab);
@@ -2041,7 +2047,7 @@ end;
 
 procedure TfrmMNote.CommandAIProfiles(Sender: TObject);
 begin
-  with TMNoteAIProfilesForm.Create(Self) do
+  with TfrmIAConfig.Create(Self) do
   try
     ShowModal;
   finally
@@ -2091,6 +2097,7 @@ procedure TfrmMNote.AISessionChanged(Sender: TObject);
 var
   Step: TMNoteAISessionStep;
 begin
+  if FChatMemoryMapPanel <> nil then FChatMemoryMapPanel.RefreshMap;
   if FAIMonitorPanel <> nil then FAIMonitorPanel.Refresh;
   if (FOutputPanel <> nil) and (MNoteAI.Session.Count > 0) then
   begin
@@ -2270,13 +2277,9 @@ end;
 
 procedure TfrmMNote.SpeakAIResponse(const AResponse: string);
 begin
-  if frmToolsfalar = nil then frmToolsfalar := TfrmToolsFalar.Create(Self);
-  frmToolsfalar.edFalar.Text := AResponse;
-  frmToolsfalar.edIP.Text := FSetMain.IPFALAR;
-  if not frmToolsfalar.LTCPComponent1.Connected then
-    frmToolsfalar.Conectar;
-  Application.ProcessMessages;
-  frmToolsfalar.Falar;
+  if not MNoteVoiceOutput.Speak(AResponse) and
+    FSetMain.VoiceOutputEnabled then
+    MessageHint('Voice Output: ' + MNoteVoiceOutput.LastError);
 end;
 
 procedure TfrmMNote.VoiceCommandReceived(Sender: TObject;
@@ -2665,6 +2668,7 @@ var
    biblioteca : string;
    basePath : string;
    ProjectRoot, ProjectName: string;
+   ChatMemoryTab: TTabSheet;
 begin
   {$IFDEF MSWINDOWS}
     plataforma := 'Windows ';
@@ -2681,9 +2685,7 @@ begin
 
   frmSplash := TfrmSplash.Create(self);
   frmSplash.lbversao.Caption := MNOTE_APP_VERSION + ' - ' + plataforma;
-  frmSplash.show();
-  Application.ProcessMessages;
-  sleep(2000);
+  frmSplash.ShowAnimated;
 
   filename := extractfilename(application.ExeName);
   if IsRun(filename) then
@@ -2691,6 +2693,8 @@ begin
     if KillAppByName(filename) then
       MessageHint('Assumindo funções MNote anterior!');
   end;
+
+  frmSplash.UpdateStatus('Carregando preferências e projeto...', 28);
 
   if (FSetMain = nil) then
     FsetMain := TsetMain.Create();
@@ -2703,6 +2707,8 @@ begin
   FThemeService := TMNoteEditorThemeService.Create;
   InitializeCommands;
   FPythonService := TMNotePythonService.Create(Self);
+
+  frmSplash.UpdateStatus('Montando o ambiente de desenvolvimento...', 46);
 
   Panel4.Align := alClient;
   pnChatGPT.Visible := False;
@@ -2741,6 +2747,12 @@ begin
   MNoteAI.OnCompleted := @AICompleted;
   MNoteAI.OnSessionChanged := @AISessionChanged;
   MNoteAI.OnActionConfirm := @ConfirmAIAction;
+  ChatMemoryTab := TTabSheet.Create(PageControl1);
+  ChatMemoryTab.PageControl := PageControl1;
+  ChatMemoryTab.Caption := 'Mapa de memória';
+  FChatMemoryMapPanel := TMNoteMemoryMapPanel.Create(Self);
+  FChatMemoryMapPanel.Parent := ChatMemoryTab;
+  FChatMemoryMapPanel.SetMemoryMap(MNoteAI.SessionMemory);
   FCommandPalette := TMNoteCommandPalette.Create(Self);
   FCommandPalette.OnCollectFiles := @CollectPaletteFiles;
   FCommandPalette.OnOpenFile := @OpenPaletteFile;
@@ -2780,6 +2792,7 @@ begin
   FChangesPanel := TMNoteChangesPanel.Create(Self);
   FChangesPanel.Initialize(FIDEShell.ChangesPage, ProjectRoot);
   FChangesPanel.OnApplied := @ChangesApplied;
+  frmSplash.UpdateStatus('Restaurando painéis e ferramentas...', 72);
   if FProjectContext.IsOpen then
     FSolutionExplorer.SetProject(ProjectRoot, ProjectName,
       FProjectContext.ProjectFile, FProjectContext.Kind)
@@ -2819,6 +2832,7 @@ begin
   if(frmHint= nil) then
     frmHint := TfrmHint.create(self);
 
+  frmSplash.UpdateStatus('Aplicando configurações do usuário...', 88);
   CarregaContexto();
 
   if(frmIA=nil) then
@@ -2831,7 +2845,12 @@ begin
   CarregarOld();
   CarregarParametros();
   ApplyThemeToAll;
+  MNoteBuildProfessionalIcons(ImageList1);
+  FIDEShell.ApplyIcons(ImageList1);
+  MNoteApplyMenuIcons(MainMenu1);
+  MNoteApplyVisualIdentity(Self);
 
+  frmSplash.UpdateStatus('Finalizando a inicialização...', 96);
   frmRegistrar := TfrmRegistrar.Create(self);
   frmRegistrar.Identifica();
 end;
@@ -3150,6 +3169,7 @@ begin
   end;
 
   FreeAndNil(FPythonService);
+  FreeAndNil(FChatMemoryMapPanel);
   FreeAndNil(FLanguageToolbar);
   FreeAndNil(FTasksPanel);
   FreeAndNil(FChangesPanel);
@@ -3184,7 +3204,7 @@ procedure TfrmMNote.FormShow(Sender: TObject);
 begin
   if (frmSplash <> nil) then
   begin
-    frmSplash.hide;
+    frmSplash.CloseAnimated;
     frmSplash.Free;
     frmSplash := nil;
   end;
@@ -3192,12 +3212,6 @@ begin
   begin
     FNeuralApiCheckStarted := True;
     FNeuralApiBootstrap.Start;
-  end;
-  if(Fsetmain.ToolsFalar) then
-  begin
-    if(frmToolsfalar= nil) then
-      frmToolsfalar := TfrmToolsFalar.create(self);
-    frmToolsfalar.Conectar();
   end;
   if(Fsetmain.ToolsOuvir) then
   begin
@@ -3861,6 +3875,26 @@ begin
   if GetProjectSearchFolder(resposta) then MNoteAI.SetProjectRoot(resposta);
   if not MNoteAI.SendRoutedAsync(aikConversation, pergunta, DevMsg) then
     MessageHint(MNoteAI.LastError);
+end;
+
+procedure TfrmMNote.miIAConfigClick(Sender: TObject);
+begin
+  with TfrmIAConfig.Create(Self) do
+  try
+    ShowModal;
+  finally
+    Free;
+  end;
+end;
+
+procedure TfrmMNote.miVoiceOutputConfigClick(Sender: TObject);
+begin
+  with TfrmVoiceOutputConfig.Create(Self) do
+  try
+    ShowModal;
+  finally
+    Free;
+  end;
 end;
 
 procedure TfrmMNote.mnfontClick(Sender: TObject);

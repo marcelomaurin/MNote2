@@ -36,6 +36,9 @@ type
 
 implementation
 
+uses
+  mnote_visual_identity;
+
 procedure AddLabel(AOwner: TComponent; AParent: TWinControl;
   const ACaption: string; ALeft, ATop: Integer);
 var
@@ -87,6 +90,7 @@ begin
   ButtonControl.Caption := 'Fechar';
   ButtonControl.SetBounds(576, 8, 82, 27);
   ButtonControl.OnClick := @CloseClick;
+  MNoteApplyVisualIdentity(Self);
 end;
 
 procedure TMNoteAIProfilesForm.AddRolePage(ARole: TMNoteAIRole);

@@ -1400,6 +1400,11 @@ object frmMNote: TfrmMNote
         ShortCutKey2 = 114
         OnClick = mnPesqItemClick
       end
+      object mnReplaceItem: TMenuItem
+        Caption = 'Replace'
+        ShortCut = 16456
+        OnClick = mnReplaceItemClick
+      end
       object miUndo: TMenuItem
         Caption = 'Undo'
         ShortCut = 16474
@@ -1453,12 +1458,15 @@ object frmMNote: TfrmMNote
       end
       object MenuItem24: TMenuItem
         Caption = 'Open Project'
+        OnClick = MenuItem24Click
       end
       object MenuItem26: TMenuItem
         Caption = 'Save Project'
+        OnClick = MenuItem26Click
       end
       object MenuItem25: TMenuItem
         Caption = 'Close'
+        OnClick = MenuItem25Click
       end
     end
     object MenuItem12: TMenuItem
@@ -1525,6 +1533,14 @@ object frmMNote: TfrmMNote
     object mnSetup: TMenuItem
       Caption = 'Setup'
       ImageIndex = 7
+      object miIAConfig: TMenuItem
+        Caption = 'IA'
+        OnClick = miIAConfigClick
+      end
+      object miVoiceOutputConfig: TMenuItem
+        Caption = 'Voice Output'
+        OnClick = miVoiceOutputConfigClick
+      end
       object mnfont: TMenuItem
         Caption = 'Fonts'
         ImageIndex = 9

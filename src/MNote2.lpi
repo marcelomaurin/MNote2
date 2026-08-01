@@ -134,7 +134,7 @@
         <PackageName Value="openai_graphcore"/>
       </Item31>
     </RequiredPackages>
-    <Units Count="52">
+    <Units Count="56">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -428,6 +428,22 @@
         <Filename Value="services/mnote_neural_api_bootstrap.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit51>
+      <Unit52>
+        <Filename Value="ia_config.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit52>
+      <Unit53>
+        <Filename Value="ai/mnote_ai_profile_defaults.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit53>
+      <Unit54>
+        <Filename Value="services/mnote_voice_output_service.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit54>
+      <Unit55>
+        <Filename Value="voice_output_config.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit55>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

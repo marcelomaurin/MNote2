@@ -39,7 +39,7 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="24">
+    <RequiredPackages Count="25">
       <Item1>
         <PackageName Value="atsynedit_ex_package"/>
       </Item1>
@@ -112,8 +112,11 @@
       <Item24>
         <PackageName Value="openai_core"/>
       </Item24>
+      <Item25>
+        <PackageName Value="openai_python"/>
+      </Item25>
     </RequiredPackages>
-    <Units Count="51">
+    <Units Count="52">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -403,6 +406,10 @@
         <Filename Value="classes/antigravity.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit50>
+      <Unit51>
+        <Filename Value="services/mnote_python_service.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit51>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

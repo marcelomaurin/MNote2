@@ -5,7 +5,7 @@ unit mnote_ide_shell;
 interface
 
 uses
-  Classes, SysUtils, Controls, ExtCtrls, ComCtrls, StdCtrls, Menus, SynEdit,
+  Classes, SysUtils, Controls, ExtCtrls, ComCtrls, StdCtrls, Menus, ImgList, SynEdit,
   SynEditTypes, mnote_tool_windows, mnote_language_registry,
   mnote_language_profile;
 
@@ -84,6 +84,7 @@ type
       AProject: string);
     procedure SetAIState(const AState: string);
     procedure ShowToolWindow(AKind: TMNoteToolWindowKind);
+    procedure ApplyIcons(AImages: TCustomImageList);
     property WindowManager: TMNoteToolWindowManager read FWindowManager;
     property LeftPanel: TPanel read FLeftPanel;
     property LeftPages: TPageControl read FLeftPages;
@@ -108,6 +109,9 @@ type
   end;
 
 implementation
+
+uses
+  mnote_visual_identity;
 
 constructor TMNoteIDEShell.Create(AOwner: TComponent);
 begin
@@ -346,6 +350,29 @@ procedure TMNoteIDEShell.ShowToolWindow(AKind: TMNoteToolWindowKind);
 begin
   FWindowManager.Show(AKind);
   ActivateToolWindow(AKind);
+end;
+
+procedure TMNoteIDEShell.ApplyIcons(AImages: TCustomImageList);
+begin
+  if AImages = nil then Exit;
+  FLeftPages.Images := AImages;
+  FRightPages.Images := AImages;
+  FBottomPages.Images := AImages;
+
+  FSolutionPage.ImageIndex := MNOTE_ICON_SOLUTION;
+  FFilesPage.ImageIndex := MNOTE_ICON_FILE;
+  FDatabasePage.ImageIndex := MNOTE_ICON_DATABASE;
+  FAIPage.ImageIndex := MNOTE_ICON_AI;
+  FTasksPage.ImageIndex := MNOTE_ICON_TASKS;
+  FPropertiesPage.ImageIndex := MNOTE_ICON_PROPERTIES;
+  FChangesPage.ImageIndex := MNOTE_ICON_CHANGES;
+  FMonitorPage.ImageIndex := MNOTE_ICON_MONITOR;
+  FComponentsLabPage.ImageIndex := MNOTE_ICON_LAB;
+  FSearchPage.ImageIndex := MNOTE_ICON_SEARCH;
+  FProblemsPage.ImageIndex := MNOTE_ICON_PROBLEM;
+  FOutputPage.ImageIndex := MNOTE_ICON_OUTPUT;
+  FTerminalPage.ImageIndex := MNOTE_ICON_TERMINAL;
+  FTaskListPage.ImageIndex := MNOTE_ICON_TASKS;
 end;
 
 procedure TMNoteIDEShell.ApplyLayout(ALeftWidth, ARightWidth,

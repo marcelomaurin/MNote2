@@ -7,7 +7,8 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls,
   StdCtrls, Buttons, setmain, folders, mquery2, fpjson, jsonparser,
-  item, SynEditTypes, SynEdit, DateUtils, mnote_ai_service;
+  item, SynEditTypes, SynEdit, DateUtils, mnote_ai_service,
+  mnote_memory_map_panel;
 
 type
   TTipoAcao = (
@@ -78,6 +79,7 @@ type
   private
     lstAcao: TStringList;
     lstRealizar: TStringList;
+    FMemoryMapPanel: TMNoteMemoryMapPanel;
 
     function EnsureRIAPath: string;
     procedure AddLog(const S: string);
@@ -312,6 +314,11 @@ begin
     meMapaMemoria.Lines.LoadFromFile(arquivo1);
   if FileExists(arquivo2) then
     mePensamento.Lines.LoadFromFile(arquivo2);
+
+  meMapaMemoria.Visible := False;
+  FMemoryMapPanel := TMNoteMemoryMapPanel.Create(Self);
+  FMemoryMapPanel.Parent := tsMapaMemoria;
+  FMemoryMapPanel.SetMemoryMap(MNoteAI.SessionMemory);
 
   CarregarConfiguracoes();
 end;
@@ -1082,6 +1089,7 @@ end;
 
 procedure TfrmIA.LimparHistorico();
 begin
+  MNoteAI.ClearSession;
   meHistorico.Lines.Clear;
   meMapaMemoria.Lines.Clear;
   mePensamento.Lines.Clear;

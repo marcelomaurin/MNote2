@@ -7,7 +7,7 @@ interface
 
 uses
   Classes, SysUtils, Controls, ExtCtrls, StdCtrls, Contnrs,
-  mnote_commands, mnote_language_profile;
+  mnote_commands, mnote_language_profile, mnote_visual_identity;
 
 type
   { TMNoteLanguageToolbar }
@@ -85,7 +85,8 @@ begin
     Button := TButton.Create(Self);
     Button.Parent := FPanel;
     Button.SetBounds(LeftPosition, 10, 96, 30);
-    Button.Caption := ButtonCaption;
+    Button.Caption := MNoteDecoratedButtonCaption(ButtonCaption);
+    Button.Font.Name := 'Segoe UI';
     Button.Hint := CommandID;
     Button.ShowHint := True;
     Button.Enabled := (Command <> nil) and Command.Enabled;

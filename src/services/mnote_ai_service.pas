@@ -42,6 +42,7 @@ type
     FPendingRequestKind: TMNoteAIRequestKind;
     FPendingProfileRole: TMNoteAIRole;
     FProfilesFileName: string;
+    FProfileDefaultsPending: Boolean;
     FWorker: TThread;
     FState: TMNoteAIState;
     FCancelRequested: Boolean;
@@ -119,6 +120,7 @@ type
     function SaveProfiles(out AError: string): Boolean;
     function ReloadProfiles(out AError: string): Boolean;
     function Profile(ARole: TMNoteAIRole): TMNoteAIProfile;
+    procedure EnsureProfileDefaults;
     procedure SetProjectRoot(const ARootPath: string);
     procedure SetDatabaseDictionaryCache(const AJSON: string);
     procedure ClearSession;
@@ -150,7 +152,7 @@ implementation
 
 uses
   jsonparser, LazUTF8, aiagent_flowevents, setmain, mnote_chatgpt_config,
-  mnote_prompt_builder, mnote_token_usage;
+  mnote_prompt_builder, mnote_token_usage, mnote_ai_profile_defaults;
 
 type
   { TMNoteAIWorker }
@@ -270,6 +272,7 @@ begin
   FActionExecutor.OnGetDictionary := @ExecutorDictionary;
   FProfilesFileName := IncludeTrailingPathDelimiter(GetAppConfigDir(False)) +
     'mnote_ai.json';
+  FProfileDefaultsPending := not FileExists(FProfilesFileName);
   FProfiles.LoadFromFile(FProfilesFileName, ConfigError);
   FRouter.MaxCalls := FProfiles.MaxCalls;
   FRouter.MaxEstimatedTokens := FProfiles.MaxEstimatedTokens;
@@ -354,6 +357,7 @@ function TMNoteAIService.ExecuteQuestion(const AQuestion,
   ADeveloperMessage: string; out AResponse: string): Boolean;
 var
   Chat: TCHATGPT;
+  MemoryStep: TAIAgentMemoryMapItem;
 begin
   Result := False;
   AResponse := '';
@@ -361,6 +365,11 @@ begin
   FLastURL := '';
   Chat := DefaultClient;
   if Chat = nil then Exit;
+  if not SameText(FSessionMemory.FlowName, 'MNote2/Chat') then
+    FSessionMemory.StartFlow(AQuestion, 'MNote2/Chat', '', 'IDE');
+  MemoryStep := FSessionMemory.BeginAgentStep('Conversa',
+    tamCustom, AQuestion, ADeveloperMessage,
+    FSessionMemory.CurrentOrder);
   Chat.Dev := ADeveloperMessage;
   Result := Chat.SendQuestion(AQuestion);
   FLastJSON := Chat.LastJSON;
@@ -368,11 +377,26 @@ begin
   CalibrateFromUsage(AQuestion, ADeveloperMessage, FLastJSON);
   AResponse := Chat.Response;
   if Result then
-    ClearError
+  begin
+    FSessionMemory.EndAgentStep(MemoryStep, 'Resposta recebida',
+      'Conversa concluída pelo provedor configurado', 'answer', AResponse,
+      Copy(AResponse, 1, 500));
+    ClearError;
+  end
   else if Trim(Chat.LastError) <> '' then
-    SetError(Chat.LastError)
+  begin
+    FSessionMemory.EndAgentStep(MemoryStep, 'Falha na conversa',
+      Chat.LastError, 'none', AResponse, '');
+    SetError(Chat.LastError);
+  end
   else
+  begin
+    FSessionMemory.EndAgentStep(MemoryStep, 'Falha na conversa',
+      'O provedor não retornou uma resposta válida.', 'none', AResponse, '');
     SetError('O provider de IA não retornou uma resposta válida.');
+  end;
+  if FWorker <> nil then TThread.Synchronize(FWorker, @NotifySessionChanged)
+  else NotifySessionChanged;
 end;
 
 function TMNoteAIService.ExecuteCodeAction(AAction: TMNoteAICodeAction;
@@ -432,8 +456,26 @@ end;
 procedure TMNoteAIService.ConfigureProfile(AProfile: TMNoteAIProfile);
 begin
   if AProfile = nil then Exit;
+  EnsureProfileDefaults;
   ConfigureClient(AProfile.Client);
   AProfile.ApplyConfig;
+end;
+
+procedure TMNoteAIService.EnsureProfileDefaults;
+var
+  ModelName: string;
+begin
+  if (not FProfileDefaultsPending) or (FSetMain = nil) then Exit;
+  case FSetMain.Provider of
+    1: ModelName := FSetMain.ModelOpenRouter;
+    2: ModelName := FSetMain.ModelCerebras;
+    3: ModelName := FSetMain.ModelLocal;
+    4: ModelName := FSetMain.ModelGemini;
+    else ModelName := FSetMain.ModelOpenAI;
+  end;
+  ApplyMainAIToProfiles(FProfiles, FSetMain.Provider, ModelName,
+    FSetMain.IPLocalIA);
+  FProfileDefaultsPending := False;
 end;
 
 function RoleMapType(ARole: TMNoteAIRole): TAITipoAgenteMapa;
@@ -1320,14 +1362,18 @@ end;
 
 function TMNoteAIService.SaveProfiles(out AError: string): Boolean;
 begin
+  EnsureProfileDefaults;
   FProfiles.MaxCalls := FRouter.MaxCalls;
   FProfiles.MaxEstimatedTokens := FRouter.MaxEstimatedTokens;
   Result := FProfiles.SaveToFile(FProfilesFileName, AError);
+  if Result then FProfileDefaultsPending := False;
 end;
 
 function TMNoteAIService.ReloadProfiles(out AError: string): Boolean;
 begin
+  FProfileDefaultsPending := not FileExists(FProfilesFileName);
   Result := FProfiles.LoadFromFile(FProfilesFileName, AError);
+  if Result then EnsureProfileDefaults;
   if Result then
   begin
     FRouter.MaxCalls := FProfiles.MaxCalls;

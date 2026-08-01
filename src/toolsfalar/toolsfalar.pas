@@ -53,7 +53,7 @@ implementation
 {$R *.lfm}
 
 uses
-  {$IFDEF WINDOWS}ComObj, Variants{$ENDIF};
+  mnote_voice_output_service;
 
 { TfrmMain }
 
@@ -124,45 +124,12 @@ end;
 procedure TfrmToolsfalar.Falar();
 var
    pergunta: string;
-   {$IFDEF WINDOWS}
-   Voice: OleVariant;
-   {$ENDIF}
 begin
-  if(Fsetmain.IPFALAR <> edIP.text) then
-  begin
-
-    if( LTCPComponent1.Connected) then
-    begin
-      //Disconectar();
-      //Application.ProcessMessages;
-    end;
-
-
-  end;
-  if(not LTCPComponent1.Connected) then
-  begin
-     //Fsetmain.IPFALAR := edIP.text ;
-     //Fsetmain.SalvaContexto(false);
-     //Conectar();
-  end;
   pergunta := edFalar.text;
-  if(pergunta<>'') then
-  begin
-     if LTCPComponent1.Connected then
-       LTCPComponent1.SendMessage(edFalar.text,nil)
-     else
-     begin
-       {$IFDEF WINDOWS}
-       try
-         Voice := CreateOleObject('SAPI.SpVoice');
-         Voice.Speak(pergunta, 1);
-       except
-         on E: Exception do
-           ShowMessage('Não foi possível falar a resposta: ' + E.Message);
-       end;
-       {$ENDIF}
-     end;
-  end;
+  if Trim(pergunta) = '' then Exit;
+  if not MNoteVoiceOutput.Speak(pergunta, True) then
+    ShowMessage('Não foi possível falar a resposta: ' +
+      MNoteVoiceOutput.LastError);
 end;
 
 procedure TfrmToolsfalar.Falar(Texto: string);

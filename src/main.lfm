@@ -1533,6 +1533,14 @@ object frmMNote: TfrmMNote
     object mnSetup: TMenuItem
       Caption = 'Setup'
       ImageIndex = 7
+      object miIAConfig: TMenuItem
+        Caption = 'IA'
+        OnClick = miIAConfigClick
+      end
+      object miVoiceOutputConfig: TMenuItem
+        Caption = 'Voice Output'
+        OnClick = miVoiceOutputConfigClick
+      end
       object mnfont: TMenuItem
         Caption = 'Fonts'
         ImageIndex = 9

@@ -1,16 +1,19 @@
 object frmSplash: TfrmSplash
   Left = 186
-  Height = 342
+  Height = 360
   Top = 303
-  Width = 569
+  Width = 640
   BorderIcons = []
   BorderStyle = bsNone
   Caption = 'frmSplash'
-  ClientHeight = 342
-  ClientWidth = 569
+  ClientHeight = 360
+  ClientWidth = 640
+  Color = 2035466
   DefaultMonitor = dmMainForm
+  DoubleBuffered = True
   FormStyle = fsSplash
-  Position = poMainFormCenter
+  Position = poScreenCenter
+  OnPaint = FormPaint
   LCLVersion = '4.0.0.4'
   object Label1: TLabel
     Left = 272
@@ -21,6 +24,7 @@ object frmSplash: TfrmSplash
     Font.Height = -29
     Font.Style = [fsBold]
     ParentFont = False
+    Visible = False
   end
   object Image1: TImage
     Left = 8
@@ -5669,6 +5673,7 @@ object frmSplash: TfrmSplash
     }
     Proportional = True
     Stretch = True
+    Visible = False
   end
   object Label2: TLabel
     Left = 24
@@ -5676,6 +5681,7 @@ object frmSplash: TfrmSplash
     Top = 184
     Width = 406
     Caption = 'This Open Source Project.'#13#10#13#10'http://maurinsoft.com.br/index.php/projetos-open-source/projeto-mnote2/'
+    Visible = False
   end
   object lbversao: TLabel
     Left = 296
@@ -5683,5 +5689,6 @@ object frmSplash: TfrmSplash
     Top = 272
     Width = 44
     Caption = 'lbversao'
+    Visible = False
   end
 end

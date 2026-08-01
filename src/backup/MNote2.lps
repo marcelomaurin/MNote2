@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="12"/>
     <BuildModes Active="Default"/>
-    <Units Count="51">
+    <Units Count="52">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -171,7 +171,7 @@
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="6"/>
-        <TopLine Value="2252"/>
+        <TopLine Value="2253"/>
         <CursorPos X="39" Y="2263"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
@@ -446,6 +446,11 @@
         <IsPartOfProject Value="True"/>
         <UsageCount Value="20"/>
       </Unit50>
+      <Unit51>
+        <Filename Value="services\mnote_python_service.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="20"/>
+      </Unit51>
     </Units>
     <JumpHistory HistoryIndex="-1"/>
     <RunParams>

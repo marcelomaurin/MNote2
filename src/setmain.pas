@@ -98,6 +98,12 @@ type
     fIPFALAR : String;
     fIPOUVIR : String;
     FVoiceWakeWord: string;
+    FVoiceOutputEnabled: Boolean;
+    FVoiceOutputEngine: Integer;
+    FVoiceOutputName: string;
+    FVoiceOutputVolume: Integer;
+    FVoiceOutputRate: Integer;
+    FVoiceOutputAsync: Boolean;
 
     FDefaultfolder : string;
     FProject : string;
@@ -224,6 +230,18 @@ type
     property IPFALAR : string read fIPFALAR write fIPFALAR;
     property IPOUVIR : string read fIPOUVIR write fIPOUVIR;
     property VoiceWakeWord: string read FVoiceWakeWord write FVoiceWakeWord;
+    property VoiceOutputEnabled: Boolean read FVoiceOutputEnabled
+      write FVoiceOutputEnabled;
+    property VoiceOutputEngine: Integer read FVoiceOutputEngine
+      write FVoiceOutputEngine;
+    property VoiceOutputName: string read FVoiceOutputName
+      write FVoiceOutputName;
+    property VoiceOutputVolume: Integer read FVoiceOutputVolume
+      write FVoiceOutputVolume;
+    property VoiceOutputRate: Integer read FVoiceOutputRate
+      write FVoiceOutputRate;
+    property VoiceOutputAsync: Boolean read FVoiceOutputAsync
+      write FVoiceOutputAsync;
 
     property Defaultfolder : string read FDefaultfolder write FDefaultfolder;
     property Project : string read FProject write FProject;
@@ -307,6 +325,16 @@ begin
   fIPFALAR := '127.0.0.1';
   fIPOUVIR := '127.0.0.1';
   FVoiceWakeWord := 'OK MNote';
+  FVoiceOutputEnabled := True;
+  {$IFDEF WINDOWS}
+  FVoiceOutputEngine := 1;
+  {$ELSE}
+  FVoiceOutputEngine := 2;
+  {$ENDIF}
+  FVoiceOutputName := '';
+  FVoiceOutputVolume := 100;
+  FVoiceOutputRate := 0;
+  FVoiceOutputAsync := True;
 
   if FFONT = nil then
     FFONT := TFont.Create;
@@ -612,6 +640,16 @@ begin
     FSchemaOracle := RetiraInfo(arquivo.Strings[posicao]);
 
   // ===== tools =====
+  FVoiceOutputEnabled := True;
+  {$IFDEF WINDOWS}
+  FVoiceOutputEngine := 1;
+  {$ELSE}
+  FVoiceOutputEngine := 2;
+  {$ENDIF}
+  FVoiceOutputName := '';
+  FVoiceOutputVolume := 100;
+  FVoiceOutputRate := 0;
+  FVoiceOutputAsync := True;
   if BuscaChave(arquivo,'TOOLSFALAR:',posicao) then
     FTOOLSFALAR := iif(RetiraInfo(arquivo.Strings[posicao])='0',false,true);
 
@@ -626,6 +664,25 @@ begin
   if BuscaChave(arquivo,'VOICEWAKEWORD:',posicao) then
     FVoiceWakeWord := RetiraInfo(arquivo.Strings[posicao]);
   if Trim(FVoiceWakeWord) = '' then FVoiceWakeWord := 'OK MNote';
+  if BuscaChave(arquivo,'VOICEOUTPUTENABLED:',posicao) then
+    FVoiceOutputEnabled := RetiraInfo(arquivo.Strings[posicao]) <> '0';
+  if BuscaChave(arquivo,'VOICEOUTPUTENGINE:',posicao) then
+    FVoiceOutputEngine := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]),
+      FVoiceOutputEngine);
+  if BuscaChave(arquivo,'VOICEOUTPUTNAME:',posicao) then
+    FVoiceOutputName := RetiraInfo(arquivo.Strings[posicao]);
+  if BuscaChave(arquivo,'VOICEOUTPUTVOLUME:',posicao) then
+    FVoiceOutputVolume := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 100);
+  if BuscaChave(arquivo,'VOICEOUTPUTRATE:',posicao) then
+    FVoiceOutputRate := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 0);
+  if BuscaChave(arquivo,'VOICEOUTPUTASYNC:',posicao) then
+    FVoiceOutputAsync := RetiraInfo(arquivo.Strings[posicao]) <> '0';
+  if (FVoiceOutputEngine < 0) or (FVoiceOutputEngine > 2) then
+    FVoiceOutputEngine := 0;
+  if FVoiceOutputVolume < 0 then FVoiceOutputVolume := 0;
+  if FVoiceOutputVolume > 100 then FVoiceOutputVolume := 100;
+  if FVoiceOutputRate < -10 then FVoiceOutputRate := -10;
+  if FVoiceOutputRate > 10 then FVoiceOutputRate := 10;
 
   if BuscaChave(arquivo,'DEFAULTFOLDER:',posicao) then
     FDefaultfolder := RetiraInfo(arquivo.Strings[posicao]);
@@ -810,6 +867,12 @@ begin
   arquivo.Append('IPFALAR:'+fIPFALAR);
   arquivo.Append('IPOUVIR:'+fIPOUVIR);
   arquivo.Append('VOICEWAKEWORD:'+FVoiceWakeWord);
+  arquivo.Append('VOICEOUTPUTENABLED:'+iif(FVoiceOutputEnabled,'1','0'));
+  arquivo.Append('VOICEOUTPUTENGINE:'+IntToStr(FVoiceOutputEngine));
+  arquivo.Append('VOICEOUTPUTNAME:'+FVoiceOutputName);
+  arquivo.Append('VOICEOUTPUTVOLUME:'+IntToStr(FVoiceOutputVolume));
+  arquivo.Append('VOICEOUTPUTRATE:'+IntToStr(FVoiceOutputRate));
+  arquivo.Append('VOICEOUTPUTASYNC:'+iif(FVoiceOutputAsync,'1','0'));
 
   arquivo.Append('DEFAULTFOLDER:'+FDefaultfolder);
   arquivo.Append('PROJECT:'+FPROJECT);

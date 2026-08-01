@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="12"/>
     <BuildModes Active="Default"/>
-    <Units Count="52">
+    <Units Count="53">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -18,7 +18,9 @@
         <ComponentName Value="frmMNote"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <CursorPos X="155" Y="20"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="2655"/>
+        <CursorPos X="50" Y="2683"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -169,9 +171,8 @@
         <ComponentName Value="frmmquery2"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="6"/>
-        <TopLine Value="2253"/>
+        <TopLine Value="2254"/>
         <CursorPos X="39" Y="2263"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
@@ -283,7 +284,6 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
         <EditorIndex Value="9"/>
-        <TopLine Value="659"/>
         <CursorPos Y="693"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
@@ -442,17 +442,30 @@
         <UsageCount Value="62"/>
       </Unit49>
       <Unit50>
-        <Filename Value="classes\antigravity.pas"/>
+        <Filename Value="services\mnote_python_service.pas"/>
         <IsPartOfProject Value="True"/>
         <UsageCount Value="20"/>
       </Unit50>
       <Unit51>
-        <Filename Value="services\mnote_python_service.pas"/>
+        <Filename Value="services\mnote_neural_api_bootstrap.pas"/>
         <IsPartOfProject Value="True"/>
         <UsageCount Value="20"/>
       </Unit51>
+      <Unit52>
+        <Filename Value="classes\antigravity.pas"/>
+        <UsageCount Value="20"/>
+      </Unit52>
     </Units>
-    <JumpHistory HistoryIndex="-1"/>
+    <JumpHistory Count="2" HistoryIndex="1">
+      <Position1>
+        <Filename Value="main.pas"/>
+        <Caret Line="447" Column="12" TopLine="844"/>
+      </Position1>
+      <Position2>
+        <Filename Value="main.pas"/>
+        <Caret Line="2683" Column="50" TopLine="2655"/>
+      </Position2>
+    </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
       <Modes ActiveMode="default"/>
