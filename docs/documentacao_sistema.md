@@ -1,7 +1,7 @@
 # Documentação do Sistema MNote2
 
 > Documento histórico da arquitetura original. Para a arquitetura efetivamente
-> entregue na versão 2.63, consulte `arquitetura_ide_ia.md`,
+> entregue na versão 2.64, consulte `arquitetura_ide_ia.md`,
 > `capability_matrix.md` e `manual_usuario.md`.
 
 Este documento descreve a estrutura técnica do **MNote2** com base nos fontes do projeto.

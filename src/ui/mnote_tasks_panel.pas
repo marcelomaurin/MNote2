@@ -49,6 +49,8 @@ type
     destructor Destroy; override;
     procedure Initialize(AParent: TWinControl; const AProjectRoot,
       AProjectName: string);
+    procedure OpenProject(const AProjectRoot, AProjectName: string);
+    procedure CloseProject;
     procedure Refresh;
     function ReviewAndApplyPlan(const AJSON, AInput: string;
       ARevision: Boolean; out AError: string): Boolean;
@@ -114,7 +116,6 @@ var
   Toolbar: TPanel;
   Button: TButton;
   Tab: TTabSheet;
-  ProjectFile, ProjectDisplayName: string;
 begin
   while AParent.ControlCount > 0 do AParent.Controls[0].Free;
   FPages := TPageControl.Create(Self);
@@ -192,17 +193,59 @@ begin
     FSummaryLists[I].Align := alClient;
     FSummaryLists[I].BorderSpacing.Around := 12;
   end;
+  if DirectoryExists(AProjectRoot) then OpenProject(AProjectRoot, AProjectName)
+  else CloseProject;
+end;
+
+procedure TMNoteTasksPanel.OpenProject(const AProjectRoot,
+  AProjectName: string);
+var
+  ProjectFile, ProjectDisplayName, LoadError: string;
+  Search: TSearchRec;
+begin
   ProjectDisplayName := AProjectName;
-  if ProjectDisplayName = '' then ProjectDisplayName := ExtractFileName(ExcludeTrailingPathDelimiter(AProjectRoot));
+  if ProjectDisplayName = '' then
+    ProjectDisplayName := ExtractFileName(
+      ExcludeTrailingPathDelimiter(AProjectRoot));
   if ProjectDisplayName = '' then ProjectDisplayName := 'MNote2';
-  ProjectFile := IncludeTrailingPathDelimiter(AProjectRoot) + ProjectDisplayName +
-    '.mnoteproj.json';
-  if FileExists(ProjectFile) then FService.Load(ProjectFile)
+  ProjectFile := '';
+  if FindFirst(IncludeTrailingPathDelimiter(AProjectRoot) +
+    '*.mnoteproj.json', faAnyFile, Search) = 0 then
+  try
+    repeat
+      if Search.Attr and faDirectory = 0 then
+      begin
+        ProjectFile := IncludeTrailingPathDelimiter(AProjectRoot) + Search.Name;
+        Break;
+      end;
+    until FindNext(Search) <> 0;
+  finally
+    FindClose(Search);
+  end;
+  if ProjectFile = '' then
+    ProjectFile := IncludeTrailingPathDelimiter(AProjectRoot) +
+      ProjectDisplayName + '.mnoteproj.json';
+  if FileExists(ProjectFile) then
+  begin
+    if not FService.Load(ProjectFile) then
+    begin
+      LoadError := FService.LastError;
+      CloseProject;
+      MessageDlg('Projeto', LoadError, mtError, [mbOK], 0);
+    end;
+  end
   else
   begin
     FService.NewProject(ProjectDisplayName, AProjectRoot);
-    FService.SaveAs(ProjectFile);
+    if not FService.SaveAs(ProjectFile) then
+      MessageDlg('Projeto', FService.LastError, mtError, [mbOK], 0);
   end;
+  RefreshList;
+end;
+
+procedure TMNoteTasksPanel.CloseProject;
+begin
+  FService.NewProject('', '');
   RefreshList;
 end;
 

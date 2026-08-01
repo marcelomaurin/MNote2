@@ -24,7 +24,8 @@ uses
   mnote_ai_session, mnote_ai_monitor_panel, mnote_ai_profiles_form, LCLIntf,
   mnote_ai_actions, mnote_database_completion_provider,
   mnote_sql_validation_service, mnote_ai_plan_contract,
-  mnote_git_read_service, mnote_files_panel, mnote_components_lab_panel;
+  mnote_git_read_service, mnote_files_panel, mnote_components_lab_panel,
+  mnote_project_context, mnote_solution_explorer_panel;
 
 type
 
@@ -183,6 +184,9 @@ type
     procedure MenuItem20Click(Sender: TObject);
     procedure MenuItem21Click(Sender: TObject);
     procedure MenuItem23Click(Sender: TObject);
+    procedure MenuItem24Click(Sender: TObject);
+    procedure MenuItem25Click(Sender: TObject);
+    procedure MenuItem26Click(Sender: TObject);
     procedure miIAThisSourceClick(Sender: TObject);
     procedure MenuItem7Click(Sender: TObject);
     procedure miChatGPTClick(Sender: TObject);
@@ -278,6 +282,8 @@ type
     FAIMonitorPanel: TMNoteAIMonitorPanel;
     FFilesPanel: TMNoteFilesPanel;
     FComponentsLabPanel: TMNoteComponentsLabPanel;
+    FProjectContext: TMNoteProjectContext;
+    FSolutionExplorer: TMNoteSolutionExplorerPanel;
     FPendingAIQuestion: string;
     FPendingAIInputWasVoice: Boolean;
     FPendingAIProposal: Boolean;
@@ -303,6 +309,16 @@ type
     procedure NavigateSearchResult(const AFileName: string;
       ALine, AColumn, ALength: Integer);
     function GetProjectSearchFolder(out AFolder: string): Boolean;
+    function ActivateProject(const APath: string; APersist: Boolean): Boolean;
+    procedure RefreshProjectIntegration;
+    procedure CommandProjectNew(Sender: TObject);
+    procedure CommandProjectOpen(Sender: TObject);
+    procedure CommandProjectOpenFolder(Sender: TObject);
+    procedure CommandProjectClose(Sender: TObject);
+    procedure CommandProjectSave(Sender: TObject);
+    procedure CommandProjectRefresh(Sender: TObject);
+    procedure ShowProjectProperties(Sender: TObject);
+    function ProjectSQLiteLibraryPath: string;
     procedure InitializeThemeMenu;
     procedure ThemeMenuClick(Sender: TObject);
     function ThemeFilePath(const AThemeName: string): string;
@@ -863,7 +879,9 @@ var
   Item: TItem;
   FullName, ProjectName: string;
 begin
-  ProjectName := ExtractFileName(FSetMain.Project);
+  if (FProjectContext <> nil) and FProjectContext.IsOpen then
+    ProjectName := FProjectContext.DisplayName
+  else ProjectName := '';
   if (pgMain.ActivePage = nil) or (pgMain.ActivePage.Tag = 0) then
   begin
     if FIDEShell <> nil then
@@ -880,6 +898,7 @@ begin
     FIDEShell.SetActiveEditor(Item.syn, FullName, ProjectName);
   if FSearchPanel <> nil then
     FSearchPanel.SetActiveEditor(Item.syn, FullName);
+  if FSolutionExplorer <> nil then FSolutionExplorer.SelectFile(FullName);
   UpdateLanguageUI;
 end;
 
@@ -1193,6 +1212,18 @@ begin
     mnPesqItem.ShortCut, @CommandFind);
   FCommandRegistry.RegisterCommand('edit.replace', 'Substituir', 'Editar',
     mnReplaceItem.ShortCut, @CommandReplace);
+  FCommandRegistry.RegisterCommand('project.new', 'Novo Projeto', 'Projeto', 0,
+    @CommandProjectNew);
+  FCommandRegistry.RegisterCommand('project.open', 'Abrir Projeto',
+    'Projeto', 0, @CommandProjectOpen);
+  FCommandRegistry.RegisterCommand('project.open_folder', 'Abrir Pasta',
+    'Projeto', 0, @CommandProjectOpenFolder);
+  FCommandRegistry.RegisterCommand('project.save', 'Salvar Projeto', 'Projeto',
+    0, @CommandProjectSave);
+  FCommandRegistry.RegisterCommand('project.close', 'Fechar Projeto',
+    'Projeto', 0, @CommandProjectClose);
+  FCommandRegistry.RegisterCommand('project.refresh',
+    'Atualizar Solution Explorer', 'Projeto', 0, @CommandProjectRefresh);
   FCommandRegistry.RegisterCommand('project.build', 'Build', 'Projeto', 0,
     @CommandProjectBuild);
   FCommandRegistry.RegisterCommand('project.rebuild', 'Rebuild', 'Projeto', 0,
@@ -2210,6 +2241,11 @@ end;
 function TfrmMNote.GetProjectSearchFolder(out AFolder: string): Boolean;
 begin
   AFolder := '';
+  if FProjectContext <> nil then
+  begin
+    if FProjectContext.IsOpen then AFolder := FProjectContext.RootPath;
+    Exit(FProjectContext.IsOpen and DirectoryExists(AFolder));
+  end;
   if FSetMain = nil then Exit(False);
   if Trim(FSetMain.Project) <> '' then
   begin
@@ -2223,6 +2259,202 @@ begin
   else if (pgMain.ActivePage <> nil) and (pgMain.ActivePage.Tag <> 0) then
     AFolder := TItem(pgMain.ActivePage.Tag).DirName;
   Result := DirectoryExists(AFolder);
+end;
+
+function TfrmMNote.ActivateProject(const APath: string;
+  APersist: Boolean): Boolean;
+begin
+  Result := False;
+  if FProjectContext = nil then
+    FProjectContext := TMNoteProjectContext.Create;
+  if not FProjectContext.Open(APath) then
+  begin
+    MessageHint(FProjectContext.LastError);
+    Exit;
+  end;
+  FSetMain.Project := FProjectContext.PreferredPath;
+  FSetMain.Defaultfolder := FProjectContext.RootPath;
+  if APersist then FSetMain.SalvaContexto(False);
+  RefreshProjectIntegration;
+  Result := True;
+end;
+
+procedure TfrmMNote.RefreshProjectIntegration;
+var
+  Root, ProjectDisplayName: string;
+begin
+  if (FProjectContext = nil) or not FProjectContext.IsOpen then Exit;
+  Root := FProjectContext.RootPath;
+  ProjectDisplayName := FProjectContext.DisplayName;
+  if ProjetoDB <> nil then FreeAndNil(ProjetoDB);
+  if (FProjectContext.Kind = mpkLegacyDatabase) and
+    FileExists(FProjectContext.ProjectFile) then
+  begin
+    ProjetoDB := TProjetoDB.Create(Self);
+    ProjetoDB.CarregarProjeto(FProjectContext.ProjectFile,
+      ProjectSQLiteLibraryPath);
+  end;
+  MNoteAI.SetProjectRoot(Root);
+  if FSolutionExplorer <> nil then
+    FSolutionExplorer.SetProject(Root, ProjectDisplayName,
+      FProjectContext.ProjectFile,
+      FProjectContext.Kind);
+  if FFilesPanel <> nil then FFilesPanel.SetProjectRoot(Root);
+  if FComponentsLabPanel <> nil then FComponentsLabPanel.SetProjectRoot(Root);
+  if FTerminalPanel <> nil then FTerminalPanel.SetWorkingDirectory(Root);
+  if FTasksPanel <> nil then FTasksPanel.OpenProject(Root, ProjectDisplayName);
+  if FTaskListPanel <> nil then
+    FTaskListPanel.Scan(Root);
+  if FChangesPanel <> nil then FChangesPanel.SetProjectRoot(Root);
+  MNoteProjectSymbols.Clear;
+  InitializeProjectSymbolIndex;
+  UpdateIDEStatus;
+  if FIDEShell <> nil then FIDEShell.ShowToolWindow(twkSolution);
+  MessageHint('Projeto ativo: ' + ProjectDisplayName);
+end;
+
+procedure TfrmMNote.CommandProjectNew(Sender: TObject);
+var
+  Dialog: TSelectDirectoryDialog;
+  Location, ProjectName, Description: string;
+begin
+  Dialog := TSelectDirectoryDialog.Create(Self);
+  try
+    Dialog.Title := 'Localização do novo projeto';
+    if DirectoryExists(FSetMain.Defaultfolder) then
+      Dialog.InitialDir := FSetMain.Defaultfolder;
+    if not Dialog.Execute then Exit;
+    Location := Dialog.FileName;
+  finally
+    Dialog.Free;
+  end;
+  ProjectName := '';
+  if not InputQuery('Novo projeto', 'Nome do projeto:', ProjectName) then Exit;
+  Description := '';
+  if not InputQuery('Novo projeto', 'Descrição (opcional):', Description) then
+    Exit;
+  if FProjectContext = nil then
+    FProjectContext := TMNoteProjectContext.Create;
+  if not FProjectContext.CreateNew(Location, ProjectName, Description, True) then
+  begin
+    MessageHint(FProjectContext.LastError);
+    Exit;
+  end;
+  FSetMain.Project := FProjectContext.PreferredPath;
+  FSetMain.Defaultfolder := FProjectContext.RootPath;
+  FSetMain.SalvaContexto(False);
+  RefreshProjectIntegration;
+end;
+
+procedure TfrmMNote.CommandProjectOpen(Sender: TObject);
+var
+  Dialog: TOpenDialog;
+begin
+  Dialog := TOpenDialog.Create(Self);
+  try
+    Dialog.Title := 'Abrir projeto';
+    Dialog.Filter := 'Projetos MNote2/Lazarus (*.mnoteproj.json;*.lpi;*.lpr;*.db)|'+
+      '*.mnoteproj.json;*.lpi;*.lpr;*.db|Todos os arquivos (*.*)|*.*';
+    if DirectoryExists(FSetMain.Defaultfolder) then
+      Dialog.InitialDir := FSetMain.Defaultfolder;
+    if Dialog.Execute then ActivateProject(Dialog.FileName, True);
+  finally
+    Dialog.Free;
+  end;
+end;
+
+procedure TfrmMNote.CommandProjectOpenFolder(Sender: TObject);
+var
+  Dialog: TSelectDirectoryDialog;
+begin
+  Dialog := TSelectDirectoryDialog.Create(Self);
+  try
+    Dialog.Title := 'Abrir pasta como projeto';
+    if DirectoryExists(FSetMain.Defaultfolder) then
+      Dialog.InitialDir := FSetMain.Defaultfolder;
+    if Dialog.Execute then ActivateProject(Dialog.FileName, True);
+  finally
+    Dialog.Free;
+  end;
+end;
+
+procedure TfrmMNote.CommandProjectClose(Sender: TObject);
+begin
+  if (FProjectContext = nil) or not FProjectContext.IsOpen then Exit;
+  if MessageDlg('Fechar projeto', 'Fechar o projeto ativo? Os documentos '+
+    'abertos permanecerão no editor.', mtConfirmation,
+    [mbYes, mbNo], 0) <> mrYes then Exit;
+  FProjectContext.Close;
+  FSetMain.Project := '';
+  FSetMain.SalvaContexto(False);
+  MNoteProjectSymbols.Clear;
+  MNoteAI.SetProjectRoot(GetCurrentDir);
+  if FSolutionExplorer <> nil then FSolutionExplorer.ClearProject;
+  if FFilesPanel <> nil then FFilesPanel.SetProjectRoot('');
+  if FComponentsLabPanel <> nil then FComponentsLabPanel.SetProjectRoot('');
+  if FTerminalPanel <> nil then FTerminalPanel.SetWorkingDirectory('');
+  if FTasksPanel <> nil then FTasksPanel.CloseProject;
+  if FTaskListPanel <> nil then FTaskListPanel.Scan('');
+  if FChangesPanel <> nil then FChangesPanel.SetProjectRoot('');
+  if ProjetoDB <> nil then FreeAndNil(ProjetoDB);
+  UpdateIDEStatus;
+end;
+
+procedure TfrmMNote.CommandProjectSave(Sender: TObject);
+begin
+  if (FTasksPanel = nil) or (FProjectContext = nil) or
+    not FProjectContext.IsOpen then
+  begin
+    MessageHint('Nenhum projeto aberto.');
+    Exit;
+  end;
+  if FTasksPanel.Service.Save then
+    MessageHint('Projeto salvo.')
+  else MessageHint(FTasksPanel.Service.LastError);
+end;
+
+procedure TfrmMNote.CommandProjectRefresh(Sender: TObject);
+begin
+  if FSolutionExplorer <> nil then FSolutionExplorer.Refresh;
+  if FFilesPanel <> nil then FFilesPanel.Refresh;
+  if FTaskListPanel <> nil then
+  begin
+    if (FProjectContext <> nil) and FProjectContext.IsOpen then
+      FTaskListPanel.Scan(FProjectContext.RootPath);
+  end;
+  MNoteProjectSymbols.Clear;
+  InitializeProjectSymbolIndex;
+end;
+
+procedure TfrmMNote.ShowProjectProperties(Sender: TObject);
+begin
+  if (FProjectContext = nil) or not FProjectContext.IsOpen then
+  begin
+    MessageHint('Nenhum projeto aberto.');
+    Exit;
+  end;
+  MessageDlg('Propriedades do projeto',
+    'Nome: ' + FProjectContext.DisplayName + LineEnding +
+    'Tipo: ' + MNoteProjectKindName(FProjectContext.Kind) + LineEnding +
+    'Pasta: ' + FProjectContext.RootPath + LineEnding +
+    'Arquivo: ' + FProjectContext.ProjectFile,
+    mtInformation, [mbOK], 0);
+end;
+
+function TfrmMNote.ProjectSQLiteLibraryPath: string;
+var
+  BasePath: string;
+begin
+  BasePath := ExtractFileDir(Application.ExeName);
+  {$IFDEF WINDOWS}
+  if Pos('\src', LowerCase(BasePath)) > 0 then
+    Result := ExpandFileName(BasePath + '\..\libs\sqlite\win32\sqlite3.dll')
+  else Result := BasePath + '\libs\sqlite\win32\sqlite3.dll';
+  {$ENDIF}
+  {$IFDEF LINUX}
+  Result := IncludeTrailingPathDelimiter(BasePath) +
+    'libs/linux64/libsqlite3.so';
+  {$ENDIF}
 end;
 
 procedure TfrmMNote.InitializeThemeMenu;
@@ -2345,6 +2577,11 @@ begin
   if (FSetMain = nil) then
     FsetMain := TsetMain.Create();
 
+  FProjectContext := TMNoteProjectContext.Create;
+  if (Trim(FSetMain.Project) <> '') and
+    (not FProjectContext.Open(FSetMain.Project)) then
+    FProjectContext.Close;
+
   FThemeService := TMNoteEditorThemeService.Create;
   InitializeCommands;
   FPythonService := TMNotePythonService.Create(Self);
@@ -2358,6 +2595,13 @@ begin
   FIDEShell := TMNoteIDEShell.Create(Self);
   FIDEShell.Initialize(Panel4, pnclient, pgMain, pnChatGPT2, pnInspector,
     lstFind, meResult, MainMenu1);
+  FSolutionExplorer := TMNoteSolutionExplorerPanel.Create(Self);
+  FSolutionExplorer.OnOpenFile := @OpenInventoryFile;
+  FSolutionExplorer.OnNewProject := @CommandProjectNew;
+  FSolutionExplorer.OnOpenProject := @CommandProjectOpen;
+  FSolutionExplorer.OnOpenFolder := @CommandProjectOpenFolder;
+  FSolutionExplorer.OnProjectProperties := @ShowProjectProperties;
+  FSolutionExplorer.Initialize(FIDEShell.SolutionPage);
   FOutputPanel := TMNoteOutputPanel.Create(Self);
   FOutputPanel.Initialize(FIDEShell.OutputPage, meResult);
   FProblemsPanel := TMNoteProblemsPanel.Create(Self);
@@ -2388,9 +2632,10 @@ begin
   FSearchPanel.OnNavigate := @NavigateSearchResult;
   FSearchPanel.OnGetProjectFolder := @GetProjectSearchFolder;
   FSearchPanel.Initialize(Panel4, MainMenu1, FIDEShell.SearchResultsList);
-  ProjectRoot := GetCurrentDir;
-  GetProjectSearchFolder(ProjectRoot);
-  MNoteAI.SetProjectRoot(ProjectRoot);
+  ProjectRoot := '';
+  if FProjectContext.IsOpen then ProjectRoot := FProjectContext.RootPath;
+  if ProjectRoot <> '' then MNoteAI.SetProjectRoot(ProjectRoot)
+  else MNoteAI.SetProjectRoot(GetCurrentDir);
   FFilesPanel := TMNoteFilesPanel.Create(Self);
   FFilesPanel.OnOpenFile := @OpenInventoryFile;
   FFilesPanel.Initialize(FIDEShell.FilesPage, ProjectRoot,
@@ -2400,25 +2645,25 @@ begin
     FSetMain.ToolsOuvir or FSetMain.ToolsFalar);
   FTerminalPanel := TMNoteTerminalPanel.Create(Self);
   FTerminalPanel.Initialize(FIDEShell.TerminalPage, ProjectRoot);
-  if GetProjectSearchFolder(ProjectRoot) then
-  begin
-    ProjectName := ChangeFileExt(ExtractFileName(FSetMain.Project), '');
-    if ProjectName = '' then
-      ProjectName := ExtractFileName(ExcludeTrailingPathDelimiter(ProjectRoot));
-    FTasksPanel := TMNoteTasksPanel.Create(Self);
-    FTasksPanel.Initialize(FIDEShell.TasksPage, ProjectRoot, ProjectName);
-    FTasksPanel.OnPlanRequested := @ProjectPlanRequested;
-    FTasksPanel.OnOpenFile := @OpenTaskFile;
-    FTasksPanel.OnOpenCommit := @OpenTaskCommit;
-    FTaskListPanel := TMNoteTaskListPanel.Create(Self);
-    FTaskListPanel.OnNavigate := @NavigateSearchResult;
-    FTaskListPanel.OnTaskCreated := @ProjectTaskCreated;
-    FTaskListPanel.Initialize(FIDEShell.TaskList, FTasksPanel.Service);
-    FTaskListPanel.Scan(ProjectRoot);
+  if FProjectContext.IsOpen then ProjectName := FProjectContext.DisplayName
+  else ProjectName := '';
+  FTasksPanel := TMNoteTasksPanel.Create(Self);
+  FTasksPanel.Initialize(FIDEShell.TasksPage, ProjectRoot, ProjectName);
+  FTasksPanel.OnPlanRequested := @ProjectPlanRequested;
+  FTasksPanel.OnOpenFile := @OpenTaskFile;
+  FTasksPanel.OnOpenCommit := @OpenTaskCommit;
+  FTaskListPanel := TMNoteTaskListPanel.Create(Self);
+  FTaskListPanel.OnNavigate := @NavigateSearchResult;
+  FTaskListPanel.OnTaskCreated := @ProjectTaskCreated;
+  FTaskListPanel.Initialize(FIDEShell.TaskList, FTasksPanel.Service);
+  FTaskListPanel.Scan(ProjectRoot);
   FChangesPanel := TMNoteChangesPanel.Create(Self);
   FChangesPanel.Initialize(FIDEShell.ChangesPage, ProjectRoot);
   FChangesPanel.OnApplied := @ChangesApplied;
-  end;
+  if FProjectContext.IsOpen then
+    FSolutionExplorer.SetProject(ProjectRoot, ProjectName,
+      FProjectContext.ProjectFile, FProjectContext.Kind)
+  else FSolutionExplorer.ClearProject;
   InitializeProjectSymbolIndex;
   InitializeThemeMenu;
   ApplyTheme(FSetMain.EditorTheme);
@@ -2439,7 +2684,8 @@ begin
   biblioteca := basePath + 'libs/linux64/libsqlite3.so';
   {$ENDIF}
 
-  if(FSetMain.Project<>'') then
+  if (FSetMain.Project <> '') and
+    SameText(ExtractFileExt(FSetMain.Project), '.db') then
   begin
      ProjetoDB := TProjetoDB.create(self);
      ProjetoDB.CarregarProjeto(FSetMain.Project,biblioteca);
@@ -2793,6 +3039,8 @@ begin
   FreeAndNil(FTerminalPanel);
   FreeAndNil(FFilesPanel);
   FreeAndNil(FComponentsLabPanel);
+  FreeAndNil(FSolutionExplorer);
+  FreeAndNil(FProjectContext);
   FreeAndNil(FProblemsPanel);
   FreeAndNil(FOutputPanel);
   FreeAndNil(FAIMonitorPanel);
@@ -2936,10 +3184,22 @@ end;
 
 procedure TfrmMNote.MenuItem23Click(Sender: TObject);
 begin
-  frmNewProject := TfrmNewProject.create(self);
-  frmNewProject.ShowModal;
-  frmNewProject.free;
-  frmNewProject := nil;
+  CommandProjectNew(Sender);
+end;
+
+procedure TfrmMNote.MenuItem24Click(Sender: TObject);
+begin
+  CommandProjectOpen(Sender);
+end;
+
+procedure TfrmMNote.MenuItem25Click(Sender: TObject);
+begin
+  CommandProjectClose(Sender);
+end;
+
+procedure TfrmMNote.MenuItem26Click(Sender: TObject);
+begin
+  CommandProjectSave(Sender);
 end;
 
 procedure TfrmMNote.miIAThisSourceClick(Sender: TObject);

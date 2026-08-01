@@ -44,6 +44,7 @@ type
     destructor Destroy; override;
     procedure Initialize(AParent: TWinControl; const ARootPath: string;
       AEnabled: Boolean);
+    procedure SetProjectRoot(const ARootPath: string);
     procedure Refresh;
     property Service: TMNoteProjectInventoryService read FService;
     property OnOpenFile: TMNoteFileOpenEvent read FOnOpenFile write FOnOpenFile;
@@ -136,10 +137,29 @@ begin
   if FEnabled then Refresh;
 end;
 
+procedure TMNoteFilesPanel.SetProjectRoot(const ARootPath: string);
+begin
+  FService.Cancel;
+  if Trim(ARootPath) = '' then
+  begin
+    FRootPath := '';
+    if FList <> nil then FList.Items.Clear;
+    if FStatus <> nil then FStatus.Caption := 'Nenhum projeto aberto.';
+    Exit;
+  end;
+  FRootPath := ExpandFileName(ARootPath);
+  if FEnabled then Refresh;
+end;
+
 procedure TMNoteFilesPanel.Refresh;
 begin
   if not FEnabled then Exit;
   FList.Items.Clear;
+  if not DirectoryExists(FRootPath) then
+  begin
+    FStatus.Caption := 'Nenhum projeto aberto.';
+    Exit;
+  end;
   if not FService.StartScan(FRootPath) then
     FStatus.Caption := FService.LastError;
 end;

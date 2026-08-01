@@ -1,6 +1,6 @@
 # Manual do usuário — MNote2 IDE com IA
 
-Este manual descreve a interface e os recursos entregues na versão 2.63 do
+Este manual descreve a interface e os recursos entregues na versão 2.64 do
 MNote2.
 
 ![Tela principal do MNote2](../screenshots/MNote2_IDE_IA_2_63.png)
@@ -78,7 +78,22 @@ arquivo restaura o que já havia sido alterado.
 
 ## 5. Projetos e tarefas
 
-Crie ou abra um projeto pelo menu **Project**. A aba Tasks permite criar,
+Crie ou abra um projeto pelo menu **Project** ou pelos botões do **Solution
+Explorer**. O MNote2 reconhece a pasta diretamente, o descritor
+`.mnoteproj.json`, projetos Lazarus `.lpi`/`.lpr` e o formato legado `.db`.
+
+O projeto ativo é um contexto único. Ao trocá-lo, Solution Explorer, Files,
+Tasks, Task List, Changes, Terminal, busca, índice de símbolos, Build e IA
+passam juntos para a nova raiz. Fechar o projeto preserva os documentos já
+abertos, mas desativa as operações dependentes de projeto.
+
+O Solution Explorer apresenta pastas e arquivos hierarquicamente, abre o item
+com duplo clique, acompanha o arquivo ativo e oferece atualizar, recolher,
+mostrar arquivos gerados, criar, renomear, excluir item vazio, copiar caminho e
+consultar propriedades. Diretórios internos como `.git`, `.mnote` e artefatos
+de compilação ficam ocultos por padrão.
+
+A aba Tasks permite criar,
 editar, confirmar, iniciar e concluir tarefas. Cada tarefa pode conter descrição
 longa, critérios de aceite, dependências, estimativas, perfil responsável,
 arquivos, restrições, commits e arquivos exclusivos.

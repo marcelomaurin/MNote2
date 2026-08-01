@@ -1458,12 +1458,15 @@ object frmMNote: TfrmMNote
       end
       object MenuItem24: TMenuItem
         Caption = 'Open Project'
+        OnClick = MenuItem24Click
       end
       object MenuItem26: TMenuItem
         Caption = 'Save Project'
+        OnClick = MenuItem26Click
       end
       object MenuItem25: TMenuItem
         Caption = 'Close'
+        OnClick = MenuItem25Click
       end
     end
     object MenuItem12: TMenuItem

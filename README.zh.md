@@ -2,7 +2,7 @@
 
 MNote2 是一个使用 Lazarus/Free Pascal 开发的跨平台文本和代码编辑器。它把多标签编辑、脚本执行、数据库工具、AI 集成、文档提取和语音辅助工具整合在一起。
 
-当前源码版本：**2.63**。
+当前源码版本：**2.64**。
 
 ## 截图
 
@@ -89,7 +89,7 @@ MQuery2 作为内置 SQL 管理器运行。
 ### 安装与分发
 
 - Windows 安装程序使用 Inno Setup，位于 instalador/MNote2.iss。
-- Windows 安装器版本：2.63。
+- Windows 安装器版本：2.64。
 - 会复制 MNote2.exe、DLL、.dci 文件、.txt 列表、.bat 脚本、示例和默认数据库。
 - 默认数据库复制到 C:db。
 - 包含安装后启动 srvFalar_1.4.exe 的选项。

@@ -7,7 +7,7 @@
 | Voz com “OK MNote” | Integrado/opcional | entrada por voz responde por fala; pode ser desativada |
 | Search/Replace UTF-8 | Integrado | editor, arquivos, filtros, preview e rollback |
 | Autocomplete local | Integrado | popup, snippets, símbolos, SQL, F12 e Shift+F12 |
-| Projeto e tarefas | Integrado | Tasks, Task List, Gantt, Timeline e Risk Matrix |
+| Projeto e tarefas | Integrado | contexto único, Solution Explorer, Tasks, Task List, Gantt, Timeline e Risk Matrix |
 | Mudanças de fonte | Integrado | Changes, diff por hunk, aprovação, apply e rollback |
 | Banco PostgreSQL/SQLite | Integrado | Data Dictionary, exportação, completion e contexto IA |
 | MySQL e outros bancos | Experimental | status e placeholders são validados por protocolo |

@@ -153,7 +153,9 @@ procedure TMNoteTerminalPanel.Initialize(AParent: TWinControl;
 var
   Toolbar: TPanel;
 begin
-  FWorkingDirectory := ExpandFileName(AWorkingDirectory);
+  if DirectoryExists(AWorkingDirectory) then
+    FWorkingDirectory := ExpandFileName(AWorkingDirectory)
+  else FWorkingDirectory := '';
   Toolbar := TPanel.Create(Self);
   Toolbar.Parent := AParent;
   Toolbar.Align := alTop;
@@ -165,6 +167,7 @@ begin
   FRunButton.Caption := 'Executar';
   FRunButton.SetBounds(8, 4, 72, 24);
   FRunButton.OnClick := @RunClick;
+  FRunButton.Enabled := FWorkingDirectory <> '';
   FStopButton := TButton.Create(Self);
   FStopButton.Parent := Toolbar;
   FStopButton.Caption := 'Parar';
@@ -183,14 +186,23 @@ begin
   FOutput.ReadOnly := True;
   FOutput.ScrollBars := ssAutoBoth;
   FOutput.WordWrap := False;
-  FOutput.Lines.Add('Diretório: ' + FWorkingDirectory);
+  if FWorkingDirectory <> '' then
+    FOutput.Lines.Add('Diretório: ' + FWorkingDirectory)
+  else FOutput.Lines.Add('Nenhum projeto aberto.');
 end;
 
 procedure TMNoteTerminalPanel.SetWorkingDirectory(
   const AWorkingDirectory: string);
 begin
   if DirectoryExists(AWorkingDirectory) then
-    FWorkingDirectory := ExpandFileName(AWorkingDirectory);
+    FWorkingDirectory := ExpandFileName(AWorkingDirectory)
+  else FWorkingDirectory := '';
+  if FRunButton <> nil then FRunButton.Enabled := FWorkingDirectory <> '';
+  if FOutput <> nil then
+  begin
+    if FWorkingDirectory = '' then FOutput.Lines.Add('Projeto fechado.')
+    else FOutput.Lines.Add('Diretório alterado para: ' + FWorkingDirectory);
+  end;
 end;
 
 procedure TMNoteTerminalPanel.ReleaseFinishedThread;

@@ -71,6 +71,12 @@ var
   I: Integer;
   ListItem: TListItem;
 begin
+  if (FList = nil) then Exit;
+  if not DirectoryExists(ARoot) then
+  begin
+    FList.Items.Clear;
+    Exit;
+  end;
   FIndex.Scan(ARoot);
   FList.Items.BeginUpdate;
   try

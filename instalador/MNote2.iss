@@ -2,7 +2,7 @@
 ; 32-bit app for Windows x86/x64
 
 #define MyAppName "MNote2"
-#define MyAppVersion "2.63"
+#define MyAppVersion "2.64"
 #define MyAppPublisher "Maurinsoft"
 #define MyAppURL "http://maurinsoft.com.br"
 #define MyAppExeName "MNote2.exe"
@@ -22,7 +22,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={commonpf32}\{#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir={#ProjectRoot}\bin
-OutputBaseFilename=win_MNote2_63
+OutputBaseFilename=win_MNote2_64
 SetupIconFile={#ProjectRoot}\src\MNote2.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma

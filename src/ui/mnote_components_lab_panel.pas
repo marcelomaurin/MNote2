@@ -33,6 +33,7 @@ type
     destructor Destroy; override;
     procedure Initialize(AParent: TWinControl; const ARootPath: string;
       AVoiceEnabled: Boolean);
+    procedure SetProjectRoot(const ARootPath: string);
     property Catalog: TMNoteCapabilityCatalog read FCatalog;
   end;
 
@@ -108,6 +109,15 @@ begin
   AddColumn(FList, 'Estado', 85);
   AddColumn(FList, 'Pacote', 120);
   FillCatalog;
+end;
+
+procedure TMNoteComponentsLabPanel.SetProjectRoot(const ARootPath: string);
+begin
+  if Trim(ARootPath) = '' then FRootPath := ''
+  else FRootPath := ExpandFileName(ARootPath);
+  if FDetails <> nil then
+    if FRootPath = '' then FDetails.Text := 'Nenhum projeto aberto.'
+    else FDetails.Text := 'Projeto ativo: ' + FRootPath;
 end;
 
 procedure TMNoteComponentsLabPanel.FillCatalog;

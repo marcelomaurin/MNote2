@@ -144,9 +144,8 @@ begin
 end;
 
 procedure TProjetoDB.CarregarProjeto(const ADBPath: string; dll : string);
-var
-  original, destino, biblioteca, basePath: string;
 begin
+  FDBPath := ExpandFileName(ADBPath);
   if dmbase.ConectaSQLite(ADBPath,dll )then
   begin
     // tenta ler metadados

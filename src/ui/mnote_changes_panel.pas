@@ -32,6 +32,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Initialize(AParent: TWinControl; const AProjectRoot: string);
+    procedure SetProjectRoot(const AProjectRoot: string);
     procedure Present(AChangeSet: TAISourceChangeSet);
     procedure PresentGitDiff(const ATitle, ADiff: string);
     function RollbackCurrent: Boolean;
@@ -105,6 +106,14 @@ begin
   FNewText := TMemo.Create(Self);
   FNewText.Parent := Viewer; FNewText.Align := alClient;
   FNewText.ReadOnly := True; FNewText.ScrollBars := ssAutoBoth;
+  RefreshTree;
+end;
+
+procedure TMNoteChangesPanel.SetProjectRoot(const AProjectRoot: string);
+begin
+  FreeAndNil(FChangeSet);
+  if Trim(AProjectRoot) = '' then FManager.RootPath := ''
+  else FManager.RootPath := ExpandFileName(AProjectRoot);
   RefreshTree;
 end;
 

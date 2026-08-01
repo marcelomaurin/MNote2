@@ -22,6 +22,7 @@ uses
   mnote_process_service, mnote_build_service, mnote_ai_types,
   mnote_ai_router, mnote_ai_session, mnote_ai_bus, mnote_ai_actions,
   mnote_ai_plan_contract, mnote_project_inventory_service,
+  mnote_project_context,
   mnote_document_export_service, mnote_capability_catalog,
   mnote_dependency_graph_service, mnote_sql_validation_service;
 
@@ -469,6 +470,65 @@ begin
     RemoveDir(IncludeTrailingPathDelimiter(FixtureRoot) + 'tasks');
     DeleteFile(ProjectFile);
     RemoveDir(FixtureRoot);
+  end;
+end;
+
+procedure TestProjectContext;
+var
+  Context: TMNoteProjectContext;
+  BaseRoot, ProjectRoot, Descriptor, LazarusRoot, LPIFile, DBFile,
+    InvalidDescriptor: string;
+begin
+  BaseRoot := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) +
+    'project_context_fixture';
+  ProjectRoot := IncludeTrailingPathDelimiter(BaseRoot) + 'Aplicacao';
+  Descriptor := IncludeTrailingPathDelimiter(ProjectRoot) +
+    'Aplicacao.mnoteproj.json';
+  LazarusRoot := IncludeTrailingPathDelimiter(BaseRoot) + 'Legacy';
+  LPIFile := IncludeTrailingPathDelimiter(LazarusRoot) + 'legacy.lpi';
+  DBFile := IncludeTrailingPathDelimiter(LazarusRoot) + 'legacy.db';
+  InvalidDescriptor := IncludeTrailingPathDelimiter(LazarusRoot) +
+    'invalid.mnoteproj.json';
+  ForceDirectories(BaseRoot);
+  Context := TMNoteProjectContext.Create;
+  try
+    Check(Context.CreateNew(BaseRoot, 'Aplicacao', 'Projeto integrado', True),
+      'Contexto não criou projeto: ' + Context.LastError);
+    Check(Context.IsOpen and (Context.Kind = mpkMNote) and
+      SameFileName(Context.RootPath, ProjectRoot) and FileExists(Descriptor) and
+      (Context.DisplayName = 'Aplicacao'),
+      'Novo projeto não ativou descritor, raiz e nome corretos');
+    Context.Close;
+    Check(not Context.IsOpen, 'Close manteve o projeto ativo');
+    Check(Context.Open(ProjectRoot) and (Context.Kind = mpkMNote) and
+      SameFileName(Context.ProjectFile, Descriptor),
+      'Abertura por pasta não detectou o descritor MNote2');
+    Check(not Context.CreateNew(BaseRoot, 'nome/inválido', '', True),
+      'Nome de projeto inválido foi aceito');
+
+    ForceDirectories(LazarusRoot);
+    SaveFixtureText(InvalidDescriptor, '{invalid');
+    Check((not Context.Open(InvalidDescriptor)) and Context.IsOpen and
+      SameFileName(Context.RootPath, ProjectRoot),
+      'Descritor inválido substituiu o contexto ativo');
+    DeleteFile(InvalidDescriptor);
+    SaveFixtureText(LPIFile, '<CONFIG/>');
+    Check(Context.Open(LPIFile) and (Context.Kind = mpkLazarus) and
+      SameFileName(Context.RootPath, LazarusRoot),
+      'Projeto Lazarus não foi reconhecido');
+    DeleteFile(LPIFile);
+    SaveFixtureText(DBFile, 'fixture');
+    Check(Context.Open(DBFile) and (Context.Kind = mpkLegacyDatabase),
+      'Projeto legado .db não foi reconhecido');
+  finally
+    Context.Free;
+    DeleteFile(DBFile);
+    DeleteFile(LPIFile);
+    DeleteFile(InvalidDescriptor);
+    RemoveDir(LazarusRoot);
+    DeleteFile(Descriptor);
+    RemoveDir(ProjectRoot);
+    RemoveDir(BaseRoot);
   end;
 end;
 
@@ -1434,6 +1494,8 @@ var
 begin
   try
     TestProjectCore;
+    TestProjectContext;
+    Writeln('OK: contexto integrado de projeto e compatibilidade legado/Lazarus');
     Writeln('OK: projeto, tarefas, ações, dependências e exportação');
     TestAIPlanContract;
     Writeln('OK: Entender, contrato de plano, revisão e confirmação');
