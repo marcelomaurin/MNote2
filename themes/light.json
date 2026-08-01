@@ -1,0 +1,15 @@
+{
+  "name": "Light",
+  "editor_background": "#FFFFFF",
+  "editor_foreground": "#1E1E1E",
+  "selection_background": "#ADD6FF",
+  "selection_foreground": "#000000",
+  "current_line": "#F3F3F3",
+  "gutter_background": "#F7F7F7",
+  "comment": "#008000",
+  "keyword": "#0000FF",
+  "string": "#A31515",
+  "number": "#098658",
+  "identifier": "#1E1E1E",
+  "symbol": "#000000"
+}

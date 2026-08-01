@@ -10,8 +10,15 @@ uses
   SynHighlighterSQL, SynHighlighterPython, SynHighlighterPHP,
   SynHighlighterUnixShellScript, SynHighlighterBat, SynHighlighterJava,
   SynHighlighterJScript, SynHighlighterCss,
-  Graphics, SynEditKeyCmds, LCLType, Variants,
-  PythonEngine, PythonGUIInputOutput, setmain, funcoes, hint, Dialogs, StdCtrls, Menus, mnote_python_service;
+  Graphics, SynEditKeyCmds, SynEditTypes, SynEditHighlighter, LCLType, Variants,
+  PythonEngine, PythonGUIInputOutput, setmain, funcoes, hint, Dialogs, StdCtrls,
+  Menus, Forms, mnote_python_service, mnote_language_registry,
+  mnote_language_profile, mnote_highlighter_factory, mnote_completion_types,
+  mnote_completion_provider, mnote_completion_aggregator,
+  mnote_static_completion_provider, mnote_document_completion_provider,
+  mnote_snippet_completion_provider, mnote_project_symbol_index,
+  mnote_database_completion_provider, mnote_pascal_symbol_parser,
+  mnote_token_parser;
 
 type
   TFuncPosition = record
@@ -106,21 +113,14 @@ type
 
     FMainModule: PPyObject;
 
-    // highlighters
-    FSynPasSyn1: TSynPasSyn;
-    FSynBatSyn1: TSynBatSyn;
-    FSynCppSyn1: TSynCppSyn;
-    FSynCssSyn1: TSynCssSyn;
-    FSynJavaSyn1: TSynJavaSyn;
-    FSynJScriptSyn1: TSynJScriptSyn;
-    FSynPHPSyn1: TSynPHPSyn;
-    FSynPythonSyn1: TSynPythonSyn;
-    FSynSQLSyn1: TSynSQLSyn;
-    FSynSQLSyn2: TSynSQLSyn;
-    FSynUNIXShellScriptSyn1: TSynUNIXShellScriptSyn;
-    FSynAnySyn1: TSynAnySyn;
+    FHighlighter: TSynCustomHighlighter;
+    FLanguageProfileID: string;
 
     FsynCompletion: TSynCompletion;
+    FCompletionAggregator: TMNoteCompletionAggregator;
+    FCompletionItems: TMNoteCompletionItems;
+    FCompletionContext: TMNoteCompletionContext;
+    FSnippetCaret: TPoint;
 
     function PesquisaPar(param: string; lst: TStringlist): string;
     function GetPreservPath(const AFileName: string): string;
@@ -140,8 +140,16 @@ type
       SourceValue: string; var SourceStart, SourceEnd: TPoint; KeyChar: TUTF8Char;
       Shift: TShiftState);
     procedure SynCompletion1SearchPosition(var APosition: integer);
+    procedure CompletionAcceptTab(Sender: TObject);
+    procedure CompletionKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure EditorStatusChanged(Sender: TObject; Changes: TSynStatusChanges);
+    procedure ConfigureCompletionProviders;
+    procedure ApplySnippetCaret(Data: PtrInt);
+    function CompletionCaption(AItem: TMNoteCompletionItem): string;
+    function CurrentTextBeforeCaret: string;
+    function CurrentLeafToken: string;
     procedure MessageHint(sender: TComponent; info: string);
-    function getPascfuncs(SynEdit: TSynEdit): TFuncPosition;
   public
     Nome: String;
     FileName: String;
@@ -164,6 +172,9 @@ type
     procedure Loadfile(arquivo: string);
     procedure SetResultado(value: TCustomMemo);
     procedure Run();
+    procedure HandleEditorKeyPress(AKey: Char);
+    function FindDefinitionAtCaret(out AFileName: string;
+      out ALine: Integer): Boolean;
 
     property ItemType: TTypeItem read FItemType write SetItemType;
     property syn: TSynEdit read Fsyn write SetSyn;
@@ -178,54 +189,167 @@ type
 
 implementation
 
-function TItem.getPascfuncs(SynEdit: TSynEdit): TFuncPosition;
-begin
-  Result.y1 := -1;
-  Result.y2 := -1;
-  // função ainda não utilizada – mantida só como placeholder
-end;
-
 procedure TItem.SynCompletion1SearchPosition(var APosition: integer);
 begin
-  // reservado para futuras integrações de autocomplete por contexto (SQL, etc)
+  SynCompletion1Execute(FSynCompletion);
+  if FCompletionItems.Count > 0 then APosition := 0 else APosition := -1;
 end;
 
 procedure TItem.SynCompletion1CodeCompletion(var Value: string;
   SourceValue: string; var SourceStart, SourceEnd: TPoint; KeyChar: TUTF8Char;
   Shift: TShiftState);
 var
-  listagem: TStringlist;
+  CompletionIndex, CursorOffset, I: Integer;
+  ExpandedText: string;
 begin
-  listagem := TStringlist.Create();
-  try
-    listagem.Text := SourceValue;
-    if SourceStart.x > 0 then
+  CompletionIndex := FSynCompletion.ItemList.IndexOf(Value);
+  if (CompletionIndex < 0) or
+    (CompletionIndex >= FCompletionItems.Count) then Exit;
+  with FCompletionItems[CompletionIndex] do
+  begin
+    if Kind = ckSnippet then
     begin
-      if syn.Lines[SourceStart.y - 1][SourceStart.x - 1] = '\' then
+      ExpandedText := TMNoteSnippetCompletionProvider.Expand(InsertText,
+        CursorOffset);
+      Value := ExpandedText;
+      FSnippetCaret := SourceStart;
+      for I := 1 to CursorOffset do
       begin
-        SourceStart.x -= 1;
-        SourceValue := '\' + SourceValue;
+        if ExpandedText[I] = #10 then
+        begin
+          Inc(FSnippetCaret.Y);
+          FSnippetCaret.X := 1;
+        end
+        else if ExpandedText[I] <> #13 then
+          Inc(FSnippetCaret.X);
       end;
-    end;
-  finally
-    listagem.Free;
+      Application.QueueAsyncCall(@ApplySnippetCaret, 0);
+    end
+    else
+      Value := InsertText;
   end;
 end;
 
 procedure TItem.SynCompletion1Execute(Sender: TObject);
 var
-  i: Integer;
-  SearchStr, KeyStr: string;
+  I: Integer;
+  Profile: TMNoteLanguageProfile;
+  FullName: string;
 begin
   FSynCompletion.ItemList.Clear;
-  SearchStr := UpperCase(FSynCompletion.CurrentString);
+  if (Fsyn = nil) or (FCompletionAggregator = nil) then Exit;
+  Profile := MNoteLanguages.FindByExtension(FileExt);
+  if Profile = nil then Exit;
+  FullName := FileName;
+  if DirName <> '' then
+    FullName := IncludeTrailingPathDelimiter(DirName) + FileName;
+  FCompletionContext.LanguageID := Profile.ID;
+  FCompletionContext.TextBeforeCursor := CurrentTextBeforeCaret;
+  FCompletionContext.Query := CurrentLeafToken;
+  FCompletionContext.CurrentLine := Fsyn.LineText;
+  FCompletionContext.DocumentText := Fsyn.Text;
+  FCompletionContext.FileName := FullName;
+  FCompletionContext.CursorLine := Fsyn.CaretY;
+  FCompletionContext.CursorColumn := Fsyn.CaretX;
+  FCompletionAggregator.Complete(FCompletionContext, FCompletionItems);
+  for I := 0 to FCompletionItems.Count - 1 do
+    FSynCompletion.ItemList.Add(CompletionCaption(FCompletionItems[I]));
+end;
 
-  for i := 0 to FPalavrasReservadas.Count - 1 do
+procedure TItem.CompletionAcceptTab(Sender: TObject);
+begin
+  if (FSetMain <> nil) and (FSetMain.CompletionAcceptMode = 1) then Exit;
+  if Assigned(FSynCompletion.OnValidate) then
+    FSynCompletion.OnValidate(FSynCompletion.TheForm, '', []);
+end;
+
+procedure TItem.CompletionKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Key = VK_RETURN) and (FSetMain <> nil) and
+    (FSetMain.CompletionAcceptMode = 2) then Key := VK_UNKNOWN;
+end;
+
+procedure TItem.EditorStatusChanged(Sender: TObject;
+  Changes: TSynStatusChanges);
+begin
+  if (scModified in Changes) and (FSetMain <> nil) and
+    FSetMain.CompletionAutoTrigger and (Ftimer <> nil) then
   begin
-    KeyStr := UpperCase(FPalavrasReservadas[i]);
-    if Pos(SearchStr, KeyStr) = 1 then
-      FSynCompletion.ItemList.Add(FPalavrasReservadas[i]);
+    Ftimer.Enabled := False;
+    Ftimer.Interval := 220;
+    Ftimer.Enabled := True;
   end;
+end;
+
+procedure TItem.ConfigureCompletionProviders;
+var
+  Profile: TMNoteLanguageProfile;
+  Provider: IMNoteCompletionProvider;
+begin
+  FreeAndNil(FCompletionAggregator);
+  FCompletionAggregator := TMNoteCompletionAggregator.Create;
+  Profile := MNoteLanguages.FindByExtension(FileExt);
+  if Profile = nil then Exit;
+  Provider := TMNoteStaticCompletionProvider.Create(Profile.ID, 'linguagem',
+    FPalavrasReservadas);
+  FCompletionAggregator.AddProvider(Provider);
+  Provider := TMNoteSnippetCompletionProvider.Create;
+  FCompletionAggregator.AddProvider(Provider);
+  Provider := TMNoteDocumentCompletionProvider.Create;
+  FCompletionAggregator.AddProvider(Provider);
+  Provider := MNoteProjectSymbols;
+  FCompletionAggregator.AddProvider(Provider);
+  Provider := MNoteDatabaseCompletions;
+  FCompletionAggregator.AddProvider(Provider);
+end;
+
+procedure TItem.ApplySnippetCaret(Data: PtrInt);
+begin
+  if Fsyn = nil then Exit;
+  Fsyn.CaretXY := FSnippetCaret;
+  Fsyn.SetFocus;
+end;
+
+function TItem.CompletionCaption(AItem: TMNoteCompletionItem): string;
+var
+  Details: string;
+begin
+  Details := AItem.Signature;
+  if Details = '' then Details := AItem.Documentation;
+  Details := StringReplace(Details, #13, ' ', [rfReplaceAll]);
+  Details := StringReplace(Details, #10, ' ', [rfReplaceAll]);
+  Result := AItem.Text + '    [' + CompletionKindName(AItem.Kind) + ']  ' +
+    AItem.Origin;
+  if Details <> '' then Result := Result + ' — ' + Details;
+end;
+
+function TItem.CurrentTextBeforeCaret: string;
+begin
+  Result := '';
+  if (Fsyn = nil) or (Fsyn.CaretY < 1) or
+    (Fsyn.CaretY > Fsyn.Lines.Count) then Exit;
+  Result := Copy(Fsyn.Lines[Fsyn.CaretY - 1], 1, Fsyn.CaretX - 1);
+end;
+
+function TItem.CurrentLeafToken: string;
+var
+  Profile: TMNoteLanguageProfile;
+  Token: string;
+  SeparatorPosition: Integer;
+begin
+  Result := '';
+  Profile := MNoteLanguages.FindByExtension(FileExt);
+  if Profile = nil then Exit;
+  Token := TMNoteTokenParser.CurrentToken(CurrentTextBeforeCaret,
+    Profile.TokenCharacters);
+  SeparatorPosition := LastDelimiter('.>:', Token);
+  if SeparatorPosition > 0 then
+    Result := Copy(Token, SeparatorPosition + 1, MaxInt)
+  else
+    Result := Token;
+  Result := StringReplace(Result, '"', '', [rfReplaceAll]);
+  Result := StringReplace(Result, '''', '', [rfReplaceAll]);
 end;
 
 procedure TItem.ConfigurePHPHighlighter(var APHPHighlighter: TSynPHPSyn);
@@ -294,7 +418,7 @@ begin
   if Assigned(Ftimer) then
   begin
     Ftimer.Enabled := False;
-    Ftimer.Interval := 1000;
+    Ftimer.Interval := 220;
     Ftimer.OnTimer := @TimerEvento;
   end;
 
@@ -309,8 +433,8 @@ begin
   if Assigned(FPalavrasReservadas) then
     FPalavrasReservadas.Clear;
 
-  if (FSynCompletion = nil) and (FSender <> nil) then
-    FSynCompletion := TSynCompletion.Create(Fsender);
+  if FSynCompletion = nil then
+    FSynCompletion := TSynCompletion.Create(Self);
 
   if FSynCompletion <> nil then
   begin
@@ -318,9 +442,15 @@ begin
     FSynCompletion.OnCodeCompletion := @SynCompletion1CodeCompletion;
     FSynCompletion.OnExecute := @SynCompletion1Execute;
     FSynCompletion.OnSearchPosition := @SynCompletion1SearchPosition;
+    FSynCompletion.OnKeyCompletePrefix := @CompletionAcceptTab;
+    FSynCompletion.OnKeyDown := @CompletionKeyDown;
     FSynCompletion.ShortCut := ShortCut(VK_SPACE, [ssCtrl]);
-    FSynCompletion.EndOfTokenChr := '()[].+-*/=<>;, ';
+    FSynCompletion.EndOfTokenChr := '()[]+-*/=<>;, ';
     FSynCompletion.CaseSensitive := False;
+    FSynCompletion.Width := 620;
+    FSynCompletion.LinesInWindow := 12;
+    FSynCompletion.LongLineHintTime := 250;
+    FSynCompletion.AutoUseSingleIdent := False;
   end;
 
   ItemType := ti_NODEFINE;
@@ -336,7 +466,44 @@ begin
 end;
 
 procedure TItem.CheckTipoArquivo();
+var
+  Profile: TMNoteLanguageProfile;
+  EditorOptions: TSynEditorOptions;
 begin
+  if Fsyn = nil then Exit;
+  Profile := MNoteLanguages.FindByExtension(FileExt);
+  if Profile = nil then
+  begin
+    Fsyn.Highlighter := nil;
+    FreeAndNil(FHighlighter);
+    FLanguageProfileID := '';
+    ItemType := ti_NODEFINE;
+    Exit;
+  end;
+
+  if (not SameText(FLanguageProfileID, Profile.ID)) or
+    (FHighlighter = nil) then
+  begin
+    Fsyn.Highlighter := nil;
+    FreeAndNil(FHighlighter);
+    FHighlighter := TMNoteHighlighterFactory.CreateHighlighter(Self, Profile);
+    Fsyn.Highlighter := FHighlighter;
+    FLanguageProfileID := Profile.ID;
+  end;
+  ItemType := TTypeItem(Profile.LegacyType);
+  Fsyn.TabWidth := Profile.TabWidth;
+  EditorOptions := Fsyn.Options;
+  if Profile.AutoIndent then
+    Include(EditorOptions, eoAutoIndent)
+  else
+    Exclude(EditorOptions, eoAutoIndent);
+  if Profile.UseTabs then
+    Exclude(EditorOptions, eoTabsToSpaces)
+  else
+    Include(EditorOptions, eoTabsToSpaces);
+  Fsyn.Options := EditorOptions;
+  Exit;
+{
   if FileExt = '.pas' then
   begin
     if FSynPasSyn1 = nil then
@@ -448,6 +615,8 @@ begin
       ItemType := ti_TXT;
   end;
 end;
+}
+end;
 
 procedure TItem.SetItemType(value: TTypeItem);
 var
@@ -522,19 +691,45 @@ begin
 
   if (DciPath <> '') and FileExists(DciPath) and (FSynAutoComplete <> nil) then
     FSynAutoComplete.AutoCompleteList.LoadFromFile(DciPath);
+  ConfigureCompletionProviders;
 end;
 
 procedure TItem.SetSyn(value: TSynEdit);
 begin
+  if Fsyn <> nil then
+    Fsyn.UnRegisterStatusChangedHandler(@EditorStatusChanged);
   Fsyn := value;
   if FSynAutoComplete <> nil then
     FSynAutoComplete.Editor := value;
   if FSynCompletion <> nil then
     FSynCompletion.Editor := value;
+  if Fsyn <> nil then
+    Fsyn.RegisterStatusChangedHandler(@EditorStatusChanged, [scModified]);
 end;
 
 procedure TItem.TimerEvento(Sender: TObject);
+var
+  TextBeforeCaret, Token: string;
+  Profile: TMNoteLanguageProfile;
+  ScreenPoint: TPoint;
+  MinimumCharacters: Integer;
 begin
+  Ftimer.Enabled := False;
+  if (Fsyn = nil) or (not Fsyn.Focused) or FSynCompletion.IsActive then Exit;
+  if (FSetMain <> nil) and (not FSetMain.CompletionAutoTrigger) then Exit;
+  Profile := MNoteLanguages.FindByExtension(FileExt);
+  if Profile = nil then Exit;
+  TextBeforeCaret := CurrentTextBeforeCaret;
+  Token := CurrentLeafToken;
+  MinimumCharacters := 3;
+  if FSetMain <> nil then MinimumCharacters := FSetMain.CompletionMinChars;
+  if (TextBeforeCaret = '') or
+    ((TextBeforeCaret[Length(TextBeforeCaret)] <> '.') and
+     (Length(Token) < MinimumCharacters)) then Exit;
+  ScreenPoint := Fsyn.ClientToScreen(Point(Fsyn.CaretXPix,
+    Fsyn.CaretYPix + Fsyn.LineHeight + 1));
+  FSynCompletion.Execute(Token, ScreenPoint.X, ScreenPoint.Y);
+  Exit;
   // ainda não utilizado
 end;
 
@@ -544,14 +739,16 @@ begin
 
   FSender := Sender;
 
-  Ftimer := TTimer.Create(FSender);
+  Ftimer := TTimer.Create(Self);
   FPalavrasReservadas := TStringList.Create;
-  FSynCompletion := TSynCompletion.Create(FSender);
+  FCompletionItems := TMNoteCompletionItems.Create;
+  FCompletionContext := TMNoteCompletionContext.Create;
+  FSynCompletion := TSynCompletion.Create(Self);
   FSynAutoComplete := TSynAutoComplete.Create(FSynCompletion);
 
   FSynAutoComplete.ExecCommandID := ecSynAutoCompletionExecute;
 
-  FPythonCtrl := TPythonCtrl.Create(FSender);
+  FPythonCtrl := TPythonCtrl.Create(Self);
 
   Default();
   Salvo := False;
@@ -604,12 +801,100 @@ begin
   //if Assigned(FPythonCtrl) then
   //  FreeAndNil(FPythonCtrl);
   *)
+  if Fsyn <> nil then
+  begin
+    Fsyn.UnRegisterStatusChangedHandler(@EditorStatusChanged);
+    if Fsyn.Highlighter = FHighlighter then Fsyn.Highlighter := nil;
+  end;
+  FreeAndNil(FHighlighter);
+  FreeAndNil(FCompletionAggregator);
+  FreeAndNil(FCompletionItems);
+  FreeAndNil(FCompletionContext);
+  FreeAndNil(FPalavrasReservadas);
+  FreeAndNil(FListaItem);
   inherited Destroy;
 end;
 
 procedure TItem.Mudou();
 begin
   Salvo := False;
+end;
+
+procedure TItem.HandleEditorKeyPress(AKey: Char);
+var
+  FunctionName, FullName, Signature: string;
+  Parser: TMNotePascalSymbolParser;
+  Symbols: TMNoteCompletionItems;
+  Symbol: TMNoteCompletionItem;
+  HintPoint: TPoint;
+  WordX: Integer;
+begin
+  if (AKey <> '(') or (Fsyn = nil) then Exit;
+  WordX := Fsyn.CaretX - 1;
+  if WordX < 1 then WordX := 1;
+  FunctionName := Fsyn.GetWordAtRowCol(Point(WordX, Fsyn.CaretY));
+  if FunctionName = '' then Exit;
+  FullName := FileName;
+  if DirName <> '' then
+    FullName := IncludeTrailingPathDelimiter(DirName) + FileName;
+  Symbols := TMNoteCompletionItems.Create;
+  Parser := TMNotePascalSymbolParser.Create;
+  try
+    if SameText(FileExt, '.pas') or SameText(FileExt, '.pp') or
+      SameText(FileExt, '.lpr') then
+      Parser.Parse(Fsyn.Text, FullName, 'documento', Symbols);
+    Symbol := Symbols.FindByInsertText(FunctionName);
+    if Symbol = nil then Symbol := MNoteProjectSymbols.FindDefinition(FunctionName);
+    if Symbol = nil then Exit;
+    Signature := Symbol.Signature;
+    if Signature = '' then Exit;
+    Fsyn.Hint := Signature;
+    Fsyn.ShowHint := True;
+    Application.Hint := Signature;
+    HintPoint := Fsyn.ClientToScreen(Point(Fsyn.CaretXPix,
+      Fsyn.CaretYPix + Fsyn.LineHeight + 1));
+    Application.ActivateHint(HintPoint);
+  finally
+    Parser.Free;
+    Symbols.Free;
+  end;
+end;
+
+function TItem.FindDefinitionAtCaret(out AFileName: string;
+  out ALine: Integer): Boolean;
+var
+  SymbolName: string;
+  Symbol: TMNoteCompletionItem;
+  Parser: TMNotePascalSymbolParser;
+  Symbols: TMNoteCompletionItems;
+begin
+  Result := False;
+  AFileName := '';
+  ALine := -1;
+  if Fsyn = nil then Exit;
+  SymbolName := Fsyn.GetWordAtRowCol(Fsyn.LogicalCaretXY);
+  if SymbolName = '' then Exit;
+  Symbol := MNoteProjectSymbols.FindDefinition(SymbolName);
+  if Symbol <> nil then
+  begin
+    AFileName := Symbol.FileName;
+    ALine := Symbol.Line;
+    Exit((AFileName <> '') and (ALine > 0));
+  end;
+  Symbols := TMNoteCompletionItems.Create;
+  Parser := TMNotePascalSymbolParser.Create;
+  try
+    AFileName := FileName;
+    if DirName <> '' then
+      AFileName := IncludeTrailingPathDelimiter(DirName) + FileName;
+    Parser.Parse(Fsyn.Text, AFileName, 'documento', Symbols);
+    Symbol := Symbols.FindByInsertText(SymbolName);
+    if Symbol <> nil then ALine := Symbol.Line;
+    Result := (AFileName <> '') and (ALine > 0);
+  finally
+    Parser.Free;
+    Symbols.Free;
+  end;
 end;
 
 procedure TItem.AtribuiNome(Arquivo: String);
@@ -644,6 +929,11 @@ begin
       ForceDirectories(DirName);
 
     Fsyn.Lines.SaveToFile(arquivo);
+    if (LowerCase(ExtractFileExt(arquivo)) = '.pas') or
+      (LowerCase(ExtractFileExt(arquivo)) = '.pp') or
+      (LowerCase(ExtractFileExt(arquivo)) = '.lpr') or
+      (LowerCase(ExtractFileExt(arquivo)) = '.inc') then
+      MNoteProjectSymbols.IndexFile(arquivo);
     Salvo := True;
   end
   else
@@ -673,7 +963,8 @@ var
   AppPath, WorkPath: string;
 begin
   // 1. Check in workspace source dir first (convenient for development)
-  WorkPath := 'D:\projetos\maurinsoft\MNote2\src\preserv\' + AFileName;
+  WorkPath := ExpandFileName(IncludeTrailingPathDelimiter(
+    ExtractFilePath(ParamStr(0))) + 'preserv' + PathDelim + AFileName);
   if FileExists(WorkPath) then
     Exit(WorkPath);
 

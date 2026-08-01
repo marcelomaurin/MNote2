@@ -48,7 +48,7 @@ type
     // 1 = OpenRouter
     // 2 = Cerebras
     // 3 = Local / llama.cpp
-    // 4 = Antigravity / Gemini
+    // 4 = Gemini
     FProvider : Integer;
 
     // ===== Modelos IA =====
@@ -97,12 +97,31 @@ type
     FToolsOuvir : Boolean;
     fIPFALAR : String;
     fIPOUVIR : String;
+    FVoiceWakeWord: string;
 
     FDefaultfolder : string;
     FProject : string;
 
     FUsePythonConnector: Boolean;
     FPythonExecutionMode: Integer;
+
+    FIDELeftWidth: Integer;
+    FIDERightWidth: Integer;
+    FIDEBottomHeight: Integer;
+    FIDELeftVisible: Boolean;
+    FIDERightVisible: Boolean;
+    FIDEBottomVisible: Boolean;
+    FIDELeftTab: Integer;
+    FIDERightTab: Integer;
+    FIDEBottomTab: Integer;
+    FEditorTheme: string;
+    FEditorTabWidth: Integer;
+    FEditorShowSpaces: Boolean;
+    FEditorShowLineNumbers: Boolean;
+    FCompletionAcceptMode: Integer;
+    FCompletionAutoTrigger: Boolean;
+    FCompletionMinChars: Integer;
+    FUseAIDiskScanner: Boolean;
 
     procedure SetDevice(const Value : Boolean);
     procedure SetPOSX(value : integer);
@@ -204,12 +223,37 @@ type
     property ToolsOuvir : Boolean read FToolsOuvir write FToolsOuvir;
     property IPFALAR : string read fIPFALAR write fIPFALAR;
     property IPOUVIR : string read fIPOUVIR write fIPOUVIR;
+    property VoiceWakeWord: string read FVoiceWakeWord write FVoiceWakeWord;
 
     property Defaultfolder : string read FDefaultfolder write FDefaultfolder;
     property Project : string read FProject write FProject;
 
     property UsePythonConnector: Boolean read FUsePythonConnector write FUsePythonConnector;
     property PythonExecutionMode: Integer read FPythonExecutionMode write FPythonExecutionMode;
+
+    property IDELeftWidth: Integer read FIDELeftWidth write FIDELeftWidth;
+    property IDERightWidth: Integer read FIDERightWidth write FIDERightWidth;
+    property IDEBottomHeight: Integer read FIDEBottomHeight write FIDEBottomHeight;
+    property IDELeftVisible: Boolean read FIDELeftVisible write FIDELeftVisible;
+    property IDERightVisible: Boolean read FIDERightVisible write FIDERightVisible;
+    property IDEBottomVisible: Boolean read FIDEBottomVisible write FIDEBottomVisible;
+    property IDELeftTab: Integer read FIDELeftTab write FIDELeftTab;
+    property IDERightTab: Integer read FIDERightTab write FIDERightTab;
+    property IDEBottomTab: Integer read FIDEBottomTab write FIDEBottomTab;
+    property EditorTheme: string read FEditorTheme write FEditorTheme;
+    property EditorTabWidth: Integer read FEditorTabWidth write FEditorTabWidth;
+    property EditorShowSpaces: Boolean read FEditorShowSpaces
+      write FEditorShowSpaces;
+    property EditorShowLineNumbers: Boolean read FEditorShowLineNumbers
+      write FEditorShowLineNumbers;
+    property CompletionAcceptMode: Integer read FCompletionAcceptMode
+      write FCompletionAcceptMode;
+    property CompletionAutoTrigger: Boolean read FCompletionAutoTrigger
+      write FCompletionAutoTrigger;
+    property CompletionMinChars: Integer read FCompletionMinChars
+      write FCompletionMinChars;
+    property UseAIDiskScanner: Boolean read FUseAIDiskScanner
+      write FUseAIDiskScanner;
   end;
 
 var
@@ -253,7 +297,7 @@ begin
   // ===== Modelos IA defaults =====
   FModelOpenAI := 'gpt-4o-mini';
   FModelLocal := 'llama3.2:3b';
-  FModelGemini := 'gemini-1.5-flash';
+  FModelGemini := 'gemini-2.5-flash';
   FModelOpenRouter := 'google/gemma-2-9b-it:free';
   FModelCerebras := 'llama3.1-8b';
 
@@ -262,6 +306,7 @@ begin
 
   fIPFALAR := '127.0.0.1';
   fIPOUVIR := '127.0.0.1';
+  FVoiceWakeWord := 'OK MNote';
 
   if FFONT = nil then
     FFONT := TFont.Create;
@@ -309,6 +354,24 @@ begin
 
   FUsePythonConnector := False;
   FPythonExecutionMode := 1;
+
+  FIDELeftWidth := 240;
+  FIDERightWidth := 340;
+  FIDEBottomHeight := 180;
+  FEditorTheme := 'Light';
+  FEditorTabWidth := 0;
+  FEditorShowSpaces := False;
+  FEditorShowLineNumbers := True;
+  FCompletionAcceptMode := 0;
+  FCompletionAutoTrigger := True;
+  FCompletionMinChars := 3;
+  FUseAIDiskScanner := True;
+  FIDELeftVisible := True;
+  FIDERightVisible := True;
+  FIDEBottomVisible := True;
+  FIDELeftTab := 0;
+  FIDERightTab := 0;
+  FIDEBottomTab := 0;
 end;
 
 procedure TSetMain.SetPOSX(value: integer);
@@ -465,7 +528,7 @@ begin
   if BuscaChave(arquivo,'MODELGEMINI:',posicao) then
     FModelGemini := RetiraInfo(arquivo.Strings[posicao])
   else
-    FModelGemini := 'gemini-1.5-flash';
+    FModelGemini := 'gemini-2.5-flash';
 
   if BuscaChave(arquivo,'MODELOPENROUTER:',posicao) then
     FModelOpenRouter := RetiraInfo(arquivo.Strings[posicao])
@@ -560,6 +623,9 @@ begin
 
   if BuscaChave(arquivo,'IPOUVIR:',posicao) then
     fIPOUVIR := RetiraInfo(arquivo.Strings[posicao]);
+  if BuscaChave(arquivo,'VOICEWAKEWORD:',posicao) then
+    FVoiceWakeWord := RetiraInfo(arquivo.Strings[posicao]);
+  if Trim(FVoiceWakeWord) = '' then FVoiceWakeWord := 'OK MNote';
 
   if BuscaChave(arquivo,'DEFAULTFOLDER:',posicao) then
     FDefaultfolder := RetiraInfo(arquivo.Strings[posicao]);
@@ -576,6 +642,50 @@ begin
     FPythonExecutionMode := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 1)
   else
     FPythonExecutionMode := 1;
+
+  if BuscaChave(arquivo,'IDELEFTWIDTH:',posicao) then
+    FIDELeftWidth := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 240);
+  if BuscaChave(arquivo,'IDERIGHTWIDTH:',posicao) then
+    FIDERightWidth := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 340);
+  if BuscaChave(arquivo,'IDEBOTTOMHEIGHT:',posicao) then
+    FIDEBottomHeight := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 180);
+  if BuscaChave(arquivo,'IDELEFTVISIBLE:',posicao) then
+    FIDELeftVisible := StrToBoolDef(RetiraInfo(arquivo.Strings[posicao]), True);
+  if BuscaChave(arquivo,'IDERIGHTVISIBLE:',posicao) then
+    FIDERightVisible := StrToBoolDef(RetiraInfo(arquivo.Strings[posicao]), True);
+  if BuscaChave(arquivo,'IDEBOTTOMVISIBLE:',posicao) then
+    FIDEBottomVisible := StrToBoolDef(RetiraInfo(arquivo.Strings[posicao]), True);
+  if BuscaChave(arquivo,'IDELEFTTAB:',posicao) then
+    FIDELeftTab := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 0);
+  if BuscaChave(arquivo,'IDERIGHTTAB:',posicao) then
+    FIDERightTab := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 0);
+  if BuscaChave(arquivo,'IDEBOTTOMTAB:',posicao) then
+    FIDEBottomTab := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 0);
+  if BuscaChave(arquivo,'EDITORTHEME:',posicao) then
+    FEditorTheme := RetiraInfo(arquivo.Strings[posicao]);
+  if BuscaChave(arquivo,'EDITORTABWIDTH:',posicao) then
+    FEditorTabWidth := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 0);
+  if BuscaChave(arquivo,'EDITORSHOWSPACES:',posicao) then
+    FEditorShowSpaces := StrToBoolDef(RetiraInfo(arquivo.Strings[posicao]), False);
+  if BuscaChave(arquivo,'EDITORSHOWLINENUMBERS:',posicao) then
+    FEditorShowLineNumbers := StrToBoolDef(
+      RetiraInfo(arquivo.Strings[posicao]), True);
+  if BuscaChave(arquivo,'COMPLETIONACCEPTMODE:',posicao) then
+    FCompletionAcceptMode := StrToIntDef(
+      RetiraInfo(arquivo.Strings[posicao]), 0);
+  if BuscaChave(arquivo,'COMPLETIONAUTOTRIGGER:',posicao) then
+    FCompletionAutoTrigger := StrToBoolDef(
+      RetiraInfo(arquivo.Strings[posicao]), True);
+  if BuscaChave(arquivo,'COMPLETIONMINCHARS:',posicao) then
+    FCompletionMinChars := StrToIntDef(
+      RetiraInfo(arquivo.Strings[posicao]), 3);
+  if BuscaChave(arquivo,'USEAIDISKSCANNER:',posicao) then
+    FUseAIDiskScanner := StrToBoolDef(
+      RetiraInfo(arquivo.Strings[posicao]), True);
+
+  if (FCompletionAcceptMode < 0) or (FCompletionAcceptMode > 2) then
+    FCompletionAcceptMode := 0;
+  if FCompletionMinChars < 1 then FCompletionMinChars := 1;
 
   if Trim(FProtocolSQLite) = '' then
     FProtocolSQLite := 'sqlite-3';
@@ -699,12 +809,33 @@ begin
   arquivo.Append('TOOLSOUVIR:'+iif(FToolsOuvir,'1','0'));
   arquivo.Append('IPFALAR:'+fIPFALAR);
   arquivo.Append('IPOUVIR:'+fIPOUVIR);
+  arquivo.Append('VOICEWAKEWORD:'+FVoiceWakeWord);
 
   arquivo.Append('DEFAULTFOLDER:'+FDefaultfolder);
   arquivo.Append('PROJECT:'+FPROJECT);
  
   arquivo.Append('USEPYTHONCONNECTOR:'+iif(FUsePythonConnector,'1','0'));
   arquivo.Append('PYTHONEXECUTIONMODE:'+IntToStr(FPythonExecutionMode));
+
+  arquivo.Append('IDELEFTWIDTH:'+IntToStr(FIDELeftWidth));
+  arquivo.Append('IDERIGHTWIDTH:'+IntToStr(FIDERightWidth));
+  arquivo.Append('IDEBOTTOMHEIGHT:'+IntToStr(FIDEBottomHeight));
+  arquivo.Append('IDELEFTVISIBLE:'+BoolToStr(FIDELeftVisible, True));
+  arquivo.Append('IDERIGHTVISIBLE:'+BoolToStr(FIDERightVisible, True));
+  arquivo.Append('IDEBOTTOMVISIBLE:'+BoolToStr(FIDEBottomVisible, True));
+  arquivo.Append('IDELEFTTAB:'+IntToStr(FIDELeftTab));
+  arquivo.Append('IDERIGHTTAB:'+IntToStr(FIDERightTab));
+  arquivo.Append('IDEBOTTOMTAB:'+IntToStr(FIDEBottomTab));
+  arquivo.Append('EDITORTHEME:'+FEditorTheme);
+  arquivo.Append('EDITORTABWIDTH:'+IntToStr(FEditorTabWidth));
+  arquivo.Append('EDITORSHOWSPACES:'+BoolToStr(FEditorShowSpaces, True));
+  arquivo.Append('EDITORSHOWLINENUMBERS:'+
+    BoolToStr(FEditorShowLineNumbers, True));
+  arquivo.Append('COMPLETIONACCEPTMODE:'+IntToStr(FCompletionAcceptMode));
+  arquivo.Append('COMPLETIONAUTOTRIGGER:'+
+    BoolToStr(FCompletionAutoTrigger, True));
+  arquivo.Append('COMPLETIONMINCHARS:'+IntToStr(FCompletionMinChars));
+  arquivo.Append('USEAIDISKSCANNER:'+BoolToStr(FUseAIDiskScanner, True));
 
   arquivo.SaveToFile(FPath + filename);
 end;

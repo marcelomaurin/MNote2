@@ -20,7 +20,7 @@ TFinds = class(TObject)
             strFind : string;
 
             constructor create(fsyn: TSynEdit; ftb: TTabSheet; fitem: TItem; FIPOS: integer; fstrFind : string);
-            destructor destroy();
+            destructor Destroy; override;
       private
 
 end;
@@ -37,9 +37,10 @@ begin
      FLen := Length(strFind);
 end;
 
-destructor TFinds.destroy();
+destructor TFinds.Destroy;
 begin
-
+     { syn, tb e item são referências emprestadas e não pertencem a TFinds. }
+     inherited Destroy;
 end;
 
 

@@ -2,7 +2,7 @@
 
 MNote2 is a cross-platform text and code editor built with Lazarus/Free Pascal. It combines tabbed editing, script execution, database tooling, AI integration, document extraction, and auxiliary voice tools.
 
-Current source version: **2.56**.
+Current source version: **2.63**.
 
 ## Screenshots
 
@@ -89,7 +89,7 @@ MQuery2 works as the built-in SQL manager.
 ### Installation and distribution
 
 - Windows installer built with Inno Setup at instalador/MNote2.iss.
-- Windows installer version: 2.56.
+- Windows installer version: 2.63.
 - Copies MNote2.exe, DLLs, .dci files, .txt lists, .bat scripts, samples, and the default database.
 - Copies the default database to C:db.
 - Includes a post-install option to launch srvFalar_1.4.exe.

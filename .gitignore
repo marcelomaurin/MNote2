@@ -68,3 +68,27 @@ __recovery/
 
 # Boss dependency manager vendor folder https://github.com/HashLoad/boss
 modules/
+
+# Lazarus/Free Pascal generated files
+*.ppu
+*.or
+*.compiled
+*.lps
+link*.res
+ppas.bat
+backup/
+
+# MNote2 local state and AI caches (classified in docs/pia_ria_inventory.md)
+*.RIA
+*.ria
+*.PIA
+*.pia
+*.tmp
+*.temp
+.mnote-state/
+tests/bin/
+tests/ci-bin/
+.install-test-*/
+
+# Public configuration template is intentional; private *.cfg files remain ignored.
+!mnote.example.cfg

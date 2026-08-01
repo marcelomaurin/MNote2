@@ -1,0 +1,10 @@
+MNote inicia a linha com busca literal.
+Uma ocorrência no meio: alpha beta gamma.
+Outra ocorrência alpha e mais uma ALPHA para busca sem diferenciar caixa.
+Texto UTF-8: ação, café, programação e usuário.
+id deve ser diferente de id_usuario quando palavra inteira estiver ativa.
+MNote também aparece no fim desta linha: MNote
+Linha sem qualquer ocorrência pesquisada.
+Pascal, Python, SQL e JavaScript pertencem ao projeto MNote2.
+alpha alpha alpha permite validar múltiplas ocorrências na mesma linha.
+Última linha com MNOTE em caixa diferente.

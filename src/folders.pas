@@ -7,8 +7,9 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ShellCtrls,
   ExtCtrls, Menus, StdCtrls, GifAnim, untsalesSwitch, funcoes, hint, setmain,
-  chatgpt, antigravity, Types, StrUtils, LConvEncoding, base, DateUtils, LazFileUtils,
-  fpjson, jsonparser, jsonscanner, Math, uDocText , uPdfText, item;
+  Types, StrUtils, LConvEncoding, base, DateUtils, LazFileUtils,
+  fpjson, jsonparser, jsonscanner, Math, uDocText , uPdfText, item,
+  mnote_ai_service;
 
 type
 
@@ -1068,8 +1069,8 @@ procedure TfrmFolders.AnalisaProjeto();
 
 var
   TreePretty, TreeRaw: TStringList;
-  Chat : TCHATGPT;
   Dev, Prompt, Arvore, Previews, Raiz: widestring;
+  Resposta: string;
 begin
   TreePretty := Scanner(edFolder.Text);
   TreeRaw    := ScannerRaw(edFolder.Text);
@@ -1099,26 +1100,11 @@ begin
       '--- PEDIDO ---' + LineEnding +
       '- Avalie a seguinte pergunta: ' + mePergunta.Text + LineEnding;
 
-    Chat := TCHATGPT.Create(Self);
-    try
-      case FSetMain.Provider of
-        1: Chat.Provider := AIP_OPENROUTER;
-        2: Chat.Provider := AIP_CEREBRAS;
-      else
-        Chat.Provider := AIP_OPENAI;
-      end;
-
-      Chat.TOKEN := Trim(FSetMain.CHATGPT);
-      Chat.Dev   := Dev;
-
-      if Chat.SendQuestion(Prompt) then
-        meLog.Lines.Append(Chat.Response)
-      else
-        meLog.Lines.Append('Erro ao consultar IA: ' + Chat.Response);
-    finally
-      Projeto := meLog.Lines.Text;
-      Chat.Free;
-    end;
+    if MNoteAI.SendQuestion(Prompt, Dev, Resposta) then
+      meLog.Lines.Append(Resposta)
+    else
+      meLog.Lines.Append('Erro ao consultar IA: ' + MNoteAI.LastError);
+    Projeto := meLog.Lines.Text;
   finally
     TreePretty.Free;
     TreeRaw.Free;
@@ -1975,13 +1961,12 @@ end;
 function TfrmFolders.AF_SendToChatGPT(
   const DevMsg, Ask, Token: widestring; out Resp: widestring): Boolean;
 var
-  Chat: TCHATGPT;
-  AntiGrav: TAntigravity;
+  LResp: string;
 begin
   Result := False;
   Resp   := '';
 
-  if Trim(Token) = '' then
+  if (FSetMain.Provider <> 3) and (Trim(Token) = '') then
   begin
     if FSetMain.Provider = 4 then
       ShowMessage('Configure a chave de API/Token em SetMain.CHATGPT.')
@@ -1990,54 +1975,16 @@ begin
     Exit;
   end;
 
-  if FSetMain.Provider = 4 then
+  Result := MNoteAI.SendQuestion(Ask, DevMsg, LResp);
+  Resp := LResp;
+  if Result then
   begin
-    AntiGrav := TAntigravity.Create(Self);
-    try
-      AntiGrav.TOKEN := Trim(Token);
-      AntiGrav.Dev   := DevMsg;
-      if AntiGrav.SendQuestion(Ask) then
-      begin
-        Resp := AntiGrav.Response;
-        meTecnica.Lines.Append(Resp);
-        if Assigned(frmIA) then
-          frmIA.meHistorico.Lines.Append(Resp);
-        Result := True;
-      end
-      else
-        Resp := AntiGrav.Response;
-    finally
-      AntiGrav.Free;
-    end;
-  end
-  else
-  begin
-    Chat := TCHATGPT.Create(Self);
-    try
-      case FSetMain.Provider of
-        1: Chat.Provider := AIP_OPENROUTER;
-        2: Chat.Provider := AIP_CEREBRAS;
-      else
-        Chat.Provider := AIP_OPENAI;
-      end;
-
-      Chat.TOKEN := Trim(Token);
-      Chat.Dev   := DevMsg;
-
-      if Chat.SendQuestion(Ask) then
-      begin
-        Resp := Chat.Response;
-        meTecnica.Lines.Append(Resp);
-        if Assigned(frmIA) then
-          frmIA.meHistorico.Lines.Append(Resp);
-        Result := True;
-      end
-      else
-        Resp := Chat.Response;
-    finally
-      Chat.Free;
-    end;
+    meTecnica.Lines.Append(Resp);
+    if Assigned(frmIA) then
+      frmIA.meHistorico.Lines.Append(Resp);
   end;
+  if (not Result) and (Trim(Resp) = '') then
+    Resp := MNoteAI.LastError;
 end;
 
 function TfrmFolders.AF_BeautifyJson(const Resp: string): string;

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="12"/>
+    <PathDelim Value="\"/>
+    <General>
+      <MainUnit Value="0"/>
+      <Title Value="highlighter_ownership_test"/>
+      <UseAppBundle Value="False"/>
+    </General>
+    <Units Count="1">
+      <Unit0>
+        <Filename Value="highlighter_ownership_test.lpr"/>
+        <IsPartOfProject Value="True"/>
+      </Unit0>
+    </Units>
+    <RequiredPackages>
+      <Item>
+        <PackageName Value="SynEdit"/>
+      </Item>
+      <Item>
+        <PackageName Value="LCL"/>
+      </Item>
+    </RequiredPackages>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="11"/>
+    <PathDelim Value="\"/>
+    <Target>
+      <Filename Value="bin/highlighter_ownership_test"/>
+    </Target>
+    <SearchPaths>
+      <OtherUnitFiles Value="../src/languages"/>
+      <UnitOutputDirectory Value="bin/highlighter-units/$(TargetCPU)-$(TargetOS)"/>
+    </SearchPaths>
+    <Linking>
+      <Debugging>
+        <UseHeaptrc Value="True"/>
+      </Debugging>
+    </Linking>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="3">
+      <Item1 Name="EAbort"/>
+      <Item2 Name="ECodetoolError"/>
+      <Item3 Name="EFOpenError"/>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

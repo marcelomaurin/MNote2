@@ -96,6 +96,8 @@ type
         procedure IdentificaArquivo(flag : boolean);
         procedure addsql(item : TSQLEditItem);
         procedure addnntrainning(item : TNNTrainning);
+        function removesql(item : TSQLEditItem): Boolean;
+        function removenntrainning(item : TNNTrainning): Boolean;
         function SQLEdit_Indexof(posicao: integer): TSQLEditItem;
         function SQLEdit_ListName(): string;
         function NNTrainning_Indexof(posicao: integer): TNNTrainning;
@@ -434,6 +436,27 @@ end;
 procedure Tsetproject.addnntrainning(item: TNNTrainning);
 begin
   FNNItems.Add(TObject(item));
+end;
+
+function Tsetproject.removesql(item: TSQLEditItem): Boolean;
+var
+  cont: Integer;
+  treino: TNNTrainning;
+begin
+  Result := False;
+  if (FSqlItems = nil) or (item = nil) then Exit;
+  for cont := 0 to FNNItems.Count - 1 do
+  begin
+    treino := TNNTrainning(FNNItems.Items[cont]);
+    if (treino.SQLTrainning = item) or (treino.SQLTest = item) then Exit;
+  end;
+  Result := FSqlItems.Remove(item) >= 0;
+end;
+
+function Tsetproject.removenntrainning(item: TNNTrainning): Boolean;
+begin
+  Result := (FNNItems <> nil) and (item <> nil) and
+    (FNNItems.Remove(item) >= 0);
 end;
 
 function Tsetproject.SQLEdit_Indexof(posicao: integer): TSQLEditItem;

@@ -6,6 +6,8 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
+  SysUtils,
+  {$IFDEF WINDOWS}Windows,{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, tachartlazaruspkg, synuni, rxnew, pkg_gifanim, indylaz, zcomponent,
   main, ToolsOuvir,
@@ -15,18 +17,66 @@ uses
   Novo, PythonRun, setproject, SQLItem, trainning,
 newproject, uProjetoDB, sqlite_db, IA
   {$ENDIF}
-  ,uDocText, uPdfText, ChangeSource;
+  ,uDocText, uPdfText, ChangeSource, mnote_ai_service, mnote_smoke_test,
+  mnote_token_calibration;
 
 
 {$R *.res}
 
+var
+  SmokeReport: string;
+  CalibrationReport: string;
+
+function ConsoleAvailable: Boolean;
 begin
-  //RequireDerivedFormResource := True;
-  Application.Initialize;
-  Application.CreateForm(TfrmMNote, frmMNote);
-  //Application.CreateForm(TfrmMQuery, frmMQuery);
-  {$ifndef Darwin}
+  {$IFDEF WINDOWS}
+  Result := GetConsoleWindow <> 0;
+  {$ELSE}
+  Result := True;
   {$ENDIF}
-  Application.Run;
+end;
+
+begin
+  if (ParamCount > 0) and SameText(ParamStr(1), '--smoke-test') then
+  begin
+    if RunMNoteSmokeTest(SmokeReport) then
+    begin
+      if ConsoleAvailable then WriteLn(SmokeReport);
+      Halt(0);
+    end
+    else
+    begin
+      if ConsoleAvailable then WriteLn(StdErr, SmokeReport);
+      Halt(1);
+    end;
+  end;
+  if (ParamCount > 0) and SameText(ParamStr(1), '--calibrate-tokens') then
+  begin
+    if TMNoteTokenCalibration.Run(
+      ExpandFileName(ExtractFilePath(ParamStr(0)) + '..' + PathDelim +
+        'docs' + PathDelim + 'tokenest_calibracao.md'), 20,
+      CalibrationReport) then
+    begin
+      if ConsoleAvailable then WriteLn(CalibrationReport);
+      Halt(0);
+    end
+    else
+    begin
+      if ConsoleAvailable then WriteLn(StdErr, CalibrationReport);
+      Halt(1);
+    end;
+  end;
+  InitializeMNoteAIService;
+  try
+    //RequireDerivedFormResource := True;
+    Application.Initialize;
+    Application.CreateForm(TfrmMNote, frmMNote);
+    //Application.CreateForm(TfrmMQuery, frmMQuery);
+    {$ifndef Darwin}
+    {$ENDIF}
+    Application.Run;
+  finally
+    FinalizeMNoteAIService;
+  end;
 end.
 

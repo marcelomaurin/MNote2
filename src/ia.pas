@@ -6,8 +6,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls,
-  StdCtrls, Buttons, chatgpt, antigravity, setmain, folders, mquery2, fpjson, jsonparser,
-  mnote_chatgpt_config, item, SynEditTypes, SynEdit, DateUtils;
+  StdCtrls, Buttons, setmain, folders, mquery2, fpjson, jsonparser,
+  item, SynEditTypes, SynEdit, DateUtils, mnote_ai_service;
 
 type
   TTipoAcao = (
@@ -76,15 +76,12 @@ type
     procedure cbTipoIAChange(Sender: TObject);
     procedure cbModeloIAChange(Sender: TObject);
   private
-    FChatGPT: TCHATGPT;
-    FAntigravity: TAntigravity;
     lstAcao: TStringList;
     lstRealizar: TStringList;
 
     function EnsureRIAPath: string;
     procedure AddLog(const S: string);
     function TextoLimpo(const S: string): string;
-    procedure AtualizaProviderChatGPT;
     function ExecutarPerguntaIA(const DevMsg, Prompt: string; out Resposta: string): Boolean; overload;
     function ExecutarPerguntaIA(const DevMsg, Prompt: string; out Resposta: WideString): Boolean; overload;
     // ===== cache RIA =====
@@ -190,43 +187,6 @@ begin
   Result := UTF8Encode(S);
 end;
 
-procedure TfrmIA.AtualizaProviderChatGPT;
-begin
-  if FChatGPT = nil then
-    Exit;
-
-  case FSetMain.Provider of
-    0:
-      begin
-        FChatGPT.Provider := AIP_OPENAI;
-        FChatGPT.CustomModel := FSetMain.ModelOpenAI;
-      end;
-
-    1:
-      begin
-        FChatGPT.Provider := AIP_OPENROUTER;
-        FChatGPT.CustomModel := FSetMain.ModelOpenRouter;
-      end;
-
-    2:
-      begin
-        FChatGPT.Provider := AIP_CEREBRAS;
-        FChatGPT.CustomModel := FSetMain.ModelCerebras;
-      end;
-
-    3:
-      begin
-        FChatGPT.Provider := AIP_LOCAL;
-        FChatGPT.CustomModel := FSetMain.ModelLocal;
-      end;
-  else
-    begin
-      FChatGPT.Provider := AIP_OPENAI;
-      FChatGPT.CustomModel := FSetMain.ModelOpenAI;
-    end;
-  end;
-end;
-
 function TfrmIA.ExecutarPerguntaIA(const DevMsg, Prompt: string; out Resposta: string): Boolean;
 var
   WResp: WideString;
@@ -236,22 +196,15 @@ begin
 end;
 
 function TfrmIA.ExecutarPerguntaIA(const DevMsg, Prompt: string; out Resposta: WideString): Boolean;
+var
+  LResposta: string;
 begin
-  Result := False;
   Resposta := '';
-
-  if FChatGPT = nil then
-    FChatGPT := TCHATGPT.Create(Self);
-
-  ConfiguraChatGPTPorSetMain(FChatGPT);
-  FChatGPT.Dev := DevMsg;
-
-  Result := FChatGPT.SendQuestion(Prompt);
-
+  Result := MNoteAI.SendQuestion(Prompt, DevMsg, LResposta);
   if Result then
-    Resposta := FChatGPT.Response
+    Resposta := LResposta
   else
-    Resposta := FChatGPT.LastError + LineEnding + FChatGPT.LastJSON;
+    Resposta := MNoteAI.LastError + LineEnding + MNoteAI.LastJSON;
 end;
 
 
@@ -325,7 +278,7 @@ begin
   cbTipoIA.Items.Add('OpenRouter');  // 1
   cbTipoIA.Items.Add('Cerebras');    // 2
   cbTipoIA.Items.Add('Local');       // 3 - llama.cpp
-  cbTipoIA.Items.Add('Antigravity'); // 4 - Gemini
+  cbTipoIA.Items.Add('Gemini');      // 4
 
   if (FSetMain.Provider >= 0) and (FSetMain.Provider < cbTipoIA.Items.Count) then
     cbTipoIA.ItemIndex := FSetMain.Provider
@@ -409,7 +362,7 @@ begin
         cbModeloIA.Items.Add('qwen2.5:14b');
         cbModeloIA.Text := FSetMain.ModelLocal;
       end;
-    4: // Antigravity (Gemini)
+    4: // Gemini
       begin
         cbModeloIA.Items.Add('gemini-1.5-flash');
         cbModeloIA.Items.Add('gemini-1.5-pro');

@@ -2,7 +2,7 @@
 ; 32-bit app for Windows x86/x64
 
 #define MyAppName "MNote2"
-#define MyAppVersion "2.61"
+#define MyAppVersion "2.63"
 #define MyAppPublisher "Maurinsoft"
 #define MyAppURL "http://maurinsoft.com.br"
 #define MyAppExeName "MNote2.exe"
@@ -10,6 +10,7 @@
 
 [Setup]
 PrivilegesRequired=admin
+PrivilegesRequiredOverridesAllowed=commandline
 
 AppId={{5D8E2FD0-2823-4697-B0CE-7623F3C4ECF6}}
 AppName={#MyAppName}
@@ -18,10 +19,10 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={pf32}\{#MyAppName}
+DefaultDirName={commonpf32}\{#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir={#ProjectRoot}\bin
-OutputBaseFilename=win_MNote2_61
+OutputBaseFilename=win_MNote2_63
 SetupIconFile={#ProjectRoot}\src\MNote2.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma

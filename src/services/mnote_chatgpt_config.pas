@@ -48,7 +48,14 @@ begin
     4:
       begin
         AChat.Provider := AIP_GEMINI;
-        AChat.CustomModel := FSetMain.ModelGemini;
+        { Gemini 1.5 foi encerrado em 29/09/2025. Mantemos a leitura da
+          configuração antiga, migrando somente os aliases aposentados. }
+        if SameText(FSetMain.ModelGemini, 'gemini-1.5-flash') or
+          SameText(FSetMain.ModelGemini, 'gemini-1.5-flash-latest') or
+          SameText(FSetMain.ModelGemini, 'gemini-1.5-flash-8b') then
+          AChat.CustomModel := 'gemini-2.5-flash'
+        else
+          AChat.CustomModel := FSetMain.ModelGemini;
       end;
   else
     begin

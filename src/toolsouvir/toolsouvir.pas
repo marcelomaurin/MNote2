@@ -6,9 +6,11 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  lNetComponents, lNet, strutils;
+  lNetComponents, lNet, strutils, mnote_voice_command;
 
 type
+  TConversationalVoiceCommandEvent = procedure(Sender: TObject;
+    const ACommand: string) of object;
 
   { TfrmToolsOuvir }
 
@@ -27,10 +29,17 @@ type
     procedure Shape1ChangeBounds(Sender: TObject);
   private
     lastfrase : string;
+    FWakeWord: string;
+    FLastTranscript: string;
+    FOnCommand: TConversationalVoiceCommandEvent;
   public
     frase : string;
     procedure Conectar();
     procedure Disconectar();
+    property WakeWord: string read FWakeWord write FWakeWord;
+    property LastTranscript: string read FLastTranscript;
+    property OnCommand: TConversationalVoiceCommandEvent read FOnCommand
+      write FOnCommand;
 
   end;
 
@@ -40,8 +49,6 @@ var
 implementation
 
 {$R *.lfm}
-
-uses main;
 
 { TfrmToolsOuvir }
 
@@ -63,33 +70,24 @@ end;
 
 procedure TfrmToolsOuvir.LTCPComponent1Receive(aSocket: TLSocket);
 var
-   info : String;
-   posicao : integer;
+   info, CommandText: String;
 begin
-  //ShowMessage('Recebeu a mensagem:');
   info := '';
   aSocket.GetMessage(info);
-  posicao := pos(frase,info);
-  if(posicao<>0) then
+  info := Trim(info);
+  if info = '' then Exit;
+  if SameText(lastfrase, info) then Exit;
+  lastfrase := info;
+  FLastTranscript := info;
+  if TMNoteVoiceCommand.TryParse(info, FWakeWord, CommandText) then
   begin
-       if(lastfrase <> info) then
-       begin
-         lastfrase := info;
-         info := replacestr(info,frase, '');
-         //frmmain.NewContext();
-         //frmmain.pergunta := info;
-
-         //frmmain.FazPergunta();
-       end;
-
-
+    if Assigned(FOnCommand) then FOnCommand(Self, CommandText);
   end;
-
-  //ShowMessage(info);
 end;
 
 procedure TfrmToolsOuvir.Conectar();
 begin
+  if FWakeWord = '' then FWakeWord := 'OK MNote';
   LTCPComponent1.Connect(edIP.text,strtoint(edPort.text));
 end;
 

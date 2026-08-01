@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Menus, StdCtrls,
   About, setimg, config, EditBtn, ExtCtrls, ComCtrls, Grids,
   setproject, Novo, funcoes, sqleditor, sqlEditItem, NNTrainning,
-  frmnntrainning, PythonEngine;
+  frmnntrainning, PythonEngine, mnote_version;
 
 type
 
@@ -253,6 +253,9 @@ begin
 end;
 
 procedure TfrmmainJSON.DeleteItemClick(Sender: TObject);
+var
+  Removed: Boolean;
+  ItemObject: TObject;
 begin
   if not Assigned(selecttreenode) then
   begin
@@ -270,18 +273,26 @@ begin
   if not ShowConfirm('Confirma excluir o item "' + selecttreenode.Text + '" ?') then
     Exit;
 
-  {
-    OBSERVAÇÃO IMPORTANTE:
-    Aqui a exclusão está implementada visualmente no TreeView.
-    Para persistir no Fsetproject, a unit setproject precisa expor algo como:
-      DeleteSQL(...)
-      DeleteNNTrainning(...)
-      RemoveSQL(...)
-      RemoveNNTrainning(...)
-    Como esses métodos não apareceram no código enviado, esta unit não consegue
-    remover com segurança da estrutura interna sem adivinhar API inexistente.
-  }
+  if not Assigned(Fsetproject) then
+  begin
+    ShowMessage('Projeto não carregado.');
+    Exit;
+  end;
 
+  ItemObject := TObject(selecttreenode.Data);
+  Removed := False;
+  if NodeIsQuery(selecttreenode) then
+    Removed := Fsetproject.removesql(TSQLEditItem(ItemObject))
+  else if NodeIsNN(selecttreenode) then
+    Removed := Fsetproject.removenntrainning(TNNTrainning(ItemObject));
+
+  if not Removed then
+  begin
+    ShowMessage('O item não foi excluído. Uma query usada por treinamento deve ser desvinculada primeiro.');
+    Exit;
+  end;
+
+  selecttreenode.Data := nil;
   selecttreenode.Delete;
   selecttreenode := nil;
   LimpaGridPropriedades;
@@ -494,7 +505,7 @@ procedure TfrmmainJSON.ChamaAbout;
 begin
   frmAbout := TfrmAbout.Create(Self);
   try
-    frmAbout.lbVersao.Caption := versao;
+    frmAbout.lbVersao.Caption := MNOTE_APP_VERSION;
     frmAbout.ShowModal;
   finally
     FreeAndNil(frmAbout);

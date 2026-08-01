@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, EditBtn,
-  ComCtrls, IPEdit, setmain, chatgpt, mnote_python_service, pythonconnector;
+  ComCtrls, IPEdit, setmain, mnote_python_service, pythonconnector,
+  mnote_ai_service;
 
 type
 
@@ -111,7 +112,7 @@ begin
   // 1 = OpenRouter
   // 2 = Cerebras
   // 3 = Local / llama.cpp
-  // 4 = Antigravity (Gemini)
+  // 4 = Gemini
   if cbTipoIA.ItemIndex < 0 then
     FSetMain.Provider := 0
   else
@@ -173,7 +174,7 @@ begin
         cbModeloIA.Items.Add('qwen2.5:14b');
         cbModeloIA.Text := FSetMain.ModelLocal;
       end;
-    4: // Antigravity (Gemini)
+    4: // Gemini
       begin
         cbModeloIA.Items.Add('gemini-1.5-flash');
         cbModeloIA.Items.Add('gemini-1.5-pro');
@@ -188,8 +189,6 @@ begin
 end;
 
 procedure Tfrmconfig.FormCreate(Sender: TObject);
-var
-  Chat: TCHATGPT;
 begin
   edCompile.Text := FSetMain.Compile;
   edInstall.Text := FSetMain.Install;
@@ -215,19 +214,14 @@ begin
   cbTipoIA.Items.Add('OpenRouter');  // 1
   cbTipoIA.Items.Add('Cerebras');    // 2
   cbTipoIA.Items.Add('Local');       // 3 - llama.cpp
-  cbTipoIA.Items.Add('Antigravity'); // 4 - Gemini
+  cbTipoIA.Items.Add('Gemini');      // 4
 
   if (FSetMain.Provider >= 0) and (FSetMain.Provider < cbTipoIA.Items.Count) then
     cbTipoIA.ItemIndex := FSetMain.Provider
   else
     cbTipoIA.ItemIndex := 0;
 
-  Chat := TCHATGPT.Create(nil);
-  try
-    lbVersao.Caption := 'Versão da biblioteca: ' + Chat.VersaoBiblioteca;
-  finally
-    Chat.Free;
-  end;
+  lbVersao.Caption := 'Versão da biblioteca: ' + MNoteAI.LibraryVersion;
 
   // Carrega e preenche o combo box de modelos inicialmente
   cbTipoIAChange(nil);

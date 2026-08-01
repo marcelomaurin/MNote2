@@ -52,6 +52,9 @@ implementation
 
 {$R *.lfm}
 
+uses
+  {$IFDEF WINDOWS}ComObj, Variants{$ENDIF};
+
 { TfrmMain }
 
 procedure TfrmToolsfalar.btConectClick(Sender: TObject);
@@ -121,6 +124,9 @@ end;
 procedure TfrmToolsfalar.Falar();
 var
    pergunta: string;
+   {$IFDEF WINDOWS}
+   Voice: OleVariant;
+   {$ENDIF}
 begin
   if(Fsetmain.IPFALAR <> edIP.text) then
   begin
@@ -142,8 +148,20 @@ begin
   pergunta := edFalar.text;
   if(pergunta<>'') then
   begin
-     LTCPComponent1.SendMessage(edFalar.text,nil);
-     //Disconectar();
+     if LTCPComponent1.Connected then
+       LTCPComponent1.SendMessage(edFalar.text,nil)
+     else
+     begin
+       {$IFDEF WINDOWS}
+       try
+         Voice := CreateOleObject('SAPI.SpVoice');
+         Voice.Speak(pergunta, 1);
+       except
+         on E: Exception do
+           ShowMessage('Não foi possível falar a resposta: ' + E.Message);
+       end;
+       {$ENDIF}
+     end;
   end;
 end;
 

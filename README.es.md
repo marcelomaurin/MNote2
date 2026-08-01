@@ -2,7 +2,7 @@
 
 MNote2 es un editor de texto y código multiplataforma desarrollado con Lazarus/Free Pascal. La aplicación combina edición con pestañas, ejecución de scripts, herramientas de bases de datos, integración con IA, extracción de documentos y utilidades de voz.
 
-Versión actual del código fuente: **2.56**.
+Versión actual del código fuente: **2.63**.
 
 ## Capturas
 
@@ -89,7 +89,7 @@ MQuery2 funciona como gestor SQL integrado.
 ### Instalación y distribución
 
 - Instalador Windows basado en Inno Setup en instalador/MNote2.iss.
-- Versión del instalador Windows: 2.56.
+- Versión del instalador Windows: 2.63.
 - Copia MNote2.exe, DLLs, archivos .dci, listas .txt, scripts .bat, ejemplos y la base de datos predeterminada.
 - Copia la base de datos predeterminada a C:db.
 - Incluye una opción posinstalación para iniciar srvFalar_1.4.exe.

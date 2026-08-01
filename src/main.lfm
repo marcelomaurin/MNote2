@@ -1400,6 +1400,11 @@ object frmMNote: TfrmMNote
         ShortCutKey2 = 114
         OnClick = mnPesqItemClick
       end
+      object mnReplaceItem: TMenuItem
+        Caption = 'Replace'
+        ShortCut = 16456
+        OnClick = mnReplaceItemClick
+      end
       object miUndo: TMenuItem
         Caption = 'Undo'
         ShortCut = 16474

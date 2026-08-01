@@ -1,0 +1,15 @@
+{
+  "name": "Dark",
+  "editor_background": "#1E1E1E",
+  "editor_foreground": "#D4D4D4",
+  "selection_background": "#264F78",
+  "selection_foreground": "#FFFFFF",
+  "current_line": "#2A2D2E",
+  "gutter_background": "#252526",
+  "comment": "#6A9955",
+  "keyword": "#569CD6",
+  "string": "#CE9178",
+  "number": "#B5CEA8",
+  "identifier": "#D4D4D4",
+  "symbol": "#D4D4D4"
+}

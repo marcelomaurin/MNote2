@@ -1,5 +1,9 @@
 # Documentação do Sistema MNote2
 
+> Documento histórico da arquitetura original. Para a arquitetura efetivamente
+> entregue na versão 2.63, consulte `arquitetura_ide_ia.md`,
+> `capability_matrix.md` e `manual_usuario.md`.
+
 Este documento descreve a estrutura técnica do **MNote2** com base nos fontes do projeto.
 
 O foco é ajudar desenvolvedores a entenderem a organização interna, os principais módulos, responsabilidades, dependências, pontos de atenção e caminhos recomendados para manutenção.
@@ -67,7 +71,7 @@ Informações relevantes:
 - projeto em modo compatibilidade;
 - manifesto Windows XP habilitado;
 - DPI aware habilitado;
-- versão do projeto declarada como 2.61;
+- versão histórica do projeto analisado nesse documento: 2.61;
 - 52 units registradas;
 - 23 pacotes Lazarus exigidos.
 

@@ -1,388 +1,200 @@
-# Manual de Uso do MNote2
+# Manual do usuário — MNote2 IDE com IA
 
-Este manual apresenta o uso do **MNote2** para usuários que desejam editar arquivos, executar scripts, usar IA, analisar pastas e trabalhar com bancos de dados.
+Este manual descreve a interface e os recursos entregues na versão 2.63 do
+MNote2.
 
-## 1. Visão geral
+![Tela principal do MNote2](../screenshots/MNote2_IDE_IA_2_63.png)
 
-O MNote2 é uma aplicação desktop que reúne várias ferramentas em uma única interface:
+## 1. Interface da IDE
 
-- editor de texto e código;
-- gerenciador de arquivos e pastas;
-- assistente de IA;
-- execução de Python;
-- execução de scripts externos;
-- gerenciador SQL integrado;
-- leitura de documentos PDF, DOC e DOCX;
-- ferramentas TCP para fala e escuta.
+A área central contém os documentos abertos em abas. As janelas de ferramenta
+ficam organizadas como em uma IDE:
 
-Ele é indicado para programadores, técnicos, estudantes e usuários avançados que desejam uma ferramenta leve para editar, analisar e automatizar tarefas.
+- esquerda: Solution, Files e Database;
+- direita: AI, Tasks, Properties, Changes, AI Monitor e AI Components Lab;
+- inferior: Search Results, Problems, Output, Terminal e Task List.
 
-## 2. Abrindo o programa
+O menu **View** mostra ou oculta cada painel. **View > Reset Layout** recupera
+as posições e tamanhos iniciais. O layout é preservado ao fechar normalmente o
+programa. A barra de status mostra linha, coluna, linguagem, codificação, estado
+da IA e estado do projeto.
 
-Ao abrir o MNote2, a tela principal apresenta:
+## 2. Arquivos, comandos e atalhos
 
-- área de edição em abas;
-- menus de arquivo, linguagem, execução e configuração;
-- painel de resultado;
-- acesso às telas de IA, pastas, banco de dados e ferramentas auxiliares.
+Use **File > New**, **Load**, **Save** e **Save as** para trabalhar com
+documentos. O painel Files faz a varredura da raiz do projeto sem travar a tela
+e permite abrir arquivos encontrados.
 
-## 3. Criando ou abrindo arquivos
+Atalhos principais:
 
-### Criar novo arquivo
+| Atalho | Ação |
+|---|---|
+| `Ctrl+N` | novo documento |
+| `Ctrl+L` | abrir arquivo |
+| `Ctrl+S` | salvar |
+| `Ctrl+Shift+S` | salvar todos |
+| `Ctrl+F` ou `F3` | localizar |
+| `Ctrl+H` | substituir |
+| `F3` / `Shift+F3` | próxima/anterior ocorrência |
+| `Ctrl+Shift+H` | Replace in Files |
+| `Ctrl+Q` ou `Ctrl+Shift+P` | paleta de comandos |
+| `Ctrl+P` | abrir arquivo rapidamente |
+| `F12` | ir para definição |
+| `Shift+F12` | localizar referências |
+| `Ctrl+Alt+Space` | sugestão explícita da IA |
 
-1. Use a opção **Novo**.
-2. Uma nova aba será aberta.
-3. Digite o conteúdo desejado.
-4. Salve o arquivo com **Salvar** ou **Salvar como**.
+A paleta pesquisa por nome e categoria; por exemplo, digitar “salvar” permite
+executar **Salvar Tudo** sem navegar pelos menus.
 
-### Abrir arquivo existente
+## 3. Linguagens, tema e autocomplete
 
-1. Use a opção **Carregar/Abrir**.
-2. Escolha o arquivo no disco.
-3. O arquivo será aberto em uma nova aba.
+A linguagem é identificada pela extensão e aparece na barra contextual. Há
+perfis para Pascal/Lazarus, Python, SQL, JavaScript, JSON, XML, HTML, CSS,
+Markdown e arquivos de texto/configuração. Comentários e opções editoriais
+respeitam o perfil atual.
 
-### Salvar arquivo
+O tema e a fonte são persistidos. Se um tema JSON for inválido, o MNote2 usa o
+tema de fallback e registra o problema.
 
-- Use **Salvar** para gravar no mesmo arquivo.
-- Use **Salvar como** para escolher outro nome ou pasta.
+O autocomplete local agrega palavras da linguagem, identificadores do buffer,
+símbolos Pascal do projeto, snippets e objetos do dicionário SQL. Ele é
+determinístico e não chama a internet. Sugestão de código por IA é uma ação
+separada e explícita em `Ctrl+Alt+Space`; os dois popups não se sobrepõem.
 
-## 4. Trabalhando com abas
+## 4. Busca e substituição
 
-Cada arquivo aberto fica em uma aba independente. O MNote2 controla internamente cada aba como um item editável.
+A barra de busca funciona sem bloquear a edição. Ela oferece:
 
-Recursos disponíveis:
+- busca literal, palavra inteira e expressão regular;
+- destaque de ocorrências e contador;
+- documento atual, documentos abertos ou arquivos da raiz;
+- máscaras Include/Exclude e exclusão de binários;
+- progresso, cancelamento e histórico;
+- navegação exata por linha e coluna, inclusive em UTF-8.
 
-- alternar entre arquivos abertos;
-- fechar abas;
-- detectar alterações;
-- salvar arquivos individualmente;
-- salvar todos os arquivos abertos;
-- restaurar estado de trabalho conforme configuração.
+Replace in Files sempre apresenta preview. É possível desmarcar arquivos antes
+do Apply. A operação usa backup, escrita atômica e rollback; uma falha em um
+arquivo restaura o que já havia sido alterado.
 
-## 5. Selecionando linguagem do arquivo
+## 5. Projetos e tarefas
 
-O MNote2 usa realce de sintaxe para facilitar a edição de código.
+Crie ou abra um projeto pelo menu **Project**. A aba Tasks permite criar,
+editar, confirmar, iniciar e concluir tarefas. Cada tarefa pode conter descrição
+longa, critérios de aceite, dependências, estimativas, perfil responsável,
+arquivos, restrições, commits e arquivos exclusivos.
 
-Linguagens e formatos suportados pelo código:
+O histórico registra estado anterior e novo. Gantt, Timeline e Risk Matrix
+aparecem como visões opcionais e mostram uma mensagem clara quando não há
+dados. Task List indexa `TODO`, `FIXME`, `HACK`, `NOTE` e tokens configurados nos
+fontes; um comentário pode originar uma tarefa mantendo arquivo e linha.
 
-- Pascal/Lazarus: `.pas`, `.pp`, `.lpr`, `.lfm`;
-- C/C++: `.c`, `.cpp`, `.h`;
-- Python: `.py`;
-- PHP: `.php`;
-- Java: `.java`;
-- JavaScript: `.js`;
-- HTML/CSS: `.html`, `.htm`, `.css`;
-- SQL: `.sql`;
-- shell script: `.sh`;
-- batch: `.bat`;
-- JSON: `.json`;
-- XML: `.xml`;
-- YAML: `.yml`, `.yaml`;
-- INI: `.ini`;
-- Markdown: `.md`;
-- Arduino: `.ino`.
+Planos gerados por IA são contratos JSON validados. A revisão usa checkboxes,
+mantém revisões anteriores e só persiste a substituição depois da confirmação.
 
-A linguagem pode ser definida automaticamente pela extensão ou manualmente pelo menu.
+## 6. Conversa digitada e conversa por voz
 
-## 6. Busca e substituição
+O comportamento depende da entrada:
 
-O editor possui recursos de:
+- pergunta digitada: a resposta aparece por escrito e não é falada;
+- comando reconhecido por voz: a resposta aparece no histórico e é falada.
 
-- localizar texto;
-- substituir texto;
-- localizar novamente;
-- seleção de blocos;
-- copiar, colar, desfazer e refazer.
-
-Use estes recursos para editar arquivos de código ou texto comum.
-
-## 7. Executando Python
-
-O MNote2 pode executar código Python usando Python4Lazarus/PythonEngine.
-
-### Antes de usar
-
-Configure o caminho da biblioteca Python compatível com a versão e arquitetura do programa.
-
-Exemplos comuns:
-
-- Windows 64 bits: `python3x.dll` compatível com a versão instalada.
-- Linux: biblioteca compartilhada Python correspondente.
-
-### Como executar
-
-1. Abra um arquivo `.py` ou escreva código Python em uma aba.
-2. Configure o Python nas opções do sistema.
-3. Use a opção de execução.
-4. Veja a saída no painel de resultado.
-
-### Observações
-
-- Se a DLL/biblioteca Python estiver errada, a execução pode falhar.
-- A arquitetura do Python deve combinar com a arquitetura do executável.
-- Scripts com dependências externas precisam que os pacotes estejam instalados no ambiente Python usado.
-
-## 8. Scripts externos
-
-O MNote2 permite configurar comandos externos para:
-
-- run;
-- debug;
-- clean;
-- install;
-- compile.
-
-Esses comandos podem ser usados para acionar compiladores, scripts `.bat`, scripts `.sh` ou ferramentas externas.
-
-### Exemplo de uso
-
-1. Abra as configurações.
-2. Defina o comando de execução ou compilação.
-3. Abra um arquivo do projeto.
-4. Use o menu correspondente para executar o comando.
-
-## 9. Usando Inteligência Artificial
-
-O MNote2 possui integração com IA para responder perguntas, analisar fontes, gerar ideias, analisar SQL e trabalhar com contexto.
-
-### Providers suportados
-
-- OpenAI;
-- OpenRouter;
-- Cerebras;
-- IA local compatível com `/v1/chat/completions`;
-- Antigravity/Gemini, por classe própria.
-
-### Configuração da IA
-
-1. Abra as configurações.
-2. Escolha o provider.
-3. Informe o token, quando necessário.
-4. Escolha o modelo.
-5. Para IA local, configure o endereço do servidor.
-
-Exemplo de endpoint local esperado:
+O padrão de ativação é **“OK MNote”**, no mesmo conceito de “OK Google”. Uma
+frase recebida por voz sem o prefixo não é enviada à IA. Dizer apenas “OK MNote”
+faz o programa responder “Estou ouvindo”. Exemplo:
 
 ```text
-http://localhost:8095/v1/chat/completions
+OK MNote, explique a função selecionada
 ```
 
-Dependendo da configuração, o MNote2 monta o endpoint a partir do servidor local informado.
+Ative e configure ToolsOuvir para o serviço de reconhecimento TCP. Configure
+ToolsFalar para o serviço de síntese; no Windows, a fala possui fallback real
+por SAPI quando o serviço TCP não está disponível. A frase de ativação pode ser
+alterada na configuração. Se voz estiver desativada ou indisponível, o programa
+informa o estado e continua funcionando por texto.
 
-### Usando a tela de IA
+## 7. IA e confirmação de dúvidas
 
-1. Abra a tela de IA.
-2. Digite a pergunta.
-3. Envie para o modelo configurado.
-4. Veja a resposta.
-5. Consulte histórico, mapa de memória, pensamento e logs.
+Providers configuráveis: OpenAI, OpenRouter, Cerebras, servidor local
+compatível e Gemini. Tokens ficam apenas no `mnote.cfg` local.
 
-### Histórico e memória
+A IA usa camadas separadas de Gestão, Triagem, Trabalho Leve, Recuperação,
+Árbitro e Banco. O router escolhe o perfil por regras reproduzíveis. Quando
+faltam objetivo, escopo ou autorização relevantes, Gestão pergunta e aguarda a
+confirmação; a dúvida não é convertida em ação por suposição.
 
-A tela de IA usa arquivos `.RIA` para guardar:
+O orçamento mostrado é uma estimativa, não uma contagem exata. O programa
+separa janela de entrada e saída reservada, limita tentativas e rodadas,
+classifica erros antes de retry e bloqueia ciclos entre agentes. **Parar IA**
+cancela a sessão ativa.
 
-- histórico;
-- mapa de memória;
-- pensamento;
-- contexto auxiliar.
+O AI Monitor mostra a árvore de solicitações, decisões, ações, resultados,
+tentativas, orçamento e motivos de roteamento sem revelar tokens.
 
-Esses arquivos ajudam a manter continuidade entre perguntas.
+![AI Monitor](../screenshots/MNote2_AI_Monitor_2_63.png)
 
-## 10. Analisando pastas e projetos
+## 8. Alterações de fonte propostas pela IA
 
-O módulo de pastas permite analisar arquivos de um diretório com apoio de IA.
+**IA > Propor correção com IA** cria uma proposta; nenhum fonte muda nessa
+etapa. O painel Changes mostra original, proposta e diff. É possível aceitar ou
+rejeitar arquivos e hunks individuais.
 
-### Como usar
+O Apply exige confirmação explícita e valida novamente caminho, texto esperado
+e hash. Depois grava de forma atômica, mantém backup/histórico e executa a
+validação configurada. Se o teste falhar, a tarefa não é concluída e o rollback
+é oferecido. O rollback recusa apagar uma alteração manual feita depois do
+Apply.
 
-1. Abra a tela de pastas/projetos.
-2. Escolha a pasta raiz do projeto.
-3. Execute a varredura.
-4. Faça uma pergunta sobre o projeto.
-5. O MNote2 pode gerar resumos e análises dos arquivos relevantes.
+## 9. Banco de dados e SQL
 
-### Caches gerados
+MQuery2 continua executando consultas solicitadas diretamente pelo usuário. A
+aba Data Dictionary reutiliza a mesma conexão Zeos:
 
-| Extensão | Finalidade |
-|---|---|
-| `.RIA` | Resumo técnico base do arquivo ou histórico/contexto |
-| `.PIA` | Análise orientada a uma pergunta específica |
+- PostgreSQL e SQLite: suportados;
+- MySQL, Firebird, Oracle e MSSQL: experimentais;
+- protocolo desconhecido: indisponível.
 
-### Quando limpar cache
+O dicionário pode ser exportado sem consultar novamente e alimenta autocomplete
+e contexto resumido para IA. A IA de banco recebe metadados, propõe SQL e valida
+placeholders, mas nunca executa o SQL gerado. A transferência ao editor principal
+exige confirmação. Em produção, revise especialmente `UPDATE`, `DELETE`,
+`DROP`, `ALTER` e `CREATE`.
 
-Limpe os caches quando:
+## 10. Build, Problems, Output e Terminal
 
-- a análise parecer desatualizada;
-- muitos arquivos mudaram;
-- você quer forçar nova interpretação da IA;
-- a pergunta mudou muito de objetivo.
+Build e Rebuild escolhem o perfil do projeto e executam processo real fora da
+UI. Stdout e stderr aparecem no canal Build do Output. Mensagens FPC/Lazarus são
+convertidas em Problems com arquivo, linha, coluna, severidade e código; duplo
+clique abre a posição. **Parar Build** cancela o processo.
 
-O sistema também possui lógica para remover cache `.RIA` quando o fonte muda depois do resumo.
+O Output mantém canais independentes, incluindo Build e AI. Limpar um canal não
+apaga os outros. O Terminal inicia na raiz do projeto e executa somente o comando
+digitado pelo usuário.
 
-## 11. Lendo PDF, DOC e DOCX
+## 11. Files, documentos e Components Lab
 
-O MNote2 possui units para extração de texto de documentos.
+Files gera inventário real da raiz. As ferramentas de documento exportam dados
+para TXT e PDF e pedem confirmação antes de gravar. O grafo distingue relações
+factuais das inferidas.
 
-Formatos previstos:
+AI Components Lab lista cada capacidade e sua disponibilidade. Chromium/CEF,
+visão, ML, rede, industrial e hardware são opcionais; a ausência deles nunca
+impede o núcleo da IDE de iniciar e não é apresentada como integração simulada.
 
-- PDF;
-- DOC;
-- DOCX.
+## 12. Configuração, privacidade e diagnóstico
 
-Observações:
+`mnote.cfg` fica no perfil local do usuário e pode conter tokens, senhas de
+banco, endpoints, paths e preferências. Não publique esse arquivo. Use
+`mnote.example.cfg` como modelo seguro.
 
-- PDF pode ter extração limitada dependendo de como o arquivo foi gerado.
-- DOC clássico pode depender de recursos do Windows/Microsoft Word.
-- DOCX tende a ser mais simples de extrair quando o texto está estruturado.
+Arquivos de projeto, sessão e relatório não devem conter credenciais. O MNote2
+limita tamanho de contexto e saída, não segue caminhos para fora da raiz e não
+executa instruções encontradas dentro do conteúdo de um arquivo.
 
-## 12. Usando o MQuery2
+Em caso de problema:
 
-O MQuery2 é o gerenciador SQL integrado ao MNote2.
-
-Ele permite:
-
-- conectar em MySQL;
-- conectar em PostgreSQL;
-- conectar em SQLite;
-- executar SQL;
-- navegar por tabelas e estruturas;
-- importar CSV;
-- gerar dicionário de dados;
-- analisar SQL com IA;
-- embelezar SQL;
-- gerar dependências e relacionamentos.
-
-### Conectando a um banco
-
-1. Abra o MQuery2.
-2. Escolha o tipo de banco.
-3. Informe host, usuário, senha, banco e bibliotecas necessárias.
-4. Clique em conectar.
-5. Navegue pelas tabelas e objetos disponíveis.
-
-### Executando SQL
-
-1. Escreva a consulta no editor SQL.
-2. Execute a consulta.
-3. Veja o resultado no grid.
-4. Confira erros no painel de mensagens.
-
-### Atenção com bancos de produção
-
-O MQuery2 executa SQL real. Antes de usar comandos `UPDATE`, `DELETE`, `DROP`, `ALTER` ou `CREATE`, confirme se está no banco correto.
-
-## 13. Usando ToolsFalar
-
-`ToolsFalar` envia texto por TCP para um serviço externo de fala, como `srvFalar`.
-
-### Configuração
-
-1. Informe IP e porta do serviço de fala.
-2. Ative a ferramenta.
-3. Envie o texto.
-
-### Requisitos
-
-- Serviço de fala ativo.
-- Porta liberada no firewall.
-- IP correto.
-
-## 14. Usando ToolsOuvir
-
-`ToolsOuvir` conecta a um serviço TCP para receber comandos ou mensagens externas.
-
-### Configuração
-
-1. Informe IP e porta.
-2. Ative a ferramenta.
-3. Aguarde mensagens recebidas.
-
-## 15. Arquivo de configuração
-
-O MNote2 usa `mnote.cfg` para guardar configurações.
-
-Esse arquivo pode conter:
-
-- token de IA;
-- senhas de banco;
-- caminhos de DLL;
-- últimas pastas;
-- últimos arquivos;
-- configuração de janela;
-- configuração de fonte;
-- scripts externos.
-
-> Não publique `mnote.cfg` com dados reais.
-
-## 16. Problemas comuns
-
-### A IA não responde
-
-Verifique:
-
-- token configurado;
-- provider correto;
-- modelo válido;
-- conexão com internet;
-- endpoint local ativo, se usar IA local;
-- firewall ou proxy.
-
-### Python não executa
-
-Verifique:
-
-- caminho da DLL/biblioteca Python;
-- versão e arquitetura do Python;
-- dependências instaladas;
-- permissões do sistema.
-
-### Banco não conecta
-
-Verifique:
-
-- host;
-- porta;
-- usuário e senha;
-- nome do banco;
-- biblioteca cliente configurada;
-- firewall;
-- serviço do banco ativo.
-
-### PDF ou DOC não abre corretamente
-
-Verifique:
-
-- se o documento possui texto real ou imagem escaneada;
-- se o formato é suportado;
-- se as bibliotecas necessárias estão disponíveis;
-- se o arquivo não está corrompido.
-
-### A análise de pasta ficou errada ou antiga
-
-Tente:
-
-- limpar `.RIA` e `.PIA`;
-- refazer a varredura;
-- fazer uma pergunta mais específica;
-- reduzir o escopo da pasta;
-- verificar se os arquivos importantes estão em formato texto.
-
-## 17. Boas práticas
-
-- Use uma pasta de trabalho separada para testes.
-- Não rode SQL destrutivo em banco de produção.
-- Mantenha backup dos arquivos importantes.
-- Configure IA local para testes longos ou privados.
-- Proteja arquivos com tokens e senhas.
-- Limpe caches quando mudar muito o projeto.
-
-## 18. Resumo rápido
-
-Para começar rapidamente:
-
-1. Abra o MNote2.
-2. Configure IA, Python e bancos apenas se precisar.
-3. Abra um arquivo ou pasta.
-4. Edite o código.
-5. Use IA para dúvidas ou análise.
-6. Use MQuery2 para consultas SQL.
-7. Salve seus arquivos e proteja suas configurações.
+- IA: confira provider, modelo, token, rede e o motivo no AI Monitor;
+- voz: confira ToolsOuvir/ToolsFalar, IP, porta e a frase “OK MNote”;
+- Python: confira DLL, versão e arquitetura;
+- banco: confira protocolo Zeos, biblioteca cliente e conexão;
+- build: confira Output e Problems;
+- layout: use **View > Reset Layout**.

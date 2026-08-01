@@ -1,0 +1,15 @@
+{
+  "name": "Blue",
+  "editor_background": "#FFFFFF",
+  "editor_foreground": "#1E1E1E",
+  "selection_background": "#3399FF",
+  "selection_foreground": "#FFFFFF",
+  "current_line": "#EAF2F8",
+  "gutter_background": "#DCE6F1",
+  "comment": "#008000",
+  "keyword": "#0000FF",
+  "string": "#A31515",
+  "number": "#098658",
+  "identifier": "#1E1E1E",
+  "symbol": "#000000"
+}
