@@ -10,7 +10,7 @@ uses
   ZConnection, ZDataset, ZPgEventAlerter, Tabela, views, View, strUtils, DB,
   csvdataset, SynEditTypes, SynGutterBase, SynEditMarks, SynEditKeyCmds,
   SynPluginSyncroEdit, SynGutterMarks, SynGutterLineNumber, SynGutterChanges,
-  SynGutter, SynGutterCodeFolding, TAGraph, LCLType, Grids, Buttons,
+  SynGutter, SynGutterCodeFolding, LCLType, Grids, Buttons,
   PairSplitter, DBCtrls, DBGrids, EditBtn, finds, ZClasses, ZCollections,
   ZCompatibility, ZTokenizer, ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging,
   ZVariant, ZPlainDriver, TypeDB, triggers, item, funcoes, chart,

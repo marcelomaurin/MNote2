@@ -21,10 +21,8 @@
     </i18n>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <AutoIncrementBuild Value="False"/>
       <MajorVersionNr Value="2"/>
       <MinorVersionNr Value="68"/>
-      <BuildNr Value="0"/>
       <Language Value="0416"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -39,87 +37,87 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="31">
+    <RequiredPackages Count="30">
       <Item1>
-        <PackageName Value="atsynedit_ex_package"/>
+        <PackageName Value="openai_graph"/>
       </Item1>
       <Item2>
-        <PackageName Value="pkSalesSwitch"/>
+        <PackageName Value="openai_agent"/>
       </Item2>
       <Item3>
-        <PackageName Value="indylaz"/>
+        <PackageName Value="atsynedit_ex_package"/>
       </Item3>
       <Item4>
-        <PackageName Value="IPEdit_pkg"/>
+        <PackageName Value="pkSalesSwitch"/>
       </Item4>
       <Item5>
-        <PackageName Value="zcomponentdesign"/>
+        <PackageName Value="indylaz"/>
       </Item5>
       <Item6>
-        <PackageName Value="LazUtils"/>
+        <PackageName Value="IPEdit_pkg"/>
       </Item6>
       <Item7>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="zcomponentdesign"/>
       </Item7>
       <Item8>
-        <PackageName Value="synuni"/>
+        <PackageName Value="LazUtils"/>
       </Item8>
       <Item9>
-        <PackageName Value="synfacilsyn"/>
+        <PackageName Value="lnetbase"/>
       </Item9>
       <Item10>
-        <PackageName Value="SynEditDsgn"/>
+        <PackageName Value="synuni"/>
       </Item10>
       <Item11>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="synfacilsyn"/>
       </Item11>
       <Item12>
-        <PackageName Value="myexamplepackage"/>
+        <PackageName Value="SynEditDsgn"/>
       </Item12>
       <Item13>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="SynEdit"/>
       </Item13>
       <Item14>
-        <PackageName Value="FCL"/>
+        <PackageName Value="myexamplepackage"/>
       </Item14>
       <Item15>
-        <PackageName Value="poweredby"/>
+        <PackageName Value="FCL"/>
       </Item15>
       <Item16>
-        <PackageName Value="industrial"/>
+        <PackageName Value="poweredby"/>
       </Item16>
       <Item17>
-        <PackageName Value="pkg_gifanim"/>
+        <PackageName Value="industrial"/>
       </Item17>
       <Item18>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="pkg_gifanim"/>
       </Item18>
       <Item19>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="zcomponent"/>
       </Item19>
       <Item20>
-        <PackageName Value="rxnew"/>
+        <PackageName Value="multiloglaz"/>
       </Item20>
       <Item21>
-        <PackageName Value="python4lazarus_package"/>
+        <PackageName Value="rxnew"/>
       </Item21>
       <Item22>
-        <PackageName Value="lnetvisual"/>
+        <PackageName Value="python4lazarus_package"/>
       </Item22>
       <Item23>
-        <PackageName Value="LCL"/>
+        <PackageName Value="lnetvisual"/>
       </Item23>
       <Item24>
-        <PackageName Value="openai_core"/>
+        <PackageName Value="LCL"/>
       </Item24>
       <Item25>
-        <PackageName Value="openai_python"/>
+        <PackageName Value="openai_core"/>
       </Item25>
       <Item26>
-        <PackageName Value="openai_aidbase"/>
+        <PackageName Value="openai_python"/>
       </Item26>
       <Item27>
-        <PackageName Value="openai_agentcore"/>
+        <PackageName Value="openai_aidbase"/>
       </Item27>
       <Item28>
         <PackageName Value="openai_project_core"/>
@@ -130,9 +128,6 @@
       <Item30>
         <PackageName Value="openai_output"/>
       </Item30>
-      <Item31>
-        <PackageName Value="openai_graphcore"/>
-      </Item31>
     </RequiredPackages>
     <Units Count="56">
       <Unit0>
@@ -453,7 +448,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-        <OtherUnitFiles Value="classes;mquery2;imgjson;toolsfalar;toolsouvir;services;ui;commands;completion;search;languages;project;sourcechange;ai"/>
+      <OtherUnitFiles Value="classes;mquery2;imgjson;toolsfalar;toolsouvir;services;ui;commands;completion;search;languages;project;sourcechange;ai"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>

@@ -1238,6 +1238,7 @@ object frmMNote: TfrmMNote
         TabOrder = 0
         OnChange = pgMainChange
         OnChanging = pgMainChanging
+        OnMouseDown = pgMainMouseDown
       end
       object Splitter2: TSplitter
         Cursor = crVSplit

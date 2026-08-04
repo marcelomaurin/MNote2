@@ -13,8 +13,9 @@ uses
   SynGutter, SynGutterCodeFolding, TAGraph, LCLType, Grids, Buttons,
   PairSplitter, DBCtrls, DBGrids, EditBtn, finds, ZClasses, ZCollections,
   ZCompatibility, ZTokenizer, ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging,
-  ZVariant, ZPlainDriver, TypeDB, triggers, item, funcoes, chart, chatgpt, antigravity,
-  codigo, setmain, ZDbcIntfs, math, hint, Variants, LConvEncoding, base;
+  ZVariant, ZPlainDriver, TypeDB, triggers, item, funcoes, chart,
+  codigo, setmain, ZDbcIntfs, math, hint, Variants, LConvEncoding, base,
+  mnote_ai_service;
 
 const
   sqltabela   = 'Você poderia me fornecer a consulta SQL que deseja analisar? Assim que eu receber o SQL, irei extrair os nomes das tabelas envolvidas e gerar um código em JSON com esses nomes. A resposta será apresentada dentro de uma caixa de texto apropriada para cópia, Desta forma refaça a pergunta mesmo nao havendo certeza da resposta,claramente formatada como um código JSON:';
@@ -411,8 +412,6 @@ type
     procedure ZPgEventAlerter1Notify(Sender: TObject; Event: string;
       ProcessID: Integer; Payload: string);
   private
-    FCHATGPT : TCHATGPT;
-    FAntigravity : TAntigravity;
 
     posicaofieldsmy : TTreeNode;
     tvitemmy : TTreeNode;
@@ -537,6 +536,8 @@ type
     procedure RefreshPost();
     procedure RefreshMy();
     procedure RefreshSQLite();
+    function GetActiveDatabaseTree(out ADatabaseName: string;
+      ATables: TStrings): Boolean;
 
     procedure Pesquisar(sender: TObject);
     procedure ProcessaErro(message : string);
@@ -2234,6 +2235,7 @@ begin
 
     ListarTabelasMy();
     ListarViewsMy();
+    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   except
     on E: Exception do
       MessageHint('Erro ao preparar estrutura do MySQL: ' + E.Message);
@@ -2270,6 +2272,7 @@ begin
     ListarTabelasPost();
     BuscaSequence(zpostqry1, DBPostgres);
     ListarViewsPost();
+    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   except
     on E: Exception do
       MessageHint('Erro ao preparar estrutura do PostgreSQL: ' + E.Message);
@@ -2300,6 +2303,7 @@ begin
 
     ListarTabelasSQLite;
     tvsqlite.FullExpand;
+    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   except
     on E: Exception do
       MessageHint('Erro ao preparar estrutura do SQLite: ' + E.Message);
@@ -3780,7 +3784,7 @@ function Tfrmmquery2.QuestionarSQLPost(const pergunta, deps, ddl: string): strin
   end;
 
 var
-  ctxDeps, ctxDDL, ask, outSQL: string;
+  ctxDeps, ctxDDL, ask, outSQL, DevMsg: string;
   outAnsi: AnsiString;
   baseSchema: string;
 begin
@@ -3792,7 +3796,7 @@ begin
     Exit;
   end;
 
-  if Trim(FSetMain.CHATGPT) = '' then
+  if (FSetMain.Provider <> 3) and (Trim(FSetMain.CHATGPT) = '') then
   begin
     if FSetMain.Provider = 4 then
       ShowMessage('Configure a chave de API/Token em SetMain.CHATGPT.')
@@ -3823,49 +3827,21 @@ begin
     ctxDDL + LineEnding + LineEnding +
     'Gere APENAS o SQL final (um único bloco).';
 
-  if FSetMain.Provider = 4 then
+  DevMsg :=
+    'Você é um assistente SQL para PostgreSQL.' + LineEnding +
+    'REGRAS:' + LineEnding +
+    '1) Responda SOMENTE com SQL válido, sem explicações ou comentários.' + LineEnding +
+    '2) Use exatamente os nomes de schema/tabela/coluna informados.' + LineEnding +
+    '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
+    '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
+    '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
+
+  if not MNoteAI.SendQuestion(ask, DevMsg, outSQL) then
   begin
-    if FAntigravity = nil then
-      FAntigravity := TAntigravity.Create(Self);
-
-    FAntigravity.Dev :=
-      'Você é um assistente SQL para PostgreSQL.' + LineEnding +
-      'REGRAS:' + LineEnding +
-      '1) Responda SOMENTE com SQL válido, sem explicações ou comentários.' + LineEnding +
-      '2) Use exatamente os nomes de schema/tabela/coluna informados.' + LineEnding +
-      '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
-      '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
-      '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
-
-    FAntigravity.TOKEN := FSetMain.CHATGPT;
-    FAntigravity.CustomModel := FSetMain.ModelGemini;
-
-    if FAntigravity.SendQuestion(ask) then
-      outSQL := StripCodeFences(FAntigravity.Response)
-    else
-      outSQL := StripCodeFences(FAntigravity.Response);
-  end
-  else
-  begin
-    if FCHATGPT = nil then
-      FCHATGPT := TCHATGPT.Create(Self);
-
-    FCHATGPT.Dev :=
-      'Você é um assistente SQL para PostgreSQL.' + LineEnding +
-      'REGRAS:' + LineEnding +
-      '1) Responda SOMENTE com SQL válido, sem explicações ou comentários.' + LineEnding +
-      '2) Use exatamente os nomes de schema/tabela/coluna informados.' + LineEnding +
-      '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
-      '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
-      '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
-
-    FCHATGPT.TOKEN := FSetMain.CHATGPT;
-
-    if FCHATGPT.SendQuestion(ask) then
-      outSQL := StripCodeFences(FCHATGPT.Response)
-    else
-      outSQL := StripCodeFences(FCHATGPT.Response);
+    ShowMessage('Erro ao consultar IA: ' + MNoteAI.LastError);
+    Exit;
   end;
+  outSQL := StripCodeFences(outSQL);
 
   outAnsi := UTF8ToAnsi(outSQL);
   Result := String(outAnsi);
@@ -3893,7 +3869,7 @@ function Tfrmmquery2.QuestionarSQLSQLite(const pergunta, deps, ddl: string): str
   end;
 
 var
-  ctxDeps, ctxDDL, ask, outSQL: string;
+  ctxDeps, ctxDDL, ask, outSQL, DevMsg: string;
   outAnsi: AnsiString;
 begin
   Result := '';
@@ -3904,7 +3880,7 @@ begin
     Exit;
   end;
 
-  if Trim(FSetMain.CHATGPT) = '' then
+  if (FSetMain.Provider <> 3) and (Trim(FSetMain.CHATGPT) = '') then
   begin
     if FSetMain.Provider = 4 then
       ShowMessage('Configure a chave de API/Token em SetMain.CHATGPT.')
@@ -3932,49 +3908,21 @@ begin
     ctxDDL + LineEnding + LineEnding +
     'Gere APENAS o SQL final (um único bloco).';
 
-  if FSetMain.Provider = 4 then
+  DevMsg :=
+    'Você é um assistente SQL para SQLite.' + LineEnding +
+    'REGRAS:' + LineEnding +
+    '1) Responda SOMENTE com SQL válido para SQLite, sem explicações ou comentários.' + LineEnding +
+    '2) Use exatamente os nomes de tabela/coluna informados.' + LineEnding +
+    '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
+    '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
+    '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
+
+  if not MNoteAI.SendQuestion(ask, DevMsg, outSQL) then
   begin
-    if FAntigravity = nil then
-      FAntigravity := TAntigravity.Create(Self);
-
-    FAntigravity.Dev :=
-      'Você é um assistente SQL para SQLite.' + LineEnding +
-      'REGRAS:' + LineEnding +
-      '1) Responda SOMENTE com SQL válido para SQLite, sem explicações ou comentários.' + LineEnding +
-      '2) Use exatamente os nomes de tabela/coluna informados.' + LineEnding +
-      '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
-      '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
-      '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
-
-    FAntigravity.TOKEN := FSetMain.CHATGPT;
-    FAntigravity.CustomModel := FSetMain.ModelGemini;
-
-    if FAntigravity.SendQuestion(ask) then
-      outSQL := StripCodeFences(FAntigravity.Response)
-    else
-      outSQL := StripCodeFences(FAntigravity.Response);
-  end
-  else
-  begin
-    if FCHATGPT = nil then
-      FCHATGPT := TCHATGPT.Create(Self);
-
-    FCHATGPT.Dev :=
-      'Você é um assistente SQL para SQLite.' + LineEnding +
-      'REGRAS:' + LineEnding +
-      '1) Responda SOMENTE com SQL válido para SQLite, sem explicações ou comentários.' + LineEnding +
-      '2) Use exatamente os nomes de tabela/coluna informados.' + LineEnding +
-      '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
-      '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
-      '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
-
-    FCHATGPT.TOKEN := FSetMain.CHATGPT;
-
-    if FCHATGPT.SendQuestion(ask) then
-      outSQL := StripCodeFences(FCHATGPT.Response)
-    else
-      outSQL := StripCodeFences(FCHATGPT.Response);
+    ShowMessage('Erro ao consultar IA: ' + MNoteAI.LastError);
+    Exit;
   end;
+  outSQL := StripCodeFences(outSQL);
 
   outAnsi := UTF8ToAnsi(outSQL);
   Result := String(outAnsi);
@@ -4068,8 +4016,193 @@ begin
 end;
 
 function Tfrmmquery2.DescreveTabelaIAPost(tabela: string): string;
+var
+  schema, line, indexName: string;
+  definitions, suffixes, constraintNames: TStringList;
+  cont: Integer;
+
+  function QIdent(const value: string): string;
+  begin
+    Result := '"' + StringReplace(value, '"', '""', [rfReplaceAll]) + '"';
+  end;
 begin
-  Result := '-- TODO: implemente DescreveTabelaIAPost(' + tabela + ')';
+  Result := '';
+  if not zconpost.Connected then
+  begin
+    ShowMessage('PostgreSQL não conectado!');
+    Exit;
+  end;
+  tabela := Trim(tabela);
+  if tabela = '' then
+  begin
+    ShowMessage('Selecione uma tabela PostgreSQL.');
+    Exit;
+  end;
+  schema := Trim(edSchemaPost.Text);
+  if schema = '' then schema := 'public';
+
+  definitions := TStringList.Create;
+  suffixes := TStringList.Create;
+  constraintNames := TStringList.Create;
+  try
+    constraintNames.CaseSensitive := False;
+    zpostqry1.Close;
+    zpostqry1.SQL.Text :=
+      'SELECT a.attname AS column_name, ' +
+      '       pg_catalog.format_type(a.atttypid, a.atttypmod) AS data_type, ' +
+      '       a.attnotnull AS not_null, ' +
+      '       pg_get_expr(ad.adbin, ad.adrelid) AS column_default ' +
+      'FROM pg_catalog.pg_attribute a ' +
+      'LEFT JOIN pg_catalog.pg_attrdef ad ' +
+      '  ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum ' +
+      'JOIN pg_catalog.pg_class c ON c.oid = a.attrelid ' +
+      'JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace ' +
+      'WHERE n.nspname = :schema AND c.relname = :table ' +
+      '  AND a.attnum > 0 AND NOT a.attisdropped ' +
+      'ORDER BY a.attnum';
+    zpostqry1.ParamByName('schema').AsString := schema;
+    zpostqry1.ParamByName('table').AsString := tabela;
+    zpostqry1.Open;
+    while not zpostqry1.EOF do
+    begin
+      line := '  ' + QIdent(zpostqry1.FieldByName('column_name').AsString) +
+        ' ' + zpostqry1.FieldByName('data_type').AsString;
+      if zpostqry1.FieldByName('not_null').AsBoolean then
+        line := line + ' NOT NULL';
+      if not zpostqry1.FieldByName('column_default').IsNull then
+        line := line + ' DEFAULT ' +
+          zpostqry1.FieldByName('column_default').AsString;
+      definitions.Add(line);
+      zpostqry1.Next;
+    end;
+    if definitions.Count = 0 then
+    begin
+      ShowMessage('Tabela "' + tabela + '" não encontrada no schema ' +
+        schema + '.');
+      Exit;
+    end;
+
+    zpostqry2.Close;
+    zpostqry2.SQL.Text :=
+      'SELECT c.conname, pg_get_constraintdef(c.oid, TRUE) AS def ' +
+      'FROM pg_catalog.pg_constraint c ' +
+      'JOIN pg_catalog.pg_class t ON t.oid = c.conrelid ' +
+      'JOIN pg_catalog.pg_namespace n ON n.oid = t.relnamespace ' +
+      'WHERE c.contype IN (''p'',''u'',''f'',''c'') ' +
+      '  AND n.nspname = :schema AND t.relname = :table ' +
+      'ORDER BY c.conname';
+    zpostqry2.ParamByName('schema').AsString := schema;
+    zpostqry2.ParamByName('table').AsString := tabela;
+    zpostqry2.Open;
+    while not zpostqry2.EOF do
+    begin
+      constraintNames.Add(zpostqry2.FieldByName('conname').AsString);
+      definitions.Add('  CONSTRAINT ' +
+        QIdent(zpostqry2.FieldByName('conname').AsString) + ' ' +
+        zpostqry2.FieldByName('def').AsString);
+      zpostqry2.Next;
+    end;
+
+    zpostqry3.Close;
+    zpostqry3.SQL.Text :=
+      'SELECT indexname, indexdef FROM pg_catalog.pg_indexes ' +
+      'WHERE schemaname = :schema AND tablename = :table ' +
+      'ORDER BY indexname';
+    zpostqry3.ParamByName('schema').AsString := schema;
+    zpostqry3.ParamByName('table').AsString := tabela;
+    zpostqry3.Open;
+    while not zpostqry3.EOF do
+    begin
+      indexName := zpostqry3.FieldByName('indexname').AsString;
+      if constraintNames.IndexOf(indexName) < 0 then
+        suffixes.Add(zpostqry3.FieldByName('indexdef').AsString + ';');
+      zpostqry3.Next;
+    end;
+
+    zpostqry1.Close;
+    zpostqry1.SQL.Text :=
+      'SELECT pg_get_triggerdef(tg.oid, TRUE) AS def ' +
+      'FROM pg_catalog.pg_trigger tg ' +
+      'JOIN pg_catalog.pg_class t ON t.oid = tg.tgrelid ' +
+      'JOIN pg_catalog.pg_namespace n ON n.oid = t.relnamespace ' +
+      'WHERE n.nspname = :schema AND t.relname = :table ' +
+      '  AND NOT tg.tgisinternal ORDER BY tg.tgname';
+    zpostqry1.ParamByName('schema').AsString := schema;
+    zpostqry1.ParamByName('table').AsString := tabela;
+    zpostqry1.Open;
+    while not zpostqry1.EOF do
+    begin
+      suffixes.Add(zpostqry1.FieldByName('def').AsString + ';');
+      zpostqry1.Next;
+    end;
+
+    Result := 'CREATE TABLE ' + QIdent(schema) + '.' + QIdent(tabela) +
+      ' (' + LineEnding;
+    for cont := 0 to definitions.Count - 1 do
+    begin
+      Result := Result + definitions[cont];
+      if cont < definitions.Count - 1 then Result := Result + ',';
+      Result := Result + LineEnding;
+    end;
+    Result := Result + ');' + LineEnding;
+    for cont := 0 to suffixes.Count - 1 do
+      Result := Result + suffixes[cont] + LineEnding;
+  finally
+    constraintNames.Free;
+    suffixes.Free;
+    definitions.Free;
+  end;
+end;
+
+function Tfrmmquery2.GetActiveDatabaseTree(out ADatabaseName: string;
+  ATables: TStrings): Boolean;
+var
+  ParentNode, Node: TTreeNode;
+begin
+  Result := False;
+  ADatabaseName := '';
+  if ATables = nil then Exit;
+  ATables.Clear;
+  ParentNode := nil;
+  if (pgMain.ActivePage = tsSqlite) and zconsqlite.Connected then
+  begin
+    ADatabaseName := ExtractFileName(Trim(edDatabase.Text));
+    ParentNode := posicaofieldslite;
+  end
+  else if (pgMain.ActivePage = tsPostgree) and zconpost.Connected then
+  begin
+    ADatabaseName := Trim(edBancoPost.Text);
+    ParentNode := posicaofieldspost;
+  end
+  else if (pgMain.ActivePage = tsMysql) and zconmysql.Connected then
+  begin
+    ADatabaseName := Trim(edBanco.Text);
+    ParentNode := posicaofieldsmy;
+  end
+  else if zconpost.Connected then
+  begin
+    ADatabaseName := Trim(edBancoPost.Text);
+    ParentNode := posicaofieldspost;
+  end
+  else if zconsqlite.Connected then
+  begin
+    ADatabaseName := ExtractFileName(Trim(edDatabase.Text));
+    ParentNode := posicaofieldslite;
+  end
+  else if zconmysql.Connected then
+  begin
+    ADatabaseName := Trim(edBanco.Text);
+    ParentNode := posicaofieldsmy;
+  end;
+  if ParentNode = nil then Exit;
+  Node := ParentNode.GetFirstChild;
+  while Node <> nil do
+  begin
+    ATables.Add(Node.Text);
+    Node := Node.GetNextSibling;
+  end;
+  if ADatabaseName = '' then ADatabaseName := 'conexão ativa';
+  Result := True;
 end;
 
 procedure Tfrmmquery2.Pesquisar(sender: TObject);

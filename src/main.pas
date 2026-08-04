@@ -258,6 +258,8 @@ type
     procedure ReplaceDialog1Replace(Sender: TObject);
     procedure pntvClick(Sender: TObject);
     procedure pgMainChange(Sender: TObject);
+    procedure pgMainMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
 
 
     procedure TabSheet1ContextPopup(Sender: TObject; MousePos: TPoint;
@@ -411,7 +413,7 @@ type
   public
     { public declarations }
     function NovoItem():TTabSheet;
-    procedure CloseTab();
+    procedure CloseTab(APage: TTabSheet = nil);
     procedure AnalisaFonte();
 
     function ExistFileOpen(Arquivo : string): boolean;
@@ -1141,14 +1143,17 @@ begin
   result := tb;
 end;
 
-procedure TfrmMNote.CloseTab();
+procedure TfrmMNote.CloseTab(APage: TTabSheet = nil);
 var
   page: TTabSheet;
   item: TItem;
 begin
-  if pgMain.ActivePage = nil then Exit;
+  if APage <> nil then
+    page := APage
+  else
+    page := pgMain.ActivePage;
 
-  page := pgMain.ActivePage;
+  if page = nil then Exit;
   item := TItem(page.Tag);
 
   // Os painéis mantêm referências ao editor ativo para busca, caret e status.
@@ -4094,6 +4099,32 @@ begin
       frmFolders.AtualizarOutline(item.syn.Lines.Text);
   end;
   UpdateIDEStatus;
+end;
+
+procedure TfrmMNote.pgMainMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  TabIndex: Integer;
+  R: TRect;
+  ImgWidth: Integer;
+  TargetPage: TTabSheet;
+begin
+  if (Button <> mbLeft) or (pgMain = nil) then Exit;
+
+  TabIndex := pgMain.IndexOfTabAt(X, Y);
+  if (TabIndex < 0) or (TabIndex >= pgMain.PageCount) then Exit;
+
+  R := pgMain.TabRect(TabIndex);
+  ImgWidth := 16;
+  if (pgMain.Images <> nil) and (pgMain.Images.Width > 0) then
+    ImgWidth := pgMain.Images.Width;
+
+  if (X >= R.Left) and (X <= R.Left + ImgWidth + 14) and
+     (Y >= R.Top) and (Y <= R.Bottom) then
+  begin
+    TargetPage := pgMain.Pages[TabIndex];
+    CloseTab(TargetPage);
+  end;
 end;
 
 procedure TfrmMNote.TabSheet1ContextPopup(Sender: TObject; MousePos: TPoint;

@@ -3225,7 +3225,7 @@ object frmmquery2: Tfrmmquery2
     Top = 520
   end
   object SynCompletion1: TSynCompletion
-    Position = 0
+    Position = -1
     LinesInWindow = 6
     OnPositionChanged = SynCompletion1PositionChanged
     SelectedColor = clHighlight

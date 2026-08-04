@@ -7,7 +7,7 @@ object frmChart: TfrmChart
   ClientHeight = 415
   ClientWidth = 583
   Position = poMainFormCenter
-  LCLVersion = '4.0.0.4'
+  LCLVersion = '4.4.0.0'
   object pcChart: TPageControl
     Left = 0
     Height = 415
@@ -137,28 +137,13 @@ object frmChart: TfrmChart
       Caption = 'Chart'
       ClientHeight = 387
       ClientWidth = 575
-      object Chart1: TChart
+      object PaintBox1: TPaintBox
         Left = 0
         Height = 387
         Top = 0
         Width = 575
-        AxisList = <        
-          item
-            Marks.LabelBrush.Style = bsClear
-            Minors = <>
-            Title.LabelFont.Orientation = 900
-            Title.LabelBrush.Style = bsClear
-          end        
-          item
-            Alignment = calBottom
-            Marks.LabelBrush.Style = bsClear
-            Minors = <>
-            Title.LabelBrush.Style = bsClear
-          end>
-        Title.Text.Strings = (
-          'TAChart'
-        )
         Align = alClient
+        OnPaint = PaintBox1Paint
       end
     end
   end

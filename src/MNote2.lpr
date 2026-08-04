@@ -9,7 +9,7 @@ uses
   SysUtils,
   {$IFDEF WINDOWS}Windows,{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, tachartlazaruspkg, synuni, rxnew, pkg_gifanim, indylaz, zcomponent,
+  Forms,
   main, ToolsOuvir,
   {$ifndef Darwin}
   folders, mquery2, pesquisar, triggers, view, Views, benchmark, porradawebapi,

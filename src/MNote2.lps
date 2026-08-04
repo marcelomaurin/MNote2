@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="12"/>
     <BuildModes Active="Default"/>
-    <Units Count="53">
+    <Units Count="61">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -18,9 +18,8 @@
         <ComponentName Value="frmMNote"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
-        <TopLine Value="2655"/>
-        <CursorPos X="50" Y="2683"/>
+        <TopLine Value="4097"/>
+        <CursorPos X="41" Y="4114"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -28,7 +27,7 @@
       <Unit2>
         <Filename Value="classes\item.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="7"/>
         <TopLine Value="590"/>
         <CursorPos Y="606"/>
         <UsageCount Value="213"/>
@@ -51,7 +50,7 @@
       <Unit5>
         <Filename Value="setmain.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="8"/>
+        <EditorIndex Value="12"/>
         <TopLine Value="487"/>
         <CursorPos X="5" Y="532"/>
         <UsageCount Value="213"/>
@@ -84,7 +83,7 @@
         <ComponentName Value="frmFolders"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="9"/>
         <TopLine Value="827"/>
         <CursorPos Y="850"/>
         <UsageCount Value="213"/>
@@ -152,7 +151,7 @@
         <ComponentName Value="frmconfig"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="7"/>
+        <EditorIndex Value="11"/>
         <TopLine Value="84"/>
         <CursorPos Y="97"/>
         <UsageCount Value="213"/>
@@ -171,9 +170,8 @@
         <ComponentName Value="frmmquery2"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="6"/>
-        <TopLine Value="2254"/>
-        <CursorPos X="39" Y="2263"/>
+        <EditorIndex Value="10"/>
+        <CursorPos X="36" Y="13"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -253,10 +251,13 @@
         <ComponentName Value="frmChart"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="295"/>
-        <CursorPos X="25" Y="295"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="489"/>
+        <CursorPos X="5" Y="506"/>
         <UsageCount Value="213"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit30>
       <Unit31>
         <Filename Value="imgjson\jsonmain.pas"/>
@@ -264,7 +265,7 @@
         <ComponentName Value="frmmainJSON"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="6"/>
         <TopLine Value="1036"/>
         <CursorPos X="5" Y="1071"/>
         <UsageCount Value="213"/>
@@ -283,7 +284,7 @@
         <ComponentName Value="dmBase"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
-        <EditorIndex Value="9"/>
+        <EditorIndex Value="13"/>
         <CursorPos Y="693"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
@@ -373,7 +374,7 @@
         <ComponentName Value="frmNewProject"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="4"/>
         <TopLine Value="92"/>
         <CursorPos X="27" Y="107"/>
         <UsageCount Value="202"/>
@@ -392,7 +393,7 @@
       <Unit45>
         <Filename Value="sqlite_db.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="10"/>
+        <EditorIndex Value="14"/>
         <TopLine Value="203"/>
         <CursorPos Y="238"/>
         <UsageCount Value="200"/>
@@ -405,7 +406,7 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="IA"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="8"/>
         <TopLine Value="408"/>
         <CursorPos Y="423"/>
         <UsageCount Value="200"/>
@@ -452,19 +453,137 @@
         <UsageCount Value="20"/>
       </Unit51>
       <Unit52>
-        <Filename Value="classes\antigravity.pas"/>
+        <Filename Value="ia_config.pas"/>
+        <IsPartOfProject Value="True"/>
         <UsageCount Value="20"/>
       </Unit52>
+      <Unit53>
+        <Filename Value="ai\mnote_ai_profile_defaults.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="20"/>
+      </Unit53>
+      <Unit54>
+        <Filename Value="services\mnote_voice_output_service.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="20"/>
+      </Unit54>
+      <Unit55>
+        <Filename Value="voice_output_config.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="20"/>
+      </Unit55>
+      <Unit56>
+        <Filename Value="classes\antigravity.pas"/>
+        <UsageCount Value="20"/>
+      </Unit56>
+      <Unit57>
+        <Filename Value="C:\lazarus\components\tachart\tachartaxisutils.pas"/>
+        <UnitName Value="TAChartAxisUtils"/>
+        <EditorIndex Value="5"/>
+        <CursorPos X="20" Y="18"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit57>
+      <Unit58>
+        <Filename Value="C:\lazarus\components\tachart\tachartaxis.pas"/>
+        <UnitName Value="TAChartAxis"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="3"/>
+        <CursorPos X="3" Y="20"/>
+        <UsageCount Value="10"/>
+      </Unit58>
+      <Unit59>
+        <Filename Value="C:\lazarus\lcl\graphics.pp"/>
+        <UnitName Value="Graphics"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="42"/>
+        <CursorPos X="3" Y="59"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit59>
+      <Unit60>
+        <Filename Value="C:\lazarus\components\lazutils\graphtype.pp"/>
+        <UnitName Value="GraphType"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="27"/>
+        <CursorPos X="3" Y="44"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit60>
     </Units>
-    <JumpHistory Count="2" HistoryIndex="1">
+    <JumpHistory Count="18" HistoryIndex="17">
       <Position1>
         <Filename Value="main.pas"/>
-        <Caret Line="447" Column="12" TopLine="844"/>
+        <Caret Line="2683" Column="50" TopLine="2655"/>
       </Position1>
       <Position2>
         <Filename Value="main.pas"/>
-        <Caret Line="2683" Column="50" TopLine="2655"/>
+        <Caret Line="2664" Column="34" TopLine="2656"/>
       </Position2>
+      <Position3>
+        <Filename Value="main.pas"/>
+        <Caret Line="2675" Column="39" TopLine="2655"/>
+      </Position3>
+      <Position4>
+        <Filename Value="newproject.pas"/>
+        <Caret Line="107" Column="27" TopLine="92"/>
+      </Position4>
+      <Position5>
+        <Filename Value="C:\lazarus\components\tachart\tachartaxisutils.pas"/>
+        <Caret Line="18" Column="20"/>
+      </Position5>
+      <Position6>
+        <Filename Value="mquery2\mquery2.pas"/>
+        <Caret Line="13" Column="36"/>
+      </Position6>
+      <Position7>
+        <Filename Value="main.pas"/>
+        <Caret Line="4114" Column="41" TopLine="4097"/>
+      </Position7>
+      <Position8>
+        <Filename Value="chart.pas"/>
+        <Caret Line="72" TopLine="53"/>
+      </Position8>
+      <Position9>
+        <Filename Value="chart.pas"/>
+        <Caret Line="73" Column="5" TopLine="56"/>
+      </Position9>
+      <Position10>
+        <Filename Value="chart.pas"/>
+        <Caret Line="414" Column="26" TopLine="397"/>
+      </Position10>
+      <Position11>
+        <Filename Value="C:\lazarus\lcl\graphics.pp"/>
+        <Caret Line="679" Column="14" TopLine="663"/>
+      </Position11>
+      <Position12>
+        <Filename Value="C:\lazarus\lcl\graphics.pp"/>
+        <Caret Line="640" Column="5" TopLine="622"/>
+      </Position12>
+      <Position13>
+        <Filename Value="C:\lazarus\lcl\graphics.pp"/>
+        <Caret Line="59" Column="3" TopLine="42"/>
+      </Position13>
+      <Position14>
+        <Filename Value="C:\lazarus\components\lazutils\graphtype.pp"/>
+        <Caret Line="44" Column="3" TopLine="27"/>
+      </Position14>
+      <Position15>
+        <Filename Value="chart.pas"/>
+        <Caret Line="414" Column="13" TopLine="397"/>
+      </Position15>
+      <Position16>
+        <Filename Value="chart.pas"/>
+        <Caret Line="456" Column="13" TopLine="439"/>
+      </Position16>
+      <Position17>
+        <Filename Value="chart.pas"/>
+        <Caret Line="475" Column="15" TopLine="458"/>
+      </Position17>
+      <Position18>
+        <Filename Value="chart.pas"/>
+        <Caret Line="505" Column="5" TopLine="488"/>
+      </Position18>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
