@@ -57,6 +57,12 @@ begin
         else
           AChat.CustomModel := FSetMain.ModelGemini;
       end;
+
+    5:
+      begin
+        AChat.Provider := AIP_CLAUDE;
+        AChat.CustomModel := FSetMain.ModelClaude;
+      end;
   else
     begin
       AChat.Provider := AIP_OPENAI;

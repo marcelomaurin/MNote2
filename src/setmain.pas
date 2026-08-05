@@ -57,6 +57,7 @@ type
     FModelGemini : string;
     FModelOpenRouter : string;
     FModelCerebras : string;
+    FModelClaude : string;
 
     // ===== IA Local =====
     fIPLocalIA : String;
@@ -191,6 +192,7 @@ type
     property ModelGemini : string read FModelGemini write FModelGemini;
     property ModelOpenRouter : string read FModelOpenRouter write FModelOpenRouter;
     property ModelCerebras : string read FModelCerebras write FModelCerebras;
+    property ModelClaude : string read FModelClaude write FModelClaude;
 
     // ===== MySQL =====
     property HostnameMy: string read FHostnameMy write FHostnameMy;
@@ -318,6 +320,7 @@ begin
   FModelGemini := 'gemini-2.5-flash';
   FModelOpenRouter := 'google/gemma-2-9b-it:free';
   FModelCerebras := 'llama3.1-8b';
+  FModelClaude := 'claude-3-5-sonnet-20241022';
 
   // ===== IA Local =====
   fIPLocalIA := 'http://172.17.241.200:8095';
@@ -557,21 +560,6 @@ begin
     FModelGemini := RetiraInfo(arquivo.Strings[posicao])
   else
     FModelGemini := 'gemini-2.5-flash';
-
-  if BuscaChave(arquivo,'MODELOPENROUTER:',posicao) then
-    FModelOpenRouter := RetiraInfo(arquivo.Strings[posicao])
-  else
-    FModelOpenRouter := 'google/gemma-2-9b-it:free';
-
-  if BuscaChave(arquivo,'MODELCEREBRAS:',posicao) then
-    FModelCerebras := RetiraInfo(arquivo.Strings[posicao])
-  else
-    FModelCerebras := 'llama3.1-8b';
-
-  // ===== MySQL =====
-  if BuscaChave(arquivo,'HOSTNAMEMY:',posicao) then
-    FHostnameMy := RetiraInfo(arquivo.Strings[posicao]);
-
   if BuscaChave(arquivo,'BANCOMY:',posicao) then
     FBancoMy := RetiraInfo(arquivo.Strings[posicao]);
 
@@ -828,6 +816,7 @@ begin
   arquivo.Append('MODELGEMINI:'+FModelGemini);
   arquivo.Append('MODELOPENROUTER:'+FModelOpenRouter);
   arquivo.Append('MODELCEREBRAS:'+FModelCerebras);
+  arquivo.Append('MODELCLAUDE:'+FModelClaude);
 
   // ===== MySQL =====
   arquivo.Append('HOSTNAMEMY:'+FHostnameMy);

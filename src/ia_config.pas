@@ -6,7 +6,7 @@ unit ia_config;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, ExtCtrls, StdCtrls, ComCtrls, Dialogs,
+  Classes, SysUtils, Forms, Controls, Graphics, ExtCtrls, StdCtrls, ComCtrls, Dialogs,
   setmain, mnote_ai_service, mnote_ai_types;
 
 type
@@ -15,10 +15,17 @@ type
   TfrmIAConfig = class(TForm)
   private
     FPages: TPageControl;
+    FLblProvider: TLabel;
     FMainProvider: TComboBox;
+    FLblModel: TLabel;
     FMainModel: TComboBox;
+    FLblCustomModel: TLabel;
+    FMainCustomModel: TEdit;
+    FLblLocalIP: TLabel;
     FMainEndpoint: TEdit;
+    FLblToken: TLabel;
     FMainToken: TEdit;
+
     FProvider: array[TMNoteAIRole] of TComboBox;
     FModel: array[TMNoteAIRole] of TEdit;
     FEndpoint: array[TMNoteAIRole] of TEdit;
@@ -29,6 +36,7 @@ type
     FEnabled: array[TMNoteAIRole] of TCheckBox;
     FPrompt: array[TMNoteAIRole] of TMemo;
     FStatus: TLabel;
+
     procedure AddMainPage;
     procedure AddRolePage(ARole: TMNoteAIRole);
     procedure MainProviderChange(Sender: TObject);
@@ -47,23 +55,25 @@ implementation
 uses
   IA, mnote_visual_identity;
 
-procedure AddLabel(AOwner: TComponent; AParent: TWinControl;
-  const ACaption: string; ALeft, ATop: Integer);
-var
-  LabelControl: TLabel;
+function AddLabel(AOwner: TComponent; AParent: TWinControl;
+  const ACaption: string; ALeft, ATop: Integer): TLabel;
 begin
-  LabelControl := TLabel.Create(AOwner);
-  LabelControl.Parent := AParent;
-  LabelControl.Caption := ACaption;
-  LabelControl.Left := ALeft;
-  LabelControl.Top := ATop;
+  Result := TLabel.Create(AOwner);
+  Result.Parent := AParent;
+  Result.Caption := ACaption;
+  Result.Left := ALeft;
+  Result.Top := ATop;
 end;
 
-procedure AddProviders(ACombo: TComboBox; AIncludeClaude: Boolean);
+procedure AddProviders(ACombo: TComboBox);
 begin
-  ACombo.Items.AddStrings(['OpenAI', 'OpenRouter', 'Cerebras', 'Local',
-    'Gemini']);
-  if AIncludeClaude then ACombo.Items.Add('Claude');
+  ACombo.Items.Clear;
+  ACombo.Items.Add('OpenAI');
+  ACombo.Items.Add('OpenRouter');
+  ACombo.Items.Add('Cerebras');
+  ACombo.Items.Add('Local (Ollama)');
+  ACombo.Items.Add('Google Gemini');
+  ACombo.Items.Add('Anthropic Claude');
 end;
 
 constructor TfrmIAConfig.Create(AOwner: TComponent);
@@ -135,34 +145,49 @@ begin
   Page.PageControl := FPages;
   Page.Caption := 'IA principal';
 
-  AddLabel(Self, Page, 'Provider', 24, 24);
+  FLblProvider := AddLabel(Self, Page, 'Provedor IA:', 24, 20);
+  FLblProvider.Font.Style := [fsBold];
+
   FMainProvider := TComboBox.Create(Self);
   FMainProvider.Parent := Page;
   FMainProvider.Style := csDropDownList;
-  AddProviders(FMainProvider, False);
-  FMainProvider.SetBounds(24, 44, 210, 27);
-  if (FSetMain.Provider >= 0) and
-    (FSetMain.Provider < FMainProvider.Items.Count) then
+  AddProviders(FMainProvider);
+  FMainProvider.SetBounds(24, 40, 180, 27);
+  if (FSetMain.Provider >= 0) and (FSetMain.Provider < FMainProvider.Items.Count) then
     FMainProvider.ItemIndex := FSetMain.Provider
   else
     FMainProvider.ItemIndex := 0;
   FMainProvider.OnChange := @MainProviderChange;
 
-  AddLabel(Self, Page, 'Modelo', 256, 24);
+  FLblModel := AddLabel(Self, Page, 'Modelo Sugerido:', 220, 20);
+  FLblModel.Font.Style := [fsBold];
+
   FMainModel := TComboBox.Create(Self);
   FMainModel.Parent := Page;
-  FMainModel.SetBounds(256, 44, 300, 27);
+  FMainModel.Style := csDropDownList;
+  FMainModel.SetBounds(220, 40, 230, 27);
 
-  AddLabel(Self, Page, 'Endpoint da IA local', 24, 96);
+  FLblCustomModel := AddLabel(Self, Page, 'Modelo Customizado:', 465, 20);
+  FLblCustomModel.Font.Style := [fsBold];
+
+  FMainCustomModel := TEdit.Create(Self);
+  FMainCustomModel.Parent := Page;
+  FMainCustomModel.SetBounds(465, 40, 230, 27);
+
+  FLblLocalIP := AddLabel(Self, Page, 'URL Local / IP:', 24, 85);
+  FLblLocalIP.Font.Style := [fsBold];
+
   FMainEndpoint := TEdit.Create(Self);
   FMainEndpoint.Parent := Page;
-  FMainEndpoint.SetBounds(24, 116, 532, 27);
+  FMainEndpoint.SetBounds(24, 105, 671, 27);
   FMainEndpoint.Text := FSetMain.IPLocalIA;
 
-  AddLabel(Self, Page, 'Token da API (não é necessário para IA local)', 24, 168);
+  FLblToken := AddLabel(Self, Page, 'Chave API / Token:', 24, 150);
+  FLblToken.Font.Style := [fsBold];
+
   FMainToken := TEdit.Create(Self);
   FMainToken.Parent := Page;
-  FMainToken.SetBounds(24, 188, 532, 27);
+  FMainToken.SetBounds(24, 170, 671, 27);
   FMainToken.PasswordChar := '*';
   FMainToken.Text := FSetMain.CHATGPT;
 
@@ -170,22 +195,22 @@ begin
   Info.Parent := Page;
   Info.AutoSize := False;
   Info.WordWrap := True;
-  Info.SetBounds(24, 242, 650, 62);
+  Info.SetBounds(24, 225, 671, 60);
   Info.Caption := 'A IA principal atende o chat comum. As outras abas são ' +
-    'perfis especializados e podem usar providers, modelos e endpoints ' +
+    'perfis especializados e podem usar provedores, modelos e endpoints ' +
     'diferentes no mesmo MNote2.';
 
   ButtonControl := TButton.Create(Self);
   ButtonControl.Parent := Page;
   ButtonControl.Caption := 'Aplicar principal a todos os perfis';
-  ButtonControl.SetBounds(24, 320, 240, 30);
+  ButtonControl.SetBounds(24, 295, 250, 30);
   ButtonControl.OnClick := @ApplyMainClick;
 
   Info := TLabel.Create(Self);
   Info.Parent := Page;
   Info.AutoSize := False;
   Info.WordWrap := True;
-  Info.SetBounds(24, 366, 650, 48);
+  Info.SetBounds(24, 340, 671, 48);
   Info.Caption := 'Use o botão acima para começar com uma única IA. Depois, ' +
     'altere individualmente somente os perfis que devem usar outra IA.';
 
@@ -193,31 +218,92 @@ begin
 end;
 
 procedure TfrmIAConfig.MainProviderChange(Sender: TObject);
+var
+  CurrentModel: string;
+  Idx: Integer;
 begin
   FMainModel.Items.Clear;
   case FMainProvider.ItemIndex of
-    0: FMainModel.Items.AddStrings(['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo',
-      'gpt-4', 'gpt-3.5-turbo', 'o1-mini']);
-    1: FMainModel.Items.AddStrings(['google/gemma-2-9b-it:free',
-      'meta-llama/llama-3-8b-instruct:free',
-      'mistralai/mistral-7b-instruct:free',
-      'microsoft/phi-3-medium-128k-instruct:free',
-      'deepseek/deepseek-chat']);
-    2: FMainModel.Items.AddStrings(['llama3.1-8b', 'llama3.1-70b',
-      'llama-3.3-70b']);
-    3: FMainModel.Items.AddStrings(['llama3.2:3b', 'mistral', 'gemma2',
-      'deepseek-r1:1.5b', 'deepseek-r1:8b', 'qwen2.5:14b']);
-    4: FMainModel.Items.AddStrings(['gemini-1.5-flash', 'gemini-1.5-pro',
-      'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-3.5-flash']);
-  end;
-  case FMainProvider.ItemIndex of
-    0: FMainModel.Text := FSetMain.ModelOpenAI;
-    1: FMainModel.Text := FSetMain.ModelOpenRouter;
-    2: FMainModel.Text := FSetMain.ModelCerebras;
-    3: FMainModel.Text := FSetMain.ModelLocal;
-    4: FMainModel.Text := FSetMain.ModelGemini;
+    0: // OpenAI
+      begin
+        FMainModel.Items.Add('gpt-4o');
+        FMainModel.Items.Add('gpt-4o-mini');
+        FMainModel.Items.Add('o3-mini');
+        CurrentModel := FSetMain.ModelOpenAI;
+        FLblToken.Enabled := True;
+        FMainToken.Enabled := True;
+        FLblLocalIP.Enabled := False;
+        FMainEndpoint.Enabled := False;
+      end;
+    1: // OpenRouter
+      begin
+        FMainModel.Items.Add('meta-llama/llama-3-8b-instruct:free');
+        FMainModel.Items.Add('google/gemma-2-9b-it:free');
+        FMainModel.Items.Add('deepseek/deepseek-r1:free');
+        CurrentModel := FSetMain.ModelOpenRouter;
+        FLblToken.Enabled := True;
+        FMainToken.Enabled := True;
+        FLblLocalIP.Enabled := False;
+        FMainEndpoint.Enabled := False;
+      end;
+    2: // Cerebras
+      begin
+        FMainModel.Items.Add('qwen-3-235b');
+        FMainModel.Items.Add('llama3.1-8b');
+        FMainModel.Items.Add('llama-3.3-70b');
+        CurrentModel := FSetMain.ModelCerebras;
+        FLblToken.Enabled := True;
+        FMainToken.Enabled := True;
+        FLblLocalIP.Enabled := False;
+        FMainEndpoint.Enabled := False;
+      end;
+    3: // Local (Ollama)
+      begin
+        FMainModel.Items.Add('llama3.2:3b');
+        FMainModel.Items.Add('qwen2.5:1.5b');
+        FMainModel.Items.Add('deepseek-r1:1.5b');
+        FMainModel.Items.Add('deepseek-r1:8b');
+        CurrentModel := FSetMain.ModelLocal;
+        FLblToken.Enabled := False;
+        FMainToken.Enabled := False;
+        FLblLocalIP.Enabled := True;
+        FMainEndpoint.Enabled := True;
+      end;
+    4: // Google Gemini
+      begin
+        FMainModel.Items.Add('gemini-2.5-flash');
+        FMainModel.Items.Add('gemini-2.5-pro');
+        FMainModel.Items.Add('gemini-2.0-flash');
+        CurrentModel := FSetMain.ModelGemini;
+        FLblToken.Enabled := True;
+        FMainToken.Enabled := True;
+        FLblLocalIP.Enabled := False;
+        FMainEndpoint.Enabled := False;
+      end;
+    5: // Anthropic Claude
+      begin
+        FMainModel.Items.Add('claude-3-5-sonnet-20241022');
+        FMainModel.Items.Add('claude-3-5-haiku-20241022');
+        CurrentModel := FSetMain.ModelClaude;
+        FLblToken.Enabled := True;
+        FMainToken.Enabled := True;
+        FLblLocalIP.Enabled := False;
+        FMainEndpoint.Enabled := False;
+      end;
   else
-    FMainModel.Text := '';
+    CurrentModel := '';
+  end;
+
+  Idx := FMainModel.Items.IndexOf(CurrentModel);
+  if Idx >= 0 then
+  begin
+    FMainModel.ItemIndex := Idx;
+    FMainCustomModel.Text := '';
+  end
+  else
+  begin
+    if FMainModel.Items.Count > 0 then FMainModel.ItemIndex := 0;
+    FMainCustomModel.Text := CurrentModel;
   end;
 end;
 
@@ -231,21 +317,21 @@ begin
   Page.PageControl := FPages;
   Page.Caption := MNoteAIRoleName(ARole);
 
-  AddLabel(Self, Page, 'Provider', 16, 18);
+  AddLabel(Self, Page, 'Provedor IA:', 16, 18);
   FProvider[ARole] := TComboBox.Create(Self);
   FProvider[ARole].Parent := Page;
   FProvider[ARole].Style := csDropDownList;
-  AddProviders(FProvider[ARole], True);
+  AddProviders(FProvider[ARole]);
   FProvider[ARole].SetBounds(16, 38, 180, 25);
   FProvider[ARole].ItemIndex := Config.Provider;
 
-  AddLabel(Self, Page, 'Modelo', 215, 18);
+  AddLabel(Self, Page, 'Modelo:', 215, 18);
   FModel[ARole] := TEdit.Create(Self);
   FModel[ARole].Parent := Page;
   FModel[ARole].SetBounds(215, 38, 210, 25);
   FModel[ARole].Text := Config.ModelName;
 
-  AddLabel(Self, Page, 'Endpoint (opcional)', 445, 18);
+  AddLabel(Self, Page, 'URL Local / IP:', 445, 18);
   FEndpoint[ARole] := TEdit.Create(Self);
   FEndpoint[ARole].Parent := Page;
   FEndpoint[ARole].SetBounds(445, 38, 260, 25);
@@ -293,33 +379,53 @@ end;
 procedure TfrmIAConfig.ApplyMainClick(Sender: TObject);
 var
   Role: TMNoteAIRole;
+  SelectedModel: string;
 begin
+  if Trim(FMainCustomModel.Text) <> '' then
+    SelectedModel := Trim(FMainCustomModel.Text)
+  else
+    SelectedModel := Trim(FMainModel.Text);
+
   for Role := Low(TMNoteAIRole) to High(TMNoteAIRole) do
   begin
     FProvider[Role].ItemIndex := FMainProvider.ItemIndex;
-    FModel[Role].Text := Trim(FMainModel.Text);
+    FModel[Role].Text := SelectedModel;
     FEndpoint[Role].Text := Trim(FMainEndpoint.Text);
   end;
   FStatus.Caption := 'IA principal aplicada aos controles de todos os perfis.';
 end;
 
 function TfrmIAConfig.StoreMain(out AError: string): Boolean;
+var
+  SelectedModel: string;
 begin
   AError := '';
   if FMainProvider.ItemIndex < 0 then
   begin
-    AError := 'Selecione o provider da IA principal.';
+    AError := 'Selecione o provedor da IA principal.';
     Exit(False);
   end;
-  if Trim(FMainModel.Text) = '' then
+
+  if Trim(FMainCustomModel.Text) <> '' then
+    SelectedModel := Trim(FMainCustomModel.Text)
+  else
+    SelectedModel := Trim(FMainModel.Text);
+
+  if SelectedModel = '' then
   begin
-    AError := 'Informe o modelo da IA principal.';
+    AError := 'Informe ou selecione o modelo da IA principal.';
     Exit(False);
   end;
-  if (FMainProvider.ItemIndex = 3) and
-    (Trim(FMainEndpoint.Text) = '') then
+
+  if (FMainProvider.ItemIndex = 3) and (Trim(FMainEndpoint.Text) = '') then
   begin
-    AError := 'Informe o endpoint da IA local.';
+    AError := 'Por favor, informe a URL Local / IP para a IA local (Ollama).';
+    Exit(False);
+  end;
+
+  if (FMainProvider.ItemIndex in [0, 1, 2, 4, 5]) and (Trim(FMainToken.Text) = '') then
+  begin
+    AError := 'Por favor, informe a Chave API / Token para o provedor selecionado.';
     Exit(False);
   end;
 
@@ -327,11 +433,12 @@ begin
   FSetMain.CHATGPT := FMainToken.Text;
   FSetMain.IPLocalIA := Trim(FMainEndpoint.Text);
   case FSetMain.Provider of
-    0: FSetMain.ModelOpenAI := Trim(FMainModel.Text);
-    1: FSetMain.ModelOpenRouter := Trim(FMainModel.Text);
-    2: FSetMain.ModelCerebras := Trim(FMainModel.Text);
-    3: FSetMain.ModelLocal := Trim(FMainModel.Text);
-    4: FSetMain.ModelGemini := Trim(FMainModel.Text);
+    0: FSetMain.ModelOpenAI := SelectedModel;
+    1: FSetMain.ModelOpenRouter := SelectedModel;
+    2: FSetMain.ModelCerebras := SelectedModel;
+    3: FSetMain.ModelLocal := SelectedModel;
+    4: FSetMain.ModelGemini := SelectedModel;
+    5: FSetMain.ModelClaude := SelectedModel;
   end;
   Result := True;
 end;
