@@ -19,8 +19,6 @@ type
     FMainProvider: TComboBox;
     FLblModel: TLabel;
     FMainModel: TComboBox;
-    FLblCustomModel: TLabel;
-    FMainCustomModel: TEdit;
     FLblLocalIP: TLabel;
     FMainEndpoint: TEdit;
     FLblToken: TLabel;
@@ -28,8 +26,8 @@ type
 
     FProvider: array[TMNoteAIRole] of TComboBox;
     FModel: array[TMNoteAIRole] of TComboBox;
-    FCustomModel: array[TMNoteAIRole] of TEdit;
     FEndpoint: array[TMNoteAIRole] of TEdit;
+    FToken: array[TMNoteAIRole] of TEdit;
     FInputBudget: array[TMNoteAIRole] of TEdit;
     FOutputBudget: array[TMNoteAIRole] of TEdit;
     FContextWindow: array[TMNoteAIRole] of TEdit;
@@ -199,27 +197,20 @@ begin
   FMainProvider.Parent := Page;
   FMainProvider.Style := csDropDownList;
   AddProviders(FMainProvider);
-  FMainProvider.SetBounds(24, 40, 180, 27);
+  FMainProvider.SetBounds(24, 40, 200, 27);
   if (FSetMain.Provider >= 0) and (FSetMain.Provider < FMainProvider.Items.Count) then
     FMainProvider.ItemIndex := FSetMain.Provider
   else
     FMainProvider.ItemIndex := 0;
   FMainProvider.OnChange := @MainProviderChange;
 
-  FLblModel := AddLabel(Self, Page, 'Modelo Sugerido:', 220, 20);
+  FLblModel := AddLabel(Self, Page, 'Modelo Sugerido:', 245, 20);
   FLblModel.Font.Style := [fsBold];
 
   FMainModel := TComboBox.Create(Self);
   FMainModel.Parent := Page;
   FMainModel.Style := csDropDown; // Permite escolha e digitação
-  FMainModel.SetBounds(220, 40, 230, 27);
-
-  FLblCustomModel := AddLabel(Self, Page, 'Modelo Customizado:', 465, 20);
-  FLblCustomModel.Font.Style := [fsBold];
-
-  FMainCustomModel := TEdit.Create(Self);
-  FMainCustomModel.Parent := Page;
-  FMainCustomModel.SetBounds(465, 40, 230, 27);
+  FMainModel.SetBounds(245, 40, 450, 27);
 
   FLblLocalIP := AddLabel(Self, Page, 'URL Local / IP:', 24, 85);
   FLblLocalIP.Font.Style := [fsBold];
@@ -289,15 +280,9 @@ begin
 
   Idx := FMainModel.Items.IndexOf(CurrentModel);
   if Idx >= 0 then
-  begin
-    FMainModel.ItemIndex := Idx;
-    FMainCustomModel.Text := '';
-  end
+    FMainModel.ItemIndex := Idx
   else
-  begin
     FMainModel.Text := CurrentModel;
-    FMainCustomModel.Text := CurrentModel;
-  end;
 end;
 
 procedure TfrmIAConfig.AddRolePage(ARole: TMNoteAIRole);
@@ -320,26 +305,19 @@ begin
   FProvider[ARole].Style := csDropDownList;
   FProvider[ARole].Tag := Ord(ARole);
   AddProviders(FProvider[ARole]);
-  FProvider[ARole].SetBounds(16, 38, 180, 25);
+  FProvider[ARole].SetBounds(16, 38, 200, 25);
   if (Config.Provider >= 0) and (Config.Provider < FProvider[ARole].Items.Count) then
     FProvider[ARole].ItemIndex := Config.Provider
   else
     FProvider[ARole].ItemIndex := 0;
 
-  Lbl := AddLabel(Self, Page, 'Modelo Sugerido:', 215, 18);
+  Lbl := AddLabel(Self, Page, 'Modelo Sugerido:', 230, 18);
   Lbl.Font.Style := [fsBold];
 
   FModel[ARole] := TComboBox.Create(Self);
   FModel[ARole].Parent := Page;
   FModel[ARole].Style := csDropDown; // Permite escolha e digitação
-  FModel[ARole].SetBounds(215, 38, 210, 25);
-
-  Lbl := AddLabel(Self, Page, 'Modelo Customizado:', 445, 18);
-  Lbl.Font.Style := [fsBold];
-
-  FCustomModel[ARole] := TEdit.Create(Self);
-  FCustomModel[ARole].Parent := Page;
-  FCustomModel[ARole].SetBounds(445, 38, 260, 25);
+  FModel[ARole].SetBounds(230, 38, 475, 25);
 
   Lbl := AddLabel(Self, Page, 'URL Local / IP:', 16, 75);
   Lbl.Font.Style := [fsBold];
@@ -349,40 +327,49 @@ begin
   FEndpoint[ARole].SetBounds(16, 95, 689, 25);
   FEndpoint[ARole].Text := Config.Endpoint;
 
-  AddLabel(Self, Page, 'Entrada', 16, 135);
+  Lbl := AddLabel(Self, Page, 'Chave API / Token:', 16, 130);
+  Lbl.Font.Style := [fsBold];
+
+  FToken[ARole] := TEdit.Create(Self);
+  FToken[ARole].Parent := Page;
+  FToken[ARole].SetBounds(16, 150, 689, 25);
+  FToken[ARole].PasswordChar := '*';
+  FToken[ARole].Text := FSetMain.CHATGPT;
+
+  AddLabel(Self, Page, 'Entrada', 16, 190);
   FInputBudget[ARole] := TEdit.Create(Self);
   FInputBudget[ARole].Parent := Page;
-  FInputBudget[ARole].SetBounds(16, 155, 90, 25);
+  FInputBudget[ARole].SetBounds(16, 210, 90, 25);
   FInputBudget[ARole].Text := IntToStr(Config.InputBudget);
 
-  AddLabel(Self, Page, 'Saída', 125, 135);
+  AddLabel(Self, Page, 'Saída', 125, 190);
   FOutputBudget[ARole] := TEdit.Create(Self);
   FOutputBudget[ARole].Parent := Page;
-  FOutputBudget[ARole].SetBounds(125, 155, 90, 25);
+  FOutputBudget[ARole].SetBounds(125, 210, 90, 25);
   FOutputBudget[ARole].Text := IntToStr(Config.OutputBudget);
 
-  AddLabel(Self, Page, 'Janela (0 = desconhecida)', 235, 135);
+  AddLabel(Self, Page, 'Janela (0 = desconhecida)', 235, 190);
   FContextWindow[ARole] := TEdit.Create(Self);
   FContextWindow[ARole].Parent := Page;
-  FContextWindow[ARole].SetBounds(235, 155, 120, 25);
+  FContextWindow[ARole].SetBounds(235, 210, 120, 25);
   FContextWindow[ARole].Text := IntToStr(Config.ContextWindow);
 
-  AddLabel(Self, Page, 'Temperatura', 375, 135);
+  AddLabel(Self, Page, 'Temperatura', 375, 190);
   FTemperature[ARole] := TEdit.Create(Self);
   FTemperature[ARole].Parent := Page;
-  FTemperature[ARole].SetBounds(375, 155, 90, 25);
+  FTemperature[ARole].SetBounds(375, 210, 90, 25);
   FTemperature[ARole].Text := FloatToStr(Config.Temperature);
 
   FEnabled[ARole] := TCheckBox.Create(Self);
   FEnabled[ARole].Parent := Page;
   FEnabled[ARole].Caption := 'Perfil habilitado';
-  FEnabled[ARole].SetBounds(490, 153, 150, 25);
+  FEnabled[ARole].SetBounds(490, 208, 150, 25);
   FEnabled[ARole].Checked := Config.Enabled;
 
-  AddLabel(Self, Page, 'Prompt de sistema (não armazene segredos)', 16, 195);
+  AddLabel(Self, Page, 'Prompt de sistema (não armazene segredos)', 16, 245);
   FPrompt[ARole] := TMemo.Create(Self);
   FPrompt[ARole].Parent := Page;
-  FPrompt[ARole].SetBounds(16, 215, 689, 290);
+  FPrompt[ARole].SetBounds(16, 265, 689, 240);
   FPrompt[ARole].Anchors := [akLeft, akTop, akRight, akBottom];
   FPrompt[ARole].ScrollBars := ssVertical;
   FPrompt[ARole].Text := Config.SystemPrompt;
@@ -392,15 +379,9 @@ begin
 
   Idx := FModel[ARole].Items.IndexOf(Config.ModelName);
   if Idx >= 0 then
-  begin
-    FModel[ARole].ItemIndex := Idx;
-    FCustomModel[ARole].Text := '';
-  end
+    FModel[ARole].ItemIndex := Idx
   else
-  begin
     FModel[ARole].Text := Config.ModelName;
-    FCustomModel[ARole].Text := Config.ModelName;
-  end;
 end;
 
 procedure TfrmIAConfig.RoleProviderChange(Sender: TObject);
@@ -417,6 +398,7 @@ begin
   PopulateSuggestedModels(FProvider[Role].ItemIndex, FModel[Role]);
 
   FEndpoint[Role].Enabled := (FProvider[Role].ItemIndex = 3);
+  FToken[Role].Enabled := (FProvider[Role].ItemIndex in [0, 1, 2, 4, 5]);
 
   CurrentModel := FModel[Role].Text;
   Idx := FModel[Role].Items.IndexOf(CurrentModel);
@@ -431,18 +413,15 @@ var
   Role: TMNoteAIRole;
   SelectedModel: string;
 begin
-  if Trim(FMainCustomModel.Text) <> '' then
-    SelectedModel := Trim(FMainCustomModel.Text)
-  else
-    SelectedModel := Trim(FMainModel.Text);
+  SelectedModel := Trim(FMainModel.Text);
 
   for Role := Low(TMNoteAIRole) to High(TMNoteAIRole) do
   begin
     FProvider[Role].ItemIndex := FMainProvider.ItemIndex;
     RoleProviderChange(FProvider[Role]);
     FModel[Role].Text := SelectedModel;
-    FCustomModel[Role].Text := FMainCustomModel.Text;
     FEndpoint[Role].Text := Trim(FMainEndpoint.Text);
+    FToken[Role].Text := Trim(FMainToken.Text);
   end;
   FStatus.Caption := 'IA principal aplicada aos controles de todos os perfis.';
 end;
@@ -458,11 +437,7 @@ begin
     Exit(False);
   end;
 
-  if Trim(FMainCustomModel.Text) <> '' then
-    SelectedModel := Trim(FMainCustomModel.Text)
-  else
-    SelectedModel := Trim(FMainModel.Text);
-
+  SelectedModel := Trim(FMainModel.Text);
   if SelectedModel = '' then
   begin
     AError := 'Informe ou selecione o modelo da IA principal.';
@@ -499,20 +474,15 @@ function TfrmIAConfig.StoreProfiles(out AError: string): Boolean;
 var
   Role: TMNoteAIRole;
   Config: TMNoteAIProfileConfig;
-  SelectedModel: string;
 begin
   for Role := Low(TMNoteAIRole) to High(TMNoteAIRole) do
   begin
     Config := MNoteAI.Profiles.Profile(Role).Config;
     Config.Provider := FProvider[Role].ItemIndex;
-
-    if Trim(FCustomModel[Role].Text) <> '' then
-      SelectedModel := Trim(FCustomModel[Role].Text)
-    else
-      SelectedModel := Trim(FModel[Role].Text);
-
-    Config.ModelName := SelectedModel;
+    Config.ModelName := Trim(FModel[Role].Text);
     Config.Endpoint := Trim(FEndpoint[Role].Text);
+    if Trim(FToken[Role].Text) <> '' then
+      FSetMain.CHATGPT := Trim(FToken[Role].Text);
     Config.InputBudget := StrToIntDef(FInputBudget[Role].Text, 0);
     Config.OutputBudget := StrToIntDef(FOutputBudget[Role].Text, 0);
     Config.ContextWindow := StrToIntDef(FContextWindow[Role].Text, 0);

@@ -7,7 +7,7 @@ interface
 
 uses
   Classes, SysUtils, fpjson, jsonparser, SyncObjs, chatgpt, aibase,
-  aiagent_memorymap, mnote_ai_types;
+  aiagent_memorymap, mnote_ai_types, setmain;
 
 type
   { TMNoteAIProfile }
@@ -91,6 +91,7 @@ begin
     FClient.Provider := TAIProvider(FConfig.Provider);
   if FConfig.ModelName <> '' then FClient.CustomModel := FConfig.ModelName;
   if FConfig.Endpoint <> '' then FClient.LocalIP := FConfig.Endpoint;
+  FClient.TOKEN := FSetMain.CHATGPT;
   FClient.MaxTokens := FConfig.OutputBudget;
   FClient.Temperature := FConfig.Temperature;
 end;
