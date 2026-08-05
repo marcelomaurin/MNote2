@@ -27,7 +27,7 @@ uses
   mnote_git_read_service, mnote_files_panel, mnote_components_lab_panel,
   mnote_project_context, mnote_solution_explorer_panel,
   mnote_neural_api_bootstrap, mnote_memory_map_panel,
-  voice_output_config, mnote_voice_output_service, mnote_visual_identity;
+  voice_output_config, confpython, mnote_voice_output_service, mnote_visual_identity;
 
 type
 
@@ -112,6 +112,7 @@ type
     miConfig: TMenuItem;
     miIAConfig: TMenuItem;
     miVoiceOutputConfig: TMenuItem;
+    miPythonConfig: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem4: TMenuItem;
     MenuItem9: TMenuItem;
@@ -223,6 +224,7 @@ type
     procedure miConfigClick(Sender: TObject);
     procedure miIAConfigClick(Sender: TObject);
     procedure miVoiceOutputConfigClick(Sender: TObject);
+    procedure miPythonConfigClick(Sender: TObject);
     procedure miUndoClick(Sender: TObject);
     procedure mnFixWClick(Sender: TObject);
     procedure mnOnTopWClick(Sender: TObject);
@@ -2965,6 +2967,7 @@ begin
   MNoteApplyVisualIdentity(Self);
 
   frmSplash.UpdateStatus('Finalizando a inicialização...', 96);
+  (*
   try
     RegistraEventosLog('Startup: Instanciando frmRegistrar e executando Identifica...');
     frmRegistrar := TfrmRegistrar.Create(self);
@@ -2973,7 +2976,9 @@ begin
     on E: Exception do
       RegistraEventosLog('Startup [AVISO]: Excecao no registro/SSL isolada com sucesso: ' + E.Message);
   end;
+  *)
   RegistraEventosLog('Startup [OK]: Inicializacao da IDE concluida com sucesso (' + plataforma + ')');
+
 end;
 
 procedure TfrmMNote.CarregaContexto();
@@ -4011,6 +4016,16 @@ end;
 procedure TfrmMNote.miVoiceOutputConfigClick(Sender: TObject);
 begin
   with TfrmVoiceOutputConfig.Create(Self) do
+  try
+    ShowModal;
+  finally
+    Free;
+  end;
+end;
+
+procedure TfrmMNote.miPythonConfigClick(Sender: TObject);
+begin
+  with TfrmconfPython.Create(Self) do
   try
     ShowModal;
   finally

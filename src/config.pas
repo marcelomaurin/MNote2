@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, EditBtn,
-  ComCtrls, IPEdit, setmain, mnote_python_service, pythonconnector;
+  ComCtrls, IPEdit, setmain;
 
 type
 
@@ -20,7 +20,6 @@ type
     edDebug: TFileNameEdit;
     edCompile: TFileNameEdit;
     edDLLPostPATH: TFileNameEdit;
-    edDLLPATH: TFileNameEdit;
     edDLLMyPATH: TFileNameEdit;
     edDLLMSSQLPATH: TFileNameEdit;
     edDLLOraclePATH: TFileNameEdit;
@@ -33,23 +32,17 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
-    Label6: TLabel;
     Label7: TLabel;
     Label8: TLabel;
     Label9: TLabel;
     lbIP1: TLabel;
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
-    TabSheet3: TTabSheet;
     TabSheet4: TTabSheet;
     tsToolsOuvir: TTabSheet;
-    chkUsePythonConnector: TCheckBox;
-    cbPythonExecutionMode: TComboBox;
-    btTestarPython: TButton;
     procedure btCancelClick(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure btTestarPythonClick(Sender: TObject);
   private
 
   public
@@ -72,15 +65,12 @@ begin
   FSetMain.CleanScript := edClean.Text;
   FSetMain.RunScript := edRun.Text;
   FSetMain.DebugScript := edDebug.Text;
-  FSetMain.DLLPath := edDLLPATH.Text;
   FSetMain.DLLMYPath := edDLLMYPATH.Text;
   FSetMain.DLLPOSTPath := edDLLPOSTPATH.Text;
   FSetMain.DLLMSSQLPath := edDLLMSSQLPATH.Text;
   FSetMain.DLLOraclePath := edDLLOraclePATH.Text;
   FSetMain.ToolsOuvir := ckToolsOuvir.Checked;
   FSetMain.IPOUVIR := edIPOUVIR.Text;
-  FSetMain.UsePythonConnector := chkUsePythonConnector.Checked;
-  FSetMain.PythonExecutionMode := cbPythonExecutionMode.ItemIndex;
 
   FSetMain.SalvaContexto(False);
   Close;
@@ -93,49 +83,17 @@ begin
   edClean.Text := FSetMain.CleanScript;
   edRun.Text := FSetMain.RunScript;
   edDebug.Text := FSetMain.DebugScript;
-  edDLLPATH.Text := FSetMain.DLLPath;
   edDLLMyPATH.Text := FSetMain.DLLMyPath;
   edDLLPostPATH.Text := FSetMain.DLLPostPath;
   edDLLMSSQLPATH.Text := FSetMain.DLLMSSQLPath;
   edDLLOraclePATH.Text := FSetMain.DLLOraclePath;
   ckToolsOuvir.Checked := FSetMain.ToolsOuvir;
   edIPOUVIR.Text := FSetMain.IPOUVIR;
-  chkUsePythonConnector.Checked := FSetMain.UsePythonConnector;
-  cbPythonExecutionMode.ItemIndex := FSetMain.PythonExecutionMode;
-
 end;
 
 procedure Tfrmconfig.btCancelClick(Sender: TObject);
 begin
   Close;
-end;
-
-procedure Tfrmconfig.btTestarPythonClick(Sender: TObject);
-var
-  Py: TMNotePythonService;
-  Report: TStringList;
-  Code: string;
-begin
-  Py := TMNotePythonService.Create(Self);
-  Report := TStringList.Create;
-  try
-    if cbPythonExecutionMode.ItemIndex = 0 then
-      Py.Python.ExecutionMode := pemDLL
-    else
-      Py.Python.ExecutionMode := pemProcess;
-
-    Code := 'import sys' + LineEnding + 'print("Versao Python:", sys.version)';
-    if Py.ExecuteCode(Code) then
-      ShowMessage('Sucesso!' + LineEnding + Py.LastOutput)
-    else
-    begin
-      Py.GetDiagnosticReport(Report);
-      ShowMessage('Erro: ' + Py.LastError + LineEnding + LineEnding + Report.Text);
-    end;
-  finally
-    Report.Free;
-    Py.Free;
-  end;
 end;
 
 end.
