@@ -968,9 +968,16 @@ procedure TfrmMNote.FocarSynEdit(Data: PtrInt);
 var
   ASyn: TSynEdit;
 begin
-  ASyn := TSynEdit(Data);
-  if (ASyn <> nil) and ASyn.CanFocus then
-    ASyn.SetFocus;
+  try
+    ASyn := TSynEdit(Data);
+    if (ASyn <> nil) and (pgMain <> nil) and (pgMain.ActivePage <> nil) and
+       (ASyn.Parent = pgMain.ActivePage) and ASyn.CanFocus then
+    begin
+      ASyn.SetFocus;
+    end;
+  except
+    // Ignora silenciosamente falha de foco se o controle/form não estiver pronto
+  end;
 end;
 
 procedure TfrmMNote.Carregar(arquivo : String);
@@ -1111,8 +1118,14 @@ begin
     syn.Visible := True;
     syn.BringToFront;
     syn.Invalidate;
-    if syn.CanFocus then
+    try
+      if syn.CanFocus then
+        syn.SetFocus
+      else
+        Application.QueueAsyncCall(@FocarSynEdit, PtrInt(syn));
+    except
       Application.QueueAsyncCall(@FocarSynEdit, PtrInt(syn));
+    end;
   end;
   pgMain.Refresh;
   Application.ProcessMessages;
