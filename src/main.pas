@@ -378,6 +378,7 @@ type
     procedure CommandAIComponentsLab(Sender: TObject);
     procedure OpenInventoryFile(Sender: TObject; const AFileName: string);
     procedure RetryAIChangeContract(Data: PtrInt);
+    procedure FocarSynEdit(Data: PtrInt);
     procedure StartCodeAction(AAction: TMNoteAICodeAction;
       const ATitle: string);
     procedure AIStateChanged(Sender: TObject; AState: TMNoteAIState);
@@ -963,6 +964,15 @@ begin
   result := resultado;
 end;
 
+procedure TfrmMNote.FocarSynEdit(Data: PtrInt);
+var
+  ASyn: TSynEdit;
+begin
+  ASyn := TSynEdit(Data);
+  if (ASyn <> nil) and ASyn.CanFocus then
+    ASyn.SetFocus;
+end;
+
 procedure TfrmMNote.Carregar(arquivo : String);
 var
   tb  : TTabSheet;
@@ -1102,7 +1112,7 @@ begin
     syn.BringToFront;
     syn.Invalidate;
     if syn.CanFocus then
-      syn.SetFocus;
+      Application.QueueAsyncCall(@FocarSynEdit, PtrInt(syn));
   end;
   pgMain.Refresh;
   Application.ProcessMessages;
