@@ -977,66 +977,116 @@ var
   idx : Integer;
   ext : string;
   txt : string;
+  fileSize: Int64;
+  SR: TSearchRec;
 begin
+  RegistraEventosLog('--------------------------------------------------');
+  RegistraEventosLog('[Ponto 1] Carregar: Solicitada carga do arquivo: "' + arquivo + '"');
+
+  // Ponto 1: Verificação de existência e tamanho do arquivo
   if not FileExists(arquivo) then
   begin
+    RegistraEventosLog('[Ponto 1 ERRO]: Arquivo nao existe no disco: ' + arquivo);
     MessageHint(arquivo + ' not exists');
     Exit;
   end;
 
+  fileSize := 0;
+  if FindFirst(arquivo, faAnyFile, SR) = 0 then
+  begin
+    fileSize := SR.Size;
+    FindClose(SR);
+  end;
+  RegistraEventosLog(Format('[Ponto 1 OK]: Arquivo encontrado no disco. Tamanho: %d bytes', [fileSize]));
+
+  // Ponto 2: Verificação se o arquivo já está aberto em alguma aba
   idx := FindFilePage(arquivo);
   if idx <> -1 then
   begin
     pgMain.ActivePageIndex := idx;
+    RegistraEventosLog(Format('[Ponto 2 REUTILIZA]: Arquivo ja esta aberto no indice %d do pgMain. Aba reativada.', [idx]));
+    UpdateIDEStatus;
+    Exit;
+  end;
+  RegistraEventosLog('[Ponto 2 OK]: Arquivo nao estava aberto. Prosseguindo para criar nova aba.');
+
+  // Ponto 3: Instanciação da aba e dos componentes (NovoItem)
+  RegistraEventosLog('[Ponto 3]: Invocando NovoItem()...');
+  tb := NovoItem();
+  if (tb = nil) or (tb.Tag = 0) then
+  begin
+    RegistraEventosLog('[Ponto 3 ERRO]: NovoItem() falhou ou retornou Tag=0');
+    MessageHint('Erro ao criar aba no editor');
     Exit;
   end;
 
-  tb := NovoItem();
   item := TItem(tb.Tag);
+  if (item = nil) then
+  begin
+    RegistraEventosLog('[Ponto 3 ERRO]: Objeto TItem(tb.Tag) e nil');
+    Exit;
+  end;
 
+  syn := item.syn;
+  if (syn = nil) then
+  begin
+    RegistraEventosLog('[Ponto 3 ERRO]: Instancia syn (TSynEdit) no TItem e nil');
+    Exit;
+  end;
+  RegistraEventosLog(Format('[Ponto 3 OK]: Aba instanciada com sucesso. (Caption Inicial: "%s", Pointer Item: %p, Pointer Syn: %p)',
+    [tb.Caption, Pointer(item), Pointer(syn)]));
+
+  // Ponto 4: Atribuição de caminhos e extensão
   item.DirName  := ExtractFileDir(arquivo);
   item.FileExt  := ExtractFileExt(arquivo);
   item.FileName := ExtractFileName(arquivo);
 
-  if (item.DirName = '') then
+  if (item.DirName = '') and (FSetMain <> nil) then
     item.DirName := ExtractFileDir(FSetMain.Defaultfolder);
 
-  item.FileName := ExtractFileName(item.DirName + item.FileName);
-  item.FileExt  := ExtractFileExt(arquivo);
+  ext := LowerCase(ExtractFileExt(arquivo));
+  RegistraEventosLog(Format('[Ponto 4 OK]: Diretorio: "%s", Arquivo: "%s", Extensao: "%s"',
+    [item.DirName, item.FileName, item.FileExt]));
 
-  syn  := item.syn;
-  ext  := LowerCase(ExtractFileExt(arquivo));
-
+  // Ponto 5: Leitura do arquivo via item.Loadfile
+  RegistraEventosLog('[Ponto 5]: Executando item.Loadfile("' + arquivo + '")...');
   try
-    // carrega comportamento padrão do TItem
     item.Loadfile(arquivo);
     ApplyThemeToAll;
     MudaDoc();
+    RegistraEventosLog('[Ponto 5 OK]: item.Loadfile concluido sem excecoes.');
   except
     on E: Exception do
     begin
       tb.Free;
+      RegistraEventosLog('[Ponto 5 ERRO]: Excecao em item.Loadfile: ' + E.Message);
       MessageHint('File cannot be read: ' + E.Message);
       Exit;
     end;
   end;
 
-  // para PDF/DOC/DOCX, substitui o conteúdo pelo texto extraído
+  // Ponto 6: Processamento especial para arquivos binários (PDF/DOC/DOCX)
   if (ext = '.pdf') or (ext = '.doc') or (ext = '.docx') then
   begin
+    RegistraEventosLog('[Ponto 6]: Extensao binaria detectada (' + ext + '). Invocando LoadBinaryDocAsText...');
     txt := LoadBinaryDocAsText(arquivo);
-    syn.Lines.Text := txt;
+    if syn <> nil then
+      syn.Lines.Text := txt;
+    RegistraEventosLog(Format('[Ponto 6 OK]: Texto extraido. Tamanho: %d caracteres.', [Length(txt)]));
     if Trim(txt) = '' then
       MessageHint('Nenhum texto extraído de ' + ExtractFileName(arquivo));
   end;
 
+  // Ponto 7: Configuração de propriedades visuais da aba
   tb.Tag        := PtrInt(item);
   tb.ImageIndex := 0;
   tb.PopupMenu  := popFechar;
+  tb.TabVisible := True;
+  tb.Visible    := True;
 
   item.Salvo := True;
 
-  if (FileGetAttr(arquivo) and faReadOnly) <> 0 then
+  if (syn <> nil) and ((FileGetAttr(arquivo) and faReadOnly) <> 0) then
     syn.ReadOnly := True;
 
   if item.Nome <> '' then
@@ -1044,35 +1094,98 @@ begin
   else
     tb.Caption := ExtractFileName(arquivo);
 
+  RegistraEventosLog(Format('[Ponto 7 OK]: Titulo final da aba configurado: "%s"', [tb.Caption]));
+
+  // Ponto 8: Garantia de visibilidade e alinhamento do editor
+  pnclient.Visible := True;
+  pgMain.Visible := True;
+  pgMain.ActivePage := tb;
+  if syn <> nil then
+  begin
+    syn.Parent := tb;
+    syn.Align := alClient;
+    syn.Visible := True;
+    syn.BringToFront;
+    syn.Invalidate;
+    if syn.CanFocus then
+      syn.SetFocus;
+  end;
   pgMain.Refresh;
+  Application.ProcessMessages;
+  RegistraEventosLog('[Ponto 8 OK]: Controles visuais pnclient, pgMain e syn forçados para Visible=True e focados.');
+
+  // Ponto 9: Sincronização do estado da IDE
   UpdateIDEStatus;
+  RegistraEventosLog('[Ponto 9 OK]: UpdateIDEStatus executado.');
+
+  // Ponto 10: Verificação final do estado de exibição
+  if (syn <> nil) then
+  begin
+    RegistraEventosLog(Format('[Ponto 10 CONCLUSÃO]: CARGA FINALIZADA COM SUCESSO! Aba: "%s", Linhas no SynEdit: %d, CharCount: %d, Total Abas no pgMain: %d',
+      [tb.Caption, syn.Lines.Count, Length(syn.Text), pgMain.PageCount]));
+  end
+  else
+  begin
+    RegistraEventosLog('[Ponto 10 ALERTA]: Carga finalizada, porem syn (TSynEdit) e nil na aba "' + tb.Caption + '"');
+  end;
+  RegistraEventosLog('--------------------------------------------------');
 end;
 
 procedure TfrmMNote.LoadArquivo(arquivo : string);
 begin
   if (arquivo = '') then
   begin
-    OpenDialog1.InitialDir:= FSetMain.DEFAULTFOLDER;
+    RegistraEventosLog('LoadArquivo: Abrindo dialogo de selecao de arquivo...');
+    if (FSetMain <> nil) and (FSetMain.DEFAULTFOLDER <> '') then
+      OpenDialog1.InitialDir := FSetMain.DEFAULTFOLDER
+    else
+      OpenDialog1.InitialDir := GetCurrentDir;
 
-    if OpenDialog1.execute then
-    begin
-      if FileExists(OpenDialog1.FileName) then
+    try
+      if OpenDialog1.execute then
       begin
-        Carregar(OpenDialog1.FileName);
-
-        Application.ProcessMessages;
-
+        if FileExists(OpenDialog1.FileName) then
+        begin
+          RegistraEventosLog('LoadArquivo: Arquivo selecionado no dialogo: ' + OpenDialog1.FileName);
+          Carregar(OpenDialog1.FileName);
+          Application.ProcessMessages;
+        end
+        else
+        begin
+          RegistraEventosLog('LoadArquivo [AVISO]: Arquivo selecionado nao existe: ' + OpenDialog1.FileName);
+          MessageHint('File not found!');
+        end;
       end
       else
-        MessageHint('File not found!');
+        RegistraEventosLog('LoadArquivo: Dialogo cancelado pelo usuario.');
+    except
+      on E: Exception do
+      begin
+        RegistraEventosLog('LoadArquivo [ERRO]: Excecao no dialogo de selecao: ' + E.Message);
+        MessageHint('Erro ao carregar arquivo: ' + E.Message);
+      end;
     end;
   end
   else
   begin
+    RegistraEventosLog('LoadArquivo: Solicitada abertura direta do arquivo: ' + arquivo);
     if FileExists(arquivo) then
-      Carregar(arquivo)
+    begin
+      try
+        Carregar(arquivo);
+      except
+        on E: Exception do
+        begin
+          RegistraEventosLog('LoadArquivo [ERRO]: Falha ao carregar arquivo "' + arquivo + '": ' + E.Message);
+          MessageHint('Erro ao carregar arquivo: ' + E.Message);
+        end;
+      end;
+    end
     else
+    begin
+      RegistraEventosLog('LoadArquivo [AVISO]: Arquivo informado nao existe: ' + arquivo);
       MessageHint('File not found!');
+    end;
   end;
 end;
 
@@ -1117,6 +1230,7 @@ begin
   syn := TSynEdit.Create(tb);
   syn.Parent := tb;
   syn.Align:= alClient;
+  syn.Visible := True;
   syn.Lines.Clear;
   syn.PopupMenu := popSysEdit;
   syn.OnChange:= @synChange;
@@ -1134,6 +1248,8 @@ begin
   tb.ImageIndex:=0;
 
   tb.Caption:= item.Nome;
+  pnclient.Visible := True;
+  pgMain.Visible := True;
   pgMain.ActivePage := tb;
   pgMain.Refresh();
   application.ProcessMessages;
@@ -2670,6 +2786,9 @@ var
    ProjectRoot, ProjectName: string;
    ChatMemoryTab: TTabSheet;
 begin
+  LimpaEventosLog;
+  RegistraEventosLog('========================================');
+  RegistraEventosLog('=== INICIANDO MNOTE2 ===');
   {$IFDEF MSWINDOWS}
     plataforma := 'Windows ';
   {$ENDIF}
@@ -2851,8 +2970,15 @@ begin
   MNoteApplyVisualIdentity(Self);
 
   frmSplash.UpdateStatus('Finalizando a inicialização...', 96);
-  frmRegistrar := TfrmRegistrar.Create(self);
-  frmRegistrar.Identifica();
+  try
+    RegistraEventosLog('Startup: Instanciando frmRegistrar e executando Identifica...');
+    frmRegistrar := TfrmRegistrar.Create(self);
+    frmRegistrar.Identifica();
+  except
+    on E: Exception do
+      RegistraEventosLog('Startup [AVISO]: Excecao no registro/SSL isolada com sucesso: ' + E.Message);
+  end;
+  RegistraEventosLog('Startup [OK]: Inicializacao da IDE concluida com sucesso (' + plataforma + ')');
 end;
 
 procedure TfrmMNote.CarregaContexto();
