@@ -73,6 +73,8 @@ function StrtoBin(const Str: string): string;
 function HexToStr(const Value: string): string;
 function StrToHex(const Value: string): string;
 procedure AdicionarLog(const Mensagem: string);
+procedure RegistraEventosLog(const Mensagem: string);
+procedure LimpaEventosLog;
 function splitstr(input: string): TStringList;
 function PreparaJSON(const Value: String): String;
 procedure AdicionarLinhaAGrid(Grid: TStringGrid; Valores: array of string);
@@ -335,6 +337,67 @@ begin
 
   // Fecha o arquivo
   CloseFile(ArquivoLog);
+end;
+
+procedure RegistraEventosLog(const Mensagem: string);
+var
+  F: TextFile;
+  LogPath: string;
+  Linha: string;
+  I: Integer;
+  PathsToTry: array[0..2] of string;
+begin
+  PathsToTry[0] := ExtractFilePath(ParamStr(0)) + 'EVENTOS.LOG';
+  PathsToTry[1] := ExtractFilePath(Application.ExeName) + 'EVENTOS.LOG';
+  PathsToTry[2] := GetCurrentDir + PathDelim + 'EVENTOS.LOG';
+
+  Linha := FormatDateTime('yyyy-mm-dd hh:nn:ss', Now) + ' - ' + Mensagem;
+
+  for I := 0 to High(PathsToTry) do
+  begin
+    LogPath := SetDirSeparators(PathsToTry[I]);
+    if (ExtractFilePath(LogPath) <> '') then
+    begin
+      try
+        AssignFile(F, LogPath);
+        if FileExists(LogPath) then
+          Append(F)
+        else
+          Rewrite(F);
+        WriteLn(F, Linha);
+        CloseFile(F);
+        Exit; // gravou com sucesso!
+      except
+        // tenta o proximo caminho se houver erro de permissao ou caminho invalido
+      end;
+    end;
+  end;
+end;
+
+procedure LimpaEventosLog;
+var
+  F: TextFile;
+  LogPath: string;
+  I: Integer;
+  PathsToTry: array[0..2] of string;
+begin
+  PathsToTry[0] := ExtractFilePath(ParamStr(0)) + 'EVENTOS.LOG';
+  PathsToTry[1] := ExtractFilePath(Application.ExeName) + 'EVENTOS.LOG';
+  PathsToTry[2] := GetCurrentDir + PathDelim + 'EVENTOS.LOG';
+
+  for I := 0 to High(PathsToTry) do
+  begin
+    LogPath := SetDirSeparators(PathsToTry[I]);
+    if (ExtractFilePath(LogPath) <> '') then
+    begin
+      try
+        AssignFile(F, LogPath);
+        Rewrite(F);
+        CloseFile(F);
+      except
+      end;
+    end;
+  end;
 end;
 
 function BintoStr(const BinaryString: string): string;

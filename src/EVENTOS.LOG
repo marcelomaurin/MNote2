@@ -1,0 +1,40 @@
+2026-08-05 11:59:39 - ========================================
+2026-08-05 11:59:39 - === INICIANDO MNOTE2 ===
+2026-08-05 11:59:39 - Startup: Instanciando frmRegistrar e executando Identifica...
+2026-08-05 11:59:39 - Identifica: Solicitando confirmacao de conexao (iconnected.php)
+2026-08-05 11:59:39 - HTTPS Req: Iniciando conexao -> https://maurinsoft.com.br/ws/register/iconnected.php
+2026-08-05 11:59:39 - HTTPS Req [OK]: Sucesso via TFPHttpClient (FPC)
+2026-08-05 11:59:39 - Identifica [OK]: Resposta recebida da maurinsoft.
+2026-08-05 11:59:39 - Startup [OK]: Inicializacao da IDE concluida com sucesso (Windows 32 bits)
+2026-08-05 11:59:46 - LoadArquivo: Abrindo dialogo de selecao de arquivo...
+2026-08-05 11:59:49 - LoadArquivo: Arquivo selecionado no dialogo: C:\Program Files (x86)\MEDIT2\javalist.txt
+2026-08-05 11:59:49 - --------------------------------------------------
+2026-08-05 11:59:49 - [Ponto 1] Carregar: Solicitada carga do arquivo: "C:\Program Files (x86)\MEDIT2\javalist.txt"
+2026-08-05 11:59:49 - [Ponto 1 OK]: Arquivo encontrado no disco. Tamanho: 389 bytes
+2026-08-05 11:59:49 - [Ponto 2 OK]: Arquivo nao estava aberto. Prosseguindo para criar nova aba.
+2026-08-05 11:59:49 - [Ponto 3]: Invocando NovoItem()...
+2026-08-05 11:59:50 - [Ponto 3 OK]: Aba instanciada com sucesso. (Caption Inicial: "Novo", Pointer Item: 04EADA8C, Pointer Syn: 04E998FC)
+2026-08-05 11:59:50 - [Ponto 4 OK]: Diretorio: "C:\Program Files (x86)\MEDIT2", Arquivo: "javalist.txt", Extensao: ".txt"
+2026-08-05 11:59:50 - [Ponto 5]: Executando item.Loadfile("C:\Program Files (x86)\MEDIT2\javalist.txt")...
+2026-08-05 11:59:50 - [Ponto 5 OK]: item.Loadfile concluido sem excecoes.
+2026-08-05 11:59:50 - [Ponto 7 OK]: Titulo final da aba configurado: "javalist.txt"
+2026-08-05 11:59:50 - [Ponto 8 OK]: Controles visuais pnclient, pgMain e syn forçados para Visible=True e focados.
+2026-08-05 11:59:50 - [Ponto 9 OK]: UpdateIDEStatus executado.
+2026-08-05 11:59:50 - [Ponto 10 CONCLUSÃO]: CARGA FINALIZADA COM SUCESSO! Aba: "javalist.txt", Linhas no SynEdit: 50, CharCount: 389, Total Abas no pgMain: 1
+2026-08-05 11:59:50 - --------------------------------------------------
+2026-08-05 11:59:54 - LoadArquivo: Abrindo dialogo de selecao de arquivo...
+2026-08-05 11:59:58 - LoadArquivo: Arquivo selecionado no dialogo: C:\Program Files (x86)\MEDIT2\clist.txt
+2026-08-05 11:59:58 - --------------------------------------------------
+2026-08-05 11:59:58 - [Ponto 1] Carregar: Solicitada carga do arquivo: "C:\Program Files (x86)\MEDIT2\clist.txt"
+2026-08-05 11:59:58 - [Ponto 1 OK]: Arquivo encontrado no disco. Tamanho: 294 bytes
+2026-08-05 11:59:58 - [Ponto 2 OK]: Arquivo nao estava aberto. Prosseguindo para criar nova aba.
+2026-08-05 11:59:58 - [Ponto 3]: Invocando NovoItem()...
+2026-08-05 11:59:58 - [Ponto 3 OK]: Aba instanciada com sucesso. (Caption Inicial: "Novo", Pointer Item: 04EC9434, Pointer Syn: 04EBC444)
+2026-08-05 11:59:58 - [Ponto 4 OK]: Diretorio: "C:\Program Files (x86)\MEDIT2", Arquivo: "clist.txt", Extensao: ".txt"
+2026-08-05 11:59:58 - [Ponto 5]: Executando item.Loadfile("C:\Program Files (x86)\MEDIT2\clist.txt")...
+2026-08-05 11:59:58 - [Ponto 5 OK]: item.Loadfile concluido sem excecoes.
+2026-08-05 11:59:58 - [Ponto 7 OK]: Titulo final da aba configurado: "clist.txt"
+2026-08-05 11:59:58 - [Ponto 8 OK]: Controles visuais pnclient, pgMain e syn forçados para Visible=True e focados.
+2026-08-05 11:59:58 - [Ponto 9 OK]: UpdateIDEStatus executado.
+2026-08-05 11:59:58 - [Ponto 10 CONCLUSÃO]: CARGA FINALIZADA COM SUCESSO! Aba: "clist.txt", Linhas no SynEdit: 39, CharCount: 294, Total Abas no pgMain: 2
+2026-08-05 11:59:58 - --------------------------------------------------

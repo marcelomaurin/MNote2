@@ -16,6 +16,7 @@ type
     Label1: TLabel;
     Label2: TLabel;
     lbversao: TLabel;
+    procedure FormCreate(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private
     FStatusText: string;
@@ -39,6 +40,31 @@ implementation
 function SplashColor(ARed, AGreen, ABlue: Byte): TColor;
 begin
   Result := RGBToColor(ARed, AGreen, ABlue);
+end;
+
+procedure TfrmSplash.FormCreate(Sender: TObject);
+var
+  plat: string;
+begin
+  plat := '';
+  {$IFDEF MSWINDOWS}
+    plat := 'Windows ';
+  {$ENDIF}
+  {$IFDEF LINUX}
+    plat := 'Linux ';
+  {$ENDIF}
+  {$IFDEF DARWIN}
+    plat := 'macOS ';
+  {$ENDIF}
+
+  {$IFDEF CPU64}
+    plat := plat + '64 bits';
+  {$ELSE}
+    plat := plat + '32 bits';
+  {$ENDIF}
+
+  if (lbversao <> nil) and ((lbversao.Caption = '') or (SameText(lbversao.Caption, 'lbversao'))) then
+    lbversao.Caption := plat;
 end;
 
 procedure TfrmSplash.PaintBackground;
@@ -67,6 +93,8 @@ var
   CardRect: TRect;
   ProgressWidth: Integer;
   StatusText: string;
+  ArchStr: string;
+  ArchRect: TRect;
 begin
   CardRect := Rect(28, 28, ClientWidth - 28, ClientHeight - 28);
 
@@ -96,6 +124,27 @@ begin
   Canvas.Font.Height := -34;
   Canvas.Font.Style := [fsBold];
   Canvas.TextOut(172, 68, 'MNote2');
+
+  // Desenhar Badge de Arquitetura (64 bits / 32 bits)
+  {$IFDEF CPU64}
+    ArchStr := '64 bits';
+  {$ELSE}
+    ArchStr := '32 bits';
+  {$ENDIF}
+
+  Canvas.Font.Height := -12;
+  Canvas.Font.Style := [fsBold];
+  Canvas.Brush.Style := bsSolid;
+  Canvas.Brush.Color := SplashColor(35, 75, 140);
+  Canvas.Pen.Style := psSolid;
+  Canvas.Pen.Color := SplashColor(87, 139, 255);
+  ArchRect := Rect(ClientWidth - 120, 68, ClientWidth - 48, 92);
+  Canvas.RoundRect(ArchRect.Left, ArchRect.Top, ArchRect.Right, ArchRect.Bottom, 10, 10);
+
+  Canvas.Brush.Style := bsClear;
+  Canvas.Font.Color := SplashColor(220, 235, 255);
+  Canvas.TextRect(ArchRect, ArchRect.Left + ((ArchRect.Right - ArchRect.Left - Canvas.TextWidth(ArchStr)) div 2),
+    ArchRect.Top + 4, ArchStr);
 
   Canvas.Font.Height := -16;
   Canvas.Font.Style := [];
