@@ -971,9 +971,11 @@ begin
   try
     ASyn := TSynEdit(Data);
     if (ASyn <> nil) and (pgMain <> nil) and (pgMain.ActivePage <> nil) and
-       (ASyn.Parent = pgMain.ActivePage) and ASyn.CanFocus then
+       (ASyn.Parent = pgMain.ActivePage) then
     begin
-      ASyn.SetFocus;
+      ActiveControl := ASyn;
+      if Self.CanFocus and ASyn.CanFocus then
+        ASyn.SetFocus;
     end;
   except
     // Ignora silenciosamente falha de foco se o controle/form não estiver pronto
@@ -1118,13 +1120,14 @@ begin
     syn.Visible := True;
     syn.BringToFront;
     syn.Invalidate;
-    try
-      if syn.CanFocus then
-        syn.SetFocus
-      else
-        Application.QueueAsyncCall(@FocarSynEdit, PtrInt(syn));
-    except
-      Application.QueueAsyncCall(@FocarSynEdit, PtrInt(syn));
+    ActiveControl := syn;
+    if Self.CanFocus and syn.CanFocus then
+    begin
+      try
+        syn.SetFocus;
+      except
+        // Ignora se o SO/janela não permitir foco no momento
+      end;
     end;
   end;
   pgMain.Refresh;
