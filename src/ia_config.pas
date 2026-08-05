@@ -27,7 +27,8 @@ type
     FMainToken: TEdit;
 
     FProvider: array[TMNoteAIRole] of TComboBox;
-    FModel: array[TMNoteAIRole] of TEdit;
+    FModel: array[TMNoteAIRole] of TComboBox;
+    FCustomModel: array[TMNoteAIRole] of TEdit;
     FEndpoint: array[TMNoteAIRole] of TEdit;
     FInputBudget: array[TMNoteAIRole] of TEdit;
     FOutputBudget: array[TMNoteAIRole] of TEdit;
@@ -40,6 +41,7 @@ type
     procedure AddMainPage;
     procedure AddRolePage(ARole: TMNoteAIRole);
     procedure MainProviderChange(Sender: TObject);
+    procedure RoleProviderChange(Sender: TObject);
     procedure ApplyMainClick(Sender: TObject);
     function StoreMain(out AError: string): Boolean;
     function StoreProfiles(out AError: string): Boolean;
@@ -74,6 +76,51 @@ begin
   ACombo.Items.Add('Local (Ollama)');
   ACombo.Items.Add('Google Gemini');
   ACombo.Items.Add('Anthropic Claude');
+end;
+
+procedure PopulateSuggestedModels(AProviderIdx: Integer; AModelCombo: TComboBox);
+begin
+  AModelCombo.Items.Clear;
+  case AProviderIdx of
+    0: // OpenAI
+      begin
+        AModelCombo.Items.Add('gpt-4o');
+        AModelCombo.Items.Add('gpt-4o-mini');
+        AModelCombo.Items.Add('o3-mini');
+        AModelCombo.Items.Add('gpt-4-turbo');
+      end;
+    1: // OpenRouter
+      begin
+        AModelCombo.Items.Add('meta-llama/llama-3-8b-instruct:free');
+        AModelCombo.Items.Add('google/gemma-2-9b-it:free');
+        AModelCombo.Items.Add('deepseek/deepseek-r1:free');
+      end;
+    2: // Cerebras
+      begin
+        AModelCombo.Items.Add('qwen-3-235b');
+        AModelCombo.Items.Add('llama3.1-8b');
+        AModelCombo.Items.Add('llama-3.3-70b');
+      end;
+    3: // Local (Ollama)
+      begin
+        AModelCombo.Items.Add('llama3.2:3b');
+        AModelCombo.Items.Add('qwen2.5:1.5b');
+        AModelCombo.Items.Add('deepseek-r1:1.5b');
+        AModelCombo.Items.Add('deepseek-r1:8b');
+      end;
+    4: // Google Gemini
+      begin
+        AModelCombo.Items.Add('gemini-2.5-flash');
+        AModelCombo.Items.Add('gemini-2.5-pro');
+        AModelCombo.Items.Add('gemini-2.0-flash');
+        AModelCombo.Items.Add('gemini-1.5-flash');
+      end;
+    5: // Anthropic Claude
+      begin
+        AModelCombo.Items.Add('claude-3-5-sonnet-20241022');
+        AModelCombo.Items.Add('claude-3-5-haiku-20241022');
+      end;
+  end;
 end;
 
 constructor TfrmIAConfig.Create(AOwner: TComponent);
@@ -164,7 +211,7 @@ begin
 
   FMainModel := TComboBox.Create(Self);
   FMainModel.Parent := Page;
-  FMainModel.Style := csDropDownList;
+  FMainModel.Style := csDropDown; // Permite escolha e digitação
   FMainModel.SetBounds(220, 40, 230, 27);
 
   FLblCustomModel := AddLabel(Self, Page, 'Modelo Customizado:', 465, 20);
@@ -222,77 +269,23 @@ var
   CurrentModel: string;
   Idx: Integer;
 begin
-  FMainModel.Items.Clear;
+  PopulateSuggestedModels(FMainProvider.ItemIndex, FMainModel);
+
   case FMainProvider.ItemIndex of
-    0: // OpenAI
-      begin
-        FMainModel.Items.Add('gpt-4o');
-        FMainModel.Items.Add('gpt-4o-mini');
-        FMainModel.Items.Add('o3-mini');
-        CurrentModel := FSetMain.ModelOpenAI;
-        FLblToken.Enabled := True;
-        FMainToken.Enabled := True;
-        FLblLocalIP.Enabled := False;
-        FMainEndpoint.Enabled := False;
-      end;
-    1: // OpenRouter
-      begin
-        FMainModel.Items.Add('meta-llama/llama-3-8b-instruct:free');
-        FMainModel.Items.Add('google/gemma-2-9b-it:free');
-        FMainModel.Items.Add('deepseek/deepseek-r1:free');
-        CurrentModel := FSetMain.ModelOpenRouter;
-        FLblToken.Enabled := True;
-        FMainToken.Enabled := True;
-        FLblLocalIP.Enabled := False;
-        FMainEndpoint.Enabled := False;
-      end;
-    2: // Cerebras
-      begin
-        FMainModel.Items.Add('qwen-3-235b');
-        FMainModel.Items.Add('llama3.1-8b');
-        FMainModel.Items.Add('llama-3.3-70b');
-        CurrentModel := FSetMain.ModelCerebras;
-        FLblToken.Enabled := True;
-        FMainToken.Enabled := True;
-        FLblLocalIP.Enabled := False;
-        FMainEndpoint.Enabled := False;
-      end;
-    3: // Local (Ollama)
-      begin
-        FMainModel.Items.Add('llama3.2:3b');
-        FMainModel.Items.Add('qwen2.5:1.5b');
-        FMainModel.Items.Add('deepseek-r1:1.5b');
-        FMainModel.Items.Add('deepseek-r1:8b');
-        CurrentModel := FSetMain.ModelLocal;
-        FLblToken.Enabled := False;
-        FMainToken.Enabled := False;
-        FLblLocalIP.Enabled := True;
-        FMainEndpoint.Enabled := True;
-      end;
-    4: // Google Gemini
-      begin
-        FMainModel.Items.Add('gemini-2.5-flash');
-        FMainModel.Items.Add('gemini-2.5-pro');
-        FMainModel.Items.Add('gemini-2.0-flash');
-        CurrentModel := FSetMain.ModelGemini;
-        FLblToken.Enabled := True;
-        FMainToken.Enabled := True;
-        FLblLocalIP.Enabled := False;
-        FMainEndpoint.Enabled := False;
-      end;
-    5: // Anthropic Claude
-      begin
-        FMainModel.Items.Add('claude-3-5-sonnet-20241022');
-        FMainModel.Items.Add('claude-3-5-haiku-20241022');
-        CurrentModel := FSetMain.ModelClaude;
-        FLblToken.Enabled := True;
-        FMainToken.Enabled := True;
-        FLblLocalIP.Enabled := False;
-        FMainEndpoint.Enabled := False;
-      end;
+    0: CurrentModel := FSetMain.ModelOpenAI;
+    1: CurrentModel := FSetMain.ModelOpenRouter;
+    2: CurrentModel := FSetMain.ModelCerebras;
+    3: CurrentModel := FSetMain.ModelLocal;
+    4: CurrentModel := FSetMain.ModelGemini;
+    5: CurrentModel := FSetMain.ModelClaude;
   else
     CurrentModel := '';
   end;
+
+  FLblToken.Enabled := (FMainProvider.ItemIndex in [0, 1, 2, 4, 5]);
+  FMainToken.Enabled := FLblToken.Enabled;
+  FLblLocalIP.Enabled := (FMainProvider.ItemIndex = 3);
+  FMainEndpoint.Enabled := FLblLocalIP.Enabled;
 
   Idx := FMainModel.Items.IndexOf(CurrentModel);
   if Idx >= 0 then
@@ -302,7 +295,7 @@ begin
   end
   else
   begin
-    if FMainModel.Items.Count > 0 then FMainModel.ItemIndex := 0;
+    FMainModel.Text := CurrentModel;
     FMainCustomModel.Text := CurrentModel;
   end;
 end;
@@ -311,69 +304,126 @@ procedure TfrmIAConfig.AddRolePage(ARole: TMNoteAIRole);
 var
   Page: TTabSheet;
   Config: TMNoteAIProfileConfig;
+  Lbl: TLabel;
+  Idx: Integer;
 begin
   Config := MNoteAI.Profiles.Profile(ARole).Config;
   Page := TTabSheet.Create(Self);
   Page.PageControl := FPages;
   Page.Caption := MNoteAIRoleName(ARole);
 
-  AddLabel(Self, Page, 'Provedor IA:', 16, 18);
+  Lbl := AddLabel(Self, Page, 'Provedor IA:', 16, 18);
+  Lbl.Font.Style := [fsBold];
+
   FProvider[ARole] := TComboBox.Create(Self);
   FProvider[ARole].Parent := Page;
   FProvider[ARole].Style := csDropDownList;
+  FProvider[ARole].Tag := Ord(ARole);
   AddProviders(FProvider[ARole]);
   FProvider[ARole].SetBounds(16, 38, 180, 25);
-  FProvider[ARole].ItemIndex := Config.Provider;
+  if (Config.Provider >= 0) and (Config.Provider < FProvider[ARole].Items.Count) then
+    FProvider[ARole].ItemIndex := Config.Provider
+  else
+    FProvider[ARole].ItemIndex := 0;
 
-  AddLabel(Self, Page, 'Modelo:', 215, 18);
-  FModel[ARole] := TEdit.Create(Self);
+  Lbl := AddLabel(Self, Page, 'Modelo Sugerido:', 215, 18);
+  Lbl.Font.Style := [fsBold];
+
+  FModel[ARole] := TComboBox.Create(Self);
   FModel[ARole].Parent := Page;
+  FModel[ARole].Style := csDropDown; // Permite escolha e digitação
   FModel[ARole].SetBounds(215, 38, 210, 25);
-  FModel[ARole].Text := Config.ModelName;
 
-  AddLabel(Self, Page, 'URL Local / IP:', 445, 18);
+  Lbl := AddLabel(Self, Page, 'Modelo Customizado:', 445, 18);
+  Lbl.Font.Style := [fsBold];
+
+  FCustomModel[ARole] := TEdit.Create(Self);
+  FCustomModel[ARole].Parent := Page;
+  FCustomModel[ARole].SetBounds(445, 38, 260, 25);
+
+  Lbl := AddLabel(Self, Page, 'URL Local / IP:', 16, 75);
+  Lbl.Font.Style := [fsBold];
+
   FEndpoint[ARole] := TEdit.Create(Self);
   FEndpoint[ARole].Parent := Page;
-  FEndpoint[ARole].SetBounds(445, 38, 260, 25);
+  FEndpoint[ARole].SetBounds(16, 95, 689, 25);
   FEndpoint[ARole].Text := Config.Endpoint;
 
-  AddLabel(Self, Page, 'Entrada', 16, 82);
+  AddLabel(Self, Page, 'Entrada', 16, 135);
   FInputBudget[ARole] := TEdit.Create(Self);
   FInputBudget[ARole].Parent := Page;
-  FInputBudget[ARole].SetBounds(16, 102, 90, 25);
+  FInputBudget[ARole].SetBounds(16, 155, 90, 25);
   FInputBudget[ARole].Text := IntToStr(Config.InputBudget);
 
-  AddLabel(Self, Page, 'Saída', 125, 82);
+  AddLabel(Self, Page, 'Saída', 125, 135);
   FOutputBudget[ARole] := TEdit.Create(Self);
   FOutputBudget[ARole].Parent := Page;
-  FOutputBudget[ARole].SetBounds(125, 102, 90, 25);
+  FOutputBudget[ARole].SetBounds(125, 155, 90, 25);
   FOutputBudget[ARole].Text := IntToStr(Config.OutputBudget);
 
-  AddLabel(Self, Page, 'Janela (0 = desconhecida)', 235, 82);
+  AddLabel(Self, Page, 'Janela (0 = desconhecida)', 235, 135);
   FContextWindow[ARole] := TEdit.Create(Self);
   FContextWindow[ARole].Parent := Page;
-  FContextWindow[ARole].SetBounds(235, 102, 120, 25);
+  FContextWindow[ARole].SetBounds(235, 155, 120, 25);
   FContextWindow[ARole].Text := IntToStr(Config.ContextWindow);
 
-  AddLabel(Self, Page, 'Temperatura', 375, 82);
+  AddLabel(Self, Page, 'Temperatura', 375, 135);
   FTemperature[ARole] := TEdit.Create(Self);
   FTemperature[ARole].Parent := Page;
-  FTemperature[ARole].SetBounds(375, 102, 90, 25);
+  FTemperature[ARole].SetBounds(375, 155, 90, 25);
   FTemperature[ARole].Text := FloatToStr(Config.Temperature);
 
   FEnabled[ARole] := TCheckBox.Create(Self);
   FEnabled[ARole].Parent := Page;
   FEnabled[ARole].Caption := 'Perfil habilitado';
-  FEnabled[ARole].SetBounds(490, 100, 150, 25);
+  FEnabled[ARole].SetBounds(490, 153, 150, 25);
   FEnabled[ARole].Checked := Config.Enabled;
 
-  AddLabel(Self, Page, 'Prompt de sistema (não armazene segredos)', 16, 148);
+  AddLabel(Self, Page, 'Prompt de sistema (não armazene segredos)', 16, 195);
   FPrompt[ARole] := TMemo.Create(Self);
   FPrompt[ARole].Parent := Page;
-  FPrompt[ARole].SetBounds(16, 170, 689, 340);
+  FPrompt[ARole].SetBounds(16, 215, 689, 290);
   FPrompt[ARole].Anchors := [akLeft, akTop, akRight, akBottom];
   FPrompt[ARole].ScrollBars := ssVertical;
   FPrompt[ARole].Text := Config.SystemPrompt;
+
+  FProvider[ARole].OnChange := @RoleProviderChange;
+  RoleProviderChange(FProvider[ARole]);
+
+  Idx := FModel[ARole].Items.IndexOf(Config.ModelName);
+  if Idx >= 0 then
+  begin
+    FModel[ARole].ItemIndex := Idx;
+    FCustomModel[ARole].Text := '';
+  end
+  else
+  begin
+    FModel[ARole].Text := Config.ModelName;
+    FCustomModel[ARole].Text := Config.ModelName;
+  end;
+end;
+
+procedure TfrmIAConfig.RoleProviderChange(Sender: TObject);
+var
+  Role: TMNoteAIRole;
+  Combo: TComboBox;
+  Idx: Integer;
+  CurrentModel: string;
+begin
+  Combo := TComboBox(Sender);
+  if Combo = nil then Exit;
+  Role := TMNoteAIRole(Combo.Tag);
+
+  PopulateSuggestedModels(FProvider[Role].ItemIndex, FModel[Role]);
+
+  FEndpoint[Role].Enabled := (FProvider[Role].ItemIndex = 3);
+
+  CurrentModel := FModel[Role].Text;
+  Idx := FModel[Role].Items.IndexOf(CurrentModel);
+  if Idx >= 0 then
+    FModel[Role].ItemIndex := Idx
+  else
+    FModel[Role].Text := CurrentModel;
 end;
 
 procedure TfrmIAConfig.ApplyMainClick(Sender: TObject);
@@ -389,7 +439,9 @@ begin
   for Role := Low(TMNoteAIRole) to High(TMNoteAIRole) do
   begin
     FProvider[Role].ItemIndex := FMainProvider.ItemIndex;
+    RoleProviderChange(FProvider[Role]);
     FModel[Role].Text := SelectedModel;
+    FCustomModel[Role].Text := FMainCustomModel.Text;
     FEndpoint[Role].Text := Trim(FMainEndpoint.Text);
   end;
   FStatus.Caption := 'IA principal aplicada aos controles de todos os perfis.';
@@ -419,7 +471,7 @@ begin
 
   if (FMainProvider.ItemIndex = 3) and (Trim(FMainEndpoint.Text) = '') then
   begin
-    AError := 'Por favor, informe a URL Local / IP para a IA local (Ollama).';
+    AError := 'Por favor, informe a URL Local / IP para o Ollama.';
     Exit(False);
   end;
 
@@ -447,12 +499,19 @@ function TfrmIAConfig.StoreProfiles(out AError: string): Boolean;
 var
   Role: TMNoteAIRole;
   Config: TMNoteAIProfileConfig;
+  SelectedModel: string;
 begin
   for Role := Low(TMNoteAIRole) to High(TMNoteAIRole) do
   begin
     Config := MNoteAI.Profiles.Profile(Role).Config;
     Config.Provider := FProvider[Role].ItemIndex;
-    Config.ModelName := Trim(FModel[Role].Text);
+
+    if Trim(FCustomModel[Role].Text) <> '' then
+      SelectedModel := Trim(FCustomModel[Role].Text)
+    else
+      SelectedModel := Trim(FModel[Role].Text);
+
+    Config.ModelName := SelectedModel;
     Config.Endpoint := Trim(FEndpoint[Role].Text);
     Config.InputBudget := StrToIntDef(FInputBudget[Role].Text, 0);
     Config.OutputBudget := StrToIntDef(FOutputBudget[Role].Text, 0);
