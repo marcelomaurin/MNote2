@@ -1240,201 +1240,6 @@ begin
   tb.ImageIndex:=0;
 
   tb.Caption:= item.Nome;
-    MudaDoc();
-    RegistraEventosLog('[Ponto 5 OK]: item.Loadfile concluido sem excecoes.');
-  except
-    on E: Exception do
-    begin
-      tb.Free;
-      RegistraEventosLog('[Ponto 5 ERRO]: Excecao em item.Loadfile: ' + E.Message);
-      MessageHint('File cannot be read: ' + E.Message);
-      Exit;
-    end;
-  end;
-
-  // Ponto 6: Processamento especial para arquivos binários (PDF/DOC/DOCX)
-  if (ext = '.pdf') or (ext = '.doc') or (ext = '.docx') then
-  begin
-    RegistraEventosLog('[Ponto 6]: Extensao binaria detectada (' + ext + '). Invocando LoadBinaryDocAsText...');
-    txt := LoadBinaryDocAsText(arquivo);
-    if syn <> nil then
-      syn.Lines.Text := txt;
-    RegistraEventosLog(Format('[Ponto 6 OK]: Texto extraido. Tamanho: %d caracteres.', [Length(txt)]));
-    if Trim(txt) = '' then
-      MessageHint('Nenhum texto extraído de ' + ExtractFileName(arquivo));
-  end;
-
-  // Ponto 7: Configuração de propriedades visuais da aba
-  tb.Tag        := PtrInt(item);
-  tb.ImageIndex := 0;
-  tb.PopupMenu  := popFechar;
-  tb.TabVisible := True;
-  tb.Visible    := True;
-
-  item.Salvo := True;
-
-  if (syn <> nil) and ((FileGetAttr(arquivo) and faReadOnly) <> 0) then
-    syn.ReadOnly := True;
-
-  if item.Nome <> '' then
-    tb.Caption := item.Nome
-  else
-    tb.Caption := ExtractFileName(arquivo);
-
-  RegistraEventosLog(Format('[Ponto 7 OK]: Titulo final da aba configurado: "%s"', [tb.Caption]));
-
-  // Ponto 8: Garantia de visibilidade e alinhamento do editor
-  pnclient.Visible := True;
-  pgMain.Visible := True;
-  pgMain.ActivePage := tb;
-  if syn <> nil then
-  begin
-    syn.Parent := tb;
-    syn.Align := alClient;
-    syn.Visible := True;
-    syn.BringToFront;
-    syn.Invalidate;
-    if syn.CanFocus then
-      syn.SetFocus;
-  end;
-  pgMain.Refresh;
-  Application.ProcessMessages;
-  RegistraEventosLog('[Ponto 8 OK]: Controles visuais pnclient, pgMain e syn forçados para Visible=True e focados.');
-
-  // Ponto 9: Sincronização do estado da IDE
-  UpdateIDEStatus;
-  RegistraEventosLog('[Ponto 9 OK]: UpdateIDEStatus executado.');
-
-  // Ponto 10: Verificação final do estado de exibição
-  if (syn <> nil) then
-  begin
-    RegistraEventosLog(Format('[Ponto 10 CONCLUSÃO]: CARGA FINALIZADA COM SUCESSO! Aba: "%s", Linhas no SynEdit: %d, CharCount: %d, Total Abas no pgMain: %d',
-      [tb.Caption, syn.Lines.Count, Length(syn.Text), pgMain.PageCount]));
-  end
-  else
-  begin
-    RegistraEventosLog('[Ponto 10 ALERTA]: Carga finalizada, porem syn (TSynEdit) e nil na aba "' + tb.Caption + '"');
-  end;
-  RegistraEventosLog('--------------------------------------------------');
-end;
-
-procedure TfrmMNote.LoadArquivo(arquivo : string);
-begin
-  if (arquivo = '') then
-  begin
-    RegistraEventosLog('LoadArquivo: Abrindo dialogo de selecao de arquivo...');
-    if (FSetMain <> nil) and (FSetMain.DEFAULTFOLDER <> '') then
-      OpenDialog1.InitialDir := FSetMain.DEFAULTFOLDER
-    else
-      OpenDialog1.InitialDir := GetCurrentDir;
-
-    try
-      if OpenDialog1.execute then
-      begin
-        if FileExists(OpenDialog1.FileName) then
-        begin
-          RegistraEventosLog('LoadArquivo: Arquivo selecionado no dialogo: ' + OpenDialog1.FileName);
-          Carregar(OpenDialog1.FileName);
-          Application.ProcessMessages;
-        end
-        else
-        begin
-          RegistraEventosLog('LoadArquivo [AVISO]: Arquivo selecionado nao existe: ' + OpenDialog1.FileName);
-          MessageHint('File not found!');
-        end;
-      end
-      else
-        RegistraEventosLog('LoadArquivo: Dialogo cancelado pelo usuario.');
-    except
-      on E: Exception do
-      begin
-        RegistraEventosLog('LoadArquivo [ERRO]: Excecao no dialogo de selecao: ' + E.Message);
-        MessageHint('Erro ao carregar arquivo: ' + E.Message);
-      end;
-    end;
-  end
-  else
-  begin
-    RegistraEventosLog('LoadArquivo: Solicitada abertura direta do arquivo: ' + arquivo);
-    if FileExists(arquivo) then
-    begin
-      try
-        Carregar(arquivo);
-      except
-        on E: Exception do
-        begin
-          RegistraEventosLog('LoadArquivo [ERRO]: Falha ao carregar arquivo "' + arquivo + '": ' + E.Message);
-          MessageHint('Erro ao carregar arquivo: ' + E.Message);
-        end;
-      end;
-    end
-    else
-    begin
-      RegistraEventosLog('LoadArquivo [AVISO]: Arquivo informado nao existe: ' + arquivo);
-      MessageHint('File not found!');
-    end;
-  end;
-end;
-
-procedure TfrmMNote.NewContext;
-begin
-  mequestion.Text := '';
-end;
-
-procedure TfrmMNote.FazPergunta;
-begin
-   FPendingAIInputWasVoice := False;
-   pnWait.Visible:=true;
-   Application.ProcessMessages;
-   QuestionChat();
-   pnWait.Visible:=false;
-end;
-
-procedure TfrmMNote.CarregarHistorico();
-var
-  arquivo : string;
-  syn : TSynEdit;
-  item : TItem;
-begin
-  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  syn := item.syn;
-  arquivo := IncludeTrailingPathDelimiter(item.DirName) + item.FileName + '_historico.RIA';
-
-  if FileExists(arquivo) then
-    meChatHist.Lines.LoadFromFile(arquivo)
-  else
-    meChatHist.Clear;
-end;
-
-function TfrmMNote.NovoItem():TTabSheet;
-var
-   tb : TTabSheet;
-   syn : TSynEdit;
-   item : TItem;
-begin
-  tb := pgMain.AddTabSheet();
-
-  syn := TSynEdit.Create(tb);
-  syn.Parent := tb;
-  syn.Align:= alClient;
-  syn.Visible := True;
-  syn.Lines.Clear;
-  syn.PopupMenu := popSysEdit;
-  syn.OnChange:= @synChange;
-  syn.Font := FSetMain.Font;
-  syn.OnKeyPress:= @SynEditkey;
-
-  item := TItem.create(self);
-  item.AtribuiNovoNome();
-  item.syn := syn;
-  if FThemeService <> nil then
-    TMNoteThemeApplier.Apply(syn, FThemeService.Current);
-
-  tb.PopupMenu := popFechar;
-  tb.Tag:= PtrInt(item);
-  tb.ImageIndex:=0;
-
-  tb.Caption:= item.Nome;
   pnclient.Visible := True;
   pgMain.Visible := True;
   pgMain.ActivePage := tb;
@@ -4410,11 +4215,33 @@ begin
       frmFolders.AtualizarOutline(item.syn.Lines.Text);
   end;
   UpdateIDEStatus;
-      frmFolders.AtualizarOutline(item.syn.Lines.Text);
-  end;
-  UpdateIDEStatus;
 end;
->>>>>>> 5838601421ac87d16322798119d1d9c3274e77f6
+
+procedure TfrmMNote.pgMainMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  TabIndex: Integer;
+  R: TRect;
+  ImgWidth: Integer;
+  TargetPage: TTabSheet;
+begin
+  if (Button <> mbLeft) or (pgMain = nil) then Exit;
+
+  TabIndex := pgMain.IndexOfTabAt(X, Y);
+  if (TabIndex < 0) or (TabIndex >= pgMain.PageCount) then Exit;
+
+  R := pgMain.TabRect(TabIndex);
+  ImgWidth := 16;
+  if (pgMain.Images <> nil) and (pgMain.Images.Width > 0) then
+    ImgWidth := pgMain.Images.Width;
+
+  if (X >= R.Left) and (X <= R.Left + ImgWidth + 14) and
+     (Y >= R.Top) and (Y <= R.Bottom) then
+  begin
+    TargetPage := pgMain.Pages[TabIndex];
+    CloseTab(TargetPage);
+  end;
+end;
 
 procedure TfrmMNote.TabSheet1ContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
