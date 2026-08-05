@@ -730,17 +730,9 @@ var
   item     : TItem;
   fullfile : string;
 begin
-  if pgMain.ActivePage = nil then
-  begin
-    pnChatGPT.Visible:= false;
-    Exit;
-  end
-  else
-  begin
-    pnChatGPT.Visible:= true;
+  pnChatGPT.Visible := False;
 
-  end;
-
+  if pgMain.ActivePage = nil then Exit;
 
   tb := pgMain.ActivePage;
   item := TItem(tb.Tag);
@@ -750,7 +742,6 @@ begin
 
   if FileExists(fullfile) then
   begin
-    pnChatGPT.Visible := True;
     try
       meDialog.Lines.LoadFromFile(fullfile);
     except
@@ -760,7 +751,6 @@ begin
   end
   else
   begin
-    //pnChatGPT.Visible := False;
     meDialog.Clear;
   end;
 end;
