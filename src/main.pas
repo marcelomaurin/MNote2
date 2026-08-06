@@ -3250,6 +3250,9 @@ end;
 
 procedure TfrmMNote.btIA2Click(Sender: TObject);
 begin
+  if FIDEShell <> nil then
+    FIDEShell.ShowToolWindow(twkAI)
+  else
     frmIA.show;
 end;
 
