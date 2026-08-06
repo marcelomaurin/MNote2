@@ -11,8 +11,8 @@
 | Mudanças de fonte | Integrado | Changes, diff por hunk, aprovação, apply e rollback |
 | Banco PostgreSQL/SQLite | Integrado | Data Dictionary, exportação, completion e contexto IA |
 | MySQL e outros bancos | Experimental | status e placeholders são validados por protocolo |
-| Build/Problems/Output | Integrado | processo real, parser FPC e canais independentes |
-| Files e documentos | Integrado | scanner, exportação TXT/PDF e confirmação de escrita |
+| Build/Problems/Output | Integrado | processo real, parser FPC, erro descritivo em ExecuteCompile (src/ai/mnote_ai_actions.pas) |
+| Files e documentos | Integrado | scanner, exportação TXT/PDF, ReadFile paginado (path, max_chars, offset_chars, start_line, end_line) com 7 campos de metadados, allowlist de extensão (IsAllowedTextExtension em src/ai/mnote_ai_actions.pas) e confirmação de escrita |
 | Grafo de dependências | Integrado | arestas factuais e inferidas identificadas |
 | Chromium/CEF | Opcional, não carregado | AI Components Lab informa disponibilidade |
 | Visão, ML e hardware | Opcional, não carregado | ausência não impede a IDE de iniciar |
