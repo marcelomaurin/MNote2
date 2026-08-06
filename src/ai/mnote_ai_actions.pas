@@ -940,7 +940,23 @@ begin
     OutputObject.Add('diagnostics', DiagnosticArray);
     AData := OutputObject;
     Result := FProcess.ExitCode = 0;
-    if Result then AError := '';
+    if Result then AError := ''
+    else if AError = '' then
+    begin
+      for I := 0 to Diagnostics.Count - 1 do
+        if Diagnostics[I].Severity = mdsError then
+        begin
+          AError := Format(
+            'Compilação falhou (código %d). Primeiro erro: %s(%d,%d): %s',
+            [FProcess.ExitCode, Diagnostics[I].FileName, Diagnostics[I].Line,
+             Diagnostics[I].Column, Diagnostics[I].MessageText]);
+          Break;
+        end;
+      if AError = '' then
+        AError := Format(
+          'Compilação falhou com código %d e sem diagnóstico reconhecido.',
+          [FProcess.ExitCode]);
+    end;
   finally
     Diagnostics.Free;
     Arguments.Free;
