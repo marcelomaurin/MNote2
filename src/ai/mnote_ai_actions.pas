@@ -1009,6 +1009,7 @@ begin
   Result := False;
   AResultJSON := '';
   AError := '';
+  Truncated := False;
   ResultData := nil;
   if not ParseRequest(ARequestJSON, Descriptor, Parameters, RequestData,
     AError) then
