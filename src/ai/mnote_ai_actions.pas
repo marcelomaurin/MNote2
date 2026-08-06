@@ -516,9 +516,9 @@ function TMNoteAIActionExecutor.ExecuteReadFile(AParameters: TJSONObject;
   out AData: TJSONData; out ATruncated: Boolean;
   out AError: string): Boolean;
 var
-  FileName, Content: string;
+  FileName, Content, FullText: string;
   Lines: TStringList;
-  Maximum: Integer;
+  Maximum, Offset, StartLine, EndLine, TotalChars, TotalLines, I: Integer;
   OutputObject: TJSONObject;
 begin
   AData := nil;
@@ -533,17 +533,64 @@ begin
   Lines := TStringList.Create;
   try
     Lines.LoadFromFile(FileName);
+    TotalLines := Lines.Count;
+    FullText := Lines.Text;
+    TotalChars := Length(FullText);
     Maximum := JSONInteger(AParameters, 'max_chars', 20000);
     if Maximum < 256 then Maximum := 256;
     if Maximum > 20000 then Maximum := 20000;
-    Content := LimitText(Lines.Text, Maximum, ATruncated);
+    StartLine := JSONInteger(AParameters, 'start_line', 0);
+    EndLine := JSONInteger(AParameters, 'end_line', 0);
+    Offset := JSONInteger(AParameters, 'offset_chars', 0);
+    if (StartLine < 0) or (EndLine < 0) or (Offset < 0) then
+    begin
+      AError := 'Os parametros start_line, end_line e offset_chars nao podem '
+        + 'ser negativos.';
+      Exit(False);
+    end;
+    if (StartLine > 0) and (EndLine > 0) and (EndLine < StartLine) then
+    begin
+      AError := 'O parametro end_line nao pode ser menor que start_line.';
+      Exit(False);
+    end;
+    if StartLine > TotalLines then
+    begin
+      AError := Format('O arquivo possui %d linhas e start_line vale %d.',
+        [TotalLines, StartLine]);
+      Exit(False);
+    end;
+    if StartLine > 0 then
+    begin
+      if (EndLine = 0) or (EndLine > TotalLines) then EndLine := TotalLines;
+      FullText := '';
+      for I := StartLine to EndLine do
+        FullText := FullText + Lines[I - 1] + LineEnding;
+      Offset := 0;
+    end
+    else
+    begin
+      StartLine := 0;
+      EndLine := 0;
+    end;
   finally
     Lines.Free;
   end;
+  if Offset >= Length(FullText) then
+    Content := ''
+  else
+    Content := Copy(FullText, Offset + 1, MaxInt);
+  Content := LimitText(Content, Maximum, ATruncated);
   OutputObject := TJSONObject.Create;
   OutputObject.Add('path', ExtractRelativePath(
     IncludeTrailingPathDelimiter(FRootPath), FileName));
   OutputObject.Add('content', Content);
+  OutputObject.Add('total_chars', TotalChars);
+  OutputObject.Add('total_lines', TotalLines);
+  OutputObject.Add('start_line', StartLine);
+  OutputObject.Add('end_line', EndLine);
+  OutputObject.Add('offset_chars', Offset);
+  OutputObject.Add('next_offset', Offset + Length(Content));
+  OutputObject.Add('eof', not ATruncated);
   AData := OutputObject;
   Result := True;
 end;
