@@ -485,6 +485,12 @@ begin
     AError := 'A leitura de arquivos sensíveis não é permitida.';
     Exit;
   end;
+  if not IsAllowedTextExtension(Candidate) then
+  begin
+    AError := 'Extensão não suportada para leitura pela IA: ' +
+      ExtractFileExt(Candidate);
+    Exit;
+  end;
   AFileName := Candidate;
   Result := True;
 end;
