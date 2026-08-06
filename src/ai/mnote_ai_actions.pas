@@ -291,6 +291,9 @@ begin
     20000, False);
   Action.AddParameter('path');
   Action.AddParameter('max_chars');
+  Action.AddParameter('offset_chars');
+  Action.AddParameter('start_line');
+  Action.AddParameter('end_line');
   FActions.Add(Action);
 
   Action := TMNoteAIActionDescriptor.Create('SearchProject', aaeReadOnly,
