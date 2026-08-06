@@ -169,6 +169,21 @@ begin
     (Extension = '.p12') or (Extension = '.pem');
 end;
 
+function IsAllowedTextExtension(const AFileName: string): Boolean;
+const
+  ALLOWED_EXTENSIONS: array[0..19] of string = ('.pas', '.pp', '.inc',
+    '.lpr', '.lpi', '.lpk', '.json', '.md', '.txt', '.sql', '.py', '.c',
+    '.h', '.cpp', '.hpp', '.ini', '.cfg', '.xml', '.yml', '.sh');
+var
+  Extension: string;
+  I: Integer;
+begin
+  Result := False;
+  Extension := LowerCase(ExtractFileExt(AFileName));
+  for I := Low(ALLOWED_EXTENSIONS) to High(ALLOWED_EXTENSIONS) do
+    if Extension = ALLOWED_EXTENSIONS[I] then Exit(True);
+end;
+
 function HasSymbolicPathPart(const ARoot, AFileName: string): Boolean;
 var
   RelativeName, CurrentName: string;
