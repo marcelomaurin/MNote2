@@ -66,8 +66,8 @@ begin
   FFingerprints := TStringList.Create;
   FFingerprints.Sorted := True;
   FFingerprints.Duplicates := dupIgnore;
-  FMaxCalls := 12;
-  FMaxEstimatedTokens := 20000;
+  FMaxCalls := 16;
+  FMaxEstimatedTokens := 80000;
   FMaxDurationMS := 5 * 60 * 1000;
   BeginSession;
 end;

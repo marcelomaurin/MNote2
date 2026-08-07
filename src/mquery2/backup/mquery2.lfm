@@ -30,9 +30,9 @@ object frmmquery2: Tfrmmquery2
     Height = 720
     Top = 50
     Width = 1167
-    ActivePage = tsSetup
+    ActivePage = tsSqlite
     Align = alClient
-    TabIndex = 4
+    TabIndex = 3
     TabOrder = 2
     object tsAbout: TTabSheet
       Caption = 'About'
@@ -3069,7 +3069,7 @@ object frmmquery2: Tfrmmquery2
     Port = 0
     Database = 'mysql'
     Protocol = 'mysql'
-    Left = 560
+    Left = 608
     Top = 128
   end
   object zconpost: TZConnection

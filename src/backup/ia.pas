@@ -6,8 +6,9 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls,
-  StdCtrls, Buttons, chatgpt, setmain, folders, mquery2, fpjson, jsonparser,
-  item, SynEditTypes, SynEdit, DateUtils;
+  StdCtrls, Buttons, setmain, folders, mquery2, fpjson, jsonparser,
+  item, SynEditTypes, SynEdit, DateUtils, mnote_ai_service,
+  mnote_memory_map_panel;
 
 type
   TTipoAcao = (
@@ -62,6 +63,10 @@ type
     tsMapaMemoria: TTabSheet;
     tsPensamento: TTabSheet;
     tsLog: TTabSheet;
+    lblTipoIA: TLabel;
+    cbTipoIA: TComboBox;
+    lblModeloIA: TLabel;
+    cbModeloIA: TComboBox;
     procedure btLimpaHistClick(Sender: TObject);
     procedure btPerguntarClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -69,15 +74,18 @@ type
     procedure meMapaMemoriaChange(Sender: TObject);
     procedure mePensamentoChange(Sender: TObject);
     procedure mePerguntaKeyPress(Sender: TObject; var Key: char);
+    procedure cbTipoIAChange(Sender: TObject);
+    procedure cbModeloIAChange(Sender: TObject);
   private
-    FChatGPT: TCHATGPT;
     lstAcao: TStringList;
     lstRealizar: TStringList;
+    FMemoryMapPanel: TMNoteMemoryMapPanel;
 
     function EnsureRIAPath: string;
     procedure AddLog(const S: string);
     function TextoLimpo(const S: string): string;
-    procedure AtualizaProviderChatGPT;
+    function ExecutarPerguntaIA(const DevMsg, Prompt: string; out Resposta: string): Boolean; overload;
+    function ExecutarPerguntaIA(const DevMsg, Prompt: string; out Resposta: WideString): Boolean; overload;
     // ===== cache RIA =====
     function RIAFileName(const ANome: string): string;
     function ArquivoEhDoDia(const AFileName: string): Boolean;
@@ -85,6 +93,7 @@ type
     procedure SalvaRIA(const AFileName, ATexto: string);
   public
     procedure PerguntaIA();
+    procedure CarregarConfiguracoes();
     procedure AnalisaBanco();
     procedure AnalisaFolder();
     procedure MapeiaPensamento();
@@ -180,23 +189,26 @@ begin
   Result := UTF8Encode(S);
 end;
 
-procedure TfrmIA.AtualizaProviderChatGPT;
+function TfrmIA.ExecutarPerguntaIA(const DevMsg, Prompt: string; out Resposta: string): Boolean;
+var
+  WResp: WideString;
 begin
-  if FChatGPT = nil then
-    Exit;
-
-  case FSetMain.Provider of
-    0: FChatGPT.Provider := AIP_OPENAI;
-    1: FChatGPT.Provider := AIP_OPENROUTER;
-    2: FChatGPT.Provider := AIP_CEREBRAS;
-    3: FChatGPT.Provider := AIP_LOCAL;
-  else
-    FChatGPT.Provider := AIP_OPENAI;
-  end;
-
-  if FChatGPT.Provider = AIP_LOCAL then
-    FChatGPT.CustomModel := 'llama3.2:3b';
+  Result := ExecutarPerguntaIA(DevMsg, Prompt, WResp);
+  Resposta := WResp;
 end;
+
+function TfrmIA.ExecutarPerguntaIA(const DevMsg, Prompt: string; out Resposta: WideString): Boolean;
+var
+  LResposta: string;
+begin
+  Resposta := '';
+  Result := MNoteAI.SendQuestion(Prompt, DevMsg, LResposta);
+  if Result then
+    Resposta := LResposta
+  else
+    Resposta := MNoteAI.LastError + LineEnding + MNoteAI.LastJSON;
+end;
+
 
 function TfrmIA.RIAFileName(const ANome: string): string;
 begin
@@ -260,6 +272,24 @@ begin
   FazPerguntaIA();
 end;
 
+procedure TfrmIA.CarregarConfiguracoes();
+begin
+  // Inicializa e popula os combo boxes da IA
+  cbTipoIA.Items.Clear;
+  cbTipoIA.Items.Add('OpenAI');      // 0
+  cbTipoIA.Items.Add('OpenRouter');  // 1
+  cbTipoIA.Items.Add('Cerebras');    // 2
+  cbTipoIA.Items.Add('Local');       // 3 - llama.cpp
+  cbTipoIA.Items.Add('Gemini');      // 4
+
+  if (FSetMain.Provider >= 0) and (FSetMain.Provider < cbTipoIA.Items.Count) then
+    cbTipoIA.ItemIndex := FSetMain.Provider
+  else
+    cbTipoIA.ItemIndex := 0;
+
+  cbTipoIAChange(nil);
+end;
+
 procedure TfrmIA.FormCreate(Sender: TObject);
 var
   arquivo, arquivo1, arquivo2: string;
@@ -284,6 +314,85 @@ begin
     meMapaMemoria.Lines.LoadFromFile(arquivo1);
   if FileExists(arquivo2) then
     mePensamento.Lines.LoadFromFile(arquivo2);
+
+  meMapaMemoria.Visible := False;
+  FMemoryMapPanel := TMNoteMemoryMapPanel.Create(Self);
+  FMemoryMapPanel.Parent := tsMapaMemoria;
+  FMemoryMapPanel.SetMemoryMap(MNoteAI.SessionMemory);
+
+  CarregarConfiguracoes();
+end;
+
+procedure TfrmIA.cbTipoIAChange(Sender: TObject);
+begin
+  if cbTipoIA.ItemIndex >= 0 then
+  begin
+    FSetMain.Provider := cbTipoIA.ItemIndex;
+    FSetMain.SalvaContexto(False);
+  end;
+
+  cbModeloIA.Items.Clear;
+  case FSetMain.Provider of
+    0: // OpenAI
+      begin
+        cbModeloIA.Items.Add('gpt-4o-mini');
+        cbModeloIA.Items.Add('gpt-4o');
+        cbModeloIA.Items.Add('gpt-4-turbo');
+        cbModeloIA.Items.Add('gpt-4');
+        cbModeloIA.Items.Add('gpt-3.5-turbo');
+        cbModeloIA.Items.Add('o1-mini');
+        cbModeloIA.Text := FSetMain.ModelOpenAI;
+      end;
+    1: // OpenRouter
+      begin
+        cbModeloIA.Items.Add('google/gemma-2-9b-it:free');
+        cbModeloIA.Items.Add('meta-llama/llama-3-8b-instruct:free');
+        cbModeloIA.Items.Add('mistralai/mistral-7b-instruct:free');
+        cbModeloIA.Items.Add('microsoft/phi-3-medium-128k-instruct:free');
+        cbModeloIA.Items.Add('deepseek/deepseek-chat');
+        cbModeloIA.Text := FSetMain.ModelOpenRouter;
+      end;
+    2: // Cerebras
+      begin
+        cbModeloIA.Items.Add('llama3.1-8b');
+        cbModeloIA.Items.Add('llama3.1-70b');
+        cbModeloIA.Items.Add('llama-3.3-70b');
+        cbModeloIA.Text := FSetMain.ModelCerebras;
+      end;
+    3: // Local
+      begin
+        cbModeloIA.Items.Add('llama3.2:3b');
+        cbModeloIA.Items.Add('mistral');
+        cbModeloIA.Items.Add('gemma2');
+        cbModeloIA.Items.Add('deepseek-r1:1.5b');
+        cbModeloIA.Items.Add('deepseek-r1:8b');
+        cbModeloIA.Items.Add('qwen2.5:14b');
+        cbModeloIA.Text := FSetMain.ModelLocal;
+      end;
+    4: // Gemini
+      begin
+        cbModeloIA.Items.Add('gemini-1.5-flash');
+        cbModeloIA.Items.Add('gemini-1.5-pro');
+        cbModeloIA.Items.Add('gemini-2.0-flash');
+        cbModeloIA.Items.Add('gemini-2.5-flash');
+        cbModeloIA.Items.Add('gemini-3.5-flash');
+        cbModeloIA.Text := FSetMain.ModelGemini;
+      end;
+  else
+    cbModeloIA.Text := '';
+  end;
+end;
+
+procedure TfrmIA.cbModeloIAChange(Sender: TObject);
+begin
+  case FSetMain.Provider of
+    0: FSetMain.ModelOpenAI := cbModeloIA.Text;
+    1: FSetMain.ModelOpenRouter := cbModeloIA.Text;
+    2: FSetMain.ModelCerebras := cbModeloIA.Text;
+    3: FSetMain.ModelLocal := cbModeloIA.Text;
+    4: FSetMain.ModelGemini := cbModeloIA.Text;
+  end;
+  FSetMain.SalvaContexto(False);
 end;
 
 procedure TfrmIA.meHistoricoChange(Sender: TObject);
@@ -423,26 +532,12 @@ begin
   end
   else
   begin
-    if FChatGPT = nil then
-      FChatGPT := TCHATGPT.Create(Self);
-
-    AtualizaProviderChatGPT;
-
-    if Trim(FSetMain.CHATGPT) = '' then
-    begin
-      AddLog('Token do ChatGPT não configurado em FSetMain.CHATGPT.');
-      Exit(False);
-    end;
-
-    FChatGPT.TOKEN := FSetMain.CHATGPT;
-
     DevMsg :=
       'Você é um classificador.' + LineEnding +
       'Sua função é responder apenas com "Sim" ou "Nao".' + LineEnding +
       'Analise o histórico de conversas e a pergunta atual e diga se elas têm relação direta ou apresenta ideia de continuidade ao que esta sendo tratado.' + LineEnding +
       'Responda apenas com uma palavra: Sim ou Não.' + LineEnding +
       'Sem explicações, sem pontuação, sem comentários adicionais.';
-    FChatGPT.Dev := DevMsg;
 
     FullPrompt :=
       '--- HISTÓRICO DE CONVERSAS ---' + LineEnding +
@@ -452,10 +547,11 @@ begin
       'A pergunta tem relação direta com o histórico acima?';
 
     AddLog('Enviando pergunta ao classificador de continuidade...');
-    if FChatGPT.SendQuestion(FullPrompt) then
-      Resposta := Trim(LowerCase(TextoLimpo(FChatGPT.Response)))
+
+    if ExecutarPerguntaIA(DevMsg, FullPrompt, Resposta) then
+      Resposta := Trim(LowerCase(TextoLimpo(Resposta)))
     else
-      Resposta := Trim(LowerCase(TextoLimpo(FChatGPT.Response)));
+      Resposta := Trim(LowerCase(TextoLimpo(Resposta)));
 
     SalvaRIA(CacheFile, Resposta);
   end;
@@ -487,22 +583,10 @@ begin
   if Trim(Resposta) = '' then
     Exit(False);
 
-  if FChatGPT = nil then
-    FChatGPT := TCHATGPT.Create(Self);
-
-  AtualizaProviderChatGPT;
-
-
-  if Trim(FSetMain.CHATGPT) = '' then
-  begin
-    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
-    Exit(False);
-  end;
-
   DevMsg :=
     'Você é um classificador binário.' + LineEnding +
     'Sua única função é responder se a orientação da IA exige a execução de uma AÇÃO .' + LineEnding +
-    'Entenda como "AÇÃO do sistema" algo que precisa ser feito pelo usuario, tal como uma mudança de codigo, criar algo, ou mesmo uma pesquisa ou processo no banco de dados, ou em serviços tais como email e etc.' + LineEnding +
+    'Entenda como "AÇÃO do sistema" algo que precisa ser feito pelo usuario, tal como uma mudança de codigo, criar algo, ou mesmo uma pesquisa ou processo no banco de dados, ou em serviços tais como email and etc.' + LineEnding +
     'Responda **apenas** com "Sim" ou "Nao".' + LineEnding +
     'Sem explicações, sem pontuação, sem comentários adicionais.';
 
@@ -520,15 +604,12 @@ begin
     '--- TEXTO ---' + LineEnding +
     Resposta;
 
-  FChatGPT.TOKEN := FSetMain.CHATGPT;
-  FChatGPT.Dev   := DevMsg;
-
   AddLog('Analisando se a resposta exige ação (GeraAcao)...');
 
-  if FChatGPT.SendQuestion(Prompt) then
-    Resp := TextoLimpo(FChatGPT.Response)
+  if ExecutarPerguntaIA(DevMsg, Prompt, Resp) then
+    Resp := TextoLimpo(Resp)
   else
-    Resp := TextoLimpo(FChatGPT.Response);
+    Resp := TextoLimpo(Resp);
 
   Resp := Trim(UpperCase(Resp));
 
@@ -714,17 +795,6 @@ begin
   if Trim(Resposta) = '' then
     Exit(False);
 
-  if FChatGPT = nil then
-    FChatGPT := TCHATGPT.Create(Self);
-
-   AtualizaProviderChatGPT;
-
-  if Trim(FSetMain.CHATGPT) = '' then
-  begin
-    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
-    Exit(False);
-  end;
-
   DevMsg :=
     'Você é um EXTRATOR DE AÇÕES.' + LineEnding +
     'Sua função é analisar um texto e identificar quais AÇÕES o sistema deve realizar.' + LineEnding +
@@ -748,15 +818,12 @@ begin
     '--- TEXTO ---' + LineEnding +
     Resposta;
 
-  FChatGPT.TOKEN := FSetMain.CHATGPT;
-  FChatGPT.Dev   := DevMsg;
-
   AddLog('Analisando ações em JSON (AnalisaAcao)...');
 
-  if FChatGPT.SendQuestion(Prompt) then
-    Resp := Trim(TextoLimpo(FChatGPT.Response))
+  if ExecutarPerguntaIA(DevMsg, Prompt, Resp) then
+    Resp := Trim(TextoLimpo(Resp))
   else
-    Resp := Trim(TextoLimpo(FChatGPT.Response));
+    Resp := Trim(TextoLimpo(Resp));
 
   if Resp = '' then
     Exit(False);
@@ -793,6 +860,7 @@ begin
       Result := False;
     end;
   end;
+
   if Assigned(JsonRaiz) then
     JsonRaiz.Free;
 end;
@@ -842,17 +910,6 @@ begin
   Pergunta := Trim(mePergunta.Text);
   if Pergunta = '' then Exit;
 
-  if FChatGPT = nil then
-    FChatGPT := TCHATGPT.Create(Self);
-
-  AtualizaProviderChatGPT;
-
-  if Trim(FSetMain.CHATGPT) = '' then
-  begin
-    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
-    Exit;
-  end;
-
   DevMsg :=
     'Você é um classificador. Responda apenas com "Sim" ou "Nao".' + LineEnding +
     'Sem explicações, sem justificativas e sem pontuação.' + LineEnding +
@@ -878,15 +935,12 @@ begin
     meLog.Lines.Text + LineEnding +
     'Responda apenas com "Sim" ou "Nao".';
 
-  FChatGPT.TOKEN := FSetMain.CHATGPT;
-  FChatGPT.Dev   := DevMsg;
-
   AddLog('Classificando se a árvore tem informações suficientes...');
 
-  if FChatGPT.SendQuestion(Prompt) then
-    Resp := LowerCase(Trim(FChatGPT.Response))
+  if ExecutarPerguntaIA(DevMsg, Prompt, Resp) then
+    Resp := LowerCase(Trim(Resp))
   else
-    Resp := LowerCase(Trim(FChatGPT.Response));
+    Resp := LowerCase(Trim(Resp));
 
   if Resp <> '' then
   begin
@@ -932,17 +986,6 @@ begin
   end
   else
   begin
-    if FChatGPT = nil then
-      FChatGPT := TCHATGPT.Create(Self);
-
-    AtualizaProviderChatGPT;
-
-    if Trim(FSetMain.CHATGPT) = '' then
-    begin
-      AddLog('Token do ChatGPT não configurado em FSetMain.CHATGPT (MapeiaPensamento).');
-      Exit;
-    end;
-
     DevMsg :=
       'Você é um analisador de dados e sua missão é montar um mapa de Pensamento coerente com a pergunta.' + LineEnding +
       'O histórico que será enviado representa as interações anteriores com o usuário,' +
@@ -966,14 +1009,11 @@ begin
       '--- PENSAMENTO (INSTRUÇÕES INTERNAS) ---' + LineEnding +
       mePensamento.Lines.Text;
 
-    FChatGPT.TOKEN := FSetMain.CHATGPT;
-    FChatGPT.Dev   := DevMsg;
-
     AddLog('MapeiaPensamento: enviando contexto para gerar mapa de pensamento...');
-    if FChatGPT.SendQuestion(FullPrompt) then
-      Resposta := TextoLimpo(FChatGPT.Response)
+    if ExecutarPerguntaIA(DevMsg, FullPrompt, Resposta) then
+      Resposta := TextoLimpo(Resposta)
     else
-      Resposta := TextoLimpo(FChatGPT.Response);
+      Resposta := TextoLimpo(Resposta);
 
     SalvaRIA(CacheFile, Resposta);
   end;
@@ -1005,17 +1045,6 @@ begin
   end
   else
   begin
-    if FChatGPT = nil then
-      FChatGPT := TCHATGPT.Create(Self);
-
-    AtualizaProviderChatGPT;
-
-    if Trim(FSetMain.CHATGPT) = '' then
-    begin
-      ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
-      Exit;
-    end;
-
     DevMsg :=
       'Você é um assistente técnico e está participando de uma conversa contínua.' + LineEnding +
       'O histórico que será enviado representa as interações anteriores com o usuário,' +
@@ -1039,14 +1068,11 @@ begin
       '--- PENSAMENTO (INSTRUÇÕES INTERNAS) ---' + LineEnding +
       mePensamento.Text;
 
-    FChatGPT.TOKEN := FSetMain.CHATGPT;
-    FChatGPT.Dev   := DevMsg;
-
     AddLog('Enviando pergunta + histórico ao ChatGPT...');
-    if FChatGPT.SendQuestion(FullPrompt) then
-      Resposta := TextoLimpo(FChatGPT.Response)
+    if ExecutarPerguntaIA(DevMsg, FullPrompt, Resposta) then
+      Resposta := TextoLimpo(Resposta)
     else
-      Resposta := TextoLimpo(FChatGPT.Response);
+      Resposta := TextoLimpo(Resposta);
 
     SalvaRIA(CacheFile, Resposta);
   end;
@@ -1063,6 +1089,7 @@ end;
 
 procedure TfrmIA.LimparHistorico();
 begin
+  MNoteAI.ClearSession;
   meHistorico.Lines.Clear;
   meMapaMemoria.Lines.Clear;
   mePensamento.Lines.Clear;
@@ -1084,17 +1111,6 @@ begin
   Pergunta := Trim(mePergunta.Text);
   if Pergunta = '' then Exit;
 
-  if FChatGPT = nil then
-    FChatGPT := TCHATGPT.Create(Self);
-
-  AtualizaProviderChatGPT;
-
-  if Trim(FSetMain.CHATGPT) = '' then
-  begin
-    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
-    Exit;
-  end;
-
   DevMsg :=
     'Você é um classificador. Responda apenas com "Sim" ou "Nao".' + LineEnding +
     'Sem justificativas, sem pontuação, sem quebras de linha.';
@@ -1105,18 +1121,15 @@ begin
     'Pergunta: "' + Pergunta + '"' + LineEnding +
     'Responda apenas com "Sim" ou "Nao".';
 
-  FChatGPT.TOKEN := FSetMain.CHATGPT;
-  FChatGPT.Dev   := DevMsg;
-
   AddLog('Classificando se a pergunta envolve arquivos/pastas...');
-  if FChatGPT.SendQuestion(Prompt) then
+  if ExecutarPerguntaIA(DevMsg, Prompt, Resp) then
   begin
-    Resp := LowerCase(Trim(FChatGPT.Response));
+    Resp := LowerCase(Trim(Resp));
     AddLog('sim');
   end
   else
   begin
-    Resp := Trim(FChatGPT.Response);
+    Resp := Trim(Resp);
     AddLog('nao');
   end;
 
@@ -1143,17 +1156,6 @@ begin
   Pergunta := Trim(mePergunta.Text);
   if Pergunta = '' then Exit;
 
-  if FChatGPT = nil then
-    FChatGPT := TCHATGPT.Create(Self);
-
-  AtualizaProviderChatGPT;
-
-  if Trim(FSetMain.CHATGPT) = '' then
-  begin
-    ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
-    Exit;
-  end;
-
   DevMsg :=
     'Você é um classificador. Responda apenas com "Sim" ou "Nao".' + LineEnding +
     'Sem justificativas, sem pontuação, sem quebras de linha.';
@@ -1163,14 +1165,11 @@ begin
     'Pergunta: "' + Pergunta + '"' + LineEnding +
     'Responda apenas com "Sim" ou "Nao".';
 
-  FChatGPT.TOKEN := FSetMain.CHATGPT;
-  FChatGPT.Dev   := DevMsg;
-
   AddLog('Classificando se a pergunta envolve banco de dados...');
-  if FChatGPT.SendQuestion(Prompt) then
-    Resp := Trim(FChatGPT.Response)
+  if ExecutarPerguntaIA(DevMsg, Prompt, Resp) then
+    Resp := Trim(Resp)
   else
-    Resp := Trim(FChatGPT.Response);
+    Resp := Trim(Resp);
 
   if Resp <> '' then
   begin
@@ -1208,17 +1207,6 @@ begin
   end
   else
   begin
-    if FChatGPT = nil then
-      FChatGPT := TCHATGPT.Create(Self);
-
-    AtualizaProviderChatGPT;
-
-    if Trim(FSetMain.CHATGPT) = '' then
-    begin
-      ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
-      Exit;
-    end;
-
     DevMsg :=
       'Você é um assistente técnico que extrai respostas objetivas do LOG.' + LineEnding +
       'Use o histórico apenas como contexto mínimo.' + LineEnding +
@@ -1238,14 +1226,11 @@ begin
       'Não explique o procedimento, apenas responda objetivamente.' + LineEnding +
       'Sem listas, sem títulos, sem rodapé.';
 
-    FChatGPT.TOKEN := FSetMain.CHATGPT;
-    FChatGPT.Dev   := DevMsg;
-
     AddLog('AnalisaRespostaFolder: gerando resumo relevante do log...');
-    if FChatGPT.SendQuestion(Prompt) then
-      Resposta := TextoLimpo(Trim(FChatGPT.Response))
+    if ExecutarPerguntaIA(DevMsg, Prompt, Resposta) then
+      Resposta := TextoLimpo(Trim(Resposta))
     else
-      Resposta := TextoLimpo(Trim(FChatGPT.Response));
+      Resposta := TextoLimpo(Trim(Resposta));
 
     if Resposta = '' then
       Resposta := 'Sem dados relevantes';

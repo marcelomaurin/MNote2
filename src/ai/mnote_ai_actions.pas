@@ -50,6 +50,7 @@ type
     FOnConfirm: TMNoteAIActionConfirmEvent;
     FOnGetDictionary: TMNoteAIDictionaryEvent;
     FOnLog: TMNoteAIActionLogEvent;
+    FLastErrorIsContract: Boolean;
     function FindAction(const AName: string): TMNoteAIActionDescriptor;
     function ParseRequest(const AJSON: string;
       out ADescriptor: TMNoteAIActionDescriptor;
@@ -61,10 +62,21 @@ type
       AError: string): Boolean;
     function ExecuteReadFile(AParameters: TJSONObject; out AData: TJSONData;
       out ATruncated: Boolean; out AError: string): Boolean;
+    function ExecuteFileOutline(AParameters: TJSONObject; out AData: TJSONData;
+      out ATruncated: Boolean; out AError: string): Boolean;
     function ExecuteSearchProject(AParameters: TJSONObject;
       out AData: TJSONData; out ATruncated: Boolean;
       out AError: string): Boolean;
     function ExecuteListSymbols(AParameters: TJSONObject;
+      out AData: TJSONData; out ATruncated: Boolean;
+      out AError: string): Boolean;
+    function ExecuteFindDefinition(AParameters: TJSONObject;
+      out AData: TJSONData; out ATruncated: Boolean;
+      out AError: string): Boolean;
+    function ExecuteDependencyGraph(AParameters: TJSONObject;
+      out AData: TJSONData; out ATruncated: Boolean;
+      out AError: string): Boolean;
+    function ExecuteBuildDiagnostics(AParameters: TJSONObject;
       out AData: TJSONData; out ATruncated: Boolean;
       out AError: string): Boolean;
     function ExecuteListProjectFiles(AParameters: TJSONObject;
@@ -88,7 +100,10 @@ type
   public
     constructor Create(const ARootPath: string);
     destructor Destroy; override;
-    function DescribeActions: string;
+    function DescribeActions(AReadOnlyOnly: Boolean = False): string;
+    function ActionIsReadOnly(const AName: string): Boolean;
+    function ValidateRequestContract(const ARequestJSON: string;
+      out AActionName, AError: string): Boolean;
     function ExecuteRequest(const ARequestJSON: string; ARole: TMNoteAIRole;
       out AResultJSON, AError: string): Boolean;
     procedure Cancel;
@@ -99,6 +114,7 @@ type
     property OnGetDictionary: TMNoteAIDictionaryEvent read FOnGetDictionary
       write FOnGetDictionary;
     property OnLog: TMNoteAIActionLogEvent read FOnLog write FOnLog;
+    property LastErrorIsContract: Boolean read FLastErrorIsContract;
   end;
 
 function MNoteAIActionEffectName(AEffect: TMNoteAIActionEffect): string;
@@ -107,7 +123,8 @@ implementation
 
 uses
   StrUtils, mnote_search_types, mnote_file_search_service,
-  mnote_completion_types, mnote_project_symbol_index,
+  mnote_completion_types, mnote_pascal_symbol_parser, mnote_project_symbol_index,
+  mnote_dependency_graph_service, aidependencygraph,
   mnote_git_read_service, mnote_build_service, mnote_diagnostics;
 
 function MNoteAIActionEffectName(AEffect: TMNoteAIActionEffect): string;
@@ -152,6 +169,18 @@ begin
   if AObject = nil then Exit;
   Value := AObject.Find(AName);
   if (Value <> nil) and (Value.JSONType = jtBoolean) then Result := Value.AsBoolean;
+end;
+
+function IsAllowedExtension(const AFileName: string): Boolean;
+var
+  Ext: string;
+begin
+  Ext := LowerCase(ExtractFileExt(AFileName));
+  Result := (Ext = '.pas') or (Ext = '.pp') or (Ext = '.inc') or (Ext = '.lpr') or
+    (Ext = '.lpi') or (Ext = '.lpk') or (Ext = '.json') or (Ext = '.md') or
+    (Ext = '.txt') or (Ext = '.sql') or (Ext = '.py') or (Ext = '.c') or
+    (Ext = '.h') or (Ext = '.cpp') or (Ext = '.ini') or (Ext = '.cfg') or
+    (Ext = '.xml') or (Ext = '.yml') or (Ext = '.yaml') or (Ext = '.sh');
 end;
 
 function IsSensitivePath(const AFileName: string): Boolean;
@@ -210,6 +239,74 @@ begin
   finally
     Stream.Free;
   end;
+end;
+
+function LoadFileBytes(const AFileName: string): string;
+var
+  Stream: TFileStream;
+begin
+  Stream := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
+  try
+    if Stream.Size > MaxInt then
+      raise Exception.Create('O arquivo é grande demais para leitura.');
+    SetLength(Result, Stream.Size);
+    if Stream.Size > 0 then Stream.ReadBuffer(Result[1], Stream.Size);
+  finally
+    Stream.Free;
+  end;
+end;
+
+function RawLineCount(const AText: string): Integer;
+var
+  I: Integer;
+begin
+  if AText = '' then Exit(0);
+  Result := 0;
+  for I := 1 to Length(AText) do
+    if AText[I] = #10 then Inc(Result);
+  if AText[Length(AText)] <> #10 then Inc(Result);
+end;
+
+function RawLineStart(const AText: string; ALine: Integer): Integer;
+var
+  I, CurrentLine: Integer;
+begin
+  if ALine <= 1 then Exit(1);
+  CurrentLine := 1;
+  for I := 1 to Length(AText) do
+    if AText[I] = #10 then
+    begin
+      Inc(CurrentLine);
+      if CurrentLine = ALine then Exit(I + 1);
+    end;
+  Result := Length(AText) + 1;
+end;
+
+function RawLineEnd(const AText: string; ALine: Integer): Integer;
+var
+  I, CurrentLine: Integer;
+begin
+  CurrentLine := 1;
+  for I := 1 to Length(AText) do
+    if AText[I] = #10 then
+    begin
+      if CurrentLine = ALine then Exit(I);
+      Inc(CurrentLine);
+    end;
+  Result := Length(AText);
+end;
+
+function RawLineAt(const AText: string; APosition: Integer): Integer;
+var
+  I, LastPosition: Integer;
+begin
+  if AText = '' then Exit(0);
+  LastPosition := APosition;
+  if LastPosition < 1 then LastPosition := 1;
+  if LastPosition > Length(AText) then LastPosition := Length(AText);
+  Result := 1;
+  for I := 1 to LastPosition - 1 do
+    if AText[I] = #10 then Inc(Result);
 end;
 
 constructor TMNoteAIActionDescriptor.Create(const AName: string;
@@ -276,6 +373,14 @@ begin
     20000, False);
   Action.AddParameter('path');
   Action.AddParameter('max_chars');
+  Action.AddParameter('start_line');
+  Action.AddParameter('end_line');
+  Action.AddParameter('offset_chars');
+  FActions.Add(Action);
+
+  Action := TMNoteAIActionDescriptor.Create('FileOutline', aaeReadOnly,
+    16000, False);
+  Action.AddParameter('path');
   FActions.Add(Action);
 
   Action := TMNoteAIActionDescriptor.Create('SearchProject', aaeReadOnly,
@@ -292,6 +397,27 @@ begin
   Action := TMNoteAIActionDescriptor.Create('ListSymbols', aaeReadOnly,
     16000, False);
   Action.AddParameter('max_results');
+  Action.AddParameter('name_contains');
+  Action.AddParameter('kind');
+  Action.AddParameter('path_contains');
+  FActions.Add(Action);
+
+  Action := TMNoteAIActionDescriptor.Create('FindDefinition', aaeReadOnly,
+    16000, False);
+  Action.AddParameter('name');
+  Action.AddParameter('max_results');
+  FActions.Add(Action);
+
+  Action := TMNoteAIActionDescriptor.Create('DependencyGraph', aaeReadOnly,
+    20000, False);
+  Action.AddParameter('unit_name');
+  Action.AddParameter('direction');
+  FActions.Add(Action);
+
+  Action := TMNoteAIActionDescriptor.Create('BuildDiagnostics', aaeReadOnly,
+    20000, False);
+  Action.AddParameter('severity');
+  Action.AddParameter('path_contains');
   FActions.Add(Action);
 
   Action := TMNoteAIActionDescriptor.Create('ListProjectFiles', aaeReadOnly,
@@ -470,6 +596,12 @@ begin
     AError := 'A leitura de arquivos sensíveis não é permitida.';
     Exit;
   end;
+  if not IsAllowedExtension(Candidate) then
+  begin
+    AError := 'Extensão não suportada para leitura pela IA: ' +
+      ExtractFileExt(Candidate);
+    Exit;
+  end;
   AFileName := Candidate;
   Result := True;
 end;
@@ -492,9 +624,13 @@ function TMNoteAIActionExecutor.ExecuteReadFile(AParameters: TJSONObject;
   out AData: TJSONData; out ATruncated: Boolean;
   out AError: string): Boolean;
 var
-  FileName, Content: string;
-  Lines: TStringList;
-  Maximum: Integer;
+  FileName, RawContent, SliceContent: string;
+  MaxChars, ReqStartLine, ReqEndLine, OffsetChars: Integer;
+  TotalChars, TotalLines: Integer;
+  StartCharIdx, EndCharIdx: Integer;
+  ActualStartLine, ActualEndLine: Integer;
+  NextOffset: Integer;
+  IsEOF, HasStartLine, HasEndLine, HasOffset: Boolean;
   OutputObject: TJSONObject;
 begin
   AData := nil;
@@ -506,22 +642,171 @@ begin
     AError := 'O arquivo excede o limite de leitura de 2 MB.';
     Exit(False);
   end;
-  Lines := TStringList.Create;
-  try
-    Lines.LoadFromFile(FileName);
-    Maximum := JSONInteger(AParameters, 'max_chars', 20000);
-    if Maximum < 256 then Maximum := 256;
-    if Maximum > 20000 then Maximum := 20000;
-    Content := LimitText(Lines.Text, Maximum, ATruncated);
-  finally
-    Lines.Free;
+
+  MaxChars := JSONInteger(AParameters, 'max_chars', 20000);
+  if MaxChars < 256 then MaxChars := 256;
+  if MaxChars > 20000 then MaxChars := 20000;
+
+  HasStartLine := AParameters.Find('start_line') <> nil;
+  HasEndLine := AParameters.Find('end_line') <> nil;
+  HasOffset := AParameters.Find('offset_chars') <> nil;
+  ReqStartLine := JSONInteger(AParameters, 'start_line', 1);
+  ReqEndLine := JSONInteger(AParameters, 'end_line', 0);
+  OffsetChars := JSONInteger(AParameters, 'offset_chars', 0);
+  RawContent := LoadFileBytes(FileName);
+  TotalChars := Length(RawContent);
+  TotalLines := RawLineCount(RawContent);
+
+  if (OffsetChars < 0) or (OffsetChars > TotalChars) then
+  begin
+    AError := Format('offset_chars deve estar entre 0 e %d.', [TotalChars]);
+    Exit(False);
   end;
+  if HasStartLine and ((ReqStartLine < 1) or (ReqStartLine > TotalLines)) then
+  begin
+    AError := Format('start_line deve estar entre 1 e %d.', [TotalLines]);
+    Exit(False);
+  end;
+  if HasEndLine and ((ReqEndLine < 1) or (ReqEndLine > TotalLines)) then
+  begin
+    AError := Format('end_line deve estar entre 1 e %d.', [TotalLines]);
+    Exit(False);
+  end;
+  if HasEndLine and (ReqEndLine < ReqStartLine) then
+  begin
+    AError := 'end_line não pode ser menor que start_line.';
+    Exit(False);
+  end;
+
+  if TotalLines = 0 then
+  begin
+    StartCharIdx := 1;
+    EndCharIdx := 0;
+  end
+  else
+  begin
+    StartCharIdx := RawLineStart(RawContent, ReqStartLine);
+    if HasOffset and (OffsetChars + 1 > StartCharIdx) then
+      StartCharIdx := OffsetChars + 1;
+    if HasEndLine then EndCharIdx := RawLineEnd(RawContent, ReqEndLine)
+    else EndCharIdx := TotalChars;
+  end;
+
+  if StartCharIdx > EndCharIdx then SliceContent := ''
+  else
+  begin
+    if EndCharIdx - StartCharIdx + 1 > MaxChars then
+      EndCharIdx := StartCharIdx + MaxChars - 1;
+    SliceContent := Copy(RawContent, StartCharIdx, EndCharIdx - StartCharIdx + 1);
+  end;
+
+  NextOffset := StartCharIdx - 1 + Length(SliceContent);
+  if HasEndLine then IsEOF := NextOffset >= RawLineEnd(RawContent, ReqEndLine)
+  else IsEOF := NextOffset >= TotalChars;
+  ATruncated := not IsEOF;
+  ActualStartLine := RawLineAt(RawContent, StartCharIdx);
+  if SliceContent = '' then ActualEndLine := ActualStartLine
+  else ActualEndLine := RawLineAt(RawContent, NextOffset);
+
   OutputObject := TJSONObject.Create;
   OutputObject.Add('path', ExtractRelativePath(
     IncludeTrailingPathDelimiter(FRootPath), FileName));
-  OutputObject.Add('content', Content);
+  OutputObject.Add('content', SliceContent);
+  OutputObject.Add('total_chars', TotalChars);
+  OutputObject.Add('total_lines', TotalLines);
+  OutputObject.Add('start_line', ActualStartLine);
+  OutputObject.Add('end_line', ActualEndLine);
+  OutputObject.Add('next_offset', NextOffset);
+  OutputObject.Add('eof', IsEOF);
+  OutputObject.Add('truncated', ATruncated);
   AData := OutputObject;
   Result := True;
+end;
+
+function TMNoteAIActionExecutor.ExecuteFileOutline(AParameters: TJSONObject;
+  out AData: TJSONData; out ATruncated: Boolean;
+  out AError: string): Boolean;
+var
+  FileName, Ext, TargetUnitName: string;
+  Lines: TStringList;
+  TotalLines, I, InterfaceLine, ImplementationLine: Integer;
+  Parser: TMNotePascalSymbolParser;
+  Items: TMNoteCompletionItems;
+  OutputObject, SectionsObject, SymObj: TJSONObject;
+  SymbolsArray: TJSONArray;
+begin
+  AData := nil;
+  ATruncated := False;
+  if not ResolveProjectFile(JSONString(AParameters, 'path', ''), FileName,
+    AError) then Exit(False);
+  if ExistingFileSize(FileName) > 2 * 1024 * 1024 then
+  begin
+    AError := 'O arquivo excede o limite de leitura de 2 MB.';
+    Exit(False);
+  end;
+
+  Lines := TStringList.Create;
+  try
+    Lines.LoadFromFile(FileName);
+    TotalLines := Lines.Count;
+    TargetUnitName := ChangeFileExt(ExtractFileName(FileName), '');
+    InterfaceLine := 0;
+    ImplementationLine := 0;
+
+    for I := 0 to TotalLines - 1 do
+    begin
+      if (InterfaceLine = 0) and SameText(Trim(Lines[I]), 'interface') then
+        InterfaceLine := I + 1;
+      if (ImplementationLine = 0) and SameText(Trim(Lines[I]), 'implementation') then
+        ImplementationLine := I + 1;
+    end;
+
+    SymbolsArray := TJSONArray.Create;
+    Ext := LowerCase(ExtractFileExt(FileName));
+    if (Ext = '.pas') or (Ext = '.pp') or (Ext = '.inc') or (Ext = '.lpr') then
+    begin
+      Parser := TMNotePascalSymbolParser.Create;
+      Items := TMNoteCompletionItems.Create;
+      try
+        Parser.Parse(Lines.Text, FileName, 'FileOutline', Items);
+        for I := 0 to Items.Count - 1 do
+        begin
+          SymObj := TJSONObject.Create;
+          SymObj.Add('name', Items[I].Text);
+          SymObj.Add('kind', CompletionKindName(Items[I].Kind));
+          SymObj.Add('signature', Items[I].Signature);
+          SymObj.Add('line', Items[I].Line);
+          if Length(SymbolsArray.AsJSON) + Length(SymObj.AsJSON) + 512 > 16000 then
+          begin
+            SymObj.Free;
+            ATruncated := True;
+            Break;
+          end;
+          SymbolsArray.Add(SymObj);
+        end;
+      finally
+        Items.Free;
+        Parser.Free;
+      end;
+    end;
+
+    SectionsObject := TJSONObject.Create;
+    SectionsObject.Add('interface_line', InterfaceLine);
+    SectionsObject.Add('implementation_line', ImplementationLine);
+
+    OutputObject := TJSONObject.Create;
+    OutputObject.Add('unit_name', TargetUnitName);
+    OutputObject.Add('path', ExtractRelativePath(
+      IncludeTrailingPathDelimiter(FRootPath), FileName));
+    OutputObject.Add('total_lines', TotalLines);
+    OutputObject.Add('sections', SectionsObject);
+    OutputObject.Add('symbols', SymbolsArray);
+
+    AData := OutputObject;
+    Result := True;
+  finally
+    Lines.Free;
+  end;
 end;
 
 function TMNoteAIActionExecutor.ExecuteSearchProject(
@@ -592,44 +877,407 @@ function TMNoteAIActionExecutor.ExecuteListSymbols(AParameters: TJSONObject;
   out AError: string): Boolean;
 var
   Symbols: TMNoteCompletionItems;
-  OutputArray: TJSONArray;
-  Item: TJSONObject;
-  I, Maximum: Integer;
+  OutputObject: TJSONObject;
+  SymbolsArray, FailedPathsArray: TJSONArray;
+  ItemObj: TJSONObject;
+  I, Maximum, MatchCount: Integer;
+  NameFilter, KindFilter, PathFilter: string;
+  SymName, SymKind, SymPath: string;
+  IndexedCount, FailedCount: Integer;
 begin
   Result := False;
   AData := nil;
   ATruncated := False;
-  Maximum := JSONInteger(AParameters, 'max_results', 100);
+
+  Maximum := JSONInteger(AParameters, 'max_results', 200);
   if Maximum < 1 then Maximum := 1;
   if Maximum > 500 then Maximum := 500;
+
+  NameFilter := LowerCase(JSONString(AParameters, 'name_contains', ''));
+  KindFilter := LowerCase(JSONString(AParameters, 'kind', ''));
+  PathFilter := LowerCase(StringReplace(JSONString(AParameters, 'path_contains', ''), '\', '/', [rfReplaceAll]));
+
   if not MNoteProjectSymbols.IndexFolder(FRootPath) then
   begin
-    AError := 'Não foi possível indexar os símbolos do projeto.';
-    Exit;
+    AError := 'Não foi possível indexar nenhum arquivo de símbolos do projeto.';
+    Exit(False);
   end;
+  IndexedCount := MNoteProjectSymbols.IndexedCount + MNoteProjectSymbols.ReusedCount;
+  FailedCount := MNoteProjectSymbols.FailedFiles.Count;
+  if IndexedCount = 0 then
+  begin
+    AError := 'Não foi possível indexar nenhum arquivo de símbolos do projeto.';
+    Exit(False);
+  end;
+
   Symbols := TMNoteCompletionItems.Create;
-  OutputArray := TJSONArray.Create;
+  SymbolsArray := TJSONArray.Create;
+  FailedPathsArray := TJSONArray.Create;
   try
-    MNoteProjectSymbols.ListSymbols(Symbols, Maximum + 1);
-    ATruncated := Symbols.Count > Maximum;
+    for I := 0 to MNoteProjectSymbols.FailedFiles.Count - 1 do
+      FailedPathsArray.Add(StringReplace(ExtractRelativePath(
+        IncludeTrailingPathDelimiter(FRootPath),
+        MNoteProjectSymbols.FailedFiles[I]), '\', '/', [rfReplaceAll]));
+
+    MNoteProjectSymbols.ListSymbols(Symbols, MaxInt);
+    MatchCount := 0;
+
     for I := 0 to Symbols.Count - 1 do
     begin
-      if I >= Maximum then Break;
-      Item := TJSONObject.Create;
-      Item.Add('name', Symbols[I].Text);
-      Item.Add('kind', CompletionKindName(Symbols[I].Kind));
-      Item.Add('signature', Symbols[I].Signature);
-      Item.Add('path', ExtractRelativePath(IncludeTrailingPathDelimiter(
-        FRootPath), Symbols[I].FileName));
-      Item.Add('line', Symbols[I].Line);
-      OutputArray.Add(Item);
+      SymName := Symbols[I].Text;
+      SymKind := CompletionKindName(Symbols[I].Kind);
+      SymPath := StringReplace(ExtractRelativePath(IncludeTrailingPathDelimiter(FRootPath), Symbols[I].FileName), '\', '/', [rfReplaceAll]);
+
+      if (NameFilter <> '') and (Pos(NameFilter, LowerCase(SymName)) = 0) then Continue;
+      if (KindFilter <> '') and not SameText(KindFilter, SymKind) then Continue;
+      if (PathFilter <> '') and (Pos(PathFilter, LowerCase(SymPath)) = 0) then Continue;
+
+      Inc(MatchCount);
+      if MatchCount <= Maximum then
+      begin
+        ItemObj := TJSONObject.Create;
+        ItemObj.Add('name', SymName);
+        ItemObj.Add('kind', SymKind);
+        ItemObj.Add('signature', Symbols[I].Signature);
+        ItemObj.Add('path', SymPath);
+        ItemObj.Add('line', Symbols[I].Line);
+        SymbolsArray.Add(ItemObj);
+      end;
     end;
-    AData := OutputArray;
-    OutputArray := nil;
+
+    ATruncated := (MatchCount > Maximum);
+
+    OutputObject := TJSONObject.Create;
+    OutputObject.Add('indexed_files', IndexedCount);
+    OutputObject.Add('failed_files', FailedCount);
+    OutputObject.Add('failed_paths', FailedPathsArray);
+    FailedPathsArray := nil;
+    OutputObject.Add('total_matches', MatchCount);
+    OutputObject.Add('symbols', SymbolsArray);
+    SymbolsArray := nil;
+
+    AData := OutputObject;
     Result := True;
   finally
-    OutputArray.Free;
+    FailedPathsArray.Free;
+    SymbolsArray.Free;
     Symbols.Free;
+  end;
+end;
+
+function TMNoteAIActionExecutor.ExecuteFindDefinition(AParameters: TJSONObject;
+  out AData: TJSONData; out ATruncated: Boolean;
+  out AError: string): Boolean;
+var
+  TargetName: string;
+  Maximum, I, J, MatchCount: Integer;
+  Symbols: TMNoteCompletionItems;
+  AllHomonyms: TStringList;
+  HomonymsArray, OutputArray: TJSONArray;
+  ItemObj, OutputObj: TJSONObject;
+  SymPath, HomonymStr: string;
+begin
+  AData := nil;
+  ATruncated := False;
+
+  TargetName := JSONString(AParameters, 'name', '');
+  if Trim(TargetName) = '' then
+  begin
+    AError := 'O nome do símbolo é obrigatório.';
+    Exit(False);
+  end;
+
+  Maximum := JSONInteger(AParameters, 'max_results', 50);
+  if Maximum < 1 then Maximum := 1;
+  if Maximum > 500 then Maximum := 500;
+
+  if not MNoteProjectSymbols.IndexFolder(FRootPath) then
+  begin
+    AError := 'Não foi possível indexar nenhum arquivo de símbolos do projeto.';
+    Exit(False);
+  end;
+
+  Symbols := TMNoteCompletionItems.Create;
+  AllHomonyms := TStringList.Create;
+  OutputArray := TJSONArray.Create;
+  try
+    MNoteProjectSymbols.ListSymbols(Symbols, MaxInt);
+    MatchCount := 0;
+
+    for I := 0 to Symbols.Count - 1 do
+    begin
+      if SameText(Symbols[I].Text, TargetName) then
+      begin
+        SymPath := StringReplace(ExtractRelativePath(IncludeTrailingPathDelimiter(FRootPath), Symbols[I].FileName), '\', '/', [rfReplaceAll]);
+        HomonymStr := SymPath + ':' + IntToStr(Symbols[I].Line) + ' (' + Symbols[I].Signature + ')';
+        AllHomonyms.Add(HomonymStr);
+      end;
+    end;
+
+    for I := 0 to Symbols.Count - 1 do
+    begin
+      if SameText(Symbols[I].Text, TargetName) then
+      begin
+        Inc(MatchCount);
+        if MatchCount <= Maximum then
+        begin
+          SymPath := StringReplace(ExtractRelativePath(IncludeTrailingPathDelimiter(FRootPath), Symbols[I].FileName), '\', '/', [rfReplaceAll]);
+          ItemObj := TJSONObject.Create;
+          ItemObj.Add('name', Symbols[I].Text);
+          ItemObj.Add('path', SymPath);
+          ItemObj.Add('line', Symbols[I].Line);
+          ItemObj.Add('kind', CompletionKindName(Symbols[I].Kind));
+          ItemObj.Add('signature', Symbols[I].Signature);
+
+          HomonymsArray := TJSONArray.Create;
+          for J := 0 to AllHomonyms.Count - 1 do
+            HomonymsArray.Add(AllHomonyms[J]);
+          ItemObj.Add('all_homonyms', HomonymsArray);
+
+          OutputArray.Add(ItemObj);
+        end;
+      end;
+    end;
+
+    ATruncated := (MatchCount > Maximum);
+
+    OutputObj := TJSONObject.Create;
+    OutputObj.Add('name', TargetName);
+    OutputObj.Add('total_matches', MatchCount);
+    OutputObj.Add('symbols', OutputArray);
+
+    AData := OutputObj;
+    Result := True;
+  finally
+    AllHomonyms.Free;
+    Symbols.Free;
+  end;
+end;
+
+function TMNoteAIActionExecutor.ExecuteDependencyGraph(AParameters: TJSONObject;
+  out AData: TJSONData; out ATruncated: Boolean;
+  out AError: string): Boolean;
+var
+  Service: TMNoteDependencyGraphService;
+  UnitNameFilter, DirectionFilter: string;
+  OutputObj: TJSONObject;
+  EdgesArray, HighestDegreeArray: TJSONArray;
+  EdgeObj, UnitObj: TJSONObject;
+  I, MaxIndex, MaxDegree: Integer;
+  FromNode, ToNode: TAIDependencyNode;
+  IncludeEdge: Boolean;
+  UnitDegrees: TStringList;
+  Deg: Integer;
+
+  procedure CountDegree(AEdge: TAIDependencyEdge);
+  var
+    LocalFrom, LocalTo: TAIDependencyNode;
+  begin
+    if (AEdge = nil) or not SameText(AEdge.EdgeType, AIDG_EDGE_USES_UNIT) then
+      Exit;
+    LocalFrom := Service.Graph.FindNode(AEdge.FromId);
+    LocalTo := Service.Graph.FindNode(AEdge.ToId);
+    if (LocalFrom <> nil) and SameText(LocalFrom.NodeType, AIDG_NODE_UNIT) then
+    begin
+      Deg := StrToIntDef(UnitDegrees.Values[LocalFrom.Name], 0);
+      UnitDegrees.Values[LocalFrom.Name] := IntToStr(Deg + 1);
+    end;
+    if (LocalTo <> nil) and SameText(LocalTo.NodeType, AIDG_NODE_UNIT) then
+    begin
+      Deg := StrToIntDef(UnitDegrees.Values[LocalTo.Name], 0);
+      UnitDegrees.Values[LocalTo.Name] := IntToStr(Deg + 1);
+    end;
+  end;
+
+  procedure AddFilteredEdge(AEdge: TAIDependencyEdge;
+    const AOrigin: string);
+  begin
+    if ATruncated or (AEdge = nil) or
+      not SameText(AEdge.EdgeType, AIDG_EDGE_USES_UNIT) then Exit;
+    FromNode := Service.Graph.FindNode(AEdge.FromId);
+    ToNode := Service.Graph.FindNode(AEdge.ToId);
+    if (FromNode = nil) or (ToNode = nil) then Exit;
+
+    IncludeEdge := False;
+    if ((DirectionFilter = 'uses') or (DirectionFilter = 'both')) and
+      SameText(FromNode.Name, UnitNameFilter) then IncludeEdge := True;
+    if ((DirectionFilter = 'used_by') or (DirectionFilter = 'both')) and
+      SameText(ToNode.Name, UnitNameFilter) then IncludeEdge := True;
+    if not IncludeEdge then Exit;
+
+    EdgeObj := TJSONObject.Create;
+    EdgeObj.Add('from', FromNode.Name);
+    EdgeObj.Add('to', ToNode.Name);
+    EdgeObj.Add('edge_type', AEdge.EdgeType);
+    EdgeObj.Add('origin', AOrigin);
+    if AOrigin = 'inferred' then
+    begin
+      EdgeObj.Add('confidence', AEdge.Confidence);
+      EdgeObj.Add('source', AEdge.Source);
+    end
+    else
+    begin
+      EdgeObj.Add('source_file', AEdge.Evidence.SourceFile);
+      EdgeObj.Add('source_line', AEdge.Evidence.Line);
+    end;
+    if Length(OutputObj.AsJSON) + Length(EdgeObj.AsJSON) + 128 > 20000 then
+    begin
+      EdgeObj.Free;
+      ATruncated := True;
+      Exit;
+    end;
+    EdgesArray.Add(EdgeObj);
+  end;
+begin
+  AData := nil;
+  ATruncated := False;
+
+  UnitNameFilter := JSONString(AParameters, 'unit_name', '');
+  DirectionFilter := LowerCase(JSONString(AParameters, 'direction', 'both'));
+  if (DirectionFilter <> 'uses') and (DirectionFilter <> 'used_by') and
+    (DirectionFilter <> 'both') then
+  begin
+    AError := 'direction deve ser uses, used_by ou both.';
+    Exit(False);
+  end;
+
+  Service := TMNoteDependencyGraphService.Create;
+  try
+    if not Service.Build(FRootPath) then
+    begin
+      AError := 'Não foi possível construir o grafo de dependências: ' +
+        Service.LastError;
+      Exit(False);
+    end;
+
+    OutputObj := TJSONObject.Create;
+
+    if Trim(UnitNameFilter) = '' then
+    begin
+      OutputObj.Add('total_nodes', Service.Graph.Nodes.Count);
+      OutputObj.Add('total_edges', Service.Graph.Edges.Count +
+        Service.Graph.InferredEdges.Count);
+      OutputObj.Add('factual_edges_count', Service.Graph.Edges.Count);
+      OutputObj.Add('inferred_edges_count', Service.Graph.InferredEdges.Count);
+
+      UnitDegrees := TStringList.Create;
+      try
+        for I := 0 to Service.Graph.Edges.Count - 1 do
+          CountDegree(Service.Graph.Edges[I]);
+        for I := 0 to Service.Graph.InferredEdges.Count - 1 do
+          CountDegree(Service.Graph.InferredEdges[I]);
+
+        HighestDegreeArray := TJSONArray.Create;
+        while (UnitDegrees.Count > 0) and (HighestDegreeArray.Count < 10) do
+        begin
+          MaxIndex := 0;
+          MaxDegree := StrToIntDef(UnitDegrees.ValueFromIndex[0], 0);
+          for I := 1 to UnitDegrees.Count - 1 do
+            if StrToIntDef(UnitDegrees.ValueFromIndex[I], 0) > MaxDegree then
+            begin
+              MaxIndex := I;
+              MaxDegree := StrToIntDef(UnitDegrees.ValueFromIndex[I], 0);
+            end;
+          UnitObj := TJSONObject.Create;
+          UnitObj.Add('unit', UnitDegrees.Names[MaxIndex]);
+          UnitObj.Add('degree', MaxDegree);
+          HighestDegreeArray.Add(UnitObj);
+          UnitDegrees.Delete(MaxIndex);
+        end;
+        OutputObj.Add('highest_degree_units', HighestDegreeArray);
+      finally
+        UnitDegrees.Free;
+      end;
+    end
+    else
+    begin
+      OutputObj.Add('unit_name', UnitNameFilter);
+      OutputObj.Add('direction', DirectionFilter);
+      EdgesArray := TJSONArray.Create;
+      OutputObj.Add('edges', EdgesArray);
+      for I := 0 to Service.Graph.Edges.Count - 1 do
+        AddFilteredEdge(Service.Graph.Edges[I], 'factual');
+      for I := 0 to Service.Graph.InferredEdges.Count - 1 do
+        AddFilteredEdge(Service.Graph.InferredEdges[I], 'inferred');
+    end;
+
+    AData := OutputObj;
+    Result := True;
+  finally
+    Service.Free;
+  end;
+end;
+
+function TMNoteAIActionExecutor.ExecuteBuildDiagnostics(AParameters: TJSONObject;
+  out AData: TJSONData; out ATruncated: Boolean;
+  out AError: string): Boolean;
+var
+  SevFilter, PathFilter: string;
+  Diagnostics: TMNoteDiagnostics;
+  OutputObj: TJSONObject;
+  DiagArray: TJSONArray;
+  DiagObj: TJSONObject;
+  I, MatchCount: Integer;
+  SevStr, DiagPath: string;
+  IncludeDiag, HasPreviousBuild: Boolean;
+begin
+  AData := nil;
+  ATruncated := False;
+
+  SevFilter := LowerCase(JSONString(AParameters, 'severity', 'all'));
+  if (SevFilter <> 'all') and (SevFilter <> 'error') and
+    (SevFilter <> 'warning') and (SevFilter <> 'message') then
+  begin
+    AError := 'severity deve ser all, error, warning ou message.';
+    Exit(False);
+  end;
+  PathFilter := LowerCase(StringReplace(JSONString(AParameters, 'path_contains', ''), '\', '/', [rfReplaceAll]));
+
+  Diagnostics := TMNoteDiagnostics.Create;
+  OutputObj := TJSONObject.Create;
+  DiagArray := TJSONArray.Create;
+  try
+    MNoteSnapshotBuildDiagnostics(Diagnostics, HasPreviousBuild);
+
+    MatchCount := 0;
+    for I := 0 to Diagnostics.Count - 1 do
+    begin
+      SevStr := TMNoteDiagnosticParser.SeverityName(Diagnostics[I].Severity);
+      DiagPath := StringReplace(Diagnostics[I].FileName, '\', '/', [rfReplaceAll]);
+
+      IncludeDiag := True;
+      if (SevFilter <> 'all') and not SameText(SevFilter, SevStr) then IncludeDiag := False;
+      if (PathFilter <> '') and (Pos(PathFilter, LowerCase(DiagPath)) = 0) then IncludeDiag := False;
+
+      if IncludeDiag then
+      begin
+        Inc(MatchCount);
+        DiagObj := TJSONObject.Create;
+        DiagObj.Add('path', Diagnostics[I].FileName);
+        DiagObj.Add('line', Diagnostics[I].Line);
+        DiagObj.Add('column', Diagnostics[I].Column);
+        DiagObj.Add('severity', SevStr);
+        DiagObj.Add('code', Diagnostics[I].Code);
+        DiagObj.Add('message', Diagnostics[I].MessageText);
+        if Length(DiagArray.AsJSON) + Length(DiagObj.AsJSON) + 512 > 20000 then
+        begin
+          DiagObj.Free;
+          ATruncated := True;
+          Continue;
+        end;
+        DiagArray.Add(DiagObj);
+      end;
+    end;
+
+    OutputObj.Add('has_previous_build', HasPreviousBuild);
+    OutputObj.Add('total_diagnostics', Diagnostics.Count);
+    OutputObj.Add('matched_diagnostics', MatchCount);
+    OutputObj.Add('diagnostics', DiagArray);
+
+    AData := OutputObj;
+    Result := True;
+  finally
+    Diagnostics.Free;
   end;
 end;
 
@@ -702,7 +1350,10 @@ var
           (not IsSensitivePath(RelativeName)) then
         begin
           if (Added >= Maximum) or (Length(Output.AsJSON) >= 19500) then
-          begin ATruncated := True; Exit; end;
+          begin
+            ATruncated := True;
+            Exit;
+          end;
           Files.Add(TJSONObject.Create(['path', RelativeName,
             'extension', LowerCase(ExtractFileExt(RelativeName)),
             'size', Search.Size]));
@@ -722,12 +1373,18 @@ begin
   ExcludeMask := JSONString(AParameters, 'exclude', '');
   if (Pos('..', IncludeMask) > 0) or (Pos(':', IncludeMask) > 0) or
     (Pos('..', ExcludeMask) > 0) or (Pos(':', ExcludeMask) > 0) then
-  begin AError := 'Máscara de arquivo insegura.'; Exit; end;
+  begin
+    AError := 'Máscara de arquivo insegura.';
+    Exit;
+  end;
   Maximum := JSONInteger(AParameters, 'max_results', 500);
   if Maximum < 1 then Maximum := 1;
   if Maximum > 500 then Maximum := 500;
   if not DirectoryExists(FRootPath) then
-  begin AError := 'A raiz do projeto não existe.'; Exit; end;
+  begin
+    AError := 'A raiz do projeto não existe.';
+    Exit;
+  end;
   RootPrefix := IncludeTrailingPathDelimiter(ExpandFileName(FRootPath));
   Output := TJSONObject.Create;
   Files := TJSONArray.Create;
@@ -875,7 +1532,8 @@ var
   Diagnostics: TMNoteDiagnostics;
   OutputObject, DiagnosticObject: TJSONObject;
   DiagnosticArray: TJSONArray;
-  I, DiagnosticCount: Integer;
+  I, DiagnosticCount, TotalErrors: Integer;
+  FirstErrorMsg: string;
 begin
   Result := False;
   AData := nil;
@@ -904,22 +1562,42 @@ begin
       DiagnosticCount := 200;
       ATruncated := True;
     end;
-    for I := 0 to DiagnosticCount - 1 do
+
+    FirstErrorMsg := '';
+    TotalErrors := 0;
+    for I := 0 to Diagnostics.Count - 1 do
     begin
-      DiagnosticObject := TJSONObject.Create;
-      DiagnosticObject.Add('path', Diagnostics[I].FileName);
-      DiagnosticObject.Add('line', Diagnostics[I].Line);
-      DiagnosticObject.Add('column', Diagnostics[I].Column);
-      DiagnosticObject.Add('severity',
-        TMNoteDiagnosticParser.SeverityName(Diagnostics[I].Severity));
-      DiagnosticObject.Add('code', Diagnostics[I].Code);
-      DiagnosticObject.Add('message', Diagnostics[I].MessageText);
-      DiagnosticArray.Add(DiagnosticObject);
+      if Diagnostics[I].Severity = mdsError then
+      begin
+        Inc(TotalErrors);
+        if FirstErrorMsg = '' then FirstErrorMsg := Diagnostics[I].MessageText;
+      end;
+      if I < DiagnosticCount then
+      begin
+        DiagnosticObject := TJSONObject.Create;
+        DiagnosticObject.Add('path', Diagnostics[I].FileName);
+        DiagnosticObject.Add('line', Diagnostics[I].Line);
+        DiagnosticObject.Add('column', Diagnostics[I].Column);
+        DiagnosticObject.Add('severity',
+          TMNoteDiagnosticParser.SeverityName(Diagnostics[I].Severity));
+        DiagnosticObject.Add('code', Diagnostics[I].Code);
+        DiagnosticObject.Add('message', Diagnostics[I].MessageText);
+        DiagnosticArray.Add(DiagnosticObject);
+      end;
     end;
+
+    if FirstErrorMsg = '' then FirstErrorMsg := FProcess.LastError;
+    if FirstErrorMsg = '' then FirstErrorMsg := 'ExitCode ' + IntToStr(FProcess.ExitCode);
+
+    OutputObject.Add('ok', FProcess.ExitCode = 0);
+    OutputObject.Add('first_error', FirstErrorMsg);
+    OutputObject.Add('total_errors', TotalErrors);
     OutputObject.Add('diagnostics', DiagnosticArray);
+    MNoteRememberBuildDiagnostics(Diagnostics);
     AData := OutputObject;
-    Result := FProcess.ExitCode = 0;
-    if Result then AError := '';
+    Result := (FProcess.ExitCode = 0);
+    if Result then AError := ''
+    else AError := 'Compilação com falhas. Primeiro erro: ' + FirstErrorMsg;
   finally
     Diagnostics.Free;
     Arguments.Free;
@@ -966,7 +1644,8 @@ begin
   end;
 end;
 
-function TMNoteAIActionExecutor.DescribeActions: string;
+function TMNoteAIActionExecutor.DescribeActions(
+  AReadOnlyOnly: Boolean): string;
 var
   Output: TJSONArray;
   ActionObject: TJSONObject;
@@ -979,6 +1658,7 @@ begin
     for I := 0 to FActions.Count - 1 do
     begin
       Descriptor := TMNoteAIActionDescriptor(FActions[I]);
+      if AReadOnlyOnly and (Descriptor.Effect <> aaeReadOnly) then Continue;
       ActionObject := TJSONObject.Create;
       ActionObject.Add('name', Descriptor.Name);
       ActionObject.Add('effect', MNoteAIActionEffectName(Descriptor.Effect));
@@ -997,6 +1677,29 @@ begin
   end;
 end;
 
+function TMNoteAIActionExecutor.ActionIsReadOnly(
+  const AName: string): Boolean;
+var
+  Descriptor: TMNoteAIActionDescriptor;
+begin
+  Descriptor := FindAction(AName);
+  Result := (Descriptor <> nil) and (Descriptor.Effect = aaeReadOnly);
+end;
+
+function TMNoteAIActionExecutor.ValidateRequestContract(
+  const ARequestJSON: string; out AActionName, AError: string): Boolean;
+var
+  Descriptor: TMNoteAIActionDescriptor;
+  Parameters: TJSONObject;
+  Data: TJSONData;
+begin
+  AActionName := '';
+  Data := nil;
+  Result := ParseRequest(ARequestJSON, Descriptor, Parameters, Data, AError);
+  if Result then AActionName := Descriptor.Name;
+  Data.Free;
+end;
+
 function TMNoteAIActionExecutor.ExecuteRequest(const ARequestJSON: string;
   ARole: TMNoteAIRole; out AResultJSON, AError: string): Boolean;
 var
@@ -1005,42 +1708,74 @@ var
   RequestData, ResultData: TJSONData;
   Truncated: Boolean;
   ConfirmationReason: string;
+  SafetyParams: TStringList;
+  I: Integer;
+  PName, PVal: string;
 begin
   Result := False;
+  FLastErrorIsContract := False;
+  Truncated := False;
   AResultJSON := '';
   AError := '';
   ResultData := nil;
   if not ParseRequest(ARequestJSON, Descriptor, Parameters, RequestData,
     AError) then
   begin
+    FLastErrorIsContract := True;
     AResultJSON := ResultJSON('', False, False, nil, AError);
     Exit;
   end;
   try
-    if not RoleMayExecute(ARole, Descriptor) then
-      AError := 'O papel ' + MNoteAIRoleName(ARole) +
-        ' não tem permissão para executar ' + Descriptor.Name + '.'
-    else if not FSafety.ValidateAction(Descriptor.Name, nil, AError) then
-      AError := 'Agent Safety: ' + AError
-    else if Descriptor.Effect in [aaeSourceWrite, aaeExternalWrite] then
-      AError := 'Alterações de fonte e efeitos externos só podem passar pela revisão de Changes.'
-    else if Descriptor.RequiresConfirmation and
-      ((not Assigned(FOnConfirm)) or
-       (not FOnConfirm(Self, Descriptor, Parameters, ConfirmationReason))) then
-    begin
-      if ConfirmationReason = '' then
-        ConfirmationReason := 'A execução não foi confirmada pelo usuário.';
-      AError := ConfirmationReason;
+    SafetyParams := TStringList.Create;
+    try
+      if Parameters <> nil then
+        for I := 0 to Parameters.Count - 1 do
+        begin
+          PName := Parameters.Names[I];
+          PVal := Parameters.Items[I].AsString;
+          if (SameText(PName, 'path') or SameText(PName, 'file')) and (Trim(PVal) <> '') then
+          begin
+            if ExtractFileDrive(PVal) <> '' then PVal := ExpandFileName(PVal)
+            else PVal := ExpandFileName(IncludeTrailingPathDelimiter(FRootPath) + PVal);
+          end;
+          SafetyParams.Add(PName + '=' + PVal);
+        end;
+
+      if not RoleMayExecute(ARole, Descriptor) then
+        AError := 'O papel ' + MNoteAIRoleName(ARole) +
+          ' não tem permissão para executar ' + Descriptor.Name + '.'
+      else if not FSafety.ValidateAction(Descriptor.Name, SafetyParams, AError) then
+        AError := 'Agent Safety: ' + AError
+      else if Descriptor.Effect in [aaeSourceWrite, aaeExternalWrite] then
+        AError := 'Alterações de fonte e efeitos externos só podem passar pela revisão de Changes.'
+      else if Descriptor.RequiresConfirmation and
+        ((not Assigned(FOnConfirm)) or
+         (not FOnConfirm(Self, Descriptor, Parameters, ConfirmationReason))) then
+      begin
+        if ConfirmationReason = '' then
+          ConfirmationReason := 'A execução não foi confirmada pelo usuário.';
+        AError := ConfirmationReason;
+      end;
+    finally
+      SafetyParams.Free;
     end;
 
     if AError = '' then
     begin
       if SameText(Descriptor.Name, 'ReadFile') then
         Result := ExecuteReadFile(Parameters, ResultData, Truncated, AError)
+      else if SameText(Descriptor.Name, 'FileOutline') then
+        Result := ExecuteFileOutline(Parameters, ResultData, Truncated, AError)
       else if SameText(Descriptor.Name, 'SearchProject') then
         Result := ExecuteSearchProject(Parameters, ResultData, Truncated, AError)
       else if SameText(Descriptor.Name, 'ListSymbols') then
         Result := ExecuteListSymbols(Parameters, ResultData, Truncated, AError)
+      else if SameText(Descriptor.Name, 'FindDefinition') then
+        Result := ExecuteFindDefinition(Parameters, ResultData, Truncated, AError)
+      else if SameText(Descriptor.Name, 'DependencyGraph') then
+        Result := ExecuteDependencyGraph(Parameters, ResultData, Truncated, AError)
+      else if SameText(Descriptor.Name, 'BuildDiagnostics') then
+        Result := ExecuteBuildDiagnostics(Parameters, ResultData, Truncated, AError)
       else if SameText(Descriptor.Name, 'ListProjectFiles') then
         Result := ExecuteListProjectFiles(Parameters, ResultData, Truncated,
           AError)

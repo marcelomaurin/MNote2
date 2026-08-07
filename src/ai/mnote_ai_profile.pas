@@ -42,6 +42,7 @@ type
     FTimeoutMS: Integer;
     FMaxCalls: Integer;
     FMaxEstimatedTokens: Integer;
+    FMaxToolRounds: Integer;
     function ContainsSensitiveConfiguration(const AText: string): Boolean;
   public
     constructor Create;
@@ -54,6 +55,7 @@ type
     property MaxCalls: Integer read FMaxCalls write FMaxCalls;
     property MaxEstimatedTokens: Integer read FMaxEstimatedTokens
       write FMaxEstimatedTokens;
+    property MaxToolRounds: Integer read FMaxToolRounds write FMaxToolRounds;
   end;
 
 implementation
@@ -141,8 +143,9 @@ begin
   for Role := Low(TMNoteAIRole) to High(TMNoteAIRole) do
     FItems[Role] := TMNoteAIProfile.Create(Role);
   FTimeoutMS := 300000;
-  FMaxCalls := 12;
-  FMaxEstimatedTokens := 20000;
+  FMaxCalls := 16;
+  FMaxEstimatedTokens := 80000;
+  FMaxToolRounds := 8;
 end;
 
 destructor TMNoteAIProfiles.Destroy;
@@ -189,6 +192,7 @@ begin
     Root.Add('timeout_ms', FTimeoutMS);
     Root.Add('max_calls', FMaxCalls);
     Root.Add('max_estimated_tokens', FMaxEstimatedTokens);
+    Root.Add('max_tool_rounds', FMaxToolRounds);
     ProfilesObject := TJSONObject.Create;
     Root.Add('profiles', ProfilesObject);
     for Role := Low(TMNoteAIRole) to High(TMNoteAIRole) do
@@ -244,6 +248,10 @@ begin
     if Root.Find('max_calls') <> nil then FMaxCalls := Root.Integers['max_calls'];
     if Root.Find('max_estimated_tokens') <> nil then
       FMaxEstimatedTokens := Root.Integers['max_estimated_tokens'];
+    if Root.Find('max_tool_rounds') <> nil then
+      FMaxToolRounds := Root.Integers['max_tool_rounds'];
+    if FMaxToolRounds < 1 then FMaxToolRounds := 1;
+    if FMaxToolRounds > 32 then FMaxToolRounds := 32;
     for Role := Low(TMNoteAIRole) to High(TMNoteAIRole) do
     begin
       if not (ProfilesObject.Find(MNoteAIRoleID(Role)) is TJSONObject) then

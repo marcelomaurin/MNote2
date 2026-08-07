@@ -8,7 +8,7 @@ object frmRegistrar: TfrmRegistrar
   ClientHeight = 251
   ClientWidth = 547
   Position = poMainFormCenter
-  LCLVersion = '4.0.0.4'
+  LCLVersion = '4.4.0.0'
   OnCreate = FormCreate
   OnShow = FormShow
   object Label1: TLabel
@@ -62,7 +62,7 @@ object frmRegistrar: TfrmRegistrar
     Left = 144
     Height = 40
     Top = 8
-    Width = 266
+    Width = 267
     Caption = 'Registro necessário'
     Font.Height = -29
     Font.Style = [fsBold]
@@ -104,16 +104,14 @@ object frmRegistrar: TfrmRegistrar
     Request.Ranges.Units = 'bytes'
     Request.Ranges = <>
     HTTPOptions = [hoForceEncodeParams]
-    Left = 328
-    Top = 68
+    Left = 336
+    Top = 56
   end
   object IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL
     Intercept = IdCompressionIntercept1
     MaxLineAction = maException
     Port = 0
     DefaultPort = 0
-    SSLOptions.Method = sslvSSLv23
-    SSLOptions.SSLVersions = [sslvSSLv2, sslvSSLv3, sslvTLSv1, sslvTLSv1_1, sslvTLSv1_2]
     SSLOptions.Mode = sslmBoth
     SSLOptions.VerifyMode = []
     SSLOptions.VerifyDepth = 0

@@ -1,7 +1,7 @@
 object frmmquery2: Tfrmmquery2
-  Left = 252
+  Left = 338
   Height = 770
-  Top = 154
+  Top = 185
   Width = 1172
   Caption = 'Query Tools'
   ClientHeight = 770
@@ -3225,7 +3225,7 @@ object frmmquery2: Tfrmmquery2
     Top = 520
   end
   object SynCompletion1: TSynCompletion
-    Position = -1
+    Position = 0
     LinesInWindow = 6
     OnPositionChanged = SynCompletion1PositionChanged
     SelectedColor = clHighlight

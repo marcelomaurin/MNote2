@@ -6,7 +6,7 @@
 #define MyAppPublisher "Maurinsoft"
 #define MyAppURL "http://maurinsoft.com.br"
 #define MyAppExeName "MNote2.exe"
-#define ProjectRoot "D:\projetos\maurinsoft\MNote2"
+#define ProjectRoot SourcePath + "\.."
 
 [Setup]
 PrivilegesRequired=admin
@@ -52,7 +52,11 @@ Source: "{#ProjectRoot}\src\*.dci"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ProjectRoot}\src\*.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ProjectRoot}\src\*.bat"; DestDir: "{app}"; Flags: ignoreversion
 
-; Runtime DLLs used by the app
+; OpenSSL 32-bit runtime DLLs in application root
+Source: "{#ProjectRoot}\src\libssl-1_1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#ProjectRoot}\src\libcrypto-1_1.dll"; DestDir: "{app}"; Flags: ignoreversion
+
+; Database client DLLs
 Source: "{#ProjectRoot}\src\libmysql.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ProjectRoot}\src\libmysql32.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ProjectRoot}\libs\mysql\win32\lib\libcrypto-1_1.dll"; DestDir: "{app}\libs\mysql\win32\lib"; Flags: ignoreversion
@@ -66,18 +70,8 @@ Source: "{#ProjectRoot}\libs\postgres\win32\*.dll"; DestDir: "{app}\libs\postgre
 ; Oracle 32-bit runtime
 Source: "{#ProjectRoot}\libs\oracle\win32\oci.dll"; DestDir: "{app}\libs\oracle\win32"; Flags: ignoreversion
 
-; SQLite 32-bit runtime in the path expected by the application
+; SQLite 32-bit runtime
 Source: "{#ProjectRoot}\libs\sqlite\win32\sqlite3.dll"; DestDir: "{app}\libs\sqlite\win32"; Flags: ignoreversion
-
-; Generic runtime helpers
-Source: "{#ProjectRoot}\src\legacy.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#ProjectRoot}\src\libcrypto-1_1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#ProjectRoot}\src\libcrypto.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#ProjectRoot}\src\libeay32.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#ProjectRoot}\src\libpq.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#ProjectRoot}\src\libssl-1_1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#ProjectRoot}\src\libssl.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#ProjectRoot}\src\ssleay32.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Tools
 Source: "{#ProjectRoot}\tools\windows\srvFalar_1.4.exe"; DestDir: "{app}\tools"; Flags: ignoreversion
@@ -88,10 +82,6 @@ Source: "{#ProjectRoot}\sample\python\hello\hello.py"; DestDir: "{app}\sample\py
 
 ; Default database template used by New Project
 Source: "{#ProjectRoot}\db\projeto_padrao.db"; DestDir: "{app}\db"; Flags: ignoreversion
-
-; SQL Server uses a configurable client DLL path.
-; The repository currently does not ship a 32-bit SQL Server client DLL, so the
-; installer only prepares the destination folder here.
 
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

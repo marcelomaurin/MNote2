@@ -1,7 +1,7 @@
 object frmChart: TfrmChart
-  Left = 184
+  Left = 248
   Height = 415
-  Top = 357
+  Top = 428
   Width = 583
   Caption = 'Chart View'
   ClientHeight = 415

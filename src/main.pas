@@ -2085,13 +2085,34 @@ procedure TfrmMNote.StartCodeAction(AAction: TMNoteAICodeAction;
   const ATitle: string);
 var
   PageItem: TItem;
-  CodeText, DeveloperMessage: string;
+  CodeText, DeveloperMessage, ProjectRoot, FullName, RelativeName,
+  LanguageName, OriginText: string;
   Estimate: TMNoteTokenEstimate;
+  StartLine, EndLine: Integer;
+  HasSelection: Boolean;
 begin
   if (pgMain.ActivePage = nil) or (pgMain.ActivePage.Tag = 0) then Exit;
   PageItem := TItem(pgMain.ActivePage.Tag);
   CodeText := PageItem.syn.SelText;
-  if CodeText = '' then CodeText := PageItem.syn.Text;
+  HasSelection := CodeText <> '';
+  if HasSelection then
+  begin
+    StartLine := PageItem.syn.BlockBegin.Y;
+    EndLine := PageItem.syn.BlockEnd.Y;
+    if StartLine > EndLine then
+    begin
+      StartLine := PageItem.syn.BlockEnd.Y;
+      EndLine := PageItem.syn.BlockBegin.Y;
+    end;
+    if (PageItem.syn.BlockEnd.X = 1) and (EndLine > StartLine) then
+      Dec(EndLine);
+  end
+  else
+  begin
+    CodeText := PageItem.syn.Text;
+    StartLine := 1;
+    EndLine := PageItem.syn.Lines.Count;
+  end;
   Estimate := MNoteAI.EstimateContext(CodeText);
   meDialog.Lines.Text := Format('%s — estimativa: %d tokens + %d de margem; limite %d; %s',
     [ATitle, Estimate.EstimatedTokens, Estimate.SafetyMargin,
@@ -2099,10 +2120,27 @@ begin
   if Estimate.ExceedsLimit and
     (not ShowConfirm('O contexto estimado excede o limite configurado. Continuar?')) then
     Exit;
-  DeveloperMessage := MNoteAI.BuildPrompt('assistente de programação',
-    ATitle, 'somente analisar; não modificar arquivos nem executar comandos',
-    'linguagem: ' + MNoteLanguages.FindByExtension(PageItem.FileExt).Name,
-    'resposta técnica verificável, indicando incertezas');
+  LanguageName := MNoteLanguages.FindByExtension(PageItem.FileExt).Name;
+  RelativeName := '(não salvo)';
+  FullName := IncludeTrailingPathDelimiter(PageItem.DirName) + PageItem.FileName;
+  if GetProjectSearchFolder(ProjectRoot) then
+  begin
+    MNoteAI.SetProjectRoot(ProjectRoot);
+    if (PageItem.FileName <> '') and FileExists(FullName) then
+    begin
+      RelativeName := StringReplace(ExtractRelativePath(
+        IncludeTrailingPathDelimiter(ProjectRoot), FullName), '\', '/',
+        [rfReplaceAll]);
+      if Pos('../', RelativeName) = 1 then RelativeName := '(fora da raiz)';
+    end;
+  end;
+  if HasSelection then OriginText := 'seleção do editor'
+  else OriginText := 'buffer completo do editor';
+  DeveloperMessage := 'titulo: ' + ATitle + LineEnding +
+    'arquivo_relativo: ' + RelativeName + LineEnding +
+    'linguagem: ' + LanguageName + LineEnding +
+    Format('linhas: %d-%d', [StartLine, EndLine]) + LineEnding +
+    'origem: ' + OriginText;
   FPendingAIQuestion := ATitle;
   FPendingAIInputWasVoice := False;
   if FIDEShell <> nil then FIDEShell.ShowToolWindow(twkAI);

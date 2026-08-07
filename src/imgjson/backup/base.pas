@@ -43,7 +43,11 @@ type
     procedure AtualizarResumo(id: integer; Resumo: string);
     function EnsureTabela(const ADatabase, ATabela, AScriptIfNew: string): Integer;
     procedure VinculaFsATabela(const AFsId, ATabelaId: Integer);
+    procedure EnsureWorkspaceTabsTableExists;
+    function ObterCaminhoCompletoFS(const IdFS: Integer): string;
   end;
+
+function ObterCaminhoSQLiteLib: string;
 
 var
   dmBase: TdmBase;
@@ -301,6 +305,80 @@ begin
     zconlocal.Disconnect;
 end;
 
+procedure TdmBase.EnsureWorkspaceTabsTableExists;
+begin
+  if (zconlocal = nil) or (not zconlocal.Connected) then Exit;
+
+  qryauxlocal.Close;
+  qryauxlocal.SQL.Clear;
+  qryauxlocal.SQL.Text :=
+    'CREATE TABLE IF NOT EXISTS workspace_tabs (' +
+    '  id INTEGER PRIMARY KEY AUTOINCREMENT,' +
+    '  id_fs INTEGER NOT NULL,' +
+    '  pos_x INTEGER DEFAULT 1,' +
+    '  pos_y INTEGER DEFAULT 1,' +
+    '  aba_index INTEGER DEFAULT 0,' +
+    '  ativa INTEGER DEFAULT 0,' +
+    '  FOREIGN KEY(id_fs) REFERENCES fs(id) ON DELETE CASCADE' +
+    ');';
+  qryauxlocal.ExecSQL;
+end;
+
+function ObterCaminhoSQLiteLib: string;
+var
+  basePath, subPasta, extLib, prefixLib: string;
+begin
+  basePath := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0)));
+
+  {$IFDEF WINDOWS}
+    extLib := '.dll';
+    prefixLib := '';
+    {$IFDEF CPU64}
+      subPasta := 'win64';
+    {$ELSE}
+      subPasta := 'win32';
+    {$ENDIF}
+  {$ENDIF}
+
+  {$IFDEF LINUX}
+    extLib := '.so';
+    prefixLib := 'lib';
+    {$IFDEF CPU64}
+      subPasta := 'linux64';
+    {$ELSE}
+      subPasta := 'linux32';
+    {$ENDIF}
+  {$ENDIF}
+
+  {$IFDEF DARWIN}
+    extLib := '.dylib';
+    prefixLib := 'lib';
+    subPasta := 'osx';
+  {$ENDIF}
+
+  // Tentativa 1: libs/sqlite/win64/sqlite3.dll (Instalado / Produção)
+  Result := basePath + 'libs' + PathDelim + 'sqlite' + PathDelim + subPasta + PathDelim + prefixLib + 'sqlite3' + extLib;
+  if FileExists(Result) then Exit;
+
+  // Tentativa 2: ../libs/sqlite/win64/sqlite3.dll (Desenvolvimento de dentro do src/)
+  Result := basePath + '..' + PathDelim + 'libs' + PathDelim + 'sqlite' + PathDelim + subPasta + PathDelim + prefixLib + 'sqlite3' + extLib;
+  if FileExists(Result) then Exit;
+
+  // Tentativa 3: libs/win64/sqlite3.dll (Instalado alternativo)
+  Result := basePath + 'libs' + PathDelim + subPasta + PathDelim + prefixLib + 'sqlite3' + extLib;
+  if FileExists(Result) then Exit;
+
+  Result := basePath + '..' + PathDelim + 'libs' + PathDelim + subPasta + PathDelim + prefixLib + 'sqlite3' + extLib;
+  if FileExists(Result) then Exit;
+
+  // Tentativa 4: Pasta raiz do executável
+  Result := basePath + prefixLib + 'sqlite3' + extLib;
+  if FileExists(Result) then Exit;
+
+  // Fallback padrão
+  Result := basePath + 'libs' + PathDelim + 'sqlite' + PathDelim + subPasta + PathDelim + prefixLib + 'sqlite3' + extLib;
+end;
+
 function TdmBase.ConectaSQLite(const ArquivoDB: string; biblioteca: string): Boolean;
 begin
   Result := False;
@@ -310,19 +388,21 @@ begin
 
     zconlocal.Protocol := 'sqlite';
     zconlocal.Database := ArquivoDB;
-    zconlocal.User := '';      // SQLite normalmente não usa usuário
+    zconlocal.User := '';
     zconlocal.Password := '';
 
-    {$IFDEF WINDOWS}
-    zconlocal.LibraryLocation := biblioteca;
-    {$ENDIF}
-    {$IFDEF LINUX}
-    // Usa o executável atual como base
-    zconlocal.LibraryLocation := ExtractFilePath(ParamStr(0)) + 'libs/sqlite/lin32/sqlite3.so';
-    {$ENDIF}
+    // Carregamento resiliente da DLL/SO
+    if Trim(biblioteca) = '' then
+      zconlocal.LibraryLocation := ObterCaminhoSQLiteLib
+    else
+      zconlocal.LibraryLocation := biblioteca;
 
     zconlocal.Connect;
-    Result := zconlocal.Connected;
+    if zconlocal.Connected then
+    begin
+      EnsureWorkspaceTabsTableExists;
+      Result := True;
+    end;
   except
     Result := False;
   end;
@@ -475,7 +555,9 @@ end;
 
 procedure TdmBase.DataModuleCreate(Sender: TObject);
 begin
-  zconlocal.LibraryLocation := ExtractFileDir(ApplicationName)+'\'+ sqllite.d;
+  zconlocal.Disconnect;
+  zconlocal.Database := '';
+  zconlocal.LibraryLocation := '';
 end;
 
 // converte data de modificação para epoch (segundos)
@@ -687,6 +769,69 @@ begin
   qryauxlocal.ParamByName('res').AsString := Resumo;
   qryauxlocal.ParamByName('id').AsInteger := id;
   qryauxlocal.ExecSQL;
+end;
+
+function TdmBase.ObterCaminhoCompletoFS(const IdFS: Integer): string;
+var
+  currentId, parentId: Integer;
+  parts: TStringList;
+  isDir: Integer;
+  nome: string;
+  i: Integer;
+  relPath: string;
+begin
+  Result := '';
+  if (zconlocal = nil) or (not zconlocal.Connected) or (IdFS <= 0) then Exit;
+
+  parts := TStringList.Create;
+  try
+    currentId := IdFS;
+    with TZQuery.Create(Self) do
+    try
+      Connection := zconlocal;
+      while currentId > 0 do
+      begin
+        SQL.Text := 'SELECT id_pai, nome, diretorio FROM fs WHERE id = :id LIMIT 1';
+        ParamByName('id').AsInteger := currentId;
+        Open;
+        if EOF then
+        begin
+          Close;
+          Break;
+        end;
+
+        nome := FieldByName('nome').AsString;
+        parentId := FieldByName('id_pai').AsInteger;
+        isDir := FieldByName('diretorio').AsInteger;
+        Close;
+
+        if nome <> '/' then
+          parts.Insert(0, nome);
+
+        currentId := parentId;
+      end;
+    finally
+      Free;
+    end;
+
+    relPath := '';
+    for i := 0 to parts.Count - 1 do
+    begin
+      if relPath <> '' then
+        relPath := relPath + PathDelim;
+      relPath := relPath + parts[i];
+    end;
+
+    if (Length(relPath) >= 2) and (relPath[2] = ':') then
+      Result := relPath
+    else if (Length(relPath) >= 1) and (relPath[1] = '/') then
+      Result := relPath
+    else
+      Result := IncludeTrailingPathDelimiter(FSetMain.DefaultFolder) + relPath;
+
+  finally
+    parts.Free;
+  end;
 end;
 
 end.

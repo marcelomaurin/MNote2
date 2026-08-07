@@ -1,7 +1,7 @@
 object frmNewProject: TfrmNewProject
-  Left = 191
+  Left = 257
   Height = 358
-  Top = 536
+  Top = 642
   Width = 507
   Caption = 'New Project '
   ClientHeight = 358
@@ -6357,10 +6357,10 @@ object frmNewProject: TfrmNewProject
         Height = 23
         Top = 185
         Width = 294
-        Anchors = [akTop, akLeft, akRight]
         ShowHidden = False
         ButtonWidth = 23
         NumGlyphs = 1
+        Anchors = [akTop, akLeft, akRight]
         MaxLength = 0
         TabOrder = 1
       end

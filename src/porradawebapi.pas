@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  ComCtrls, lNetComponents, lNet, switches, MKnob, LedNumber, fphttpclient;
+  ComCtrls, lNetComponents, lNet, switches, MKnob, LedNumber, fphttpclient,
+  opensslsockets, mnote_ssl_loader;
 
 type
 
@@ -88,8 +89,6 @@ begin
   SendData();
 end;
 
-
-
 procedure Tfrmporradawebapi.SendData();
 var
   strComando: String;
@@ -97,25 +96,34 @@ var
   lHTTP1: TFPHttpClient;
   lData: TStrings;
   comando : string;
+  SSLErr: string;
 
 begin
   inc(contmedia);
   inc(contador);
 
+  if not InitializeMNoteSSL(SSLErr) then
+  begin
+    inc(conterro);
+    melog.Lines.Append('Erro SSL [' + TimeToStr(Now) + ']: ' + SSLErr);
+    ledRealizadas.Caption := IntToStr(contador);
+    ledFalhas.Caption := IntToStr(conterro);
+    Exit;
+  end;
+
   try
-      httpResponse := '';
-      lHTTP1 := TFPHttpClient.Create(nil);
-      lData := TStringList.Create;
-      // Tentativa de conexão
-      //LTCPComponent1.Connect(edURL.text, StrToInt(edPort.Text));
+    httpResponse := '';
+    lHTTP1 := TFPHttpClient.Create(nil);
+    lData := TStringList.Create;
+    try
       lHTTP1.AllowRedirect := True;
+      lHTTP1.ConnectTimeout := 5000;
+      lHTTP1.IOTimeout := 5000;
       lData.Clear;
       lData.Add(meJSON.Text);
 
       comando := edURL.text + edMethod.text;
 
-
-      //httpResponse := lHTTP1.FormPost(edURL.text, lData);
       //GET
       if(cbtype.ItemIndex= 0) then
       begin
@@ -142,21 +150,18 @@ begin
         melog.Lines.Append('Recebeu:'+timetostr(now)+':'+httpResponse);
         meLastReceive.Text:= httpResponse;
         inc(contrespostas);
-
-        // Receber resposta
-        // Nota: Implementar lógica de recebimento de resposta aqui
         inc(contsucesso);
       end;
-
-    except
-      on E: Exception do
-      begin
-        // Registrar o erro em um log
-        inc(conterro);
-      end;
-
-
-
+    finally
+      if lData <> nil then lData.Free;
+      if lHTTP1 <> nil then lHTTP1.Free;
+    end;
+  except
+    on E: Exception do
+    begin
+      inc(conterro);
+      melog.Lines.Append('Erro [' + TimeToStr(Now) + ']: ' + E.Message);
+    end;
   end;
 
   // Atualizar a interface do usuário
@@ -165,9 +170,6 @@ begin
   ledRespostas.Caption := IntToStr(contrespostas);
   ledSucesso.Caption := IntToStr(contsucesso);
 end;
-
-
-
 
 procedure Tfrmporradawebapi.FormDestroy(Sender: TObject);
 begin
@@ -186,4 +188,3 @@ begin
 end;
 
 end.
-

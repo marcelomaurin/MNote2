@@ -21,6 +21,7 @@ uses
   mnote_task_comment_index, mnote_diagnostics, mnote_output_model,
   mnote_process_service, mnote_build_service, mnote_ai_types,
   mnote_ai_router, mnote_ai_session, mnote_ai_bus, mnote_ai_actions,
+  mnote_ai_service,
   mnote_ai_plan_contract, mnote_project_inventory_service,
   mnote_project_context,
   mnote_document_export_service, mnote_capability_catalog,
@@ -77,6 +78,22 @@ type
   public
     function Reject(Sender: TObject; ADescriptor: TMNoteAIActionDescriptor;
       AParameters: TJSONObject; out AReason: string): Boolean;
+    function Accept(Sender: TObject; ADescriptor: TMNoteAIActionDescriptor;
+      AParameters: TJSONObject; out AReason: string): Boolean;
+  end;
+
+  TAIProfileStub = class
+  private
+    FIndex: Integer;
+  public
+    Responses: TStringList;
+    Prompts: TStringList;
+    Kinds: TStringList;
+    constructor Create;
+    destructor Destroy; override;
+    function Call(Sender: TObject; ARole: TMNoteAIRole; const AKind,
+      AQuestion, ADeveloperMessage: string; AParentOrder, AAttempt: Integer;
+      out AResponse, AError: string): Boolean;
   end;
 
 procedure TTestService.Fail(const AMessage: string);
@@ -121,6 +138,49 @@ begin
   Result := False;
 end;
 
+function TActionObserver.Accept(Sender: TObject;
+  ADescriptor: TMNoteAIActionDescriptor; AParameters: TJSONObject;
+  out AReason: string): Boolean;
+begin
+  AReason := '';
+  Result := (Sender <> nil) and (ADescriptor <> nil) and
+    (AParameters <> nil);
+end;
+
+constructor TAIProfileStub.Create;
+begin
+  inherited Create;
+  Responses := TStringList.Create;
+  Prompts := TStringList.Create;
+  Kinds := TStringList.Create;
+end;
+
+destructor TAIProfileStub.Destroy;
+begin
+  Kinds.Free;
+  Prompts.Free;
+  Responses.Free;
+  inherited Destroy;
+end;
+
+function TAIProfileStub.Call(Sender: TObject; ARole: TMNoteAIRole;
+  const AKind, AQuestion, ADeveloperMessage: string; AParentOrder,
+  AAttempt: Integer; out AResponse, AError: string): Boolean;
+begin
+  Prompts.Add(AQuestion);
+  Kinds.Add(AKind);
+  if FIndex >= Responses.Count then
+  begin
+    AResponse := '';
+    AError := 'Stub sem resposta roteirizada para ' + AKind;
+    Exit(False);
+  end;
+  AResponse := Responses[FIndex];
+  Inc(FIndex);
+  AError := '';
+  Result := True;
+end;
+
 procedure Check(ACondition: Boolean; const AMessage: string);
 begin
   if not ACondition then
@@ -151,6 +211,35 @@ begin
       FixtureFile.ReadBuffer(Result[1], FixtureFile.Size);
   finally
     FixtureFile.Free;
+  end;
+end;
+
+function ParseReadResult(const AJSON: string; out AContent: string;
+  out ANextOffset: Integer; out AEOF: Boolean): Boolean;
+var
+  Data: TJSONData;
+  Root, Payload: TJSONObject;
+begin
+  Result := False;
+  AContent := '';
+  ANextOffset := 0;
+  AEOF := False;
+  Data := nil;
+  try
+    Data := GetJSON(AJSON);
+    if not (Data is TJSONObject) then Exit;
+    Root := TJSONObject(Data);
+    if not (Root.Find('data') is TJSONObject) then Exit;
+    Payload := TJSONObject(Root.Find('data'));
+    if (Payload.Find('content') = nil) or
+      (Payload.Find('next_offset') = nil) or
+      (Payload.Find('eof') = nil) then Exit;
+    AContent := Payload.Strings['content'];
+    ANextOffset := Payload.Integers['next_offset'];
+    AEOF := Payload.Booleans['eof'];
+    Result := True;
+  finally
+    Data.Free;
   end;
 end;
 
@@ -1245,33 +1334,127 @@ end;
 
 procedure TestAIActions;
 var
-  Root, SourceFile, SecretFile, OutsideFile, ResultJSON, ErrorText: string;
+  Root, SourceFile, SecretFile, OutsideFile, BinaryFile, LargeFile,
+  UnitAFile, UnitBFile, BadFile, ResultJSON, ErrorText, LargeContent,
+  RebuiltContent, PageContent, OldDirectory: string;
   Executor: TMNoteAIActionExecutor;
   Observer: TActionObserver;
+  Data: TMNoteDiagnostics;
+  BadLock: TFileStream;
+  Offset, NextOffset, PageCount, I, ProcessCount: Integer;
+  EOFReached: Boolean;
 begin
   Root := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) +
     'ai_action_fixture';
   SourceFile := IncludeTrailingPathDelimiter(Root) + 'sample.pas';
   SecretFile := IncludeTrailingPathDelimiter(Root) + '.env';
+  BinaryFile := IncludeTrailingPathDelimiter(Root) + 'sample.bin';
+  LargeFile := IncludeTrailingPathDelimiter(Root) + 'large.txt';
+  UnitAFile := IncludeTrailingPathDelimiter(Root) + 'unit_a.pas';
+  UnitBFile := IncludeTrailingPathDelimiter(Root) + 'unit_b.pas';
+  BadFile := IncludeTrailingPathDelimiter(Root) + 'locked.pas';
   OutsideFile := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) +
     'outside-action.txt';
+  RemoveFixtureTree(Root);
   ForceDirectories(Root);
   SaveFixtureText(SourceFile, 'unit sample;'#10'interface'#10+
-    'procedure NeedleAction;'#10'implementation'#10+
-    'procedure NeedleAction; begin end;'#10'end.');
+    'procedure AlphaAction;'#10'procedure NeedleAction;'#10+
+    'function OmegaAction: Integer;'#10'implementation'#10+
+    'procedure AlphaAction; begin end;'#10+
+    'procedure NeedleAction; begin end;'#10+
+    'function OmegaAction: Integer; begin Result := 1; end;'#10'end.');
   SaveFixtureText(SecretFile, 'TOKEN=nao-pode-vazar');
+  SaveFixtureText(BinaryFile, #0#1#2'binary');
+  LargeContent := '';
+  I := 1;
+  while Length(LargeContent) < 45000 do
+  begin
+    LargeContent := LargeContent + Format('linha-%4.4d: conteúdo paginado'#10,
+      [I]);
+    Inc(I);
+  end;
+  SetLength(LargeContent, 45000);
+  SaveFixtureText(LargeFile, LargeContent);
+  SaveFixtureText(UnitAFile, 'unit Unit_A;'#10'interface'#10+
+    'uses Unit_B;'#10'implementation'#10'end.');
+  SaveFixtureText(UnitBFile, 'unit Unit_B;'#10'interface'#10+
+    'implementation'#10'end.');
+  SaveFixtureText(BadFile, 'unit LockedUnit; interface implementation end.');
   SaveFixtureText(OutsideFile, 'fora');
   Executor := TMNoteAIActionExecutor.Create(Root);
   Observer := TActionObserver.Create;
+  BadLock := nil;
+  Data := nil;
   try
     Check(Pos('"simulated"', Executor.DescribeActions) = 0,
       'Catálogo de ações não deve anunciar simulação');
+    Check((Pos('FileOutline', Executor.DescribeActions) > 0) and
+      (Pos('FindDefinition', Executor.DescribeActions) > 0) and
+      (Pos('DependencyGraph', Executor.DescribeActions) > 0) and
+      (Pos('BuildDiagnostics', Executor.DescribeActions) > 0),
+      'Catálogo não contém todas as ações novas de análise');
     Check(Executor.ExecuteRequest(
       '{"action":"ReadFile","parameters":{"path":"sample.pas"}}',
       airLightWork, ResultJSON, ErrorText) and
       (Pos('NeedleAction', ResultJSON) > 0) and
       (Pos('false', ResultJSON) > 0),
       'ReadFile não devolveu o conteúdo real da fixture: ' + ErrorText);
+
+    OldDirectory := GetCurrentDir;
+    try
+      SetCurrentDir(ExtractFilePath(ParamStr(0)));
+      Check(Executor.ExecuteRequest(
+        '{"action":"ReadFile","parameters":{"path":"sample.pas"}}',
+        airLightWork, ResultJSON, ErrorText),
+        'Agent Safety resolveu path relativo contra o CWD, não contra a raiz: ' +
+        ErrorText);
+    finally
+      SetCurrentDir(OldDirectory);
+    end;
+
+    Check(not Executor.ExecuteRequest(
+      '{"action":"ReadFile","parameters":{"path":"sample.bin"}}',
+      airLightWork, ResultJSON, ErrorText) and
+      (Pos('Extensão não suportada', ErrorText) > 0),
+      'ReadFile não recusou binário pela allowlist: ' + ErrorText);
+
+    Offset := 0;
+    PageCount := 0;
+    RebuiltContent := '';
+    repeat
+      Check(Executor.ExecuteRequest(Format(
+        '{"action":"ReadFile","parameters":{"path":"large.txt","max_chars":20000,"offset_chars":%d}}',
+        [Offset]), airLightWork, ResultJSON, ErrorText),
+        'ReadFile paginado falhou: ' + ErrorText);
+      Check(ParseReadResult(ResultJSON, PageContent, NextOffset, EOFReached),
+        'ReadFile não devolveu metadados de paginação válidos');
+      Check(NextOffset > Offset,
+        'ReadFile paginado não avançou next_offset');
+      RebuiltContent := RebuiltContent + PageContent;
+      Offset := NextOffset;
+      Inc(PageCount);
+    until EOFReached;
+    Check((PageCount = 3) and (RebuiltContent = LargeContent),
+      'Paginação não reconstituiu os 45000 bytes da fixture');
+    Check(not Executor.ExecuteRequest(
+      '{"action":"ReadFile","parameters":{"path":"sample.pas","start_line":5,"end_line":2}}',
+      airLightWork, ResultJSON, ErrorText) and
+      (Pos('end_line', ErrorText) > 0),
+      'ReadFile aceitou faixa de linhas invertida');
+    Check(not Executor.ExecuteRequest(
+      '{"action":"ReadFile","parameters":{"path":"sample.pas","start_line":999}}',
+      airLightWork, ResultJSON, ErrorText) and
+      (Pos('start_line', ErrorText) > 0),
+      'ReadFile aceitou linha fora do arquivo');
+
+    Check(Executor.ExecuteRequest(
+      '{"action":"FileOutline","parameters":{"path":"sample.pas"}}',
+      airLightWork, ResultJSON, ErrorText) and
+      (Pos('AlphaAction', ResultJSON) > 0) and
+      (Pos('NeedleAction', ResultJSON) > 0) and
+      (Pos('OmegaAction', ResultJSON) > 0) and
+      (Pos('"line":3', ResultJSON) > 0),
+      'FileOutline não mapeou os símbolos e linhas da fixture: ' + ErrorText);
     Check(not Executor.ExecuteRequest(
       '{"action":"ReadFile","parameters":{"path":"..\\outside-action.txt"}}',
       airLightWork, ResultJSON, ErrorText),
@@ -1293,16 +1476,77 @@ begin
       '{"action":"ReadFile","parameters":{"path":"sample.pas"}}',
       airTriage, ResultJSON, ErrorText),
       'Papel de triagem executou uma ferramenta');
+    for I := 1 to 20 do
+      Check((not Executor.ExecuteRequest(
+        '{"action":"ReadFile","parameters":{"path":"sample.pas"}}',
+        airTriage, ResultJSON, ErrorText)) and
+        (Pos('"truncated":false', ResultJSON) > 0),
+        'Recusa por papel devolveu truncated não determinístico');
     Check(Executor.ExecuteRequest(
       '{"action":"SearchProject","parameters":{"query":"NeedleAction","include":"*.pas","max_results":10}}',
       airLightWork, ResultJSON, ErrorText) and
       (Pos('sample.pas', ResultJSON) > 0),
       'SearchProject não encontrou a fixture real: ' + ErrorText);
     Check(Executor.ExecuteRequest(
-      '{"action":"ListSymbols","parameters":{"max_results":20}}',
+      '{"action":"ListSymbols","parameters":{"max_results":20,"name_contains":"Needle","kind":"procedure","path_contains":"sample"}}',
       airLightWork, ResultJSON, ErrorText) and
-      (Pos('NeedleAction', ResultJSON) > 0),
-      'ListSymbols não indexou a fixture Pascal: ' + ErrorText);
+      (Pos('NeedleAction', ResultJSON) > 0) and
+      (Pos('AlphaAction', ResultJSON) = 0),
+      'ListSymbols não aplicou filtros antes do corte: ' + ErrorText);
+    Check(Executor.ExecuteRequest(
+      '{"action":"FindDefinition","parameters":{"name":"NeedleAction"}}',
+      airLightWork, ResultJSON, ErrorText) and
+      (Pos('sample.pas', ResultJSON) > 0) and
+      (Pos('"line":4', ResultJSON) > 0),
+      'FindDefinition não localizou a declaração correta: ' + ErrorText);
+    Check(Executor.ExecuteRequest(
+      '{"action":"FindDefinition","parameters":{"name":"MissingSymbol"}}',
+      airLightWork, ResultJSON, ErrorText) and
+      (Pos('"total_matches":0', ResultJSON) > 0),
+      'FindDefinition deveria retornar sucesso com lista vazia');
+
+    BadLock := TFileStream.Create(BadFile,
+      fmOpenReadWrite or fmShareExclusive);
+    Check(Executor.ExecuteRequest(
+      '{"action":"ListSymbols","parameters":{"max_results":20,"name_contains":"Needle"}}',
+      airLightWork, ResultJSON, ErrorText) and
+      (Pos('NeedleAction', ResultJSON) > 0) and
+      (Pos('"failed_files":1', ResultJSON) > 0),
+      'ListSymbols não tolerou falha parcial de indexação: ' + ErrorText);
+    FreeAndNil(BadLock);
+
+    Check(Executor.ExecuteRequest(
+      '{"action":"DependencyGraph","parameters":{"unit_name":"Unit_A","direction":"uses"}}',
+      airLightWork, ResultJSON, ErrorText) and
+      (Pos('Unit_A', ResultJSON) > 0) and (Pos('Unit_B', ResultJSON) > 0) and
+      (Pos('"origin":"factual"', ResultJSON) > 0),
+      'DependencyGraph não devolveu a aresta factual Unit_A -> Unit_B: ' +
+      ErrorText);
+    Check(Executor.ExecuteRequest(
+      '{"action":"DependencyGraph","parameters":{"unit_name":"Unit_B","direction":"used_by"}}',
+      airLightWork, ResultJSON, ErrorText) and
+      (Pos('Unit_A', ResultJSON) > 0),
+      'DependencyGraph não devolveu a direção used_by');
+
+    MNoteClearBuildDiagnostics;
+    ProcessCount := TMNoteProcessService.ExecutionCount;
+    Check(Executor.ExecuteRequest(
+      '{"action":"BuildDiagnostics","parameters":{}}',
+      airLightWork, ResultJSON, ErrorText) and
+      (Pos('"has_previous_build":false', ResultJSON) > 0) and
+      (TMNoteProcessService.ExecutionCount = ProcessCount),
+      'BuildDiagnostics vazio iniciou processo ou não sinalizou ausência');
+    Data := TMNoteDiagnostics.Create;
+    TMNoteDiagnosticParser.Parse('sample.pas(4,2) Error: (E42) falha real',
+      'Fixture Build', Data);
+    MNoteRememberBuildDiagnostics(Data);
+    FreeAndNil(Data);
+    Check(Executor.ExecuteRequest(
+      '{"action":"BuildDiagnostics","parameters":{"severity":"error","path_contains":"sample"}}',
+      airLightWork, ResultJSON, ErrorText) and
+      (Pos('falha real', ResultJSON) > 0) and
+      (TMNoteProcessService.ExecutionCount = ProcessCount),
+      'BuildDiagnostics não devolveu o snapshot sem iniciar processo');
     Check(Executor.ExecuteRequest(
       '{"action":"ListProjectFiles","parameters":{"include":"*.pas","max_results":20}}',
       airManagement, ResultJSON, ErrorText) and
@@ -1329,13 +1573,215 @@ begin
       (Pos('confirmação recusada', ErrorText) > 0),
       'Compile não respeitou a confirmação obrigatória');
   finally
+    Data.Free;
+    BadLock.Free;
     Observer.Free;
     Executor.Free;
-    DeleteFile(SourceFile);
-    DeleteFile(SecretFile);
     DeleteFile(OutsideFile);
-    RemoveDir(IncludeTrailingPathDelimiter(Root) + 'restricted');
-    RemoveDir(Root);
+    RemoveFixtureTree(Root);
+  end;
+end;
+
+procedure TestAIToolLoop;
+var
+  Root, SourceFile, UnitBFile, ProfileFile, Response, ErrorText: string;
+  Service: TMNoteAIService;
+  Stub: TAIProfileStub;
+  I, ProcessCount: Integer;
+  FoundKind, FoundCodeStep, FoundReadStep: Boolean;
+
+  procedure Configure(AService: TMNoteAIService; AStub: TAIProfileStub;
+    AInputBudget: Integer = 12000);
+  begin
+    AService.SetProjectRoot(Root);
+    AService.OnProfileCall := @AStub.Call;
+    AService.Profiles.MaxToolRounds := 8;
+    AService.Router.MaxCalls := 16;
+    AService.Router.MaxEstimatedTokens := 200000;
+    AService.Profiles.Profile(airLightWork).Config.InputBudget := AInputBudget;
+    AService.Profiles.Profile(airLightWork).Config.OutputBudget := 500;
+    AService.Profiles.Profile(airLightWork).Config.ContextWindow := 0;
+  end;
+
+  procedure Release(var AService: TMNoteAIService;
+    var AStub: TAIProfileStub);
+  begin
+    if AService <> nil then AService.OnProfileCall := nil;
+    FreeAndNil(AService);
+    FreeAndNil(AStub);
+  end;
+begin
+  Root := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) +
+    'ai_tool_loop_fixture';
+  SourceFile := IncludeTrailingPathDelimiter(Root) + 'sample.pas';
+  UnitBFile := IncludeTrailingPathDelimiter(Root) + 'unit_b.pas';
+  ProfileFile := IncludeTrailingPathDelimiter(Root) + 'profiles.json';
+  RemoveFixtureTree(Root);
+  ForceDirectories(Root);
+  SaveFixtureText(SourceFile, 'unit sample;'#10'interface'#10+
+    'uses Unit_B;'#10'procedure NeedleAction;'#10'implementation'#10+
+    'procedure NeedleAction; begin end;'#10'end.');
+  SaveFixtureText(UnitBFile, 'unit Unit_B;'#10'interface'#10+
+    'implementation'#10'end.');
+
+  Service := nil;
+  Stub := nil;
+  try
+    { Dossiê acumulado, catálogo reinjetado e cerca Markdown. }
+    Service := TMNoteAIService.Create;
+    Stub := TAIProfileStub.Create;
+    Configure(Service, Stub);
+    Stub.Responses.Add('```json'#10+
+      '{"action":"ReadFile","parameters":{"path":"sample.pas"}}'#10+
+      '```');
+    Stub.Responses.Add(
+      '{"action":"ListSymbols","parameters":{"name_contains":"Needle","max_results":10}}');
+    Stub.Responses.Add('Análise concluída com evidências.');
+    Check(Service.ExecuteToolRequest(airLightWork, 'tool_loop_test',
+      'Analise a fixture.', 'teste local sem rede', Response, ErrorText, True),
+      'Loop roteirizado falhou: ' + ErrorText);
+    Check((Stub.Prompts.Count = 3) and
+      (Pos('EVIDÊNCIA 1', Stub.Prompts[1]) > 0) and
+      (Pos('ReadFile', Stub.Prompts[1]) > 0) and
+      (Pos('BuildDiagnostics', Stub.Prompts[1]) > 0) and
+      (Pos('DependencyGraph', Stub.Prompts[1]) > 0),
+      'Rodada 2 não recebeu evidência e catálogo completos');
+    Check((Pos('EVIDÊNCIA 1', Stub.Prompts[2]) > 0) and
+      (Pos('EVIDÊNCIA 2', Stub.Prompts[2]) > 0) and
+      (Pos('NeedleAction', Stub.Prompts[2]) > 0),
+      'Rodada 3 perdeu evidências anteriores');
+    Service.Profiles.MaxToolRounds := 8;
+    Check(Service.Profiles.SaveToFile(ProfileFile, ErrorText),
+      'Perfil com max_tool_rounds não foi salvo: ' + ErrorText);
+    Service.Profiles.MaxToolRounds := 1;
+    Check(Service.Profiles.LoadFromFile(ProfileFile, ErrorText) and
+      (Service.Profiles.MaxToolRounds = 8) and
+      (Pos('"max_tool_rounds" : 8', LoadFixtureText(ProfileFile)) > 0),
+      'max_tool_rounds não persistiu em mnote_ai.json compatível');
+    Release(Service, Stub);
+
+    { Uma única correção de contrato, registrada como passo próprio. }
+    Service := TMNoteAIService.Create;
+    Stub := TAIProfileStub.Create;
+    Configure(Service, Stub);
+    Stub.Responses.Add(
+      '{"action":"ReadFile","parameters":{"path":"sample.pas","shell":"x"}}');
+    Stub.Responses.Add(
+      '{"action":"ReadFile","parameters":{"path":"sample.pas"}}');
+    Stub.Responses.Add('Contrato corrigido e leitura concluída.');
+    Check(Service.ExecuteToolRequest(airLightWork, 'contract_test',
+      'Leia a fixture.', 'teste local sem rede', Response, ErrorText, True),
+      'Correção única de contrato falhou: ' + ErrorText);
+    Check((Stub.Kinds.Count = 3) and
+      (Pos('tool_contract_correction', Stub.Kinds[1]) > 0),
+      'Correção de contrato não foi registrada com kind próprio');
+    Release(Service, Stub);
+
+    { Limite configurável de rodadas. }
+    Service := TMNoteAIService.Create;
+    Stub := TAIProfileStub.Create;
+    Configure(Service, Stub);
+    Service.Profiles.MaxToolRounds := 1;
+    Stub.Responses.Add(
+      '{"action":"ReadFile","parameters":{"path":"sample.pas"}}');
+    Stub.Responses.Add(
+      '{"action":"ListSymbols","parameters":{"max_results":10}}');
+    Check(not Service.ExecuteToolRequest(airLightWork, 'round_limit_test',
+      'Use mais ferramentas.', 'teste local sem rede', Response, ErrorText,
+      True) and (Pos('limite configurado de 1', ErrorText) > 0) and
+      (Pos('chamada(s) restante(s)', ErrorText) > 0),
+      'Limite de rodadas não encerrou com diagnóstico coerente: ' + ErrorText);
+    Release(Service, Stub);
+
+    { O freio global precede o limite de rodadas. }
+    Service := TMNoteAIService.Create;
+    Stub := TAIProfileStub.Create;
+    Configure(Service, Stub);
+    Service.Profiles.MaxToolRounds := 1;
+    Service.Router.MaxCalls := 1;
+    Stub.Responses.Add(
+      '{"action":"ReadFile","parameters":{"path":"sample.pas"}}');
+    Check(not Service.ExecuteToolRequest(airLightWork, 'call_limit_test',
+      'Leia a fixture.', 'teste local sem rede', Response, ErrorText, True) and
+      (Pos('freio global', ErrorText) > 0) and
+      (Pos('0 chamada(s) restante(s)', ErrorText) > 0),
+      'Freio global não teve precedência ou não informou o saldo: ' + ErrorText);
+    Release(Service, Stub);
+
+    { Evidências antigas são descartadas antes do catálogo. }
+    SaveFixtureText(IncludeTrailingPathDelimiter(Root) + 'large.txt',
+      StringOfChar('x', 45000));
+    Service := TMNoteAIService.Create;
+    Stub := TAIProfileStub.Create;
+    Configure(Service, Stub, 3000);
+    Stub.Responses.Add(
+      '{"action":"ReadFile","parameters":{"path":"large.txt","offset_chars":0,"max_chars":20000}}');
+    Stub.Responses.Add(
+      '{"action":"ReadFile","parameters":{"path":"large.txt","offset_chars":20000,"max_chars":20000}}');
+    Stub.Responses.Add('Leitura parcial suficiente.');
+    Check(Service.ExecuteToolRequest(airLightWork, 'dossier_budget_test',
+      'Leia partes do arquivo grande.', 'teste local sem rede', Response,
+      ErrorText, True), 'Corte do dossiê falhou: ' + ErrorText);
+    Check((Stub.Prompts.Count = 3) and
+      (Pos('evidência(s) antiga(s) omitida(s)', Stub.Prompts[2]) > 0) and
+      (Pos('BuildDiagnostics', Stub.Prompts[2]) > 0),
+      'Corte não descartou evidência antiga preservando o catálogo');
+    Release(Service, Stub);
+
+    { Ações de código passam pelo mesmo loop e permanecem somente leitura. }
+    Service := TMNoteAIService.Create;
+    Stub := TAIProfileStub.Create;
+    Configure(Service, Stub);
+    Stub.Responses.Add(
+      '{"action":"ReadFile","parameters":{"path":"unit_b.pas"}}');
+    Stub.Responses.Add('Explicação contextual concluída.');
+    Check(Service.SendCodeActionAsync(aicaExplain,
+      'procedure NeedleAction; begin end;',
+      'titulo: Explicar'#10'arquivo_relativo: sample.pas'#10+
+      'linguagem: Pascal'#10'linhas: 4-4'#10'origem: seleção do editor'),
+      'Ação de código contextual não iniciou: ' + Service.LastError);
+    Service.WaitFor;
+    Check((Stub.Prompts.Count = 2) and
+      (Pos('arquivo_relativo: sample.pas', Stub.Prompts[0]) > 0) and
+      (Pos('linguagem: Pascal', Stub.Prompts[0]) > 0) and
+      (Pos('linhas: 4-4', Stub.Prompts[0]) > 0) and
+      (Pos('Unit_B', Stub.Prompts[0]) > 0),
+      'Ação de código não recebeu arquivo, linguagem, faixa e dependências');
+    FoundCodeStep := False;
+    FoundReadStep := False;
+    for I := 0 to Service.Session.Count - 1 do
+    begin
+      if Service.Session[I].Kind = 'code_explain' then FoundCodeStep := True;
+      if Service.Session[I].Kind = 'tool:ReadFile' then FoundReadStep := True;
+    end;
+    Check(FoundCodeStep and FoundReadStep and (Service.Router.CallCount = 2),
+      'Ação de código não apareceu na sessão ou não passou pelo orçamento');
+    Release(Service, Stub);
+
+    Service := TMNoteAIService.Create;
+    Stub := TAIProfileStub.Create;
+    Configure(Service, Stub);
+    ProcessCount := TMNoteProcessService.ExecutionCount;
+    Stub.Responses.Add(
+      '{"action":"Compile","parameters":{"rebuild":false}}');
+    Stub.Responses.Add('Compilação recusada neste fluxo.');
+    Check(Service.SendCodeActionAsync(aicaFindBugs,
+      'procedure NeedleAction; begin end;',
+      'titulo: Bugs'#10'arquivo_relativo: sample.pas'#10+
+      'linguagem: Pascal'#10'linhas: 4-4'#10'origem: seleção do editor'),
+      'Fluxo somente leitura não iniciou');
+    Service.WaitFor;
+    FoundKind := False;
+    for I := 0 to Service.Session.Count - 1 do
+      if (Service.Session[I].Kind = 'tool:Compile') and
+        (Service.Session[I].Status = 'failed') then FoundKind := True;
+    Check(FoundKind and
+      (TMNoteProcessService.ExecutionCount = ProcessCount),
+      'Fluxo de código permitiu ferramenta com efeito de build');
+    Release(Service, Stub);
+  finally
+    Release(Service, Stub);
+    RemoveFixtureTree(Root);
   end;
 end;
 
@@ -1576,6 +2022,8 @@ begin
     TestMultiAICore;
     TestAIActions;
     Writeln('OK: ações reais, permissões, limites e confirmação');
+    TestAIToolLoop;
+    Writeln('OK: loop de ferramentas, dossiê, catálogo, contrato e ações de código');
     Writeln('OK: perfis, router, sessão, arbitragem e barramento multi-IA');
     TestIntegratedCapabilities;
     Writeln('OK: Files, documentação, OutputDocs, grafo, catálogo e SQL');

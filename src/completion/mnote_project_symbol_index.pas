@@ -30,6 +30,7 @@ type
     FFiles: TObjectList;
     FIndexedCount: Integer;
     FReusedCount: Integer;
+    FFailedFiles: TStringList;
     function BufferHash(const AText: string): QWord;
     function FindFile(const AFileName: string): TMNoteIndexedFile;
     procedure CollectFiles(const ARoot: string; AFiles: TStrings);
@@ -50,6 +51,7 @@ type
     function ResolveDocumentation(AItem: TMNoteCompletionItem): string;
     property IndexedCount: Integer read FIndexedCount;
     property ReusedCount: Integer read FReusedCount;
+    property FailedFiles: TStringList read FFailedFiles;
   end;
 
 function MNoteProjectSymbols: TMNoteProjectSymbolIndex;
@@ -111,10 +113,15 @@ constructor TMNoteProjectSymbolIndex.Create;
 begin
   inherited Create;
   FFiles := TObjectList.Create(True);
+  FFailedFiles := TStringList.Create;
+  FFailedFiles.CaseSensitive := False;
+  FFailedFiles.Sorted := True;
+  FFailedFiles.Duplicates := dupIgnore;
 end;
 
 destructor TMNoteProjectSymbolIndex.Destroy;
 begin
+  FFailedFiles.Free;
   FFiles.Free;
   inherited Destroy;
 end;
@@ -124,6 +131,7 @@ begin
   FFiles.Clear;
   FIndexedCount := 0;
   FReusedCount := 0;
+  FFailedFiles.Clear;
 end;
 
 function TMNoteProjectSymbolIndex.BufferHash(const AText: string): QWord;
@@ -198,31 +206,35 @@ begin
   if not FileExists(AFileName) or not IsSupportedFile(AFileName) then Exit;
   Content := TStringList.Create;
   try
-    Content.LoadFromFile(AFileName);
-    NewHash := BufferHash(Content.Text);
-    Entry := FindFile(AFileName);
-    if (Entry <> nil) and (Entry.Hash = NewHash) then
-    begin
-      Inc(FReusedCount);
-      Exit(True);
-    end;
-    if Entry = nil then
-    begin
-      Entry := TMNoteIndexedFile.Create;
-      Entry.FileName := ExpandFileName(AFileName);
-      FFiles.Add(Entry);
-    end;
-    Entry.Symbols.Clear;
-    Parser := TMNotePascalSymbolParser.Create;
     try
-      Parser.Parse(Content.Text, Entry.FileName, 'projeto', Entry.Symbols);
-    finally
-      Parser.Free;
+      Content.LoadFromFile(AFileName);
+      NewHash := BufferHash(Content.Text);
+      Entry := FindFile(AFileName);
+      if (Entry <> nil) and (Entry.Hash = NewHash) then
+      begin
+        Inc(FReusedCount);
+        Exit(True);
+      end;
+      if Entry = nil then
+      begin
+        Entry := TMNoteIndexedFile.Create;
+        Entry.FileName := ExpandFileName(AFileName);
+        FFiles.Add(Entry);
+      end;
+      Entry.Symbols.Clear;
+      Parser := TMNotePascalSymbolParser.Create;
+      try
+        Parser.Parse(Content.Text, Entry.FileName, 'projeto', Entry.Symbols);
+      finally
+        Parser.Free;
+      end;
+      Entry.Hash := NewHash;
+      Entry.FileDate := FileAge(AFileName);
+      Inc(FIndexedCount);
+      Result := True;
+    except
+      Result := False;
     end;
-    Entry.Hash := NewHash;
-    Entry.FileDate := FileAge(AFileName);
-    Inc(FIndexedCount);
-    Result := True;
   finally
     Content.Free;
   end;
@@ -237,12 +249,14 @@ begin
   if not Result then Exit;
   FIndexedCount := 0;
   FReusedCount := 0;
+  FFailedFiles.Clear;
   Files := TStringList.Create;
   try
     CollectFiles(ExpandFileName(ARoot), Files);
     Files.Sort;
     for I := 0 to Files.Count - 1 do
-      if not IndexFile(Files[I]) then Result := False;
+      if not IndexFile(Files[I]) then FFailedFiles.Add(Files[I]);
+    Result := (FIndexedCount + FReusedCount) > 0;
   finally
     Files.Free;
   end;

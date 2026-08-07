@@ -2,8 +2,8 @@ object dmBase: TdmBase
   OnCreate = DataModuleCreate
   OldCreateOrder = False
   Height = 260
-  HorizontalOffset = 159
-  VerticalOffset = 676
+  HorizontalOffset = 214
+  VerticalOffset = 708
   Width = 333
   object DataSource1: TDataSource
     Left = 128
@@ -31,9 +31,7 @@ object dmBase: TdmBase
     )
     DisableSavepoints = False
     Port = 0
-    Database = ''
     Protocol = 'sqlite'
-    LibraryLocation = ''
     Left = 56
     Top = 185
   end

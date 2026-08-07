@@ -113,6 +113,7 @@ procedure TMNoteProblemsPanel.ParseBuildOutput(const AOutput,
 begin
   FDiagnostics.Clear;
   TMNoteDiagnosticParser.Parse(AOutput, AOrigin, FDiagnostics);
+  MNoteRememberBuildDiagnostics(FDiagnostics);
   Refresh;
 end;
 

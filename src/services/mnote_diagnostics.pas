@@ -5,7 +5,7 @@ unit mnote_diagnostics;
 interface
 
 uses
-  Classes, SysUtils, Contnrs, RegExpr;
+  Classes, SysUtils, Contnrs, RegExpr, SyncObjs;
 
 type
   TMNoteDiagnosticSeverity = (mdsError, mdsWarning, mdsMessage);
@@ -54,7 +54,70 @@ type
       static;
   end;
 
+procedure MNoteRememberBuildDiagnostics(ADiagnostics: TMNoteDiagnostics);
+procedure MNoteSnapshotBuildDiagnostics(ADiagnostics: TMNoteDiagnostics;
+  out AHasPreviousBuild: Boolean);
+procedure MNoteClearBuildDiagnostics;
+
 implementation
+
+var
+  GLastBuildDiagnostics: TMNoteDiagnostics;
+  GDiagnosticsLock: TCriticalSection;
+  GHasPreviousBuild: Boolean;
+
+procedure CopyDiagnostic(ASource: TMNoteDiagnostic;
+  ADestination: TMNoteDiagnostics);
+begin
+  if (ASource = nil) or (ADestination = nil) then Exit;
+  ADestination.AddDiagnostic(ASource.FileName, ASource.Line, ASource.Column,
+    ASource.Severity, ASource.Code, ASource.MessageText, ASource.Origin);
+end;
+
+procedure MNoteRememberBuildDiagnostics(ADiagnostics: TMNoteDiagnostics);
+var
+  I: Integer;
+begin
+  GDiagnosticsLock.Acquire;
+  try
+    GLastBuildDiagnostics.Clear;
+    if ADiagnostics <> nil then
+      for I := 0 to ADiagnostics.Count - 1 do
+        CopyDiagnostic(ADiagnostics[I], GLastBuildDiagnostics);
+    GHasPreviousBuild := True;
+  finally
+    GDiagnosticsLock.Release;
+  end;
+end;
+
+procedure MNoteSnapshotBuildDiagnostics(ADiagnostics: TMNoteDiagnostics;
+  out AHasPreviousBuild: Boolean);
+var
+  I: Integer;
+begin
+  AHasPreviousBuild := False;
+  if ADiagnostics = nil then Exit;
+  GDiagnosticsLock.Acquire;
+  try
+    ADiagnostics.Clear;
+    for I := 0 to GLastBuildDiagnostics.Count - 1 do
+      CopyDiagnostic(GLastBuildDiagnostics[I], ADiagnostics);
+    AHasPreviousBuild := GHasPreviousBuild;
+  finally
+    GDiagnosticsLock.Release;
+  end;
+end;
+
+procedure MNoteClearBuildDiagnostics;
+begin
+  GDiagnosticsLock.Acquire;
+  try
+    GLastBuildDiagnostics.Clear;
+    GHasPreviousBuild := False;
+  finally
+    GDiagnosticsLock.Release;
+  end;
+end;
 
 constructor TMNoteDiagnostics.Create;
 begin
@@ -187,5 +250,13 @@ begin
     Result := 'Message';
   end;
 end;
+
+initialization
+  GLastBuildDiagnostics := TMNoteDiagnostics.Create;
+  GDiagnosticsLock := TCriticalSection.Create;
+
+finalization
+  GDiagnosticsLock.Free;
+  GLastBuildDiagnostics.Free;
 
 end.

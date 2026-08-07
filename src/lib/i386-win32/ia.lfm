@@ -1,7 +1,7 @@
 object frmIA: TfrmIA
-  Left = 675
+  Left = 902
   Height = 557
-  Top = 232
+  Top = 278
   Width = 727
   Caption = 'IA'
   ClientHeight = 557
@@ -161,7 +161,7 @@ object frmIA: TfrmIA
       Left = 8
       Height = 15
       Top = 17
-      Width = 53
+      Width = 51
       Caption = 'Provedor:'
       ParentColor = False
     end
@@ -179,7 +179,7 @@ object frmIA: TfrmIA
       Left = 200
       Height = 15
       Top = 17
-      Width = 46
+      Width = 44
       Caption = 'Modelo:'
       ParentColor = False
     end

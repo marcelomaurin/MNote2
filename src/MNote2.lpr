@@ -15,10 +15,10 @@ uses
   folders, mquery2, pesquisar, triggers, view, Views, benchmark, porradawebapi,
   chart,config, config2, funcoes, setmain, sobre, jsonmain, about, base, NNTrainning,
   Novo, PythonRun, setproject, SQLItem, trainning,
-newproject, uProjetoDB, sqlite_db, IA
+  newproject, uProjetoDB, sqlite_db, IA
   {$ENDIF}
   ,uDocText, uPdfText, ChangeSource, mnote_ai_service, mnote_smoke_test,
-  mnote_token_calibration, mnote_neural_api_bootstrap;
+  mnote_token_calibration, mnote_neural_api_bootstrap, mnote_ssl_loader;
 
 
 {$R *.res}
@@ -26,21 +26,48 @@ newproject, uProjetoDB, sqlite_db, IA
 var
   SmokeReport: string;
   CalibrationReport: string;
+  SSLError, SSLCLIReport: string;
   NeuralApiBootstrap: TMNoteNeuralApiBootstrap;
   NeuralApiStatus: TMNoteNeuralApiStatus;
   NeuralApiInstaller, NeuralApiError: string;
   RunCloseTabTest, RunSolutionTreeTest: Boolean;
 
 function ConsoleAvailable: Boolean;
+const
+  ATTACH_PARENT_PROCESS = DWORD(-1);
 begin
   {$IFDEF WINDOWS}
-  Result := GetConsoleWindow <> 0;
+  if GetConsoleWindow <> 0 then
+    Exit(True);
+  if AttachConsole(ATTACH_PARENT_PROCESS) then
+  begin
+    IsConsole := True;
+    Exit(True);
+  end;
+  Result := False;
   {$ELSE}
   Result := True;
   {$ENDIF}
 end;
 
 begin
+  // Inicialização central do SSL antes de qualquer serviço ou chamada HTTPS
+  InitializeMNoteSSL(SSLError);
+
+  if (ParamCount > 0) and SameText(ParamStr(1), '--ssl-check') then
+  begin
+    if PerformSSLCheckCLI(SSLCLIReport) then
+    begin
+      if ConsoleAvailable then WriteLn(SSLCLIReport);
+      Halt(0);
+    end
+    else
+    begin
+      if ConsoleAvailable then WriteLn(StdErr, SSLCLIReport);
+      Halt(1);
+    end;
+  end;
+
   RunCloseTabTest := (ParamCount > 0) and
     SameText(ParamStr(1), '--close-tab-test');
   RunSolutionTreeTest := (ParamCount > 1) and

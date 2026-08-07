@@ -2,67 +2,72 @@
 
 ## Princípios
 
-O MNote2 permanece uma aplicação desktop Lazarus/Free Pascal. Forms coordenam a
-interface; regras ficam em units sem UI, dentro de `src/services`, `src/search`,
-`src/completion`, `src/project`, `src/sourcechange`, `src/ai` e `src/commands`.
-Componentes reutilizáveis pertencem aos pacotes `openai_*` do CHATGPT.
+O MNote2 permanece uma aplicação desktop Lazarus/Free Pascal. A interface
+coordena buffers, seleção e raiz do projeto; as regras ficam em units sem UI em
+`src/services`, `src/search`, `src/completion`, `src/project`,
+`src/sourcechange`, `src/ai` e `src/commands`.
 
-Tokens e senhas são configuração local. Resposta livre nunca é executada.
-Mudanças propostas pela IA usam JSON estrito, diff revisável, confirmação,
-gravação atômica, histórico e rollback.
+Respostas livres nunca são executadas. Uma ferramenta só é acionada por um
+objeto JSON estrito — puro ou dentro de uma única cerca `json` — validado pelo
+catálogo e pela matriz de permissões. Mudanças de fonte continuam no fluxo
+separado de Changes, com diff, confirmação, gravação atômica e rollback.
 
-## Áreas e responsáveis
+## Caminho das ações contextuais
 
-| Área | Interface | Núcleo responsável |
-|---|---|---|
-| Shell e layout | `main.pas`, `mnote_ide_shell` | `mnote_tool_windows`, `mnote_commands` |
-| Editor e linguagem | editor em abas | `src/languages`, temas e opções editoriais |
-| Search/Replace | barra e Search Results | `src/search/*` |
-| Completion | popup e comandos de navegação | `src/completion/*` |
-| Projeto e tarefas | Tasks e Task List | `TMNoteProjectService`, `openai_project_core` |
-| IA | painel AI e AI Monitor | `TMNoteAIService`, router, bus, perfis e sessão |
-| Voz | ToolsOuvir/ToolsFalar | comando de ativação e adaptadores de fala/escuta |
-| Mudanças | painel Changes | `TAISourceChangeManager`, contrato e diff |
-| Banco | MQuery2 e Data Dictionary | `TMNoteDBDictionaryService`, `openai_aidbase` |
-| Build | Problems, Output e Terminal | processo, build service e diagnósticos |
-| Capacidades | Files e Components Lab | inventário, documentos, grafo e catálogo |
+1. `StartCodeAction`, em `src/main.pas`, captura a seleção ou o buffer inteiro e
+   envia metadados de arquivo, linguagem, linhas e origem.
+2. `ExecuteContextualCodeAction`, em `src/services/mnote_ai_service.pas`, abre
+   uma sessão, consulta `BuildDiagnostics` e `DependencyGraph` e monta o dossiê
+   inicial. Explain, Find Bugs e Improve recebem somente o catálogo de leitura.
+3. O perfil Trabalho Leve pode responder em texto ou pedir uma ação. Um pedido
+   malformado recebe exatamente uma tentativa de correção de contrato.
+4. Cada resultado real é registrado na sessão e acrescentado ao dossiê. A
+   rodada seguinte sempre recebe a pergunta original, as evidências preservadas
+   e o catálogo completo gerado por `DescribeActions`.
+5. Se o contexto não couber, evidências antigas são omitidas primeiro e o fato
+   é registrado; o catálogo não é truncado.
+6. O ciclo termina com resposta final, erro não recuperável, orçamento global,
+   limite de chamadas ou `max_tool_rounds`. O padrão é 8 rodadas e a opção é
+   persistida em `mnote_ai.json` por `src/ai/mnote_ai_profile.pas`.
 
-Services não conhecem forms. A UI fornece buffer, seleção, raiz e autorização;
-recebe dados tipados, estado e mensagens de erro reais.
+Esse fluxo é exercitado sem rede por `TestAIToolLoop`, em
+`tests/test_runner.lpr`, incluindo cerca Markdown, correção de contrato,
+retenção do dossiê, reinjeção do catálogo, limites e modo somente leitura.
 
-## Fluxo por modalidade
+## Ações e dados reais
 
-1. Texto digitado cria uma requisição de texto; fala reconhecida cria uma
-   requisição de voz.
-2. Comando de voz só é encaminhado depois da frase de ativação configurável,
-   cujo padrão é “OK MNote”.
-3. A camada Gestão entende objetivo e escopo. Dúvida material gera pergunta de
-   confirmação antes de qualquer ação.
-4. Router e Triagem selecionam deterministicamente perfil, orçamento e limites.
-5. Ações exigidas são contratos JSON, passam pela matriz de permissões e
-   retornam evidência real.
-6. Entrada digitada recebe texto. Entrada por voz recebe texto de auditoria e
-   síntese de voz. Pedido digitado nunca dispara fala automática.
+O executor `src/ai/mnote_ai_actions.pas` expõe `ReadFile`, `FileOutline`,
+`SearchProject`, `ListSymbols`, `FindDefinition`, `DependencyGraph`,
+`BuildDiagnostics`, `ListProjectFiles`, `GitLog`, `GitDiff`, `DBDictionary` e
+`Compile`. A descrição entregue ao modelo é produzida do mesmo registro usado
+para executar, evitando divergência entre prompt e implementação.
+
+`BuildDiagnostics` lê o snapshot thread-safe mantido por
+`src/services/mnote_diagnostics.pas`; ele não dispara compilação. `Compile` é
+uma ação distinta, exige confirmação e atualiza esse snapshot. O índice de
+símbolos registra arquivos que falharam, permitindo resultado parcial explícito
+em vez de ocultar a falha.
 
 ## Segurança em camadas
 
-- caminho, extensão, tamanho, symlink e raiz validados;
-- leitura, build e escrita são efeitos distintos;
-- Triagem e Árbitro não possuem executor;
-- ações privilegiadas exigem confirmação;
-- erros de autenticação/configuração não entram em retry;
-- retry transitório, correção de contrato, rodadas e reorientação têm limites;
-- ciclos usam fingerprints coerentes;
-- Apply exige hash original e validação posterior;
-- logs e arquivos persistidos removem segredos.
+- o contrato rejeita texto adicional, campos e parâmetros desconhecidos;
+- a raiz absoluta, caminho, symlink, arquivo sensível, extensão e tamanho são
+  validados antes da leitura;
+- os parâmetros reais da solicitação são entregues a `TAIAgentSafety`, com
+  caminhos normalizados para absolutos;
+- Triagem e Árbitro não executam ações;
+- ações contextuais aceitam apenas ferramentas de leitura;
+- build e demais efeitos privilegiados exigem confirmação;
+- orçamento, chamadas, rodadas e correção de contrato têm limites independentes;
+- logs não persistem tokens, senhas ou o prompt completo.
+
+As guardas e os resultados são cobertos por `TestAIActions` e
+`TestAIToolLoop`, em `tests/test_runner.lpr`.
 
 ## Dependências e portabilidade
 
-O núcleo consome `openai_core`, `openai_project_core`, `openai_agentcore`,
-`openai_graphcore`, `openai_aidbase` e os componentes Python já existentes.
-CEF, visão, ML, industrial, rede e hardware são opcionais e aparecem apenas no
-AI Components Lab. `TAIPipeline` fica fora do núcleo.
-
-As units portáteis compilam com FPC 3.2.2 em Windows e Linux x64 no CI. A
-entrega desktop de referência permanece i386-win32 por compatibilidade com os
-componentes instalados no projeto original.
+O núcleo consome os pacotes `openai_core`, `openai_project_core`,
+`openai_agentcore`, `openai_graphcore` e `openai_aidbase`. CEF, visão, ML,
+industrial, rede e hardware permanecem opcionais. O núcleo portátil é validado
+por `tests/ci_core_runner.lpr`; a integração desktop completa é validada por
+`tests/run_tests.ps1` em i386-win32.

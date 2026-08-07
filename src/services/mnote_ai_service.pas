@@ -21,6 +21,9 @@ type
     AState: TMNoteAIState) of object;
   TMNoteAICompletedEvent = procedure(Sender: TObject; ASuccess: Boolean;
     const AResponse, AError: string) of object;
+  TMNoteAIProfileCallEvent = function(Sender: TObject; ARole: TMNoteAIRole;
+    const AKind, AQuestion, ADeveloperMessage: string; AParentOrder,
+    AAttempt: Integer; out AResponse, AError: string): Boolean of object;
 
   { TMNoteAIService }
 
@@ -52,6 +55,7 @@ type
     FOnCompleted: TMNoteAICompletedEvent;
     FOnSessionChanged: TNotifyEvent;
     FOnActionConfirm: TMNoteAIActionConfirmEvent;
+    FOnProfileCall: TMNoteAIProfileCallEvent;
     FPendingActionDescriptor: TMNoteAIActionDescriptor;
     FPendingActionParameters: TJSONObject;
     FPendingActionAllowed: Boolean;
@@ -72,9 +76,18 @@ type
       out AResponse, AError: string): Boolean;
     function ExecuteWithTools(ARole: TMNoteAIRole; const AKind,
       AQuestion, ADeveloperMessage: string; AParentOrder: Integer;
-      out AResponse, AError: string): Boolean;
+      out AResponse, AError: string;
+      AReadOnlyOnly: Boolean = False): Boolean;
     function IsActionRequest(const AResponse: string;
-      out AActionName: string): Boolean;
+      out AActionName, AActionJSON: string): Boolean;
+    function ExtractActionEnvelope(const AResponse: string;
+      out AActionJSON: string): Boolean;
+    function BuildToolContinuationPrompt(ARole: TMNoteAIRole;
+      const AOriginalQuestion, ACatalog: string; AEvidence: TStringList;
+      var AOmittedEvidence: Integer; out APrompt, AError: string): Boolean;
+    function ExecuteContextualCodeAction(AAction: TMNoteAICodeAction;
+      const ACode, ADeveloperMessage: string;
+      out AResponse, AError: string): Boolean;
     function ValidateRecovery(const AJSON: string; out AOutput,
       ADiagnostic, AError: string): Boolean;
     function ValidateTriage(const AJSON: string; out AConfidence: Double;
@@ -109,6 +122,9 @@ type
     function SendProfileTestAsync(ARole: TMNoteAIRole): Boolean;
     function SendCodeActionAsync(AAction: TMNoteAICodeAction;
       const ACode, ADeveloperMessage: string): Boolean;
+    function ExecuteToolRequest(ARole: TMNoteAIRole; const AKind,
+      AQuestion, ADeveloperMessage: string; out AResponse,
+      AError: string; AReadOnlyOnly: Boolean = False): Boolean;
     procedure Cancel;
     procedure WaitFor;
     function IsBusy: Boolean;
@@ -141,6 +157,8 @@ type
       write FOnSessionChanged;
     property OnActionConfirm: TMNoteAIActionConfirmEvent read FOnActionConfirm
       write FOnActionConfirm;
+    property OnProfileCall: TMNoteAIProfileCallEvent read FOnProfileCall
+      write FOnProfileCall;
   end;
 
 procedure InitializeMNoteAIService;
@@ -429,9 +447,13 @@ begin
           if not Result then SetError(Prompt);
           Exit;
         end;
-      aicaExplain: AResponse := FCodeAssistant.ExplainCode(ACode);
-      aicaFindBugs: AResponse := FCodeAssistant.FindBugs(ACode);
-      aicaSuggestImprovement: AResponse := FCodeAssistant.OptimizeCode(ACode);
+      aicaExplain, aicaFindBugs, aicaSuggestImprovement:
+        begin
+          Result := ExecuteContextualCodeAction(AAction, ACode,
+            ADeveloperMessage, AResponse, Prompt);
+          if Result then ClearError else SetError(Prompt);
+          Exit;
+        end;
       aicaCompletion:
         begin
           Prompt := BuildPrompt('assistente de conclusão de código',
@@ -451,6 +473,154 @@ begin
   except
     on E: Exception do SetError(E.Message);
   end;
+end;
+
+function TMNoteAIService.ExecuteContextualCodeAction(
+  AAction: TMNoteAICodeAction; const ACode, ADeveloperMessage: string;
+  out AResponse, AError: string): Boolean;
+var
+  Objective, KindName, RelativePath, TargetUnitName, DependencyResult,
+  DiagnosticResult, Catalog, Payload, FullPayload, WorkPrompt,
+  BasePrompt, ActionRequest: string;
+  InputBudget, PayloadBudget, OmittedLines, ParentOrder: Integer;
+  ParametersObject: TJSONObject;
+  ActionStep: TMNoteAISessionStep;
+  StartedAt: QWord;
+
+  function MetadataValue(const AName: string): string;
+  var
+    Lines: TStringList;
+    I: Integer;
+  begin
+    Result := '';
+    Lines := TStringList.Create;
+    try
+      Lines.Text := StringReplace(ADeveloperMessage, #13#10, #10,
+        [rfReplaceAll]);
+      for I := 0 to Lines.Count - 1 do
+        if Pos(LowerCase(AName) + ':', LowerCase(Trim(Lines[I]))) = 1 then
+          Exit(Trim(Copy(Trim(Lines[I]), Length(AName) + 2, MaxInt)));
+    finally
+      Lines.Free;
+    end;
+  end;
+
+  function ExecutePrecontextAction(const AName: string;
+    AParameters: TJSONObject; out AResult: string): Boolean;
+  var
+    LocalRequest: TJSONObject;
+    LocalError, LocalFingerprint: string;
+  begin
+    LocalRequest := TJSONObject.Create;
+    try
+      LocalRequest.Add('action', AName);
+      LocalRequest.Add('parameters', AParameters);
+      ActionRequest := LocalRequest.AsJSON;
+    finally
+      LocalRequest.Free;
+    end;
+    LocalFingerprint := FRouter.StepFingerprint(airLightWork,
+      ActionRequest, aieNone);
+    ActionStep := FSession.AddStep(airLightWork,
+      'tool:' + AName + ':precontext', ParentOrder,
+      FTokenEstimator.Estimate(ActionRequest, 0).TotalWithMargin,
+      0, 0, 1, ActionRequest, LocalFingerprint);
+    StartedAt := GetTickCount64;
+    Result := FActionExecutor.ExecuteRequest(ActionRequest, airLightWork,
+      AResult, LocalError);
+    if Result then
+      FSession.FinishStep(ActionStep, 'completed', AResult, '',
+        GetTickCount64 - StartedAt)
+    else
+      FSession.FinishStep(ActionStep, 'failed', AResult, LocalError,
+        GetTickCount64 - StartedAt);
+    ParentOrder := ActionStep.Order;
+  end;
+
+  function MakePrompt(const APayload: string): string;
+  begin
+    Result := BuildPrompt('Trabalho Leve', Objective,
+      'somente analisar; não modificar arquivos; não executar comandos; usar apenas ferramentas de leitura',
+      APayload + #10#10'FERRAMENTAS DISPONÍVEIS:'#10 + Catalog,
+      'resposta técnica verificável, indicando evidências e incertezas');
+  end;
+begin
+  Result := False;
+  AResponse := '';
+  AError := '';
+  case AAction of
+    aicaExplain:
+      begin Objective := 'explicar o código e suas relações relevantes';
+        KindName := 'code_explain'; end;
+    aicaFindBugs:
+      begin Objective := 'localizar bugs no código usando evidências do projeto';
+        KindName := 'code_find_bugs'; end;
+    aicaSuggestImprovement:
+      begin Objective := 'sugerir melhorias sem aplicar alterações';
+        KindName := 'code_improve'; end;
+  else
+    begin AError := 'Ação de código contextual não suportada.'; Exit; end;
+  end;
+
+  FreeAndNil(FSession);
+  FSession := TMNoteAISession.Create;
+  FRouter.BeginSession;
+  FSessionMemory.StartFlow(Objective, 'MNote2/CodeAnalysis', '', 'IDE');
+  ParentOrder := 0;
+  RelativePath := MetadataValue('arquivo_relativo');
+  if (RelativePath <> '') and (RelativePath <> '(não salvo)') then
+    TargetUnitName := ChangeFileExt(ExtractFileName(RelativePath), '')
+  else
+    TargetUnitName := '';
+
+  ParametersObject := TJSONObject.Create;
+  if (RelativePath <> '') and (RelativePath <> '(não salvo)') then
+    ParametersObject.Add('path_contains', RelativePath);
+  ExecutePrecontextAction('BuildDiagnostics', ParametersObject,
+    DiagnosticResult);
+
+  if TargetUnitName <> '' then
+  begin
+    ParametersObject := TJSONObject.Create;
+    ParametersObject.Add('unit_name', TargetUnitName);
+    ParametersObject.Add('direction', 'both');
+    ExecutePrecontextAction('DependencyGraph', ParametersObject,
+      DependencyResult);
+  end
+  else
+    DependencyResult := '{"ok":true,"data":{"edges":[]}}';
+
+  Catalog := FActionExecutor.DescribeActions(True);
+  FullPayload := 'CONTEXTO DO EDITOR:'#10 + ADeveloperMessage + #10#10 +
+    'CÓDIGO/SELEÇÃO:'#10 + ACode + #10#10 +
+    'DEPENDÊNCIAS DIRETAS:'#10 + DependencyResult + #10#10 +
+    'DIAGNÓSTICOS DO ÚLTIMO BUILD:'#10 + DiagnosticResult;
+  InputBudget := FProfiles.Profile(airLightWork).Config.InputBudget;
+  BasePrompt := MakePrompt('CONTEXTO DO EDITOR:'#10 + ADeveloperMessage);
+  if FTokenEstimator.Estimate(BasePrompt, InputBudget).TotalWithMargin >
+    InputBudget then
+  begin
+    AError := 'O contexto fixo e o catálogo de ferramentas não cabem no orçamento do perfil Trabalho Leve.';
+    Exit;
+  end;
+  PayloadBudget := InputBudget -
+    FTokenEstimator.Estimate(BasePrompt, InputBudget).TotalWithMargin - 16;
+  if PayloadBudget < 32 then PayloadBudget := 32;
+  repeat
+    Payload := FTokenEstimator.TruncateAtLine(FullPayload, PayloadBudget,
+      OmittedLines);
+    WorkPrompt := MakePrompt(Payload);
+    if FTokenEstimator.Estimate(WorkPrompt, InputBudget).TotalWithMargin <=
+      InputBudget then Break;
+    Dec(PayloadBudget, 32);
+  until PayloadBudget < 32;
+  if PayloadBudget < 32 then
+  begin
+    AError := 'Não foi possível ajustar o contexto da ação de código ao orçamento sem truncar o catálogo.';
+    Exit;
+  end;
+  Result := ExecuteWithTools(airLightWork, KindName, WorkPrompt,
+    ADeveloperMessage, ParentOrder, AResponse, AError, True);
 end;
 
 procedure TMNoteAIService.ConfigureProfile(AProfile: TMNoteAIProfile);
@@ -529,8 +699,11 @@ begin
   if not FRouter.CanCall(Estimate.TotalWithMargin +
     AIProfile.Config.OutputBudget, LimitReason) then
   begin AError := 'Sessão interrompida: ' + LimitReason; Exit; end;
-  ConfigureProfile(AIProfile);
-  if LastError <> '' then begin AError := LastError; Exit; end;
+  if not Assigned(FOnProfileCall) then
+  begin
+    ConfigureProfile(AIProfile);
+    if LastError <> '' then begin AError := LastError; Exit; end;
+  end;
 
   SessionStep := FSession.AddStep(ARole, AKind, AParentOrder,
     Estimate.TotalWithMargin, AIProfile.Config.OutputBudget,
@@ -541,13 +714,24 @@ begin
   GlobalStep := FSessionMemory.BeginAgentStep(MNoteAIRoleName(ARole),
     RoleMapType(ARole), AQuestion, ADeveloperMessage, AParentOrder);
   StartedAt := GetTickCount64;
-  Result := AIProfile.Execute(AQuestion,
-    AIProfile.Config.SystemPrompt + LineEnding + ADeveloperMessage,
-    AResponse, AError);
-  FLastJSON := AIProfile.Client.LastJSON;
-  FLastURL := AIProfile.Client.LastURL;
-  CalibrateFromUsage(AQuestion, AIProfile.Config.SystemPrompt + LineEnding +
-    ADeveloperMessage, FLastJSON);
+  if Assigned(FOnProfileCall) then
+  begin
+    Result := FOnProfileCall(Self, ARole, AKind, AQuestion,
+      AIProfile.Config.SystemPrompt + LineEnding + ADeveloperMessage,
+      AParentOrder, AAttempt, AResponse, AError);
+    FLastJSON := '';
+    FLastURL := '';
+  end
+  else
+  begin
+    Result := AIProfile.Execute(AQuestion,
+      AIProfile.Config.SystemPrompt + LineEnding + ADeveloperMessage,
+      AResponse, AError);
+    FLastJSON := AIProfile.Client.LastJSON;
+    FLastURL := AIProfile.Client.LastURL;
+    CalibrateFromUsage(AQuestion, AIProfile.Config.SystemPrompt + LineEnding +
+      ADeveloperMessage, FLastJSON);
+  end;
   if Result then
   begin
     FSession.FinishStep(SessionStep, 'completed', AResponse, '',
@@ -669,33 +853,157 @@ begin
   end;
 end;
 
+function TMNoteAIService.ExtractActionEnvelope(const AResponse: string;
+  out AActionJSON: string): Boolean;
+var
+  Value, Header, Body: string;
+  LineEnd: Integer;
+begin
+  Result := False;
+  AActionJSON := '';
+  Value := Trim(AResponse);
+  if Value = '' then Exit;
+  if Copy(Value, 1, 3) = '```' then
+  begin
+    LineEnd := Pos(#10, Value);
+    if LineEnd = 0 then Exit;
+    Header := Trim(Copy(Value, 1, LineEnd - 1));
+    if (Header <> '```') and (not SameText(Header, '```json')) then Exit;
+    if Copy(Value, Length(Value) - 2, 3) <> '```' then Exit;
+    Body := Trim(Copy(Value, LineEnd + 1,
+      Length(Value) - LineEnd - 3));
+    if Pos('```', Body) > 0 then Exit;
+    Value := Body;
+  end;
+  if (Value = '') or (Value[1] <> '{') or
+    (Value[Length(Value)] <> '}') then Exit;
+  AActionJSON := Value;
+  Result := True;
+end;
+
 function TMNoteAIService.IsActionRequest(const AResponse: string;
-  out AActionName: string): Boolean;
+  out AActionName, AActionJSON: string): Boolean;
 var
   Data: TJSONData;
   Root: TJSONObject;
 begin
   Result := False;
   AActionName := '';
+  AActionJSON := '';
   Data := nil;
-  if (Trim(AResponse) = '') or (Trim(AResponse)[1] <> '{') or
-    (Trim(AResponse)[Length(Trim(AResponse))] <> '}') then Exit;
+  if not ExtractActionEnvelope(AResponse, AActionJSON) then Exit;
   try
     try
-      Data := GetJSON(AResponse);
+      Data := GetJSON(AActionJSON);
       if not (Data is TJSONObject) then Exit;
       Root := TJSONObject(Data);
       if (Root.Find('action') = nil) or
-        (Root.Find('action').JSONType <> jtString) or
-        not (Root.Find('parameters') is TJSONObject) then Exit;
+        (Root.Find('action').JSONType <> jtString) then Exit;
       AActionName := Root.Strings['action'];
       Result := AActionName <> '';
     except
-      Result := False;
+      Result := Pos('"action"', LowerCase(AActionJSON)) > 0;
     end;
   finally
     Data.Free;
   end;
+end;
+
+function TMNoteAIService.BuildToolContinuationPrompt(ARole: TMNoteAIRole;
+  const AOriginalQuestion, ACatalog: string; AEvidence: TStringList;
+  var AOmittedEvidence: Integer; out APrompt, AError: string): Boolean;
+var
+  InputBudget, EvidenceBudget, OmittedLines: Integer;
+  Candidate, BasePrompt, TruncatedEvidence: string;
+
+  function EvidenceText: string;
+  var
+    J: Integer;
+  begin
+    Result := '';
+    for J := 0 to AEvidence.Count - 1 do
+    begin
+      if Result <> '' then Result := Result + LineEnding + LineEnding;
+      Result := Result + AEvidence[J];
+    end;
+    if Result = '' then Result := '(nenhuma evidência disponível)';
+  end;
+
+  function ComposePrompt: string;
+  var
+    OmissionNotice: string;
+  begin
+    if AOmittedEvidence > 0 then
+      OmissionNotice := Format('%d evidência(s) antiga(s) omitida(s) por limite de contexto.',
+        [AOmittedEvidence])
+    else
+      OmissionNotice := 'Nenhuma evidência foi omitida.';
+    Result := BuildPrompt(MNoteAIRoleName(ARole),
+      'continuar o pedido usando todas as evidências reais disponíveis',
+      'não inventar resultados; responder ao usuário ou solicitar uma nova ação JSON válida',
+      'PEDIDO ORIGINAL:'#10 + AOriginalQuestion + #10#10 +
+      'EVIDÊNCIAS ACUMULADAS:'#10 + OmissionNotice + #10 + EvidenceText +
+      #10#10'FERRAMENTAS DISPONÍVEIS:'#10 + ACatalog,
+      'resposta direta ou {"action":"Nome","parameters":{...}}');
+  end;
+begin
+  Result := False;
+  APrompt := '';
+  AError := '';
+  InputBudget := FProfiles.Profile(ARole).Config.InputBudget;
+
+  Candidate := ComposePrompt;
+  if FTokenEstimator.Estimate(Candidate, InputBudget).TotalWithMargin <=
+    InputBudget then
+  begin
+    APrompt := Candidate;
+    Exit(True);
+  end;
+
+  while AEvidence.Count > 1 do
+  begin
+    AEvidence.Delete(0);
+    Inc(AOmittedEvidence);
+    Candidate := ComposePrompt;
+    if FTokenEstimator.Estimate(Candidate, InputBudget).TotalWithMargin <=
+      InputBudget then
+    begin
+      APrompt := Candidate;
+      Exit(True);
+    end;
+  end;
+
+  if AEvidence.Count = 1 then
+  begin
+    TruncatedEvidence := AEvidence[0];
+    AEvidence.Clear;
+    BasePrompt := ComposePrompt;
+    EvidenceBudget := InputBudget -
+      FTokenEstimator.Estimate(BasePrompt, InputBudget).TotalWithMargin - 16;
+    if EvidenceBudget < 32 then EvidenceBudget := 32;
+    repeat
+      TruncatedEvidence := FTokenEstimator.TruncateAtLine(
+        TruncatedEvidence, EvidenceBudget, OmittedLines);
+      AEvidence.Clear;
+      AEvidence.Add(TruncatedEvidence);
+      Candidate := ComposePrompt;
+      if FTokenEstimator.Estimate(Candidate, InputBudget).TotalWithMargin <=
+        InputBudget then
+      begin
+        APrompt := Candidate;
+        Exit(True);
+      end;
+      Dec(EvidenceBudget, 32);
+    until EvidenceBudget < 32;
+    AEvidence.Clear;
+  end;
+
+  BasePrompt := ComposePrompt;
+  if FTokenEstimator.Estimate(BasePrompt, InputBudget).TotalWithMargin >
+    InputBudget then
+    AError := 'O catálogo completo de ferramentas e o pedido original não cabem no orçamento de entrada; o catálogo não será truncado.'
+  else
+    AError := 'Não foi possível ajustar as evidências ao orçamento de entrada sem truncar o catálogo de ferramentas.';
 end;
 
 procedure TMNoteAIService.SyncActionConfirmation;
@@ -738,95 +1046,180 @@ end;
 
 function TMNoteAIService.ExecuteWithTools(ARole: TMNoteAIRole;
   const AKind, AQuestion, ADeveloperMessage: string; AParentOrder: Integer;
-  out AResponse, AError: string): Boolean;
+  out AResponse, AError: string; AReadOnlyOnly: Boolean): Boolean;
 var
-  ActionName, ActionRequest, ActionResult, ActionError, NextPrompt,
+  ActionName, ActionRequest, ActionResult, ActionError, NextPrompt, Catalog,
+  ContractError, CorrectionPrompt, CorrectedResponse,
   Fingerprint, ArbitrationPrompt, ArbitrationJSON, Verdict,
   ArbitrationReason: string;
-  RoundNumber, ParentOrder, OmittedLines: Integer;
-  ActionSuccess: Boolean;
+  RoundNumber, ParentOrder, OmittedEvidence, RemainingCalls: Integer;
+  ActionSuccess, CorrectionUsed: Boolean;
   ActionStep: TMNoteAISessionStep;
   StartedAt: QWord;
-begin
-  Result := ExecuteWithPolicy(ARole, AKind, AQuestion, ADeveloperMessage,
-    AParentOrder, AResponse, AError);
-  RoundNumber := 0;
-  ParentOrder := AParentOrder;
-  while Result and IsActionRequest(AResponse, ActionName) do
+  Evidence: TStringList;
+
+  function ReadOnlyRejectionJSON(const AName, AMessage: string): string;
+  var
+    Output: TJSONObject;
   begin
-    if FCancelRequested then
-    begin
-      AError := 'Operação cancelada.';
-      Exit(False);
+    Output := TJSONObject.Create;
+    try
+      Output.Add('ok', False);
+      Output.Add('action', AName);
+      Output.Add('simulated', False);
+      Output.Add('truncated', False);
+      Output.Add('data', TJSONNull.Create);
+      Output.Add('error', AMessage);
+      Result := Output.AsJSON;
+    finally
+      Output.Free;
     end;
-    Inc(RoundNumber);
-    if RoundNumber > 4 then
+  end;
+begin
+  Catalog := FActionExecutor.DescribeActions(AReadOnlyOnly);
+  Evidence := TStringList.Create;
+  try
+    Result := ExecuteWithPolicy(ARole, AKind, AQuestion, ADeveloperMessage,
+      AParentOrder, AResponse, AError);
+    RoundNumber := 0;
+    ParentOrder := AParentOrder;
+    OmittedEvidence := 0;
+    while Result and IsActionRequest(AResponse, ActionName, ActionRequest) do
     begin
-      AError := 'A sessão excedeu o limite de quatro rodadas de ferramentas.';
-      Exit(False);
-    end;
-    ActionRequest := AResponse;
-    Fingerprint := FRouter.StepFingerprint(ARole, ActionRequest, aieNone);
-    if not FRouter.RegisterFingerprint(Fingerprint) then
-    begin
-      ArbitrationPrompt := BuildPrompt('Árbitro',
-        'decidir uma repetição lógica detectada antes de nova execução',
-        'não executar ferramentas; uma única decisão; JSON puro',
-        'PAPEL: ' + MNoteAIRoleName(ARole) + #10 +
-        'AÇÃO REPETIDA: ' + ActionRequest,
-        '{"executavel":"razão"} ou {"faltam_informacoes":"razão"} ou {"abortar":"razão"}');
-      if not ExecuteProfileCall(airArbiter, 'arbitration',
-        ArbitrationPrompt, ADeveloperMessage, ParentOrder, 1,
-        ArbitrationJSON, ArbitrationReason) then
+      if FCancelRequested then
       begin
-        AError := ArbitrationReason;
+        AError := 'Operação cancelada.';
         Exit(False);
       end;
-      if not FRouter.ValidateArbitration(ArbitrationJSON, Verdict,
-        ArbitrationReason) then
-      begin
-        AError := 'Contrato do Árbitro inválido: ' + ArbitrationReason;
-        Exit(False);
-      end;
-      if Verdict = 'faltam_informacoes' then
-      begin
-        AResponse := 'Preciso de mais informações para continuar com segurança. ' +
-          ArbitrationJSON;
-        Exit(True);
-      end;
-      if Verdict = 'abortar' then
-      begin
-        AError := 'O Árbitro interrompeu o ciclo: ' + ArbitrationJSON;
-        Exit(False);
-      end;
-    end;
 
-    ParentOrder := FSession.Count;
-    ActionStep := FSession.AddStep(ARole, 'tool:' + ActionName,
-      ParentOrder, FTokenEstimator.Estimate(ActionRequest, 0).TotalWithMargin,
-      0, 0, RoundNumber, ActionRequest, Fingerprint);
-    StartedAt := GetTickCount64;
-    ActionSuccess := FActionExecutor.ExecuteRequest(ActionRequest, ARole,
-      ActionResult, ActionError);
-    if ActionSuccess then
-      FSession.FinishStep(ActionStep, 'completed', ActionResult, '',
-        GetTickCount64 - StartedAt)
-    else
-      FSession.FinishStep(ActionStep, 'failed', ActionResult, ActionError,
-        GetTickCount64 - StartedAt);
-    if FWorker <> nil then TThread.Synchronize(FWorker, @NotifySessionChanged)
-    else NotifySessionChanged;
+      RemainingCalls := FRouter.MaxCalls - FRouter.CallCount;
+      if RemainingCalls <= 0 then
+      begin
+        AError := Format('Sessão interrompida pelo freio global após %d rodada(s); %d chamada(s) restante(s).',
+          [RoundNumber, RemainingCalls]);
+        Exit(False);
+      end;
+      if RoundNumber >= FProfiles.MaxToolRounds then
+      begin
+        AError := Format('A sessão excedeu o limite configurado de %d rodadas de ferramentas; %d chamada(s) restante(s).',
+          [FProfiles.MaxToolRounds, RemainingCalls]);
+        Exit(False);
+      end;
+      Inc(RoundNumber);
 
-    NextPrompt := BuildPrompt(MNoteAIRoleName(ARole),
-      'continuar o pedido usando o resultado real da ferramenta',
-      'não inventar resultados; responder ao usuário ou solicitar uma nova ação JSON válida',
-      'PEDIDO ORIGINAL:'#10 + AQuestion + #10+
-      'RESULTADO DA FERRAMENTA ' + ActionName + ':'#10 + ActionResult,
-      'resposta direta ou {"action":"Nome","parameters":{...}}');
-    NextPrompt := FTokenEstimator.TruncateAtLine(NextPrompt,
-      FProfiles.Profile(ARole).Config.InputBudget, OmittedLines);
-    Result := ExecuteWithPolicy(ARole, AKind + '_after_tool', NextPrompt,
-      ADeveloperMessage, ActionStep.Order, AResponse, AError);
+      CorrectionUsed := False;
+      while not FActionExecutor.ValidateRequestContract(ActionRequest,
+        ActionName, ContractError) do
+      begin
+        if CorrectionUsed then
+        begin
+          AError := 'Contrato de ferramenta inválido após uma correção: ' +
+            ContractError;
+          Exit(False);
+        end;
+        RemainingCalls := FRouter.MaxCalls - FRouter.CallCount;
+        if RemainingCalls <= 0 then
+        begin
+          AError := Format('Sessão interrompida pelo freio global durante a correção da rodada %d; %d chamada(s) restante(s).',
+            [RoundNumber, RemainingCalls]);
+          Exit(False);
+        end;
+        CorrectionUsed := True;
+        CorrectionPrompt := BuildPrompt(MNoteAIRoleName(ARole),
+          'corrigir somente o contrato JSON da ação de ferramenta',
+          'não responder ao pedido; não usar markdown; não adicionar texto fora do objeto JSON; uma única correção',
+          'ERRO DE CONTRATO: ' + ContractError + #10 +
+          'RESPOSTA A CORRIGIR:'#10 + ActionRequest + #10#10 +
+          'FERRAMENTAS DISPONÍVEIS:'#10 + Catalog,
+          '{"action":"Nome","parameters":{...}}');
+        if not ExecuteProfileCall(ARole, AKind + '_tool_contract_correction',
+          CorrectionPrompt, ADeveloperMessage, ParentOrder, 1,
+          CorrectedResponse, AError) then Exit(False);
+        if not IsActionRequest(CorrectedResponse, ActionName,
+          ActionRequest) then
+        begin
+          AError := 'A correção do contrato não retornou uma ação JSON isolada.';
+          Exit(False);
+        end;
+      end;
+
+      Fingerprint := FRouter.StepFingerprint(ARole, ActionRequest, aieNone);
+      if not FRouter.RegisterFingerprint(Fingerprint) then
+      begin
+        ArbitrationPrompt := BuildPrompt('Árbitro',
+          'decidir uma repetição lógica detectada antes de nova execução',
+          'não executar ferramentas; uma única decisão; JSON puro',
+          'PAPEL: ' + MNoteAIRoleName(ARole) + #10 +
+          'AÇÃO REPETIDA: ' + ActionRequest,
+          '{"executavel":"razão"} ou {"faltam_informacoes":"razão"} ou {"abortar":"razão"}');
+        if not ExecuteProfileCall(airArbiter, 'arbitration',
+          ArbitrationPrompt, ADeveloperMessage, ParentOrder, 1,
+          ArbitrationJSON, ArbitrationReason) then
+        begin
+          AError := ArbitrationReason;
+          Exit(False);
+        end;
+        if not FRouter.ValidateArbitration(ArbitrationJSON, Verdict,
+          ArbitrationReason) then
+        begin
+          AError := 'Contrato do Árbitro inválido: ' + ArbitrationReason;
+          Exit(False);
+        end;
+        if Verdict = 'faltam_informacoes' then
+        begin
+          AResponse := 'Preciso de mais informações para continuar com segurança. ' +
+            ArbitrationJSON;
+          Exit(True);
+        end;
+        if Verdict = 'abortar' then
+        begin
+          AError := 'O Árbitro interrompeu o ciclo: ' + ArbitrationJSON;
+          Exit(False);
+        end;
+      end;
+
+      ParentOrder := FSession.Count;
+      ActionStep := FSession.AddStep(ARole, 'tool:' + ActionName,
+        ParentOrder, FTokenEstimator.Estimate(ActionRequest, 0).TotalWithMargin,
+        0, 0, RoundNumber, ActionRequest, Fingerprint);
+      StartedAt := GetTickCount64;
+      if AReadOnlyOnly and
+        (not FActionExecutor.ActionIsReadOnly(ActionName)) then
+      begin
+        ActionSuccess := False;
+        ActionError := 'Este fluxo permite somente ferramentas de leitura.';
+        ActionResult := ReadOnlyRejectionJSON(ActionName, ActionError);
+      end
+      else
+        ActionSuccess := FActionExecutor.ExecuteRequest(ActionRequest, ARole,
+          ActionResult, ActionError);
+      if ActionSuccess then
+        FSession.FinishStep(ActionStep, 'completed', ActionResult, '',
+          GetTickCount64 - StartedAt)
+      else
+        FSession.FinishStep(ActionStep, 'failed', ActionResult, ActionError,
+          GetTickCount64 - StartedAt);
+      if FWorker <> nil then TThread.Synchronize(FWorker, @NotifySessionChanged)
+      else NotifySessionChanged;
+
+      Evidence.Add(Format('EVIDÊNCIA %d'#10'AÇÃO: %s'#10+
+        'PARÂMETROS/REQUISIÇÃO: %s'#10'RESULTADO REAL: %s',
+        [RoundNumber, ActionName, ActionRequest, ActionResult]));
+      if not BuildToolContinuationPrompt(ARole, AQuestion, Catalog,
+        Evidence, OmittedEvidence, NextPrompt, AError) then Exit(False);
+
+      RemainingCalls := FRouter.MaxCalls - FRouter.CallCount;
+      if RemainingCalls <= 0 then
+      begin
+        AError := Format('Sessão interrompida pelo freio global após %d rodada(s); %d chamada(s) restante(s).',
+          [RoundNumber, RemainingCalls]);
+        Exit(False);
+      end;
+      Result := ExecuteWithPolicy(ARole, AKind + '_after_tool', NextPrompt,
+        ADeveloperMessage, ActionStep.Order, AResponse, AError);
+    end;
+  finally
+    Evidence.Free;
   end;
 end;
 
@@ -1257,6 +1650,25 @@ begin
     ADeveloperMessage);
   FWorker.Start;
   Result := True;
+end;
+
+function TMNoteAIService.ExecuteToolRequest(ARole: TMNoteAIRole;
+  const AKind, AQuestion, ADeveloperMessage: string; out AResponse,
+  AError: string; AReadOnlyOnly: Boolean): Boolean;
+begin
+  if IsBusy then
+  begin
+    AResponse := '';
+    AError := 'Já existe uma operação de IA em andamento.';
+    Exit(False);
+  end;
+  FreeAndNil(FSession);
+  FSession := TMNoteAISession.Create;
+  FRouter.BeginSession;
+  FSessionMemory.StartFlow(AQuestion, 'MNote2/ToolRequest', '', 'IDE');
+  Result := ExecuteWithTools(ARole, AKind, AQuestion, ADeveloperMessage,
+    0, AResponse, AError, AReadOnlyOnly);
+  if Result then ClearError else SetError(AError);
 end;
 
 procedure TMNoteAIService.Cancel;

@@ -320,5 +320,9 @@ object frmFolders: TfrmFolders
       Caption = 'Delete'
       OnClick = miDeleteClick
     end
+    object miLimparRIAPIA: TMenuItem
+      Caption = 'Limpar RIA/PIA'
+      OnClick = miLimparRIA_PIAClick
+    end
   end
 end

@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
   lNetComponents, lNet, IdHTTP, IdSSLOpenSSL, IdSSLOpenSSLHeaders, IdSSL,
-  IdCompressionIntercept, fphttpclient, opensslsockets, funcoes;
+  IdCompressionIntercept, fphttpclient, opensslsockets, funcoes, mnote_ssl_loader;
 
 type
 
@@ -53,18 +53,26 @@ implementation
 function TfrmRegistrar.ExecutaRequisicaoHTTPS(const AURL: string; out AResposta: string): boolean;
 var
   HTTPClient: TFPHttpClient;
-  appPath: string;
+  SSLErr: string;
 begin
   Result := False;
   AResposta := '';
+
+  if not InitializeMNoteSSL(SSLErr) then
+  begin
+    RegistraEventosLog('HTTPS Req [ERRO]: Inicialização SSL falhou. ' + SSLErr);
+    Exit(False);
+  end;
+
   RegistraEventosLog('HTTPS Req: Iniciando conexao -> ' + AURL);
 
-  // 1ª Tentativa: TFPHttpClient nativo do FPC
+  // 1ª Tentativa: TFPHttpClient nativo do FPC (Padronizado)
   try
     HTTPClient := TFPHttpClient.Create(nil);
     try
       HTTPClient.AllowRedirect := True;
       HTTPClient.IOTimeout := 5000;
+      HTTPClient.ConnectTimeout := 5000;
       AResposta := HTTPClient.Get(AURL);
       Result := True;
       RegistraEventosLog('HTTPS Req [OK]: Sucesso via TFPHttpClient (FPC)');
@@ -77,17 +85,8 @@ begin
       RegistraEventosLog('HTTPS Req [AVISO]: TFPHttpClient falhou: ' + E.Message + '. Tentando via Indy...');
   end;
 
-  // 2ª Tentativa: Indy TIdHTTP com OpenSSL
+  // 2ª Tentativa: Indy TIdHTTP com OpenSSL (Reutilizando DLLs validadas pelo mnote_ssl_loader)
   try
-    appPath := ExtractFilePath(ParamStr(0));
-    {$IFDEF MSWINDOWS}
-    IdOpenSSLSetLibPath(appPath);
-    {$ENDIF}
-    {$IFDEF LINUX}
-    if DirectoryExists('/usr/lib/x86_64-linux-gnu') then
-      IdOpenSSLSetLibPath('/usr/lib/x86_64-linux-gnu');
-    {$ENDIF}
-
     IdSSLIOHandlerSocketOpenSSL1.SSLOptions.Method := sslvTLSv1_2;
     IdSSLIOHandlerSocketOpenSSL1.SSLOptions.SSLVersions := [sslvTLSv1_2];
     IdSSLIOHandlerSocketOpenSSL1.SSLOptions.Mode := sslmUnassigned;

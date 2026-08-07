@@ -503,7 +503,7 @@ begin
   C.Font.Size := 8;
 
   //C.Brush.Color := ;
-  C.Pen.Color := ;
+  //C.Pen.Color := ;
   C.Rectangle(LegX - 4, LegY - 4, W - 8, Min(H - 8, LegY + Count * 18 + 8));
 
   for i := 0 to Min(Count - 1, 15) do

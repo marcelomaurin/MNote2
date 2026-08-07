@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="12"/>
     <BuildModes Active="Default"/>
-    <Units Count="61">
+    <Units Count="63">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -18,8 +18,8 @@
         <ComponentName Value="frmMNote"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <TopLine Value="4097"/>
-        <CursorPos X="41" Y="4114"/>
+        <TopLine Value="3251"/>
+        <CursorPos X="5" Y="3253"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -27,9 +27,9 @@
       <Unit2>
         <Filename Value="classes\item.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="7"/>
+        <EditorIndex Value="11"/>
         <TopLine Value="590"/>
-        <CursorPos Y="606"/>
+        <CursorPos X="73" Y="599"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
       </Unit2>
@@ -50,7 +50,7 @@
       <Unit5>
         <Filename Value="setmain.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="12"/>
+        <EditorIndex Value="17"/>
         <TopLine Value="487"/>
         <CursorPos X="5" Y="532"/>
         <UsageCount Value="213"/>
@@ -83,7 +83,7 @@
         <ComponentName Value="frmFolders"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="9"/>
+        <EditorIndex Value="14"/>
         <TopLine Value="827"/>
         <CursorPos Y="850"/>
         <UsageCount Value="213"/>
@@ -131,10 +131,11 @@
         <ComponentName Value="frmRegistrar"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="86"/>
-        <CursorPos Y="135"/>
+        <EditorIndex Value="13"/>
+        <TopLine Value="87"/>
+        <CursorPos X="62" Y="92"/>
         <UsageCount Value="213"/>
+        <Loaded Value="True"/>
       </Unit15>
       <Unit16>
         <Filename Value="splash.pas"/>
@@ -151,9 +152,9 @@
         <ComponentName Value="frmconfig"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="11"/>
-        <TopLine Value="84"/>
-        <CursorPos Y="97"/>
+        <EditorIndex Value="16"/>
+        <TopLine Value="37"/>
+        <CursorPos X="44" Y="46"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -170,7 +171,7 @@
         <ComponentName Value="frmmquery2"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="10"/>
+        <EditorIndex Value="15"/>
         <CursorPos X="36" Y="13"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
@@ -251,10 +252,9 @@
         <ComponentName Value="frmChart"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="488"/>
-        <CursorPos X="5" Y="505"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="490"/>
+        <CursorPos X="5" Y="506"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -265,7 +265,7 @@
         <ComponentName Value="frmmainJSON"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="6"/>
+        <EditorIndex Value="10"/>
         <TopLine Value="1036"/>
         <CursorPos X="5" Y="1071"/>
         <UsageCount Value="213"/>
@@ -284,7 +284,7 @@
         <ComponentName Value="dmBase"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
-        <EditorIndex Value="13"/>
+        <EditorIndex Value="18"/>
         <CursorPos Y="693"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
@@ -374,7 +374,7 @@
         <ComponentName Value="frmNewProject"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="8"/>
         <TopLine Value="92"/>
         <CursorPos X="27" Y="107"/>
         <UsageCount Value="202"/>
@@ -393,7 +393,7 @@
       <Unit45>
         <Filename Value="sqlite_db.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="14"/>
+        <EditorIndex Value="19"/>
         <TopLine Value="203"/>
         <CursorPos Y="238"/>
         <UsageCount Value="200"/>
@@ -406,9 +406,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="IA"/>
-        <EditorIndex Value="8"/>
-        <TopLine Value="408"/>
-        <CursorPos Y="423"/>
+        <EditorIndex Value="12"/>
+        <TopLine Value="109"/>
+        <CursorPos X="35" Y="128"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -419,7 +419,7 @@
         <UnitName Value="uDocText"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="5" Y="25"/>
-        <UsageCount Value="145"/>
+        <UsageCount Value="146"/>
       </Unit47>
       <Unit48>
         <Filename Value="updftext.pas"/>
@@ -428,7 +428,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="7"/>
         <CursorPos X="5" Y="39"/>
-        <UsageCount Value="145"/>
+        <UsageCount Value="146"/>
       </Unit48>
       <Unit49>
         <Filename Value="changesource.pas"/>
@@ -440,146 +440,223 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="199"/>
         <CursorPos Y="233"/>
-        <UsageCount Value="62"/>
+        <UsageCount Value="63"/>
       </Unit49>
       <Unit50>
         <Filename Value="services\mnote_python_service.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit50>
       <Unit51>
         <Filename Value="services\mnote_neural_api_bootstrap.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="286"/>
+        <CursorPos Y="314"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
       </Unit51>
       <Unit52>
         <Filename Value="ia_config.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <EditorIndex Value="1"/>
+        <CursorPos X="15"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
       </Unit52>
       <Unit53>
         <Filename Value="ai\mnote_ai_profile_defaults.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <EditorIndex Value="3"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
       </Unit53>
       <Unit54>
         <Filename Value="services\mnote_voice_output_service.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit54>
       <Unit55>
         <Filename Value="voice_output_config.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit55>
       <Unit56>
-        <Filename Value="classes\antigravity.pas"/>
-        <UsageCount Value="20"/>
+        <Filename Value="confpython.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmconfPython"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UsageCount Value="21"/>
       </Unit56>
       <Unit57>
+        <Filename Value="classes\antigravity.pas"/>
+        <UsageCount Value="20"/>
+      </Unit57>
+      <Unit58>
         <Filename Value="C:\lazarus\components\tachart\tachartaxisutils.pas"/>
         <UnitName Value="TAChartAxisUtils"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="9"/>
         <CursorPos X="20" Y="18"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
-      </Unit57>
-      <Unit58>
+      </Unit58>
+      <Unit59>
         <Filename Value="C:\lazarus\components\tachart\tachartaxis.pas"/>
         <UnitName Value="TAChartAxis"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="3"/>
         <CursorPos X="3" Y="20"/>
         <UsageCount Value="10"/>
-      </Unit58>
-      <Unit59>
+      </Unit59>
+      <Unit60>
         <Filename Value="C:\lazarus\lcl\graphics.pp"/>
         <UnitName Value="Graphics"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="6"/>
         <TopLine Value="42"/>
         <CursorPos X="3" Y="59"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
-      </Unit59>
-      <Unit60>
+      </Unit60>
+      <Unit61>
         <Filename Value="C:\lazarus\components\lazutils\graphtype.pp"/>
         <UnitName Value="GraphType"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="7"/>
         <TopLine Value="27"/>
         <CursorPos X="3" Y="44"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
-      </Unit60>
+      </Unit61>
+      <Unit62>
+        <Filename Value="services\mnote_ai_service.pas"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="1399"/>
+        <CursorPos Y="1432"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit62>
     </Units>
-    <JumpHistory Count="17" HistoryIndex="16">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="main.pas"/>
-        <Caret Line="2683" Column="50" TopLine="2655"/>
+        <Caret Line="1101" TopLine="1090"/>
       </Position1>
       <Position2>
         <Filename Value="main.pas"/>
-        <Caret Line="2664" Column="34" TopLine="2656"/>
+        <Caret Line="1104" TopLine="1090"/>
       </Position2>
       <Position3>
         <Filename Value="main.pas"/>
-        <Caret Line="2675" Column="39" TopLine="2655"/>
+        <Caret Line="1105" TopLine="1090"/>
       </Position3>
       <Position4>
-        <Filename Value="newproject.pas"/>
-        <Caret Line="107" Column="27" TopLine="92"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1106" TopLine="1090"/>
       </Position4>
       <Position5>
-        <Filename Value="C:\lazarus\components\tachart\tachartaxisutils.pas"/>
-        <Caret Line="18" Column="20"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1107" TopLine="1090"/>
       </Position5>
       <Position6>
-        <Filename Value="mquery2\mquery2.pas"/>
-        <Caret Line="13" Column="36"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1109" TopLine="1090"/>
       </Position6>
       <Position7>
         <Filename Value="main.pas"/>
-        <Caret Line="4114" Column="41" TopLine="4097"/>
+        <Caret Line="1110" TopLine="1090"/>
       </Position7>
       <Position8>
-        <Filename Value="chart.pas"/>
-        <Caret Line="72" TopLine="53"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1111" TopLine="1090"/>
       </Position8>
       <Position9>
-        <Filename Value="chart.pas"/>
-        <Caret Line="73" Column="5" TopLine="56"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1112" TopLine="1090"/>
       </Position9>
       <Position10>
-        <Filename Value="chart.pas"/>
-        <Caret Line="414" Column="26" TopLine="397"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1113" TopLine="1090"/>
       </Position10>
       <Position11>
-        <Filename Value="C:\lazarus\lcl\graphics.pp"/>
-        <Caret Line="679" Column="14" TopLine="663"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1114" TopLine="1090"/>
       </Position11>
       <Position12>
-        <Filename Value="C:\lazarus\lcl\graphics.pp"/>
-        <Caret Line="640" Column="5" TopLine="622"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1115" TopLine="1090"/>
       </Position12>
       <Position13>
-        <Filename Value="C:\lazarus\lcl\graphics.pp"/>
-        <Caret Line="59" Column="3" TopLine="42"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1117" TopLine="1090"/>
       </Position13>
       <Position14>
-        <Filename Value="C:\lazarus\components\lazutils\graphtype.pp"/>
-        <Caret Line="44" Column="3" TopLine="27"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1118" TopLine="1090"/>
       </Position14>
       <Position15>
-        <Filename Value="chart.pas"/>
-        <Caret Line="414" Column="13" TopLine="397"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="967" TopLine="955"/>
       </Position15>
       <Position16>
-        <Filename Value="chart.pas"/>
-        <Caret Line="456" Column="13" TopLine="439"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1097" TopLine="1081"/>
       </Position16>
       <Position17>
-        <Filename Value="chart.pas"/>
-        <Caret Line="475" Column="15" TopLine="458"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="1100" TopLine="1081"/>
       </Position17>
+      <Position18>
+        <Filename Value="main.pas"/>
+        <Caret Line="1105" TopLine="1081"/>
+      </Position18>
+      <Position19>
+        <Filename Value="main.pas"/>
+        <Caret Line="1097" TopLine="1081"/>
+      </Position19>
+      <Position20>
+        <Filename Value="main.pas"/>
+        <Caret Line="1104" TopLine="1081"/>
+      </Position20>
+      <Position21>
+        <Filename Value="services\mnote_neural_api_bootstrap.pas"/>
+        <Caret Line="305" Column="45" TopLine="297"/>
+      </Position21>
+      <Position22>
+        <Filename Value="main.pas"/>
+        <Caret Line="1091" Column="15" TopLine="1081"/>
+      </Position22>
+      <Position23>
+        <Filename Value="main.pas"/>
+        <Caret Line="4034" Column="3" TopLine="4031"/>
+      </Position23>
+      <Position24>
+        <Filename Value="ia_config.pas"/>
+        <Caret Column="15"/>
+      </Position24>
+      <Position25>
+        <Filename Value="services\mnote_ai_service.pas"/>
+        <Caret Line="1432" TopLine="1399"/>
+      </Position25>
+      <Position26>
+        <Filename Value="services\mnote_ai_service.pas"/>
+        <Caret Line="374" TopLine="358"/>
+      </Position26>
+      <Position27>
+        <Filename Value="main.pas"/>
+        <Caret Line="4034" Column="3" TopLine="4031"/>
+      </Position27>
+      <Position28>
+        <Filename Value="main.pas"/>
+        <Caret Line="3253" Column="5" TopLine="3251"/>
+      </Position28>
+      <Position29>
+        <Filename Value="ai\mnote_ai_profile_defaults.pas"/>
+      </Position29>
+      <Position30>
+        <Filename Value="services\mnote_neural_api_bootstrap.pas"/>
+        <Caret Line="314" TopLine="286"/>
+      </Position30>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
@@ -595,4 +672,15 @@
       </List1>
     </HistoryLists>
   </ProjectSession>
+  <Debugging>
+    <BreakPoints>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="main.pas"/>
+        <Line Value="973"/>
+      </Item>
+    </BreakPoints>
+  </Debugging>
 </CONFIG>

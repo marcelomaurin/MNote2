@@ -26,6 +26,7 @@ type
     FStdErr: string;
     FLastError: string;
     FOnOutput: TMNoteProcessOutputEvent;
+    class var FExecutionCount: Integer;
     procedure ReadPipe(APipe: TInputPipeStream; AIsStdErr: Boolean);
     procedure StopProcess;
   public
@@ -34,6 +35,7 @@ type
     function Execute(const AExecutable: string; AArguments: TStrings;
       const AWorkingDirectory: string; ATimeoutMS: Cardinal): Boolean;
     procedure Cancel;
+    class function ExecutionCount: Integer; static;
     property Running: Boolean read FRunning;
     property TimedOut: Boolean read FTimedOut;
     property WasCancelled: Boolean read FWasCancelled;
@@ -103,6 +105,7 @@ var
   ProcessInstance: TProcess;
 begin
   Result := False;
+  Inc(FExecutionCount);
   if FRunning then
   begin
     FLastError := 'Já existe um processo em execução.';
@@ -192,6 +195,11 @@ begin
     end;
     ProcessInstance.Free;
   end;
+end;
+
+class function TMNoteProcessService.ExecutionCount: Integer;
+begin
+  Result := FExecutionCount;
 end;
 
 procedure TMNoteProcessService.Cancel;

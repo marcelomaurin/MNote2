@@ -1,7 +1,7 @@
 object frmMNote: TfrmMNote
-  Left = 141
+  Left = 190
   Height = 592
-  Top = 180
+  Top = 216
   Width = 1172
   Caption = 'MNote2 - Maurin Notepad'
   ClientHeight = 592
@@ -1238,6 +1238,7 @@ object frmMNote: TfrmMNote
         TabOrder = 0
         OnChange = pgMainChange
         OnChanging = pgMainChanging
+        OnMouseDown = pgMainMouseDown
       end
       object Splitter2: TSplitter
         Cursor = crVSplit
@@ -1400,6 +1401,11 @@ object frmMNote: TfrmMNote
         ShortCutKey2 = 114
         OnClick = mnPesqItemClick
       end
+      object mnReplaceItem: TMenuItem
+        Caption = 'Replace'
+        ShortCut = 16456
+        OnClick = mnReplaceItemClick
+      end
       object miUndo: TMenuItem
         Caption = 'Undo'
         ShortCut = 16474
@@ -1453,12 +1459,15 @@ object frmMNote: TfrmMNote
       end
       object MenuItem24: TMenuItem
         Caption = 'Open Project'
+        OnClick = MenuItem24Click
       end
       object MenuItem26: TMenuItem
         Caption = 'Save Project'
+        OnClick = MenuItem26Click
       end
       object MenuItem25: TMenuItem
         Caption = 'Close'
+        OnClick = MenuItem25Click
       end
     end
     object MenuItem12: TMenuItem
@@ -1513,10 +1522,26 @@ object frmMNote: TfrmMNote
         Caption = 'Stress WebApi Tester'
         OnClick = miporradaClick
       end
+      object miTestarPython: TMenuItem
+        Caption = 'Testar Python Connector'
+        OnClick = miTestarPythonClick
+      end
+      object miDiagnosticoPython: TMenuItem
+        Caption = 'Diagnóstico Python'
+        OnClick = miDiagnosticoPythonClick
+      end
     end
     object mnSetup: TMenuItem
       Caption = 'Setup'
       ImageIndex = 7
+      object miIAConfig: TMenuItem
+        Caption = 'IA'
+        OnClick = miIAConfigClick
+      end
+      object miVoiceOutputConfig: TMenuItem
+        Caption = 'Voice Output'
+        OnClick = miVoiceOutputConfigClick
+      end
       object mnfont: TMenuItem
         Caption = 'Fonts'
         ImageIndex = 9

@@ -156,63 +156,6 @@ object frmconfig: Tfrmconfig
         ParentColor = False
       end
     end
-    object TabSheet3: TTabSheet
-      Caption = 'Python'
-      ClientHeight = 311
-      ClientWidth = 435
-      object Label6: TLabel
-        Left = 6
-        Height = 15
-        Top = 6
-        Width = 64
-        Caption = 'DLL Python:'
-        ParentColor = False
-      end
-      object edDLLPATH: TFileNameEdit
-        Left = 6
-        Height = 23
-        Hint = 'DLL PATH Python'
-        Top = 26
-        Width = 336
-        FilterIndex = 0
-        HideDirectories = False
-        ButtonWidth = 18
-        NumGlyphs = 1
-        MaxLength = 0
-        TabOrder = 0
-        TextHint = 'DLL PATH Python'
-      end
-      object chkUsePythonConnector: TCheckBox
-        Left = 6
-        Height = 19
-        Top = 64
-        Width = 240
-        Caption = 'Usar componente Python do CHATGPT'
-        TabOrder = 1
-      end
-      object cbPythonExecutionMode: TComboBox
-        Left = 6
-        Height = 23
-        Top = 110
-        Width = 150
-        ItemHeight = 15
-        Items.Strings = (
-          'DLL/SO'
-          'Processo'
-        )
-        Style = csDropDownList
-        TabOrder = 2
-      end
-      object btTestarPython: TButton
-        Left = 6
-        Height = 25
-        Top = 150
-        Width = 100
-        Caption = 'Testar Python'
-        OnClick = btTestarPythonClick
-        TabOrder = 3
-      end
-    end
     object TabSheet4: TTabSheet
       Caption = 'Database'
       ClientHeight = 311

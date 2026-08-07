@@ -1,7 +1,7 @@
 object frmMNote: TfrmMNote
-  Left = 141
+  Left = 190
   Height = 592
-  Top = 180
+  Top = 216
   Width = 1172
   Caption = 'MNote2 - Maurin Notepad'
   ClientHeight = 592
@@ -1541,6 +1541,10 @@ object frmMNote: TfrmMNote
       object miVoiceOutputConfig: TMenuItem
         Caption = 'Voice Output'
         OnClick = miVoiceOutputConfigClick
+      end
+      object miPythonConfig: TMenuItem
+        Caption = 'Python'
+        OnClick = miPythonConfigClick
       end
       object mnfont: TMenuItem
         Caption = 'Fonts'

@@ -69,7 +69,7 @@ type
 implementation
 
 uses
-  fpjson, jsonparser, fphttpclient, sha1, opensslsockets;
+  fpjson, jsonparser, fphttpclient, sha1, opensslsockets, mnote_ssl_loader;
 
 const
   CNeuralApiContentsURL =
@@ -303,7 +303,11 @@ end;
 function TMNoteNeuralApiBootstrap.FetchText(const AURL: string): string;
 var
   Client: TFPHTTPClient;
+  SSLErr: string;
 begin
+  if not InitializeMNoteSSL(SSLErr) then
+    raise Exception.Create('Falha ao inicializar OpenSSL para requisição HTTPS: ' + SSLErr);
+
   Client := TFPHTTPClient.Create(nil);
   try
     Client.AllowRedirect := True;
@@ -322,8 +326,12 @@ function TMNoteNeuralApiBootstrap.DownloadFile(const AURL,
 var
   Client: TFPHTTPClient;
   OutputFile: TFileStream;
+  SSLErr: string;
 begin
   Result := False;
+  if not InitializeMNoteSSL(SSLErr) then
+    raise Exception.Create('Falha ao inicializar OpenSSL para download HTTPS: ' + SSLErr);
+
   Client := TFPHTTPClient.Create(nil);
   try
     Client.AllowRedirect := True;
