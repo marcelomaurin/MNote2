@@ -29,7 +29,7 @@
       <Filename Value="ci-bin/$(TargetCPU)-$(TargetOS)/ci_core_runner"/>
     </Target>
     <SearchPaths>
-      <OtherUnitFiles Value="../src/services;../src/search;../src/sourcechange"/>
+      <OtherUnitFiles Value="../src/services;../src/search;../src/sourcechange;../src/completion"/>
       <UnitOutputDirectory Value="ci-bin/$(TargetCPU)-$(TargetOS)/units"/>
     </SearchPaths>
     <CodeGeneration>
