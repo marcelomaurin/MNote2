@@ -8,10 +8,11 @@ interface
 uses
   Classes, SysUtils, chatgpt,
   aiagent_memorymap, aiagent_classifier, aiagent_decision,
-  aiagent_actionbuilder, aiagent_executor, aiagent_orchestrator;
+  aiagent_actionbuilder, aiagent_executor, aiagent_orchestrator,
+  aiagent_sourceactions, aiagent_testaction;
 
 type
-  { Adapter thin by design: all orchestration stays in the CHATGPT package. }
+  { Thin adapter: orchestration and developer actions stay in CHATGPT. }
   TMNoteChatGPTAgentService = class
   private
     FOwner: TComponent;
@@ -22,18 +23,36 @@ type
     FActionBuilder: TAIActionBuilderAgent;
     FExecutor: TAIActionExecutor;
     FOrchestrator: TAIAgentOrchestrator;
+    FReadAction: TAISourceReadAction;
+    FReplaceAction: TAISourceReplaceAction;
+    FBuildAction: TAIProjectBuildAction;
+    FTestAction: TAITrustedProjectTestAction;
     FLastError: string;
+    FLastOutput: string;
+    procedure RegisterDeveloperActions;
+    procedure ConfigureDeveloperPrompts;
+    function GetLastPreparedPlan: string;
   public
     constructor Create(AOwner: TComponent; AChatGPT: TCHATGPT);
     destructor Destroy; override;
     procedure SetChatGPT(AChatGPT: TCHATGPT);
+    procedure ConfigureDeveloperWorkspace(const ARoot, AProjectFile,
+      ABuilderExecutable, ABuildArguments, ATestExecutable,
+      ATestArguments: string);
     function Run(const AInstruction: string): Boolean;
+    function ExecutePreparedPlan(const APlanJSON: string): Boolean;
     procedure BeginConversation(const AInput: string);
     procedure EndConversation;
     property Orchestrator: TAIAgentOrchestrator read FOrchestrator;
     property MemoryMap: TAIAgentMemoryMap read FMemoryMap;
     property Executor: TAIActionExecutor read FExecutor;
+    property ReadAction: TAISourceReadAction read FReadAction;
+    property ReplaceAction: TAISourceReplaceAction read FReplaceAction;
+    property BuildAction: TAIProjectBuildAction read FBuildAction;
+    property TestAction: TAITrustedProjectTestAction read FTestAction;
+    property LastPreparedPlan: string read GetLastPreparedPlan;
     property LastError: string read FLastError;
+    property LastOutput: string read FLastOutput;
   end;
 
 implementation
@@ -51,6 +70,11 @@ begin
   FExecutor := TAIActionExecutor.Create(FOwner);
   FOrchestrator := TAIAgentOrchestrator.Create(FOwner);
 
+  FReadAction := TAISourceReadAction.Create(FOwner);
+  FReplaceAction := TAISourceReplaceAction.Create(FOwner);
+  FBuildAction := TAIProjectBuildAction.Create(FOwner);
+  FTestAction := TAITrustedProjectTestAction.Create(FOwner);
+
   FOrchestrator.MemoryMap := FMemoryMap;
   FOrchestrator.Classifier := FClassifier;
   FOrchestrator.DecisionAgent := FDecision;
@@ -59,12 +83,63 @@ begin
   FOrchestrator.CriarMapaAutomaticamente := False;
   FOrchestrator.RepassarMapaParaAgentes := True;
 
+  FReadAction.MemoryMap := FMemoryMap;
+  FReplaceAction.MemoryMap := FMemoryMap;
+  FBuildAction.MemoryMap := FMemoryMap;
+  FTestAction.MemoryMap := FMemoryMap;
+  RegisterDeveloperActions;
+  ConfigureDeveloperPrompts;
   SetChatGPT(AChatGPT);
+end;
+
+procedure TMNoteChatGPTAgentService.ConfigureDeveloperPrompts;
+var
+  DeveloperActions: string;
+begin
+  DeveloperActions :=
+    'Ações de desenvolvimento disponíveis:' + LineEnding +
+    '- read_source: parameters {file}' + LineEnding +
+    '- replace_source: parameters {file, old_text, new_text}' + LineEnding;
+
+  if Trim(FBuildAction.ProjectFile) <> '' then
+    DeveloperActions := DeveloperActions +
+      '- build_project: parameters {project opcional}' + LineEnding;
+
+  if Trim(FTestAction.TestExecutable) <> '' then
+    DeveloperActions := DeveloperActions +
+      '- run_tests: parameters {arguments opcional}' + LineEnding;
+
+  DeveloperActions := DeveloperActions +
+    'Use somente caminhos relativos ao workspace. Para alteração de fonte, leia o arquivo antes, ' +
+    'use um old_text exato e pequeno o bastante para ser único. ' +
+    'Só use build_project e run_tests quando eles estiverem listados acima.';
+
+  FDecision.SystemPrompt := DeveloperActions;
+  FActionBuilder.SystemPrompt := DeveloperActions + LineEnding +
+    'Retorne as ações usando exatamente os nomes acima e objetos parameters compatíveis.';
+end;
+
+procedure TMNoteChatGPTAgentService.RegisterDeveloperActions;
+begin
+  FExecutor.RegisterAction(FReadAction);
+  FExecutor.RegisterAction(FReplaceAction);
+  FExecutor.RegisterAction(FBuildAction);
+  FExecutor.RegisterAction(FTestAction);
+end;
+
+function TMNoteChatGPTAgentService.GetLastPreparedPlan: string;
+begin
+  Result := Trim(FActionBuilder.LastRecoveredOutput);
+  if Result = '' then Result := Trim(FActionBuilder.LastRawOutput);
 end;
 
 destructor TMNoteChatGPTAgentService.Destroy;
 begin
   { Components are owned by FOwner and must not be freed twice. }
+  FTestAction := nil;
+  FBuildAction := nil;
+  FReplaceAction := nil;
+  FReadAction := nil;
   FOrchestrator := nil;
   FExecutor := nil;
   FActionBuilder := nil;
@@ -84,9 +159,37 @@ begin
   FExecutor.ChatGPT := FChatGPT;
 end;
 
+procedure TMNoteChatGPTAgentService.ConfigureDeveloperWorkspace(
+  const ARoot, AProjectFile, ABuilderExecutable, ABuildArguments,
+  ATestExecutable, ATestArguments: string);
+var
+  Root: string;
+begin
+  Root := Trim(ARoot);
+  if Root = '' then Root := GetCurrentDir;
+  Root := ExpandFileName(Root);
+
+  FReadAction.WorkspaceRoot := Root;
+  FReplaceAction.WorkspaceRoot := Root;
+  FBuildAction.WorkspaceRoot := Root;
+  FTestAction.WorkspaceRoot := Root;
+
+  FBuildAction.ProjectFile := AProjectFile;
+  if Trim(ABuilderExecutable) <> '' then
+    FBuildAction.BuilderExecutable := ABuilderExecutable
+  else
+    FBuildAction.BuilderExecutable := 'lazbuild';
+  FBuildAction.BuildArguments := ABuildArguments;
+
+  FTestAction.TestExecutable := ATestExecutable;
+  FTestAction.TestArguments := ATestArguments;
+  ConfigureDeveloperPrompts;
+end;
+
 function TMNoteChatGPTAgentService.Run(const AInstruction: string): Boolean;
 begin
   FLastError := '';
+  FLastOutput := '';
   if Trim(AInstruction) = '' then
   begin
     FLastError := 'A instrução do agente está vazia.';
@@ -94,6 +197,20 @@ begin
   end;
   Result := FOrchestrator.Run(AInstruction);
   if not Result then FLastError := FOrchestrator.LastError;
+end;
+
+function TMNoteChatGPTAgentService.ExecutePreparedPlan(
+  const APlanJSON: string): Boolean;
+begin
+  FLastError := '';
+  FLastOutput := '';
+  if Trim(APlanJSON) = '' then
+  begin
+    FLastError := 'O plano de ações está vazio.';
+    Exit(False);
+  end;
+  Result := FExecutor.ExecutePreparedActionsReal(APlanJSON, FLastOutput);
+  if not Result then FLastError := FExecutor.LastError;
 end;
 
 procedure TMNoteChatGPTAgentService.BeginConversation(const AInput: string);
