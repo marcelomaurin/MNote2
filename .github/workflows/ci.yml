@@ -30,6 +30,17 @@ jobs:
           grep -q 'aispeechrecognizer' src/services/mnote_voice_input_service.pas
           grep -q 'aiwhisperengine' src/services/mnote_voice_input_service.pas
           grep -q 'aiaudio' src/services/mnote_voice_input_service.pas
+          test -f src/services/mnote_chatgpt_agent_service.pas
+          test -f src/services/mnote_developer_agent_service.pas
+          grep -q 'aiagent_sourceactions' src/services/mnote_chatgpt_agent_service.pas
+          grep -q 'aiagent_testaction' src/services/mnote_chatgpt_agent_service.pas
+          grep -q 'RegisterAction(FReadAction)' src/services/mnote_chatgpt_agent_service.pas
+          grep -q 'RegisterAction(FReplaceAction)' src/services/mnote_chatgpt_agent_service.pas
+          grep -q 'RegisterAction(FBuildAction)' src/services/mnote_chatgpt_agent_service.pas
+          grep -q 'RegisterAction(FTestAction)' src/services/mnote_chatgpt_agent_service.pas
+          grep -q 'ForcarSimulacaoGlobal := True' src/services/mnote_developer_agent_service.pas
+          grep -q 'ExecutePreparedPlan(FLastPlan)' src/services/mnote_developer_agent_service.pas
+          grep -q 'AI Developer - Corrigir fontes' src/ui/mnote_legacy_ui_bridge.pas
 
   portable-core:
     name: Core ${{ matrix.name }} x64
