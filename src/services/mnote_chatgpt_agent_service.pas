@@ -87,22 +87,33 @@ begin
   FReplaceAction.MemoryMap := FMemoryMap;
   FBuildAction.MemoryMap := FMemoryMap;
   FTestAction.MemoryMap := FMemoryMap;
-  ConfigureDeveloperPrompts;
   RegisterDeveloperActions;
+  ConfigureDeveloperPrompts;
   SetChatGPT(AChatGPT);
 end;
 
 procedure TMNoteChatGPTAgentService.ConfigureDeveloperPrompts;
-const
-  DeveloperActions =
+var
+  DeveloperActions: string;
+begin
+  DeveloperActions :=
     'Ações de desenvolvimento disponíveis:' + LineEnding +
     '- read_source: parameters {file}' + LineEnding +
-    '- replace_source: parameters {file, old_text, new_text}' + LineEnding +
-    '- build_project: parameters {project opcional}' + LineEnding +
-    '- run_tests: parameters {arguments opcional}' + LineEnding +
+    '- replace_source: parameters {file, old_text, new_text}' + LineEnding;
+
+  if Trim(FBuildAction.ProjectFile) <> '' then
+    DeveloperActions := DeveloperActions +
+      '- build_project: parameters {project opcional}' + LineEnding;
+
+  if Trim(FTestAction.TestExecutable) <> '' then
+    DeveloperActions := DeveloperActions +
+      '- run_tests: parameters {arguments opcional}' + LineEnding;
+
+  DeveloperActions := DeveloperActions +
     'Use somente caminhos relativos ao workspace. Para alteração de fonte, leia o arquivo antes, ' +
-    'use um old_text exato e pequeno o bastante para ser único. Depois de alterar, faça build e testes quando configurados.';
-begin
+    'use um old_text exato e pequeno o bastante para ser único. ' +
+    'Só use build_project e run_tests quando eles estiverem listados acima.';
+
   FDecision.SystemPrompt := DeveloperActions;
   FActionBuilder.SystemPrompt := DeveloperActions + LineEnding +
     'Retorne as ações usando exatamente os nomes acima e objetos parameters compatíveis.';
@@ -172,6 +183,7 @@ begin
 
   FTestAction.TestExecutable := ATestExecutable;
   FTestAction.TestArguments := ATestArguments;
+  ConfigureDeveloperPrompts;
 end;
 
 function TMNoteChatGPTAgentService.Run(const AInstruction: string): Boolean;
