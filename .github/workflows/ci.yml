@@ -33,6 +33,7 @@ jobs:
           test -f src/services/mnote_chatgpt_agent_service.pas
           test -f src/services/mnote_developer_agent_service.pas
           test -f src/services/mnote_multiagent_service.pas
+          test -f src/services/mnote_recovery_coordinator.pas
           grep -q 'aiagent_sourceactions' src/services/mnote_chatgpt_agent_service.pas
           grep -q 'aiagent_testaction' src/services/mnote_chatgpt_agent_service.pas
           grep -q 'RegisterAction(FReadAction)' src/services/mnote_chatgpt_agent_service.pas
@@ -47,9 +48,19 @@ jobs:
           grep -q "AgentMemory(ADecision.Route.AgentId)" src/services/mnote_multiagent_service.pas
           grep -q 'Profile(airArbiter)' src/services/mnote_multiagent_service.pas
           grep -q 'RecordReviewedExecution' src/services/mnote_multiagent_service.pas
+          grep -q 'TMNoteRecoveryCoordinator' src/services/mnote_recovery_coordinator.pas
+          grep -q 'mraRetrySame' src/services/mnote_recovery_coordinator.pas
+          grep -q 'mraSwitchAgent' src/services/mnote_recovery_coordinator.pas
+          grep -q 'mraEscalateStrong' src/services/mnote_recovery_coordinator.pas
+          grep -q 'ai-training' src/services/mnote_recovery_coordinator.pas
+          grep -q 'pending.jsonl' src/services/mnote_recovery_coordinator.pas
+          grep -q 'mlmRAG' src/services/mnote_recovery_coordinator.pas
+          grep -q 'mlmLoRA' src/services/mnote_recovery_coordinator.pas
+          grep -q 'MaxAttempts = 3' src/ui/mnote_legacy_ui_bridge.pas
+          grep -q 'MNoteRecoveryCoordinator' src/ui/mnote_legacy_ui_bridge.pas
           grep -q 'SetChatGPT(MNoteAI.Profile(Decision.Role).Client)' src/ui/mnote_legacy_ui_bridge.pas
+          grep -q 'ConfirmDeveloperPlan' src/ui/mnote_legacy_ui_bridge.pas
           grep -q 'AI Developer - Corrigir fontes' src/ui/mnote_legacy_ui_bridge.pas
-          grep -q 'Avaliação do supervisor forte' src/ui/mnote_legacy_ui_bridge.pas
 
   portable-core:
     name: Core ${{ matrix.name }} x64
