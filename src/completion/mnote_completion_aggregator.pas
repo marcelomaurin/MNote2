@@ -56,13 +56,27 @@ begin
   FuzzyScore := TMNoteFuzzyMatcher.Score(AContext.Query, AItem.Text);
   if FuzzyScore < 0 then Exit(-1);
   Result := FuzzyScore + (AItem.Priority * 100);
+
+  { Semantic editor context must outrank broad project/static candidates. }
+  if SameText(AItem.Origin, 'semantico') then Inc(Result, 5000);
   if SameText(AItem.Origin, 'documento') then Inc(Result, 400);
   if SameText(AItem.Origin, 'projeto') then Inc(Result, 300);
+
+  if (AContext.FileName <> '') and (AItem.FileName <> '') and
+    SameFileName(AContext.FileName, AItem.FileName) then
+    Inc(Result, 600);
+
+  if (AItem.Line > 0) and (AContext.CursorLine > 0) then
+  begin
+    if Abs(AItem.Line - AContext.CursorLine) <= 20 then Inc(Result, 250)
+    else if Abs(AItem.Line - AContext.CursorLine) <= 100 then Inc(Result, 100);
+  end;
+
   if (AItem.Kind = ckTable) and
     (Pos('FROM ', UpperCase(AContext.TextBeforeCursor)) > 0) then
     Inc(Result, 1000);
   if (AItem.Kind = ckField) and
-    (Pos('.', AContext.Query) > 0) then Inc(Result, 1000);
+    (Pos('.', AContext.TextBeforeCursor) > 0) then Inc(Result, 1000);
 end;
 
 procedure TMNoteCompletionAggregator.Complete(AContext: TMNoteCompletionContext;
