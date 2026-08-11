@@ -47,8 +47,10 @@ type
     procedure PageControl1Change(Sender: TObject);
   private
     procedure AjustaCamposBanco;
+    function ValidateProjectPage(out AError: string): Boolean;
+    function ValidateDatabasePage(out AError: string): Boolean;
   public
-     function ValidaConexao(): boolean;
+    function ValidaConexao(): boolean;
   end;
 
 var
@@ -58,73 +60,103 @@ implementation
 
 {$R *.lfm}
 
-{ TfrmNewProject }
-
 uses mquery2;
 
-procedure TfrmNewProject.Button1Click(Sender: TObject);
-var
-  original, destino, biblioteca, basePath: string;
+function TfrmNewProject.ValidateProjectPage(out AError: string): Boolean;
 begin
-  // validações mínimas
+  AError := '';
   if Trim(deTarget.Text) = '' then
   begin
-    if(frmhint= nil) then
-    begin
-      frmhint := TfrmHint.create(self);
-    end;
-    MessageHint('Selecione a pasta de destino.');
-    Exit;
+    AError := 'Selecione a pasta de destino.';
+    Exit(False);
   end;
   if Trim(edproject.Text) = '' then
   begin
-    if(frmhint= nil) then
+    AError := 'Informe o nome do projeto.';
+    Exit(False);
+  end;
+  if not DirectoryExists(deTarget.Text) then
+  begin
+    if not ForceDirectories(deTarget.Text) then
     begin
-      frmhint := TfrmHint.create(self);
+      AError := 'Não foi possível criar a pasta de destino.';
+      Exit(False);
     end;
-    MessageHint('Informe o nome do projeto.');
+  end;
+  Result := True;
+end;
+
+function TfrmNewProject.ValidateDatabasePage(out AError: string): Boolean;
+begin
+  AError := '';
+  if (cbDataBase.ItemIndex < 0) or (cbDataBase.ItemIndex > 4) then
+  begin
+    AError := 'Selecione o tipo de banco de dados.';
+    Exit(False);
+  end;
+
+  if cbDataBase.ItemIndex = 2 then
+  begin
+    if Trim(edBancoPost.Text) = '' then
+    begin
+      AError := 'Informe o arquivo SQLite.';
+      Exit(False);
+    end;
+  end
+  else
+  begin
+    if Trim(edHostNamePost.Text) = '' then
+    begin
+      AError := 'Informe o hostname do banco.';
+      Exit(False);
+    end;
+    if Trim(edBancoPost.Text) = '' then
+    begin
+      AError := 'Informe o banco de dados.';
+      Exit(False);
+    end;
+  end;
+  Result := True;
+end;
+
+procedure TfrmNewProject.Button1Click(Sender: TObject);
+var
+  original, destino, biblioteca, basePath, ErrorText: string;
+begin
+  if not ValidateProjectPage(ErrorText) then
+  begin
+    MessageHint(ErrorText);
     Exit;
   end;
 
   basePath := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
 
   {$IFDEF WINDOWS}
-  original   := basePath + 'db\projeto_padrao.db';
-  destino    := IncludeTrailingPathDelimiter(deTarget.Text) + edproject.Text + '.db';
-  if (Pos('\src', basePath) > 0) then
-    biblioteca := basePath + '..\libs\sqlite\win32\sqlite3.dll'
+  original := basePath + 'db\projeto_padrao.db';
+  destino := IncludeTrailingPathDelimiter(deTarget.Text) + edproject.Text + '.db';
+  if Pos('\src', LowerCase(basePath)) > 0 then
+    biblioteca := ExpandFileName(basePath + '..\libs\sqlite\win32\sqlite3.dll')
   else
     biblioteca := basePath + 'libs\sqlite\win32\sqlite3.dll';
   {$ENDIF}
 
   {$IFDEF LINUX}
-  original   := basePath + 'db/projeto_padrao.db';
-  destino    := IncludeTrailingPathDelimiter(deTarget.Text) + edproject.Text + '.db';
+  original := basePath + 'db/projeto_padrao.db';
+  destino := IncludeTrailingPathDelimiter(deTarget.Text) + edproject.Text + '.db';
   biblioteca := basePath + 'libs/linux64/libsqlite3.so';
   {$ENDIF}
 
   if not FileExists(original) then
   begin
-    if(frmhint= nil) then
-    begin
-      frmhint := TfrmHint.create(self);
-    end;
     MessageHint('Arquivo de base não encontrado: ' + original);
     Exit;
   end;
-
-  if not DirectoryExists(ExtractFileDir(destino)) then
-    ForceDirectories(ExtractFileDir(destino));
 
   try
     CopiarArquivo(original, destino);
   except
     on E: Exception do
     begin
-      if(frmhint= nil) then
-      begin
-        frmhint := TfrmHint.create(self);
-      end;
       MessageHint('Falha ao copiar o arquivo: ' + E.Message);
       Exit;
     end;
@@ -135,155 +167,154 @@ begin
 
   if dmBase.ConectaSQLite(destino, biblioteca) then
   begin
-    dmBase.SalvarDadosMaster(edproject.Text, edPropose.Text, destino, cbDataBase.ItemIndex);
+    dmBase.SalvarDadosMaster(edproject.Text, edPropose.Text, destino,
+      cbDataBase.ItemIndex);
+    FSetMain.Project := destino;
+    FSetMain.Defaultfolder := deTarget.Text;
     PageControl1.ActivePage := tsSpec;
   end
   else
-    if(frmhint= nil) then
-    begin
-      frmhint := TfrmHint.create(self);
-    end;
+  begin
     MessageHint('Não foi possível conectar ao SQLite.');
+    Exit;
+  end;
 end;
 
 procedure TfrmNewProject.btProcessClick(Sender: TObject);
+var
+  ErrorText: string;
 begin
-  if (dmbase=nil) then
+  if not ValidateProjectPage(ErrorText) then
   begin
-      dmbase := TdmBase.create(self);
+    MessageHint(ErrorText);
+    Exit;
+  end;
+  if not ValidateDatabasePage(ErrorText) then
+  begin
+    MessageHint(ErrorText);
+    Exit;
   end;
 
-  // Registrar parâmetros genéricos
-  if(edHostNamePost.Text<>'') then dmbase.RegistraParam('HOSTNAME',edHostNamePost.Text);
-  if(edSchemaPost.Text<>'') then dmbase.RegistraParam('SCHEMA',edSchemaPost.Text);
-  if(edBancoPost.Text<>'') then dmbase.RegistraParam('DATABASE',edBancoPost.Text);
-  if(edusuarioPost.Text<>'') then dmbase.RegistraParam('USER',edusuarioPost.Text);
-  if(edPasswrdPost.Text<>'') then dmbase.RegistraParam('PASSWORD',edPasswrdPost.Text);
-  if(deTarget.Text<>'') then dmbase.RegistraParam('DEFAULTFOLDER',deTarget.Text);
+  if dmBase = nil then
+    dmBase := TdmBase.Create(Self);
 
-  // Salvar no setup correspondente do banco
+  if Trim(edHostNamePost.Text) <> '' then dmBase.RegistraParam('HOSTNAME', Trim(edHostNamePost.Text));
+  if Trim(edSchemaPost.Text) <> '' then dmBase.RegistraParam('SCHEMA', Trim(edSchemaPost.Text));
+  if Trim(edBancoPost.Text) <> '' then dmBase.RegistraParam('DATABASE', Trim(edBancoPost.Text));
+  if Trim(edusuarioPost.Text) <> '' then dmBase.RegistraParam('USER', Trim(edusuarioPost.Text));
+  if edPasswrdPost.Text <> '' then dmBase.RegistraParam('PASSWORD', edPasswrdPost.Text);
+  dmBase.RegistraParam('DEFAULTFOLDER', Trim(deTarget.Text));
+  dmBase.RegistraParam('DATABASETYPE', IntToStr(cbDataBase.ItemIndex));
+
   case cbDataBase.ItemIndex of
-    0: // MySQL
-    begin
-      FSetMain.HostnameMy := edHostNamePost.Text;
-      FSetMain.BancoMy    := edBancoPost.Text;
-      FSetMain.UsernameMy := edusuarioPost.Text;
-      FSetMain.PasswordMy := edPasswrdPost.Text;
-    end;
-    1: // Postgres
-    begin
-      FSetMain.HostnamePost := edHostNamePost.Text;
-      FSetMain.SchemaPost   := edSchemaPost.Text;
-      FSetMain.BancoPOST    := edBancoPost.Text;
-      FSetMain.UsernamePost := edusuarioPost.Text;
-      FSetMain.PasswordPost := edPasswrdPost.Text;
-    end;
-    2: // SQLite
-    begin
-      FSetMain.BancoSQLite  := edBancoPost.Text;
-    end;
-    3: // SQL Server (MSSQL)
-    begin
-      FSetMain.HostnameMSSQL := edHostNamePost.Text;
-      FSetMain.SchemaMSSQL   := edSchemaPost.Text;
-      FSetMain.BancoMSSQL    := edBancoPost.Text;
-      FSetMain.UsernameMSSQL := edusuarioPost.Text;
-      FSetMain.PasswordMSSQL := edPasswrdPost.Text;
-    end;
-    4: // Oracle
-    begin
-      FSetMain.HostnameOracle := edHostNamePost.Text;
-      FSetMain.SchemaOracle   := edSchemaPost.Text;
-      FSetMain.BancoOracle    := edBancoPost.Text;
-      FSetMain.UsernameOracle := edusuarioPost.Text;
-      FSetMain.PasswordOracle := edPasswrdPost.Text;
-    end;
+    0:
+      begin
+        FSetMain.HostnameMy := Trim(edHostNamePost.Text);
+        FSetMain.BancoMy := Trim(edBancoPost.Text);
+        FSetMain.UsernameMy := Trim(edusuarioPost.Text);
+        FSetMain.PasswordMy := edPasswrdPost.Text;
+      end;
+    1:
+      begin
+        FSetMain.HostnamePost := Trim(edHostNamePost.Text);
+        FSetMain.SchemaPost := Trim(edSchemaPost.Text);
+        FSetMain.BancoPOST := Trim(edBancoPost.Text);
+        FSetMain.UsernamePost := Trim(edusuarioPost.Text);
+        FSetMain.PasswordPost := edPasswrdPost.Text;
+      end;
+    2:
+      FSetMain.BancoSQLite := Trim(edBancoPost.Text);
+    3:
+      begin
+        FSetMain.HostnameMSSQL := Trim(edHostNamePost.Text);
+        FSetMain.SchemaMSSQL := Trim(edSchemaPost.Text);
+        FSetMain.BancoMSSQL := Trim(edBancoPost.Text);
+        FSetMain.UsernameMSSQL := Trim(edusuarioPost.Text);
+        FSetMain.PasswordMSSQL := edPasswrdPost.Text;
+      end;
+    4:
+      begin
+        FSetMain.HostnameOracle := Trim(edHostNamePost.Text);
+        FSetMain.SchemaOracle := Trim(edSchemaPost.Text);
+        FSetMain.BancoOracle := Trim(edBancoPost.Text);
+        FSetMain.UsernameOracle := Trim(edusuarioPost.Text);
+        FSetMain.PasswordOracle := edPasswrdPost.Text;
+      end;
   end;
 
-  FSetMain.Defaultfolder := deTarget.Text;
-  FSetMain.Project:= IncludeTrailingPathDelimiter(deTarget.Text) + edproject.Text + '.db';
+  FSetMain.Defaultfolder := Trim(deTarget.Text);
+  FSetMain.Project := IncludeTrailingPathDelimiter(deTarget.Text) +
+    edproject.Text + '.db';
 
-  if( frmmquery2 = nil) then
+  if frmmquery2 = nil then
+    frmmquery2 := Tfrmmquery2.Create(Self);
+
+  if frmmquery2.ValidaConexao(cbDataBase.ItemIndex) then
   begin
-      frmmquery2 := Tfrmmquery2.CREATE(self);
-  end;
-  if (frmmquery2.ValidaConexao(cbDataBase.ItemIndex)) then
-  begin
-     FSetMain.SalvaContexto(false);
-     close;
+    FSetMain.SalvaContexto(False);
+    ModalResult := mrOK;
+    Close;
   end
   else
-  begin
-    if(frmhint= nil) then
-    begin
-      frmhint := TfrmHint.create(self);
-    end;
-    MessageHint('Conexão inválida');
-  end;
+    MessageHint('Conexão inválida. Verifique os parâmetros do banco.');
 end;
 
 procedure TfrmNewProject.Button2Click(Sender: TObject);
 begin
-  if(mespec.text <> '') then
+  if Trim(mespec.Text) = '' then
   begin
-    if (dmbase=nil) then
-    begin
-      dmbase := TdmBase.create(self);
-    end;
-    dmbase.RegistraParam('SPEC',mespec.Text);
-    PageControl1.ActivePage := tsDatabase;
-    case cbDataBase.ItemIndex of
-      0: // MySQL
-      begin
-        edHostNamePost.text := FSetMain.HostnameMy;
-        edSchemaPost.text   := '';
-        edBancoPost.text    := FSetMain.BancoMy;
-        edusuarioPost.text  := FSetMain.UsernameMy;
-        edPasswrdPost.text  := FSetMain.PasswordMy;
-      end;
-      1: // Postgres
-      begin
-        edHostNamePost.text := FSetMain.HostnamePost;
-        edSchemaPost.text   := FSetMain.SchemaPost;
-        edBancoPost.text    := FSetMain.BancoPOST;
-        edusuarioPost.text  := FSetMain.UsernamePost;
-        edPasswrdPost.text  := FSetMain.PasswordPost;
-      end;
-      2: // SQLite
-      begin
-        edHostNamePost.text := '';
-        edSchemaPost.text   := '';
-        edBancoPost.text    := FSetMain.BancoSQLite;
-        edusuarioPost.text  := '';
-        edPasswrdPost.text  := '';
-      end;
-      3: // SQL Server / MSSQL
-      begin
-        edHostNamePost.text := FSetMain.HostnameMSSQL;
-        edSchemaPost.text   := FSetMain.SchemaMSSQL;
-        edBancoPost.text    := FSetMain.BancoMSSQL;
-        edusuarioPost.text  := FSetMain.UsernameMSSQL;
-        edPasswrdPost.text  := FSetMain.PasswordMSSQL;
-      end;
-      4: // Oracle
-      begin
-        edHostNamePost.text := FSetMain.HostnameOracle;
-        edSchemaPost.text   := FSetMain.SchemaOracle;
-        edBancoPost.text    := FSetMain.BancoOracle;
-        edusuarioPost.text  := FSetMain.UsernameOracle;
-        edPasswrdPost.text  := FSetMain.PasswordOracle;
-      end;
-    end;
-    AjustaCamposBanco;
-  end
-  else
-  begin
-    if(frmhint= nil) then
-    begin
-      frmhint := TfrmHint.create(self);
-    end;
-    MessageHint('Spec not found');
+    MessageHint('Informe a especificação do projeto.');
+    Exit;
   end;
+
+  if dmBase = nil then
+    dmBase := TdmBase.Create(Self);
+  dmBase.RegistraParam('SPEC', mespec.Text);
+  PageControl1.ActivePage := tsDatabase;
+
+  case cbDataBase.ItemIndex of
+    0:
+      begin
+        edHostNamePost.Text := FSetMain.HostnameMy;
+        edSchemaPost.Text := '';
+        edBancoPost.Text := FSetMain.BancoMy;
+        edusuarioPost.Text := FSetMain.UsernameMy;
+        edPasswrdPost.Text := FSetMain.PasswordMy;
+      end;
+    1:
+      begin
+        edHostNamePost.Text := FSetMain.HostnamePost;
+        edSchemaPost.Text := FSetMain.SchemaPost;
+        edBancoPost.Text := FSetMain.BancoPOST;
+        edusuarioPost.Text := FSetMain.UsernamePost;
+        edPasswrdPost.Text := FSetMain.PasswordPost;
+      end;
+    2:
+      begin
+        edHostNamePost.Text := '';
+        edSchemaPost.Text := '';
+        edBancoPost.Text := FSetMain.BancoSQLite;
+        edusuarioPost.Text := '';
+        edPasswrdPost.Text := '';
+      end;
+    3:
+      begin
+        edHostNamePost.Text := FSetMain.HostnameMSSQL;
+        edSchemaPost.Text := FSetMain.SchemaMSSQL;
+        edBancoPost.Text := FSetMain.BancoMSSQL;
+        edusuarioPost.Text := FSetMain.UsernameMSSQL;
+        edPasswrdPost.Text := FSetMain.PasswordMSSQL;
+      end;
+    4:
+      begin
+        edHostNamePost.Text := FSetMain.HostnameOracle;
+        edSchemaPost.Text := FSetMain.SchemaOracle;
+        edBancoPost.Text := FSetMain.BancoOracle;
+        edusuarioPost.Text := FSetMain.UsernameOracle;
+        edPasswrdPost.Text := FSetMain.PasswordOracle;
+      end;
+  end;
+  AjustaCamposBanco;
 end;
 
 procedure TfrmNewProject.PageControl1Change(Sender: TObject);
@@ -297,8 +328,6 @@ var
   dbType: Integer;
 begin
   dbType := cbDataBase.ItemIndex;
-
-  // Primeiro, resetar visibilidade de tudo para True
   Label6.Visible := True;
   edHostNamePost.Visible := True;
   Label10.Visible := True;
@@ -311,115 +340,58 @@ begin
   edPasswrdPost.Visible := True;
 
   case dbType of
-    0: // MySQL
-    begin
-      Label6.Caption := 'Hostname (ou Host:Porta):';
-      Label6.Top := 16;
-      edHostNamePost.Top := 32;
-
-      Label10.Visible := False;
-      edSchemaPost.Visible := False;
-
-      Label7.Caption := 'Banco de Dados (Database):';
-      Label7.Top := 71;
-      edBancoPost.Top := 87;
-
-      Label8.Caption := 'Usuário:';
-      Label8.Top := 126;
-      edusuarioPost.Top := 142;
-
-      Label9.Caption := 'Senha:';
-      Label9.Top := 181;
-      edPasswrdPost.Top := 197;
-    end;
-
-    1: // Postgres
-    begin
-      Label6.Caption := 'Hostname (ou Host:Porta):';
-      Label6.Top := 16;
-      edHostNamePost.Top := 32;
-
-      Label10.Caption := 'Schema (Esquema):';
-      Label10.Top := 71;
-      edSchemaPost.Top := 87;
-
-      Label7.Caption := 'Banco de Dados (Database):';
-      Label7.Top := 126;
-      edBancoPost.Top := 142;
-
-      Label8.Caption := 'Usuário:';
-      Label8.Top := 181;
-      edusuarioPost.Top := 197;
-
-      Label9.Caption := 'Senha:';
-      Label9.Top := 236;
-      edPasswrdPost.Top := 252;
-    end;
-
-    2: // SQLite
-    begin
-      Label6.Visible := False;
-      edHostNamePost.Visible := False;
-
-      Label10.Visible := False;
-      edSchemaPost.Visible := False;
-
-      Label7.Caption := 'Arquivo de Banco de Dados SQLite (.db):';
-      Label7.Top := 16;
-      edBancoPost.Top := 32;
-
-      Label8.Visible := False;
-      edusuarioPost.Visible := False;
-
-      Label9.Visible := False;
-      edPasswrdPost.Visible := False;
-    end;
-
-    3: // SQL Server (MSSQL)
-    begin
-      Label6.Caption := 'Hostname (Instância / Host:Porta):';
-      Label6.Top := 16;
-      edHostNamePost.Top := 32;
-
-      Label10.Caption := 'Schema (Esquema):';
-      Label10.Top := 71;
-      edSchemaPost.Top := 87;
-
-      Label7.Caption := 'Banco de Dados (Database):';
-      Label7.Top := 126;
-      edBancoPost.Top := 142;
-
-      Label8.Caption := 'Usuário:';
-      Label8.Top := 181;
-      edusuarioPost.Top := 197;
-
-      Label9.Caption := 'Senha:';
-      Label9.Top := 236;
-      edPasswrdPost.Top := 252;
-    end;
-
-    4: // Oracle
-    begin
-      Label6.Caption := 'Hostname ou TNS (Host:Porta):';
-      Label6.Top := 16;
-      edHostNamePost.Top := 32;
-
-      Label10.Caption := 'Schema (Esquema Opcional):';
-      Label10.Top := 71;
-      edSchemaPost.Top := 87;
-
-      Label7.Caption := 'Service Name ou SID (Serviço):';
-      Label7.Top := 126;
-      edBancoPost.Top := 142;
-
-      Label8.Caption := 'Usuário (User):';
-      Label8.Top := 181;
-      edusuarioPost.Top := 197;
-
-      Label9.Caption := 'Senha (Password):';
-      Label9.Top := 236;
-      edPasswrdPost.Top := 252;
-    end;
+    0:
+      begin
+        Label6.Caption := 'Hostname (ou Host:Porta):';
+        Label6.Top := 16; edHostNamePost.Top := 32;
+        Label10.Visible := False; edSchemaPost.Visible := False;
+        Label7.Caption := 'Banco de Dados (Database):';
+        Label7.Top := 71; edBancoPost.Top := 87;
+        Label8.Caption := 'Usuário:'; Label8.Top := 126; edusuarioPost.Top := 142;
+        Label9.Caption := 'Senha:'; Label9.Top := 181; edPasswrdPost.Top := 197;
+      end;
+    1:
+      begin
+        Label6.Caption := 'Hostname (ou Host:Porta):';
+        Label6.Top := 16; edHostNamePost.Top := 32;
+        Label10.Caption := 'Schema (Esquema):';
+        Label10.Top := 71; edSchemaPost.Top := 87;
+        Label7.Caption := 'Banco de Dados (Database):';
+        Label7.Top := 126; edBancoPost.Top := 142;
+        Label8.Caption := 'Usuário:'; Label8.Top := 181; edusuarioPost.Top := 197;
+        Label9.Caption := 'Senha:'; Label9.Top := 236; edPasswrdPost.Top := 252;
+      end;
+    2:
+      begin
+        Label6.Visible := False; edHostNamePost.Visible := False;
+        Label10.Visible := False; edSchemaPost.Visible := False;
+        Label7.Caption := 'Arquivo de Banco de Dados SQLite (.db):';
+        Label7.Top := 16; edBancoPost.Top := 32;
+        Label8.Visible := False; edusuarioPost.Visible := False;
+        Label9.Visible := False; edPasswrdPost.Visible := False;
+      end;
+    3:
+      begin
+        Label6.Caption := 'Hostname (Instância / Host:Porta):';
+        Label6.Top := 16; edHostNamePost.Top := 32;
+        Label10.Caption := 'Schema (Esquema):';
+        Label10.Top := 71; edSchemaPost.Top := 87;
+        Label7.Caption := 'Banco de Dados (Database):';
+        Label7.Top := 126; edBancoPost.Top := 142;
+        Label8.Caption := 'Usuário:'; Label8.Top := 181; edusuarioPost.Top := 197;
+        Label9.Caption := 'Senha:'; Label9.Top := 236; edPasswrdPost.Top := 252;
+      end;
+    4:
+      begin
+        Label6.Caption := 'Hostname ou TNS (Host:Porta):';
+        Label6.Top := 16; edHostNamePost.Top := 32;
+        Label10.Caption := 'Schema (Esquema Opcional):';
+        Label10.Top := 71; edSchemaPost.Top := 87;
+        Label7.Caption := 'Service Name ou SID (Serviço):';
+        Label7.Top := 126; edBancoPost.Top := 142;
+        Label8.Caption := 'Usuário (User):'; Label8.Top := 181; edusuarioPost.Top := 197;
+        Label9.Caption := 'Senha (Password):'; Label9.Top := 236; edPasswrdPost.Top := 252;
+      end;
   end;
 end;
 
@@ -427,39 +399,27 @@ function TfrmNewProject.ValidaConexao(): boolean;
 var
   dbType: Integer;
 begin
-  if (dmBase = nil) then
+  if dmBase = nil then
     dmBase := TdmBase.Create(Self);
 
-  // 0 = MySQL, 1 = Postgres, 2 = SQLite, 3 = MSSQL, 4 = Oracle
   dbType := cbDataBase.ItemIndex;
   if (dbType < 0) or (dbType > 4) then
     dbType := 1;
 
-  // 1) grava os parâmetros (os não vazios) + DATABASETYPE sempre
   try
-    if Trim(edHostNamePost.Text) <> ''  then
-    begin
-         dmBase.RegistraParam('HOSTNAME', edHostNamePost.Text);
-    end;
-    if Trim(edSchemaPost.Text)   <> ''  then
-    begin
-      dmBase.RegistraParam('SCHEMA', edSchemaPost.Text);
-    end;
-    if Trim(edBancoPost.Text) <> ''  then dmBase.RegistraParam('DATABASE', edBancoPost.Text);
-    if Trim(edusuarioPost.Text) <> ''  then dmBase.RegistraParam('USER', edusuarioPost.Text);
-    if Trim(edPasswrdPost.Text) <> ''  then dmBase.RegistraParam('PASSWORD', edPasswrdPost.Text);
-    dmBase.RegistraParam('DATABASETYPE', IntToStr(cbDataBase.ItemIndex));
+    if Trim(edHostNamePost.Text) <> '' then dmBase.RegistraParam('HOSTNAME', Trim(edHostNamePost.Text));
+    if Trim(edSchemaPost.Text) <> '' then dmBase.RegistraParam('SCHEMA', Trim(edSchemaPost.Text));
+    if Trim(edBancoPost.Text) <> '' then dmBase.RegistraParam('DATABASE', Trim(edBancoPost.Text));
+    if Trim(edusuarioPost.Text) <> '' then dmBase.RegistraParam('USER', Trim(edusuarioPost.Text));
+    if edPasswrdPost.Text <> '' then dmBase.RegistraParam('PASSWORD', edPasswrdPost.Text);
+    dmBase.RegistraParam('DATABASETYPE', IntToStr(dbType));
   except
     Exit(False);
   end;
 
-  if(frmmquery2=nil) then
-  begin
-    frmmquery2 := Tfrmmquery2.create(self);
-  end;
-
-  Result := frmmquery2.ValidaConexao( dbType   );
+  if frmmquery2 = nil then
+    frmmquery2 := Tfrmmquery2.Create(Self);
+  Result := frmmquery2.ValidaConexao(dbType);
 end;
 
 end.
-

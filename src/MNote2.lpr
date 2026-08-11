@@ -18,7 +18,8 @@ uses
   newproject, uProjetoDB, sqlite_db, IA
   {$ENDIF}
   ,uDocText, uPdfText, ChangeSource, mnote_ai_service, mnote_smoke_test,
-  mnote_token_calibration, mnote_neural_api_bootstrap, mnote_ssl_loader;
+  mnote_token_calibration, mnote_neural_api_bootstrap, mnote_ssl_loader,
+  mnote_legacy_ui_bridge;
 
 
 {$R *.res}
@@ -124,6 +125,7 @@ begin
     //RequireDerivedFormResource := True;
     Application.Initialize;
     Application.CreateForm(TfrmMNote, frmMNote);
+    InitializeMNoteLegacyUIBridge(frmMNote);
     if RunCloseTabTest then
       Application.QueueAsyncCall(@frmMNote.RunCloseTabTest, 0);
     if RunSolutionTreeTest then
@@ -133,6 +135,7 @@ begin
     {$ENDIF}
     Application.Run;
   finally
+    FinalizeMNoteLegacyUIBridge;
     FinalizeMNoteAIService;
   end;
 end.

@@ -37,15 +37,13 @@ type
   private
     FSetBanco : TSetBanco;
     procedure SetSetBanco(value : TSetBanco);
-
+    function ValidateControls(out AError: string): Boolean;
+    procedure ApplyDefaultPort;
   public
     Save : boolean;
 
     property SetBanco : TSetBanco read FSetBanco write SetSetBanco;
-
   end;
-
-
 
 implementation
 
@@ -53,78 +51,130 @@ implementation
 
 { Tfrmcfgdb }
 
-uses mquery;
-
 procedure Tfrmcfgdb.SetSetBanco(value : TSetBanco);
 begin
   FSetBanco := value;
 end;
 
+procedure Tfrmcfgdb.ApplyDefaultPort;
+begin
+  case cbdbtype.ItemIndex of
+    Ord(DBMysql):    if Trim(edPort.Text) = '' then edPort.Text := '3306';
+    Ord(DBPostgres): if Trim(edPort.Text) = '' then edPort.Text := '5432';
+    Ord(DBMSSQL):    if Trim(edPort.Text) = '' then edPort.Text := '1433';
+    Ord(DBOracle):   if Trim(edPort.Text) = '' then edPort.Text := '1521';
+  end;
+end;
 
+function Tfrmcfgdb.ValidateControls(out AError: string): Boolean;
+var
+  PortNumber: Integer;
+begin
+  AError := '';
+  Result := False;
+
+  if (cbdbtype.ItemIndex < Ord(Low(TypeDatabase))) or
+     (cbdbtype.ItemIndex > Ord(High(TypeDatabase))) then
+  begin
+    AError := 'Selecione um tipo de banco válido.';
+    Exit;
+  end;
+
+  if Trim(edHostname.Text) = '' then
+  begin
+    AError := 'Informe o hostname do banco.';
+    Exit;
+  end;
+
+  if Trim(edDatabase.Text) = '' then
+  begin
+    AError := 'Informe o nome do banco de dados.';
+    Exit;
+  end;
+
+  if not TryStrToInt(Trim(edPort.Text), PortNumber) or
+     (PortNumber < 1) or (PortNumber > 65535) then
+  begin
+    AError := 'Informe uma porta válida entre 1 e 65535.';
+    Exit;
+  end;
+
+  Result := True;
+end;
 
 procedure Tfrmcfgdb.btsaveClick(Sender: TObject);
+var
+  ErrorText: string;
 begin
-  Save := true;
-  close;
+  Save := False;
+  if FSetBanco = nil then
+  begin
+    MessageDlg('Configuração de banco',
+      'Nenhuma configuração de banco foi associada a esta tela.',
+      mtError, [mbOK], 0);
+    Exit;
+  end;
+
+  ApplyDefaultPort;
+  if not ValidateControls(ErrorText) then
+  begin
+    MessageDlg('Configuração de banco', ErrorText, mtWarning, [mbOK], 0);
+    Exit;
+  end;
+
+  FSetBanco.TipoBanco := TypeDatabase(cbdbtype.ItemIndex);
+  FSetBanco.HostName := Trim(edHostname.Text);
+  FSetBanco.Port := Trim(edPort.Text);
+  FSetBanco.User := Trim(edUsername.Text);
+  FSetBanco.Password := edPassword.Text;
+  FSetBanco.Databasename := Trim(edDatabase.Text);
+  FSetBanco.SalvaContexto(False);
+
+  Save := True;
+  ModalResult := mrOK;
+  Close;
 end;
 
 procedure Tfrmcfgdb.btcancelClick(Sender: TObject);
 begin
-  close;
+  Save := False;
+  ModalResult := mrCancel;
+  Close;
 end;
 
 procedure Tfrmcfgdb.cbdbtypeChange(Sender: TObject);
 begin
-  if cbdbtype.ItemIndex=0 then
-  begin
-    edPort.Text:='3306';
-  end;
+  edPort.Text := '';
+  ApplyDefaultPort;
 end;
 
 procedure Tfrmcfgdb.FormCreate(Sender: TObject);
 begin
-  IF(FSetBanco = NIL) THEN
-  BEGIN
-    (*
-     FSetBanco := FSetlstbnc.NovaConexao(
-        '127.0.0.1', //LHostname: string;
-        '',          //LPassword: string;
-        '',          //LUsername: string;
-        TypeDatabase(0),          //Ldbtype: TypeDatabase;
-        '3306',         //LPort: string;
-        'mysql'         //LDatabase: string
-     );
-    *)
-  end;
-
+  Save := False;
 end;
 
 procedure Tfrmcfgdb.FormShow(Sender: TObject);
 begin
-    Save := false;
-    if (FSetBanco <> nil) then
-    begin
-        cbdbtype.ItemIndex := integer(FSetBanco.TipoBanco);
-        edHostname.Text:= FSetBanco.HostName ;
-        edPort.Text:= FSetBanco.Port;
-        edUsername.text := FSetBanco.User;
-        edPassword.text := FSetBanco.Password;
-        edDatabase.Text:= FSetBanco.Databasename;
-    end
-    else
-    begin
-      cbdbtype.ItemIndex := 0;
-      edHostname.Text:= 'hostname' ;
-      edPort.Text:= '3306';
-      edUsername.text := 'USER';
-      edPassword.text := '';
-      edDatabase.Text:= 'mysql';
-    end;
-
-
-
+  Save := False;
+  if FSetBanco <> nil then
+  begin
+    cbdbtype.ItemIndex := Ord(FSetBanco.TipoBanco);
+    edHostname.Text := FSetBanco.HostName;
+    edPort.Text := FSetBanco.Port;
+    edUsername.Text := FSetBanco.User;
+    edPassword.Text := FSetBanco.Password;
+    edDatabase.Text := FSetBanco.Databasename;
+    ApplyDefaultPort;
+  end
+  else
+  begin
+    cbdbtype.ItemIndex := Ord(DBMysql);
+    edHostname.Text := '127.0.0.1';
+    edPort.Text := '3306';
+    edUsername.Text := '';
+    edPassword.Text := '';
+    edDatabase.Text := '';
+  end;
 end;
 
-
 end.
-
