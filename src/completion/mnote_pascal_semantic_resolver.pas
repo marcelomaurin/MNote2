@@ -20,6 +20,7 @@ type
     class function FindVariableType(ALines: TStrings; const AName: string): string; static;
     class function FindClassStart(ALines: TStrings; const ATypeName: string): Integer; static;
     class function ExtractAncestor(const AClassLine: string): string; static;
+    class function IsVisibilitySection(const ALine: string): Boolean; static;
     class procedure AddMember(AItems: TMNoteCompletionItems; const AName,
       ASignature, AFileName: string; ALine: Integer; AKind: TMNoteCompletionKind); static;
     class procedure CollectClassMembers(ALines: TStrings; const ATypeName,
@@ -53,7 +54,7 @@ class function TMNotePascalSemanticResolver.ExtractDeclaredType(
   const ALine, AName: string): string;
 var
   S, LeftSide, RightSide, Candidate: string;
-  P, I: Integer;
+  P, I, J: Integer;
   Names: TStringList;
 begin
   Result := '';
@@ -72,8 +73,8 @@ begin
     Names.StrictDelimiter := True;
     Names.Delimiter := ',';
     Names.DelimitedText := LeftSide;
-    for I := 0 to Names.Count - 1 do
-      if SameText(Trim(Names[I]), AName) then
+    for J := 0 to Names.Count - 1 do
+      if SameText(Trim(Names[J]), AName) then
       begin
         Candidate := '';
         I := 1;
@@ -157,6 +158,16 @@ begin
   end;
 end;
 
+class function TMNotePascalSemanticResolver.IsVisibilitySection(
+  const ALine: string): Boolean;
+var
+  S: string;
+begin
+  S := LowerCase(Trim(ALine));
+  Result := (S = 'private') or (S = 'protected') or (S = 'public') or
+    (S = 'published') or (S = 'strict private') or (S = 'strict protected');
+end;
+
 class procedure TMNotePascalSemanticResolver.AddMember(
   AItems: TMNoteCompletionItems; const AName, ASignature, AFileName: string;
   ALine: Integer; AKind: TMNoteCompletionKind);
@@ -195,8 +206,7 @@ begin
     S := Trim(ALines[I]);
     L := LowerCase(S);
     if (S = '') or (S[1] = '{') or (Pos('//', S) = 1) then Continue;
-    if L in ['private', 'protected', 'public', 'published', 'strict private',
-      'strict protected'] then Continue;
+    if IsVisibilitySection(L) then Continue;
 
     if Pos('class', L) > 0 then Inc(Depth);
     if L = 'end;' then
