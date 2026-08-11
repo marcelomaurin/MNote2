@@ -14,17 +14,24 @@ type
     FAgent: TMNoteChatGPTAgentService;
     FWorkspaceRoot: string;
     FProjectFile: string;
+    FTestExecutable: string;
+    FTestArguments: string;
     FLastPlan: string;
     FLastError: string;
     function FindLazarusProject(const ARoot: string): string;
+    procedure DetectTestRunner(const ARoot: string; out AExecutable,
+      AArguments: string);
   public
     constructor Create;
     destructor Destroy; override;
     procedure ConfigureWorkspace(const ARoot: string);
+    procedure ConfigureTestRunner(const AExecutable, AArguments: string);
     function PrepareInstruction(const AInstruction: string): Boolean;
     function ExecutePreparedPlan: Boolean;
     property WorkspaceRoot: string read FWorkspaceRoot;
     property ProjectFile: string read FProjectFile;
+    property TestExecutable: string read FTestExecutable;
+    property TestArguments: string read FTestArguments;
     property LastPlan: string read FLastPlan;
     property LastError: string read FLastError;
     property Agent: TMNoteChatGPTAgentService read FAgent;
@@ -75,6 +82,60 @@ begin
   end;
 end;
 
+procedure TMNoteDeveloperAgentService.DetectTestRunner(const ARoot: string;
+  out AExecutable, AArguments: string);
+var
+  EnvExe, EnvArgs, Root, Candidate: string;
+begin
+  AExecutable := '';
+  AArguments := '';
+  EnvExe := Trim(GetEnvironmentVariable('MNOTE_TEST_EXECUTABLE'));
+  EnvArgs := Trim(GetEnvironmentVariable('MNOTE_TEST_ARGUMENTS'));
+  if EnvExe <> '' then
+  begin
+    AExecutable := EnvExe;
+    AArguments := EnvArgs;
+    Exit;
+  end;
+
+  Root := IncludeTrailingPathDelimiter(ARoot);
+  {$IFDEF WINDOWS}
+  Candidate := Root + 'tests' + PathDelim + 'run_tests.bat';
+  if FileExists(Candidate) then
+  begin
+    AExecutable := GetEnvironmentVariable('COMSPEC');
+    if AExecutable = '' then AExecutable := 'cmd.exe';
+    AArguments := '/C "' + Candidate + '"';
+    Exit;
+  end;
+  Candidate := Root + 'tests' + PathDelim + 'run_tests.cmd';
+  if FileExists(Candidate) then
+  begin
+    AExecutable := GetEnvironmentVariable('COMSPEC');
+    if AExecutable = '' then AExecutable := 'cmd.exe';
+    AArguments := '/C "' + Candidate + '"';
+    Exit;
+  end;
+  {$ELSE}
+  Candidate := Root + 'tests' + PathDelim + 'run_tests.sh';
+  if FileExists(Candidate) then
+  begin
+    AExecutable := '/bin/sh';
+    AArguments := '"' + Candidate + '"';
+    Exit;
+  end;
+  {$ENDIF}
+end;
+
+procedure TMNoteDeveloperAgentService.ConfigureTestRunner(
+  const AExecutable, AArguments: string);
+begin
+  FTestExecutable := Trim(AExecutable);
+  FTestArguments := AArguments;
+  FAgent.ConfigureDeveloperWorkspace(FWorkspaceRoot, FProjectFile,
+    'lazbuild', '-B', FTestExecutable, FTestArguments);
+end;
+
 procedure TMNoteDeveloperAgentService.ConfigureWorkspace(const ARoot: string);
 var
   Root: string;
@@ -84,8 +145,9 @@ begin
   Root := ExcludeTrailingPathDelimiter(ExpandFileName(Root));
   FWorkspaceRoot := Root;
   FProjectFile := FindLazarusProject(Root);
+  DetectTestRunner(Root, FTestExecutable, FTestArguments);
   FAgent.ConfigureDeveloperWorkspace(FWorkspaceRoot, FProjectFile,
-    'lazbuild', '-B', '', '');
+    'lazbuild', '-B', FTestExecutable, FTestArguments);
 end;
 
 function TMNoteDeveloperAgentService.PrepareInstruction(
