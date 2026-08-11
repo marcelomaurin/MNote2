@@ -14,7 +14,7 @@ procedure FinalizeMNoteLegacyUIBridge;
 implementation
 
 uses
-  Controls, Menus, ComCtrls, StdCtrls, Dialogs, SynEdit,
+  Controls, Menus, ComCtrls, StdCtrls, ExtCtrls, Dialogs, SynEdit,
   SynEditHighlighter, item, mnote_language_registry, mnote_language_profile,
   mnote_highlighter_factory, mnote_developer_agent_service;
 
