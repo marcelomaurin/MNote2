@@ -52,9 +52,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify optional package boundary
+      - name: Verify CHATGPT package boundary
         shell: bash
         run: |
-          ! grep -Eiq 'openai_agent["< ]' src/MNote2.lpi
-          grep -q 'openai_agentcore' src/MNote2.lpi
+          grep -q 'openai_core' src/MNote2.lpi
+          grep -q 'openai_agent' src/MNote2.lpi
           grep -q 'openai_project_core' src/MNote2.lpi
+          grep -q 'openai_files' src/MNote2.lpi
+          grep -q 'openai_output' src/MNote2.lpi
