@@ -32,6 +32,7 @@ jobs:
           grep -q 'aiaudio' src/services/mnote_voice_input_service.pas
           test -f src/services/mnote_chatgpt_agent_service.pas
           test -f src/services/mnote_developer_agent_service.pas
+          test -f src/services/mnote_multiagent_service.pas
           grep -q 'aiagent_sourceactions' src/services/mnote_chatgpt_agent_service.pas
           grep -q 'aiagent_testaction' src/services/mnote_chatgpt_agent_service.pas
           grep -q 'RegisterAction(FReadAction)' src/services/mnote_chatgpt_agent_service.pas
@@ -40,7 +41,15 @@ jobs:
           grep -q 'RegisterAction(FTestAction)' src/services/mnote_chatgpt_agent_service.pas
           grep -q 'ForcarSimulacaoGlobal := True' src/services/mnote_developer_agent_service.pas
           grep -q 'ExecutePreparedPlan(FLastPlan)' src/services/mnote_developer_agent_service.pas
+          grep -q 'TAIAgentMemoryRegistry' src/services/mnote_multiagent_service.pas
+          grep -q 'TAIAgentCapabilityRouter' src/services/mnote_multiagent_service.pas
+          grep -q 'TAIStrongSupervisor' src/services/mnote_multiagent_service.pas
+          grep -q "AgentMemory(ADecision.Route.AgentId)" src/services/mnote_multiagent_service.pas
+          grep -q 'Profile(airArbiter)' src/services/mnote_multiagent_service.pas
+          grep -q 'RecordReviewedExecution' src/services/mnote_multiagent_service.pas
+          grep -q 'SetChatGPT(MNoteAI.Profile(Decision.Role).Client)' src/ui/mnote_legacy_ui_bridge.pas
           grep -q 'AI Developer - Corrigir fontes' src/ui/mnote_legacy_ui_bridge.pas
+          grep -q 'Avaliação do supervisor forte' src/ui/mnote_legacy_ui_bridge.pas
 
   portable-core:
     name: Core ${{ matrix.name }} x64
