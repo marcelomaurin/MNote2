@@ -16,20 +16,19 @@ implementation
 uses
   Controls, Menus, ComCtrls, StdCtrls, Dialogs, SynEdit,
   SynEditHighlighter, item, mnote_language_registry, mnote_language_profile,
-  mnote_highlighter_factory;
+  mnote_highlighter_factory, mnote_developer_agent_service;
 
 type
-  { TMNoteLegacyUIBridge
-
-    Liga comandos visuais antigos aos serviços atuais sem aumentar o
-    acoplamento de main.pas. Tudo aqui usa somente Lazarus/LCL/Free Pascal. }
   TMNoteLegacyUIBridge = class(TComponent)
   private
     FMainForm: TForm;
+    FDeveloperMenu: TMenuItem;
     function FindMenu(const AName: string): TMenuItem;
     function ActivePageControl: TPageControl;
     function ActiveItem: TItem;
     function ActiveEditor: TSynEdit;
+    function FindWorkspaceRoot(const AStartPath: string): string;
+    function ConfirmDeveloperPlan(const APlan: string): Boolean;
     procedure BindClick(const AName: string; AHandler: TNotifyEvent);
     procedure ApplyLanguage(const AProfileID: string);
     procedure SelectAllClick(Sender: TObject);
@@ -43,6 +42,8 @@ type
     procedure LanguagePHPClick(Sender: TObject);
     procedure LanguageJavaClick(Sender: TObject);
     procedure LogViewClick(Sender: TObject);
+    procedure DeveloperAgentClick(Sender: TObject);
+    procedure CreateDeveloperMenu;
   public
     constructor CreateFor(AForm: TForm);
     procedure Bind;
@@ -97,6 +98,71 @@ begin
   if EditorItem <> nil then Result := EditorItem.syn;
 end;
 
+function DirectoryHasLPI(const ADirectory: string): Boolean;
+var
+  SR: TSearchRec;
+begin
+  Result := FindFirst(IncludeTrailingPathDelimiter(ADirectory) + '*.lpi',
+    faAnyFile, SR) = 0;
+  if Result then FindClose(SR);
+end;
+
+function TMNoteLegacyUIBridge.FindWorkspaceRoot(
+  const AStartPath: string): string;
+var
+  Current, Parent: string;
+  I: Integer;
+begin
+  Current := ExpandFileName(AStartPath);
+  if not DirectoryExists(Current) then Current := ExtractFileDir(Current);
+  for I := 0 to 10 do
+  begin
+    if DirectoryHasLPI(Current) or
+       DirectoryExists(IncludeTrailingPathDelimiter(Current) + '.git') then
+      Exit(Current);
+    Parent := ExtractFileDir(ExcludeTrailingPathDelimiter(Current));
+    if (Parent = '') or SameFileName(Parent, Current) then Break;
+    Current := Parent;
+  end;
+  Result := ExpandFileName(AStartPath);
+  if not DirectoryExists(Result) then Result := ExtractFileDir(Result);
+end;
+
+function TMNoteLegacyUIBridge.ConfirmDeveloperPlan(
+  const APlan: string): Boolean;
+var
+  PlanForm: TForm;
+  Memo: TMemo;
+  Buttons: TButtonPanel;
+begin
+  PlanForm := TForm.Create(FMainForm);
+  try
+    PlanForm.Caption := 'AI Developer - Revisar plano';
+    PlanForm.Position := poMainFormCenter;
+    PlanForm.Width := 900;
+    PlanForm.Height := 620;
+
+    Memo := TMemo.Create(PlanForm);
+    Memo.Parent := PlanForm;
+    Memo.Align := alClient;
+    Memo.ReadOnly := True;
+    Memo.ScrollBars := ssAutoBoth;
+    Memo.WordWrap := False;
+    Memo.Lines.Text := APlan;
+
+    Buttons := TButtonPanel.Create(PlanForm);
+    Buttons.Parent := PlanForm;
+    Buttons.Align := alBottom;
+    Buttons.ShowButtons := [pbOK, pbCancel];
+    Buttons.OKButton.Caption := 'Executar plano';
+    Buttons.CancelButton.Caption := 'Cancelar';
+
+    Result := PlanForm.ShowModal = mrOk;
+  finally
+    PlanForm.Free;
+  end;
+end;
+
 procedure TMNoteLegacyUIBridge.BindClick(const AName: string;
   AHandler: TNotifyEvent);
 var
@@ -104,6 +170,20 @@ var
 begin
   M := FindMenu(AName);
   if M <> nil then M.OnClick := AHandler;
+end;
+
+procedure TMNoteLegacyUIBridge.CreateDeveloperMenu;
+var
+  ParentMenu: TMenuItem;
+begin
+  if FDeveloperMenu <> nil then Exit;
+  ParentMenu := FindMenu('mnSetup');
+  if ParentMenu = nil then Exit;
+  FDeveloperMenu := TMenuItem.Create(FMainForm);
+  FDeveloperMenu.Name := 'miDeveloperAgent';
+  FDeveloperMenu.Caption := 'AI Developer - Corrigir fontes...';
+  FDeveloperMenu.OnClick := @DeveloperAgentClick;
+  ParentMenu.Add(FDeveloperMenu);
 end;
 
 procedure TMNoteLegacyUIBridge.Bind;
@@ -121,6 +201,56 @@ begin
   BindClick('mnJava', @LanguageJavaClick);
 
   BindClick('MenuItem16', @LogViewClick);
+  CreateDeveloperMenu;
+end;
+
+procedure TMNoteLegacyUIBridge.DeveloperAgentClick(Sender: TObject);
+var
+  EditorItem: TItem;
+  Instruction, Root, OutputText: string;
+  Dev: TMNoteDeveloperAgentService;
+begin
+  EditorItem := ActiveItem;
+  if (EditorItem = nil) or (Trim(EditorItem.FileName) = '') then
+  begin
+    MessageDlg('AI Developer', 'Abra um arquivo do projeto antes de executar o agente.',
+      mtInformation, [mbOK], 0);
+    Exit;
+  end;
+  if not EditorItem.Salvo then
+  begin
+    MessageDlg('AI Developer',
+      'Salve as alterações do editor antes de pedir uma correção automática.',
+      mtWarning, [mbOK], 0);
+    Exit;
+  end;
+
+  Instruction := 'Analise e corrija o fonte ' + ExtractFileName(EditorItem.FileName) +
+    '. Faça somente as mudanças necessárias e valide com build quando possível.';
+  if not InputQuery('AI Developer', 'Orientação para a IA:', Instruction) then Exit;
+
+  Root := FindWorkspaceRoot(EditorItem.FileName);
+  Dev := MNoteDeveloperAgent;
+  Dev.ConfigureWorkspace(Root);
+  if not Dev.PrepareInstruction(Instruction) then
+  begin
+    MessageDlg('AI Developer', Dev.LastError, mtError, [mbOK], 0);
+    Exit;
+  end;
+
+  if not ConfirmDeveloperPlan(Dev.LastPlan) then Exit;
+  if not Dev.ExecutePreparedPlan then
+  begin
+    MessageDlg('AI Developer', Dev.LastError, mtError, [mbOK], 0);
+    Exit;
+  end;
+
+  OutputText := Trim(Dev.Agent.LastOutput);
+  if OutputText = '' then OutputText := 'Plano executado com sucesso.';
+  MessageDlg('AI Developer', OutputText, mtInformation, [mbOK], 0);
+
+  if FileExists(EditorItem.FileName) then
+    EditorItem.Loadfile(EditorItem.FileName);
 end;
 
 procedure TMNoteLegacyUIBridge.SelectAllClick(Sender: TObject);
