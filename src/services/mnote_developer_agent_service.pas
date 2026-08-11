@@ -64,9 +64,12 @@ var
 begin
   Result := '';
   Root := IncludeTrailingPathDelimiter(ARoot);
-  if FindFirst(Root + '*.lpi', faAnyFile and not faDirectory, SR) = 0 then
+  if FindFirst(Root + '*.lpi', faAnyFile, SR) <> 0 then Exit;
   try
-    Result := SR.Name;
+    repeat
+      if (SR.Attr and faDirectory) = 0 then
+        Exit(SR.Name);
+    until FindNext(SR) <> 0;
   finally
     FindClose(SR);
   end;
