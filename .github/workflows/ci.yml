@@ -8,6 +8,29 @@ permissions:
   contents: read
 
 jobs:
+  project-integrity:
+    name: Lazarus project integrity
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate MNote2.lpi and active sources
+        shell: bash
+        run: python3 scripts/check_lazarus_project.py
+
+      - name: Verify CHATGPT package boundary
+        shell: bash
+        run: |
+          grep -q 'openai_core' src/MNote2.lpi
+          grep -q 'openai_agent' src/MNote2.lpi
+          grep -q 'openai_project_core' src/MNote2.lpi
+          grep -q 'openai_files' src/MNote2.lpi
+          grep -q 'openai_output' src/MNote2.lpi
+          grep -q 'aispeechrecognizer' src/services/mnote_voice_input_service.pas
+          grep -q 'aiwhisperengine' src/services/mnote_voice_input_service.pas
+          grep -q 'aiaudio' src/services/mnote_voice_input_service.pas
+
   portable-core:
     name: Core ${{ matrix.name }} x64
     runs-on: ${{ matrix.os }}
@@ -46,17 +69,3 @@ jobs:
           if ($null -eq $binary) { throw 'ci_core_runner.exe não foi gerado.' }
           & $binary.FullName
           exit $LASTEXITCODE
-
-  optional-desktop-contract:
-    name: Desktop dependencies are isolated
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Verify CHATGPT package boundary
-        shell: bash
-        run: |
-          grep -q 'openai_core' src/MNote2.lpi
-          grep -q 'openai_agent' src/MNote2.lpi
-          grep -q 'openai_project_core' src/MNote2.lpi
-          grep -q 'openai_files' src/MNote2.lpi
-          grep -q 'openai_output' src/MNote2.lpi
