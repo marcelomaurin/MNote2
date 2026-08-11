@@ -6,8 +6,8 @@ unit mnote_recovery_coordinator;
 interface
 
 uses
-  Classes, SysUtils, fpjson, aiagent_deterministicmemory,
-  mnote_multiagent_service;
+  Classes, SysUtils, fpjson, aiagent_deterministicmemory, aiagent_supervisor,
+  mnote_ai_types, mnote_multiagent_service;
 
 type
   TMNoteRecoveryCoordinator = class
