@@ -19,8 +19,12 @@ type
     class function ExtractMemberName(const ALine, AKeyword: string): string; static;
     class function FindVariableType(ALines: TStrings; const AName: string): string; static;
     class function FindClassStart(ALines: TStrings; const ATypeName: string): Integer; static;
+    class function ExtractAncestor(const AClassLine: string): string; static;
+    class function IsVisibilitySection(const ALine: string): Boolean; static;
     class procedure AddMember(AItems: TMNoteCompletionItems; const AName,
       ASignature, AFileName: string; ALine: Integer; AKind: TMNoteCompletionKind); static;
+    class procedure CollectClassMembers(ALines: TStrings; const ATypeName,
+      AFileName: string; AItems: TMNoteCompletionItems; AVisited: TStrings); static;
   public
     class function CollectQualifiedMembers(AContext: TMNoteCompletionContext;
       AItems: TMNoteCompletionItems): Boolean; static;
@@ -49,25 +53,42 @@ end;
 class function TMNotePascalSemanticResolver.ExtractDeclaredType(
   const ALine, AName: string): string;
 var
-  S, L, Needle: string;
-  P, I: Integer;
+  S, LeftSide, RightSide, Candidate: string;
+  P, I, J: Integer;
+  Names: TStringList;
 begin
   Result := '';
   S := Trim(ALine);
-  L := LowerCase(S);
-  Needle := LowerCase(AName);
-  P := Pos(Needle, L);
-  if P <= 0 then Exit;
-  if (P > 1) and IsIdentChar(S[P - 1]) then Exit;
-  I := P + Length(AName);
-  if (I <= Length(S)) and IsIdentChar(S[I]) then Exit;
-  while (I <= Length(S)) and (S[I] in [' ', #9]) do Inc(I);
-  if (I > Length(S)) or (S[I] <> ':') then Exit;
-  Inc(I);
-  while (I <= Length(S)) and (S[I] in [' ', #9]) do Inc(I);
-  P := I;
-  while (I <= Length(S)) and IsIdentChar(S[I]) do Inc(I);
-  Result := Copy(S, P, I - P);
+  P := Pos(':', S);
+  if P <= 1 then Exit;
+
+  LeftSide := Trim(Copy(S, 1, P - 1));
+  RightSide := Trim(Copy(S, P + 1, MaxInt));
+  if SameText(Copy(LeftSide, 1, 4), 'var ') then
+    Delete(LeftSide, 1, 4);
+  if SameText(Copy(LeftSide, 1, 6), 'const ') then Exit;
+
+  Names := TStringList.Create;
+  try
+    Names.StrictDelimiter := True;
+    Names.Delimiter := ',';
+    Names.DelimitedText := LeftSide;
+    for J := 0 to Names.Count - 1 do
+      if SameText(Trim(Names[J]), AName) then
+      begin
+        Candidate := '';
+        I := 1;
+        while (I <= Length(RightSide)) and IsIdentChar(RightSide[I]) do
+        begin
+          Candidate := Candidate + RightSide[I];
+          Inc(I);
+        end;
+        Result := Candidate;
+        Exit;
+      end;
+  finally
+    Names.Free;
+  end;
 end;
 
 class function TMNotePascalSemanticResolver.ExtractMemberName(
@@ -115,6 +136,38 @@ begin
   end;
 end;
 
+class function TMNotePascalSemanticResolver.ExtractAncestor(
+  const AClassLine: string): string;
+var
+  S: string;
+  P1, P2, I: Integer;
+begin
+  Result := '';
+  S := Trim(AClassLine);
+  P1 := Pos('class(', LowerCase(S));
+  if P1 = 0 then Exit;
+  Inc(P1, Length('class('));
+  P2 := Pos(')', Copy(S, P1, MaxInt));
+  if P2 <= 1 then Exit;
+  S := Trim(Copy(S, P1, P2 - 1));
+  I := 1;
+  while (I <= Length(S)) and IsIdentChar(S[I]) do
+  begin
+    Result := Result + S[I];
+    Inc(I);
+  end;
+end;
+
+class function TMNotePascalSemanticResolver.IsVisibilitySection(
+  const ALine: string): Boolean;
+var
+  S: string;
+begin
+  S := LowerCase(Trim(ALine));
+  Result := (S = 'private') or (S = 'protected') or (S = 'public') or
+    (S = 'published') or (S = 'strict private') or (S = 'strict protected');
+end;
+
 class procedure TMNotePascalSemanticResolver.AddMember(
   AItems: TMNoteCompletionItems; const AName, ASignature, AFileName: string;
   ALine: Integer; AKind: TMNoteCompletionKind);
@@ -129,69 +182,104 @@ begin
   AItems.Add(Item);
 end;
 
+class procedure TMNotePascalSemanticResolver.CollectClassMembers(
+  ALines: TStrings; const ATypeName, AFileName: string;
+  AItems: TMNoteCompletionItems; AVisited: TStrings);
+var
+  S, L, Name, Ancestor: string;
+  I, StartLine, Depth, P: Integer;
+  Kind: TMNoteCompletionKind;
+begin
+  if (Trim(ATypeName) = '') or (AVisited.IndexOf(LowerCase(ATypeName)) >= 0) then Exit;
+  AVisited.Add(LowerCase(ATypeName));
+
+  StartLine := FindClassStart(ALines, ATypeName);
+  if StartLine < 0 then Exit;
+
+  Ancestor := ExtractAncestor(ALines[StartLine]);
+  if Ancestor <> '' then
+    CollectClassMembers(ALines, Ancestor, AFileName, AItems, AVisited);
+
+  Depth := 0;
+  for I := StartLine + 1 to ALines.Count - 1 do
+  begin
+    S := Trim(ALines[I]);
+    L := LowerCase(S);
+    if (S = '') or (S[1] = '{') or (Pos('//', S) = 1) then Continue;
+    if IsVisibilitySection(L) then Continue;
+
+    if Pos('class', L) > 0 then Inc(Depth);
+    if L = 'end;' then
+    begin
+      if Depth = 0 then Break;
+      Dec(Depth);
+      Continue;
+    end;
+
+    Name := '';
+    Kind := ckText;
+    if Pos('procedure ', L) = 1 then
+    begin
+      Name := ExtractMemberName(S, 'procedure'); Kind := ckProcedure;
+    end
+    else if Pos('function ', L) = 1 then
+    begin
+      Name := ExtractMemberName(S, 'function'); Kind := ckFunction;
+    end
+    else if Pos('constructor ', L) = 1 then
+    begin
+      Name := ExtractMemberName(S, 'constructor'); Kind := ckProcedure;
+    end
+    else if Pos('destructor ', L) = 1 then
+    begin
+      Name := ExtractMemberName(S, 'destructor'); Kind := ckProcedure;
+    end
+    else if Pos('property ', L) = 1 then
+    begin
+      Name := ExtractMemberName(S, 'property'); Kind := ckProperty;
+    end
+    else
+    begin
+      P := Pos(':', S);
+      if P > 1 then
+      begin
+        Name := Trim(Copy(S, 1, P - 1));
+        if Pos(',', Name) > 0 then
+          Name := Trim(Copy(Name, 1, Pos(',', Name) - 1));
+        if Pos(' ', Name) = 0 then Kind := ckVariable else Name := '';
+      end;
+    end;
+    AddMember(AItems, Name, S, AFileName, I + 1, Kind);
+  end;
+end;
+
 class function TMNotePascalSemanticResolver.CollectQualifiedMembers(
   AContext: TMNoteCompletionContext; AItems: TMNoteCompletionItems): Boolean;
 var
-  Lines: TStringList;
-  Qualifier, TypeName, S, L, Name: string;
-  I, StartLine, Depth, P: Integer;
-  Kind: TMNoteCompletionKind;
+  Lines, Visited: TStringList;
+  Qualifier, TypeName: string;
 begin
   Result := False;
   if (AContext = nil) or (AItems = nil) or
     (not SameText(AContext.LanguageID, 'pascal')) then Exit;
+
   Qualifier := ExtractQualifier(AContext.TextBeforeCursor);
   if Qualifier = '' then Exit;
 
   Lines := TStringList.Create;
+  Visited := TStringList.Create;
   try
     Lines.Text := AContext.DocumentText;
+    Visited.CaseSensitive := False;
+    Visited.Sorted := True;
+    Visited.Duplicates := dupIgnore;
+
     TypeName := FindVariableType(Lines, Qualifier);
     if TypeName = '' then Exit;
-    StartLine := FindClassStart(Lines, TypeName);
-    if StartLine < 0 then Exit;
-
-    Depth := 0;
-    for I := StartLine + 1 to Lines.Count - 1 do
-    begin
-      S := Trim(Lines[I]);
-      L := LowerCase(S);
-      if Pos('class', L) > 0 then Inc(Depth);
-      if (L = 'end;') then
-      begin
-        if Depth = 0 then Break;
-        Dec(Depth);
-      end;
-      if (S = '') or (S[1] = '{') or (Pos('//', S) = 1) then Continue;
-
-      Name := '';
-      Kind := ckText;
-      if Pos('procedure ', L) = 1 then
-      begin
-        Name := ExtractMemberName(S, 'procedure'); Kind := ckProcedure;
-      end
-      else if Pos('function ', L) = 1 then
-      begin
-        Name := ExtractMemberName(S, 'function'); Kind := ckFunction;
-      end
-      else if Pos('property ', L) = 1 then
-      begin
-        Name := ExtractMemberName(S, 'property'); Kind := ckProperty;
-      end
-      else
-      begin
-        P := Pos(':', S);
-        if P > 1 then
-        begin
-          Name := Trim(Copy(S, 1, P - 1));
-          if (Pos(' ', Name) = 0) and (Pos(',', Name) = 0) then Kind := ckVariable
-          else Name := '';
-        end;
-      end;
-      AddMember(AItems, Name, S, AContext.FileName, I + 1, Kind);
-    end;
+    CollectClassMembers(Lines, TypeName, AContext.FileName, AItems, Visited);
     Result := AItems.Count > 0;
   finally
+    Visited.Free;
     Lines.Free;
   end;
 end;

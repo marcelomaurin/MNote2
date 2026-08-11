@@ -1,12 +1,14 @@
 unit ToolsOuvir;
 
 {$mode ObjFPC}{$H+}
+{$codepage utf8}
 
 interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  lNetComponents, lNet, strutils, mnote_voice_command;
+  lNetComponents, lNet, strutils, mnote_voice_command,
+  mnote_voice_input_service;
 
 type
   TConversationalVoiceCommandEvent = procedure(Sender: TObject;
@@ -32,9 +34,15 @@ type
     FWakeWord: string;
     FLastTranscript: string;
     FOnCommand: TConversationalVoiceCommandEvent;
+    FVoiceService: TMNoteVoiceInputService;
+    FUsingNativeVoice: Boolean;
     function ValidateConnection(out AHost: string; out APort: Word;
       out AError: string): Boolean;
     procedure SetConnectedVisual(AConnected: Boolean);
+    procedure ProcessTranscript(const AText: string);
+    procedure VoiceText(Sender: TObject; const AText: string);
+    procedure VoiceError(Sender: TObject; const AError: string);
+    function StartNativeVoice(out AReason: string): Boolean;
   public
     frase: string;
     procedure Conectar();
@@ -92,9 +100,51 @@ begin
     Shape1.Brush.Color := clRed;
 end;
 
+procedure TfrmToolsOuvir.ProcessTranscript(const AText: string);
+var
+  Info, CommandText: string;
+begin
+  Info := Trim(AText);
+  if Info = '' then Exit;
+  if SameText(lastfrase, Info) then Exit;
+
+  lastfrase := Info;
+  frase := Info;
+  FLastTranscript := Info;
+
+  if TMNoteVoiceCommand.TryParse(Info, FWakeWord, CommandText) then
+    if Assigned(FOnCommand) then
+      FOnCommand(Self, CommandText);
+end;
+
+procedure TfrmToolsOuvir.VoiceText(Sender: TObject; const AText: string);
+begin
+  ProcessTranscript(AText);
+end;
+
+procedure TfrmToolsOuvir.VoiceError(Sender: TObject; const AError: string);
+begin
+  if Trim(AError) <> '' then
+    ShowMessage('Reconhecimento de voz: ' + AError);
+end;
+
+function TfrmToolsOuvir.StartNativeVoice(out AReason: string): Boolean;
+begin
+  AReason := '';
+  if FVoiceService = nil then
+  begin
+    FVoiceService := TMNoteVoiceInputService.Create(Self);
+    FVoiceService.OnText := @VoiceText;
+    FVoiceService.OnError := @VoiceError;
+  end;
+
+  if not FVoiceService.Available(AReason) then Exit(False);
+  Result := FVoiceService.StartListening;
+  if not Result then AReason := FVoiceService.LastError;
+end;
+
 procedure TfrmToolsOuvir.Shape1ChangeBounds(Sender: TObject);
 begin
-  { Mantém o indicador visual coerente quando o formulário é recriado pelo LCL. }
   if not btConect.Enabled then
     Shape1.Brush.Color := clGreen
   else
@@ -113,34 +163,40 @@ end;
 
 procedure TfrmToolsOuvir.LTCPComponent1Receive(aSocket: TLSocket);
 var
-  info, CommandText: String;
+  Info: string;
 begin
-  info := '';
+  Info := '';
   if aSocket = nil then Exit;
-  aSocket.GetMessage(info);
-  info := Trim(info);
-  if info = '' then Exit;
-  if SameText(lastfrase, info) then Exit;
-
-  lastfrase := info;
-  frase := info;
-  FLastTranscript := info;
-
-  if TMNoteVoiceCommand.TryParse(info, FWakeWord, CommandText) then
-  begin
-    if Assigned(FOnCommand) then
-      FOnCommand(Self, CommandText);
-  end;
+  aSocket.GetMessage(Info);
+  ProcessTranscript(Info);
 end;
 
 procedure TfrmToolsOuvir.Conectar();
 var
-  Host, ErrorText: string;
+  Host, ErrorText, NativeReason: string;
   Port: Word;
 begin
   if FWakeWord = '' then FWakeWord := 'OK MNote';
+  lastfrase := '';
+  FLastTranscript := '';
+
+  { Primeiro tenta o reconhecimento local do pacote CHATGPT. A configuração
+    segue o padrão dos samples do pacote: WHISPER_CLI e WHISPER_MODEL. }
+  if StartNativeVoice(NativeReason) then
+  begin
+    FUsingNativeVoice := True;
+    SetConnectedVisual(True);
+    Exit;
+  end;
+
+  { Retrocompatibilidade: se Whisper ainda não estiver configurado, mantém
+    o servidor TCP antigo disponível. }
+  FUsingNativeVoice := False;
   if not ValidateConnection(Host, Port, ErrorText) then
   begin
+    if NativeReason <> '' then
+      ErrorText := NativeReason + LineEnding + LineEnding +
+        'Fallback TCP: ' + ErrorText;
     ShowMessage(ErrorText);
     SetConnectedVisual(False);
     Exit;
@@ -148,15 +204,13 @@ begin
 
   try
     LTCPComponent1.Connect(Host, Port);
-    lastfrase := '';
-    FLastTranscript := '';
     SetConnectedVisual(True);
   except
     on E: Exception do
     begin
       SetConnectedVisual(False);
-      ShowMessage('Não foi possível conectar ao reconhecimento de voz: ' +
-        E.Message);
+      ShowMessage('Reconhecimento local indisponível: ' + NativeReason +
+        LineEnding + 'Fallback TCP falhou: ' + E.Message);
     end;
   end;
 end;
@@ -164,8 +218,21 @@ end;
 procedure TfrmToolsOuvir.Disconectar();
 begin
   try
-    LTCPComponent1.Disconnect(True);
+    if FUsingNativeVoice then
+    begin
+      if (FVoiceService <> nil) and FVoiceService.Recognizer.Busy then
+      begin
+        if not FVoiceService.StopListening then
+          ShowMessage('Não foi possível concluir o reconhecimento: ' +
+            FVoiceService.LastError)
+        else
+          ProcessTranscript(FVoiceService.LastText);
+      end;
+    end
+    else
+      LTCPComponent1.Disconnect(True);
   finally
+    FUsingNativeVoice := False;
     SetConnectedVisual(False);
   end;
 end;
