@@ -32,7 +32,7 @@ type
 implementation
 
 uses
-  mnote_pascal_symbol_parser;
+  mnote_pascal_symbol_parser, mnote_pascal_semantic_resolver;
 
 constructor TMNoteDocumentCompletionProvider.Create;
 begin
@@ -90,10 +90,22 @@ procedure TMNoteDocumentCompletionProvider.Collect(
 var
   I: Integer;
   CurrentHash: QWord;
+  SemanticItems: TMNoteCompletionItems;
 begin
   CurrentHash := BufferHash(AContext.DocumentText);
   if (CurrentHash <> FHash) or (FFileName <> AContext.FileName) then
     Rebuild(AContext);
+
+  SemanticItems := TMNoteCompletionItems.Create;
+  try
+    if TMNotePascalSemanticResolver.CollectQualifiedMembers(AContext,
+      SemanticItems) then
+      for I := 0 to SemanticItems.Count - 1 do
+        AItems.Add(SemanticItems[I].Clone);
+  finally
+    SemanticItems.Free;
+  end;
+
   for I := 0 to FCachedItems.Count - 1 do
     AItems.Add(FCachedItems[I].Clone);
 end;
