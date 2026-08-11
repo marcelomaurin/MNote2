@@ -30,6 +30,8 @@ type
     FLastError: string;
     FLastOutput: string;
     procedure RegisterDeveloperActions;
+    procedure ConfigureDeveloperPrompts;
+    function GetLastPreparedPlan: string;
   public
     constructor Create(AOwner: TComponent; AChatGPT: TCHATGPT);
     destructor Destroy; override;
@@ -48,6 +50,7 @@ type
     property ReplaceAction: TAISourceReplaceAction read FReplaceAction;
     property BuildAction: TAIProjectBuildAction read FBuildAction;
     property TestAction: TAITrustedProjectTestAction read FTestAction;
+    property LastPreparedPlan: string read GetLastPreparedPlan;
     property LastError: string read FLastError;
     property LastOutput: string read FLastOutput;
   end;
@@ -84,8 +87,25 @@ begin
   FReplaceAction.MemoryMap := FMemoryMap;
   FBuildAction.MemoryMap := FMemoryMap;
   FTestAction.MemoryMap := FMemoryMap;
+  ConfigureDeveloperPrompts;
   RegisterDeveloperActions;
   SetChatGPT(AChatGPT);
+end;
+
+procedure TMNoteChatGPTAgentService.ConfigureDeveloperPrompts;
+const
+  DeveloperActions =
+    'Ações de desenvolvimento disponíveis:' + LineEnding +
+    '- read_source: parameters {file}' + LineEnding +
+    '- replace_source: parameters {file, old_text, new_text}' + LineEnding +
+    '- build_project: parameters {project opcional}' + LineEnding +
+    '- run_tests: parameters {arguments opcional}' + LineEnding +
+    'Use somente caminhos relativos ao workspace. Para alteração de fonte, leia o arquivo antes, ' +
+    'use um old_text exato e pequeno o bastante para ser único. Depois de alterar, faça build e testes quando configurados.';
+begin
+  FDecision.SystemPrompt := DeveloperActions;
+  FActionBuilder.SystemPrompt := DeveloperActions + LineEnding +
+    'Retorne as ações usando exatamente os nomes acima e objetos parameters compatíveis.';
 end;
 
 procedure TMNoteChatGPTAgentService.RegisterDeveloperActions;
@@ -94,6 +114,12 @@ begin
   FExecutor.RegisterAction(FReplaceAction);
   FExecutor.RegisterAction(FBuildAction);
   FExecutor.RegisterAction(FTestAction);
+end;
+
+function TMNoteChatGPTAgentService.GetLastPreparedPlan: string;
+begin
+  Result := Trim(FActionBuilder.LastRecoveredOutput);
+  if Result = '' then Result := Trim(FActionBuilder.LastRawOutput);
 end;
 
 destructor TMNoteChatGPTAgentService.Destroy;
