@@ -71,11 +71,14 @@ var
 begin
   Result := '';
   Root := IncludeTrailingPathDelimiter(ARoot);
+  if FileExists(Root + 'MNote2.lpi') then
+    Exit('MNote2.lpi');
   if FindFirst(Root + '*.lpi', faAnyFile, SR) <> 0 then Exit;
   try
     repeat
-      if (SR.Attr and faDirectory) = 0 then
-        Exit(SR.Name);
+      if (SR.Attr and faDirectory) <> 0 then Continue;
+      if (Result = '') or (CompareText(SR.Name, Result) < 0) then
+        Result := SR.Name;
     until FindNext(SR) <> 0;
   finally
     FindClose(SR);
