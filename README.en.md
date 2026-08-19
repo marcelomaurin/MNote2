@@ -2,7 +2,7 @@
 
 MNote2 is a cross-platform text and code editor built with Lazarus/Free Pascal. It combines tabbed editing, script execution, database tooling, AI integration, document extraction, and auxiliary voice tools.
 
-Current source version: **2.64**.
+Current source version: **2.68**.
 
 ## Screenshots
 

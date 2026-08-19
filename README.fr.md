@@ -2,7 +2,7 @@
 
 MNote2 est un éditeur de texte et de code multiplateforme développé avec Lazarus/Free Pascal. L'application combine l'édition par onglets, l'exécution de scripts, les outils de base de données, l'intégration IA, l'extraction de documents et des outils vocaux auxiliaires.
 
-Version actuelle du code source : **2.64**.
+Version actuelle du code source : **2.68**.
 
 ## Captures
 
