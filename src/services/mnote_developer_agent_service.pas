@@ -161,16 +161,20 @@ begin
     Exit(False);
   end;
   FAgent.Executor.ForcarSimulacaoGlobal := True;
-  Result := FAgent.Run(AInstruction);
-  if not Result then
-  begin
-    FLastError := FAgent.LastError;
-    Exit;
+  try
+    Result := FAgent.Run(AInstruction);
+    if not Result then
+    begin
+      FLastError := FAgent.LastError;
+      Exit;
+    end;
+    FLastPlan := FAgent.LastPreparedPlan;
+    Result := Trim(FLastPlan) <> '';
+    if not Result then
+      FLastError := 'A IA não produziu um plano de ações executável.';
+  finally
+    FAgent.Executor.ForcarSimulacaoGlobal := False;
   end;
-  FLastPlan := FAgent.LastPreparedPlan;
-  Result := Trim(FLastPlan) <> '';
-  if not Result then
-    FLastError := 'A IA não produziu um plano de ações executável.';
 end;
 
 function TMNoteDeveloperAgentService.ExecutePreparedPlan: Boolean;
