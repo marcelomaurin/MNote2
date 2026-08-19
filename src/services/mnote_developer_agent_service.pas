@@ -186,8 +186,12 @@ begin
     Exit(False);
   end;
   FAgent.Executor.ForcarSimulacaoGlobal := False;
-  Result := FAgent.ExecutePreparedPlan(FLastPlan);
-  if not Result then FLastError := FAgent.LastError;
+  try
+    Result := FAgent.ExecutePreparedPlan(FLastPlan);
+    if not Result then FLastError := FAgent.LastError;
+  finally
+    FLastPlan := '';
+  end;
 end;
 
 procedure InitializeMNoteDeveloperAgent;
