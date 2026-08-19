@@ -19,6 +19,10 @@ jobs:
         shell: bash
         run: python3 scripts/check_lazarus_project.py
 
+      - name: Validate version sync
+        shell: bash
+        run: python3 scripts/check_version_sync.py
+
       - name: Verify CHATGPT package boundary
         shell: bash
         run: |
