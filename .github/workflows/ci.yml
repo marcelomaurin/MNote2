@@ -104,3 +104,21 @@ jobs:
           if ($null -eq $binary) { throw 'ci_core_runner.exe não foi gerado.' }
           & $binary.FullName
           exit $LASTEXITCODE
+
+  main-project-build:
+    name: Main project build (informativo)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Lazarus and Free Pascal
+        uses: gcarreno/setup-lazarus@v3.4.1
+        with:
+          lazarus-version: "4.4"
+          with-cache: false
+
+      - name: Build src/MNote2.lpi
+        shell: bash
+        run: lazbuild -B src/MNote2.lpi
