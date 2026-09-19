@@ -4,12 +4,11 @@ Este backlog deriva de `docs/functional_audit.md`.
 
 ## P0 — recursos visíveis sem implementação
 
-### F-001 — Select All
+### F-001 — Select All ✅
 - **Arquivo:** `src/main.pas`
 - **Handler:** `TfrmMNote.miSelectAllClick`
-- **Problema:** menu visível; handler vazio.
-- **Aceite:** selecionar todo o conteúdo do editor ativo; não gerar exceção sem aba aberta.
-- **Teste:** abrir documento, executar comando, validar `SelText = Text`.
+- **Status:** implementado em `src/main.pas`.
+- **Aceite atendido:** seleciona todo o conteúdo do editor ativo e trata ausência de aba/editor.
 
 ### F-002 — Select Command
 - **Arquivo:** `src/main.pas`
@@ -24,17 +23,16 @@ Este backlog deriva de `docs/functional_audit.md`.
 - **Problema:** menu visível; handler vazio.
 - **Aceite:** selecionar bloco sintático quando reconhecido; fallback seguro para bloco de linhas.
 
-### F-004 — LogView
+### F-004 — LogView ✅
 - **Arquivo:** `src/main.pas`
 - **Handler:** `TfrmMNote.MenuItem16Click`
-- **Problema:** Tools > LogView não faz nada.
-- **Aceite:** abrir/focar o painel moderno Output/Log; remover tela antiga se redundante.
+- **Status:** implementado; o menu delega para `CommandShowOutput` e usa o painel moderno Output.
 
-### F-005 — Load SQL no MQuery2
+### F-005 — Load SQL no MQuery2 ✅
 - **Arquivo:** `src/mquery2/mquery2.pas`
 - **Handler:** `Tfrmmquery2.MenuItem6Click`
-- **Problema:** File > Load SQL não faz nada.
-- **Aceite:** abrir diálogo, carregar arquivo SQL no editor da conexão ativa, preservar encoding e reportar erro.
+- **Status:** implementado.
+- **Aceite atendido:** abre diálogo e carrega no editor ativo de MySQL, PostgreSQL, SQLite, SQL Server ou Oracle; erros são reportados ao usuário.
 
 ### F-006 — Migration to PostgreSQL
 - **Arquivo:** `src/mquery2/mquery2.pas`
