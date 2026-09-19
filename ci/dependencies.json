@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "chatgpt": {
+    "repository": "https://github.com/marcelomaurin/CHATGPT.git",
+    "commit": "e593fb758801cecb087e55e3222fc513cc35fee2",
+    "packages": [
+      "openai_core",
+      "openai_ml",
+      "openai_input",
+      "openai_output",
+      "openai_graph",
+      "openai_agent",
+      "openai_project_core",
+      "openai_files",
+      "openai_python",
+      "openai_rag",
+      "openai_aidbase"
+    ]
+  },
+  "opm": [
+    "zeosdbo",
+    "TSalesSwitch",
+    "ATSynEdit",
+    "Indy10",
+    "TIPEdit",
+    "lnet",
+    "gifanim",
+    "MultiLog",
+    "Rx",
+    "PythonForLazarus"
+  ],
+  "notes": [
+    "The CHATGPT commit is pinned so CI does not silently consume a newer component revision.",
+    "OPM package names are the source-package families used by the Lazarus project; Lazarus package names inside them are validated separately."
+  ]
+}
