@@ -33,20 +33,20 @@ O job `main-project-build` continua com `continue-on-error: true` porque a IDE
 completa ainda depende de pacotes externos que não são instalados de forma
 reproduzível na imagem limpa do CI.
 
-Da mesma forma, `tests/test_runner.lpr` possui cobertura maior, mas o runner
-Windows legado em `tests/run_tests.ps1` ainda contém caminhos absolutos para
-instalações locais de CHATGPT, Zeos e componentes Lazarus. Enquanto esses
-caminhos não forem substituídos por descoberta/configuração reproduzível, a
-compilação completa do runner não deve ser apresentada como um gate portátil.
+`tests/test_runner.lpr` possui cobertura maior. O runner Windows em
+`tests/run_tests.ps1` foi refatorado para remover caminhos pessoais absolutos e
+agora aceita `MNOTE_CHATGPT_ROOT`, `MNOTE_ZEOS_ROOT` e
+`MNOTE_EXTRA_UNIT_PATHS`. Mesmo assim, a imagem limpa do CI ainda não instala
+todos esses pacotes externos; por isso a compilação completa do runner ainda
+não é um gate portátil.
 
 ## Meta de endurecimento
 
 A sequência para tornar todo o CI obrigatório é:
 
-1. remover caminhos absolutos de `tests/run_tests.ps1`;
-2. declarar e instalar as dependências externas de forma reproduzível;
-3. compilar e executar o runner estendido no GitHub Actions;
-4. retirar `continue-on-error` do build principal.
+1. declarar e instalar as dependências externas de forma reproduzível;
+2. compilar e executar o runner estendido no GitHub Actions;
+3. retirar `continue-on-error` do build principal.
 
 Até lá, o núcleo portátil e os contratos estruturais são gates obrigatórios e o
 build integral permanece um diagnóstico explícito.
