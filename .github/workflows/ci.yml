@@ -27,6 +27,11 @@ jobs:
         shell: bash
         run: python3 scripts/check_extended_test_contract.py
 
+      - name: Reject personal absolute paths in test runner
+        shell: bash
+        run: |
+          ! grep -Eiq '([A-Z]:\\\\Users\\\\|[A-Z]:\\\\projetos\\\\)' tests/run_tests.ps1
+
       - name: Verify CHATGPT package boundary
         shell: bash
         run: |
