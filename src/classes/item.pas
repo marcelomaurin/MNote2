@@ -149,6 +149,7 @@ type
     function CompletionCaption(AItem: TMNoteCompletionItem): string;
     function CurrentTextBeforeCaret: string;
     function CurrentLeafToken: string;
+    function CurrentLanguageProfile: TMNoteLanguageProfile;
     procedure MessageHint(sender: TComponent; info: string);
   public
     Nome: String;
@@ -173,6 +174,7 @@ type
     procedure SetResultado(value: TCustomMemo);
     procedure Run();
     procedure HandleEditorKeyPress(AKey: Char);
+    procedure ApplyLanguageProfile(const AProfileID: string);
     function FindDefinitionAtCaret(out AFileName: string;
       out ALine: Integer): Boolean;
 
@@ -238,7 +240,7 @@ var
 begin
   FSynCompletion.ItemList.Clear;
   if (Fsyn = nil) or (FCompletionAggregator = nil) then Exit;
-  Profile := MNoteLanguages.FindByExtension(FileExt);
+  Profile := CurrentLanguageProfile;
   if Profile = nil then Exit;
   FullName := FileName;
   if DirName <> '' then
@@ -289,7 +291,7 @@ var
 begin
   FreeAndNil(FCompletionAggregator);
   FCompletionAggregator := TMNoteCompletionAggregator.Create;
-  Profile := MNoteLanguages.FindByExtension(FileExt);
+  Profile := CurrentLanguageProfile;
   if Profile = nil then Exit;
   Provider := TMNoteStaticCompletionProvider.Create(Profile.ID, 'linguagem',
     FPalavrasReservadas);
@@ -339,7 +341,7 @@ var
   SeparatorPosition: Integer;
 begin
   Result := '';
-  Profile := MNoteLanguages.FindByExtension(FileExt);
+  Profile := CurrentLanguageProfile;
   if Profile = nil then Exit;
   Token := TMNoteTokenParser.CurrentToken(CurrentTextBeforeCaret,
     Profile.TokenCharacters);
@@ -465,13 +467,55 @@ begin
   {$ENDIF}
 end;
 
+function TItem.CurrentLanguageProfile: TMNoteLanguageProfile;
+begin
+  Result := nil;
+  if Trim(FLanguageProfileID) <> '' then
+    Result := MNoteLanguages.FindByID(FLanguageProfileID);
+  if Result = nil then
+    Result := MNoteLanguages.FindByExtension(FileExt);
+end;
+
+procedure TItem.ApplyLanguageProfile(const AProfileID: string);
+var
+  Profile: TMNoteLanguageProfile;
+  EditorOptions: TSynEditorOptions;
+begin
+  if Fsyn = nil then Exit;
+  Profile := MNoteLanguages.FindByID(AProfileID);
+  if Profile = nil then
+    raise Exception.CreateFmt('Linguagem não registrada: %s', [AProfileID]);
+
+  Fsyn.Highlighter := nil;
+  FreeAndNil(FHighlighter);
+  FHighlighter := TMNoteHighlighterFactory.CreateHighlighter(Self, Profile);
+  Fsyn.Highlighter := FHighlighter;
+  FLanguageProfileID := Profile.ID;
+  ItemType := TTypeItem(Profile.LegacyType);
+  Fsyn.TabWidth := Profile.TabWidth;
+
+  EditorOptions := Fsyn.Options;
+  if Profile.AutoIndent then
+    Include(EditorOptions, eoAutoIndent)
+  else
+    Exclude(EditorOptions, eoAutoIndent);
+  if Profile.UseTabs then
+    Exclude(EditorOptions, eoTabsToSpaces)
+  else
+    Include(EditorOptions, eoTabsToSpaces);
+  Fsyn.Options := EditorOptions;
+
+  ConfigureCompletionProviders;
+end;
+
 procedure TItem.CheckTipoArquivo();
 var
   Profile: TMNoteLanguageProfile;
   EditorOptions: TSynEditorOptions;
 begin
   if Fsyn = nil then Exit;
-  Profile := MNoteLanguages.FindByExtension(FileExt);
+  FLanguageProfileID := '';
+  Profile := CurrentLanguageProfile;
   if Profile = nil then
   begin
     Fsyn.Highlighter := nil;
@@ -717,7 +761,7 @@ begin
   Ftimer.Enabled := False;
   if (Fsyn = nil) or (not Fsyn.Focused) or FSynCompletion.IsActive then Exit;
   if (FSetMain <> nil) and (not FSetMain.CompletionAutoTrigger) then Exit;
-  Profile := MNoteLanguages.FindByExtension(FileExt);
+  Profile := CurrentLanguageProfile;
   if Profile = nil then Exit;
   TextBeforeCaret := CurrentTextBeforeCaret;
   Token := CurrentLeafToken;
