@@ -3096,7 +3096,7 @@ begin
           begin
              if ShowConfirm('Associa extensão '+ext + ' a aplicação!') then
              begin
-                  if  RegistrarExtensao(  ExtractFileExt(application.ExeName), 'Aplicativo de edição de texto', ExtractFileName(application.ExeName), Application.ExeName) then
+                  if RegistrarExtensao(ext, 'Arquivo ' + UpperCase(ext) + ' do MNote2', ExtractFileName(Application.ExeName), Application.ExeName) then
                   begin
                   end
                   else
