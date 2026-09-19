@@ -23,6 +23,10 @@ jobs:
         shell: bash
         run: python3 scripts/check_version_sync.py
 
+      - name: Validate dependency manifest
+        shell: bash
+        run: python3 scripts/check_dependency_manifest.py
+
       - name: Validate extended test contract
         shell: bash
         run: python3 scripts/check_extended_test_contract.py
