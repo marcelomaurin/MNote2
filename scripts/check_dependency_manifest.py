@@ -44,4 +44,19 @@ missing = sorted(required.difference(packages))
 if missing:
     fail("pacotes essenciais ausentes: " + ", ".join(missing))
 
-print(f"OK: dependências fixadas; CHATGPT={commit}, {len(packages)} pacotes declarados.")
+lpi_path = root / "src" / "MNote2.lpi"
+if not lpi_path.is_file():
+    fail("src/MNote2.lpi ausente")
+
+lpi = lpi_path.read_text(encoding="utf-8", errors="strict")
+declared_packages = set(re.findall(r'<PackageName Value="([^"]+)"', lpi))
+
+chatgpt_declared = {p for p in declared_packages if p.startswith("openai_")}
+missing_chatgpt = sorted(chatgpt_declared.difference(packages))
+if missing_chatgpt:
+    fail("pacotes openai_* do MNote2 ausentes do manifesto: " + ", ".join(missing_chatgpt))
+
+print(
+    f"OK: dependências fixadas; CHATGPT={commit}, "
+    f"{len(packages)} pacotes CHATGPT e {len(declared_packages)} pacotes Lazarus declarados."
+)
