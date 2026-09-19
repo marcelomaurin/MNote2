@@ -23,6 +23,10 @@ jobs:
         shell: bash
         run: python3 scripts/check_version_sync.py
 
+      - name: Validate extended test contract
+        shell: bash
+        run: python3 scripts/check_extended_test_contract.py
+
       - name: Verify CHATGPT package boundary
         shell: bash
         run: |
