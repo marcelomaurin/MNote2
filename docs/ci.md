@@ -68,3 +68,9 @@ ser removido e o build integral passa a ser gate obrigatório.
 Para atualizar o CHATGPT usado pelo CI, altere conscientemente o SHA em
 `ci/dependencies.json` e deixe o gate `check_dependency_manifest.py` validar
 o novo manifesto.
+
+O runner estendido também possui agora um projeto Lazarus próprio em
+`tests/test_runner.lpi`. Isso evita compilar a suíte com uma longa lista manual
+de `-Fu`: o `lazbuild` passa a usar os pacotes registrados pelo bootstrap.
+O job `chatgpt-dependencies` compila e executa esse runner depois de preparar
+o checkout fixado do CHATGPT.
