@@ -167,7 +167,7 @@ jobs:
         uses: gcarreno/setup-lazarus@v3.4.1
         with:
           lazarus-version: "4.4"
-          include-packages: "ZeosDBO,TSalesSwitch,ATFlatControls,BGRABitmap,ATSynEdit,CEF4Delphi,DCPcrypt,EControl,EncConv,Indy10,ExamplePackage,Industrialstuff,MultiLog,Rx,poweredby,SynFacilSyn,TIPEdit,lnet,gifanim,PythonForLazarus"
+          include-packages: "ZeosDBO,TSalesSwitch,ATFlatControls,BGRABitmap,ATSynEdit,CEF4Delphi,DCPcrypt,EControl,EncConv,Indy10,ExamplePackage,Industrialstuff,MultiLog,Rx,poweredby,ExtraSyn,SynFacilSyn,TIPEdit,lnet,gifanim,PythonForLazarus"
           with-cache: false
 
       - name: Bootstrap pinned CHATGPT packages
