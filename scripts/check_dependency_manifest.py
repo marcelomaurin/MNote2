@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import json
+import re
+import sys
+
+root = Path(__file__).resolve().parents[1]
+manifest_path = root / "ci" / "dependencies.json"
+
+def fail(msg):
+    print("ERROR:", msg, file=sys.stderr)
+    raise SystemExit(1)
+
+if not manifest_path.is_file():
+    fail("ci/dependencies.json ausente")
+
+data = json.loads(manifest_path.read_text(encoding="utf-8"))
+if data.get("schema") != 1:
+    fail("schema de dependências não suportado")
+
+chatgpt = data.get("chatgpt") or {}
+repo = chatgpt.get("repository", "")
+commit = chatgpt.get("commit", "")
+packages = chatgpt.get("packages") or []
+
+if repo != "https://github.com/marcelomaurin/CHATGPT.git":
+    fail("repositório CHATGPT inesperado")
+if not re.fullmatch(r"[0-9a-f]{40}", commit):
+    fail("CHATGPT deve estar fixado por SHA completo de 40 caracteres")
+if not packages:
+    fail("lista de pacotes CHATGPT vazia")
+if len(packages) != len(set(packages)):
+    fail("pacotes CHATGPT duplicados")
+
+required = {
+    "openai_core",
+    "openai_agent",
+    "openai_graph",
+    "openai_project_core",
+    "openai_files",
+    "openai_output",
+}
+missing = sorted(required.difference(packages))
+if missing:
+    fail("pacotes essenciais ausentes: " + ", ".join(missing))
+
+print(f"OK: dependências fixadas; CHATGPT={commit}, {len(packages)} pacotes declarados.")
