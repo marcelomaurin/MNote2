@@ -2,7 +2,7 @@
   "schema": 1,
   "chatgpt": {
     "repository": "https://github.com/marcelomaurin/CHATGPT.git",
-    "commit": "68402ccd68a6a33ff9723197f08d5c32911dfc46",
+    "commit": "777e7ab3dcb85b915e561f55a8813105052b4928",
     "packages": [
       "openai_core",
       "openai_ml",
@@ -31,8 +31,6 @@
     "MultiLog",
     "Rx",
     "poweredby",
-    "ExtraSyn",
-    "SynFacilSyn",
     "TIPEdit",
     "lnet",
     "gifanim",
@@ -48,6 +46,8 @@
   },
   "manual": [
     "BGRABitmap",
-    "ATSynEdit"
+    "ATSynEdit",
+    "ExtraSyn",
+    "SynFacilSyn"
   ]
 }
