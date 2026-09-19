@@ -137,6 +137,20 @@ jobs:
         shell: bash
         run: bash ci/bootstrap_chatgpt.sh
 
+      - name: Compile extended test runner
+        shell: bash
+        run: lazbuild -B tests/test_runner.lpi
+
+      - name: Run extended test runner
+        shell: bash
+        run: |
+          binary="$(find tests/bin -type f -name test_runner 2>/dev/null | head -n 1)"
+          if [ -z "$binary" ]; then
+            echo "test_runner não foi gerado." >&2
+            exit 1
+          fi
+          "$binary"
+
   main-project-build:
     name: Main project build (informativo)
     runs-on: ubuntu-latest
