@@ -42,16 +42,16 @@ Este backlog deriva de `docs/functional_audit.md`.
 - **Segurança:** nunca executar DDL/DML destrutivo sem confirmação.
 - **Observação:** se a funcionalidade não fizer mais parte do produto, remover o botão em vez de deixá-lo inerte.
 
-### F-007 — seleção manual de linguagem
+### F-007 — seleção manual de linguagem ✅
 - **Arquivos:** `src/main.pas`, `src/main.lfm`, `src/languages/*`
-- **Problema:** menus antigos Pascal/Python/C/SQL/PHP/Java não usam de forma uniforme a infraestrutura nova.
-- **Aceite:** todos os itens chamam um único caminho de aplicação de linguagem; atualizar highlighter, tipo, autocomplete e UI.
+- **Status:** implementado.
+- **Aceite atendido:** os menus None/Pascal/Python/C++/SQL/PHP/Java usam `TItem.ApplyLanguageProfile`, atualizando highlighter, tipo, opções do editor e completion providers.
 
-### F-008 — associação de extensão/tipo
+### F-008 — associação de extensão/tipo ✅
 - **Arquivo:** `src/main.pas`
 - **Handler:** `mnAssociarClick`
-- **Problema:** handler vazio apesar da existência de `AssociarExtensao`.
-- **Aceite:** associação funcional, persistida e refletida no documento ativo.
+- **Status:** implementado para Windows.
+- **Aceite atendido:** usa o documento ativo, exige arquivo salvo e registra a extensão real do documento em vez da extensão do executável.
 
 ### F-009 — idioma da interface
 - **Arquivos:** `src/main.pas`, `src/main.lfm`
