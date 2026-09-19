@@ -39,12 +39,12 @@ Prioridade imediata:
 | --- | --- | --- | --- |
 | Novo/Abrir/Salvar/Salvar todos/Fechar | OK | comandos e handlers ativos em `main.pas` | manter testes |
 | Undo/Redo | OK | SynEdit ligado aos handlers | manter |
-| Select All | NÃO IMPLEMENTADO | `miSelectAllClick` vazio | implementar com editor ativo |
+| Select All | OK | `miSelectAllClick` seleciona o editor ativo e trata ausência de documento | manter teste/regressão |
 | Select Command | NÃO IMPLEMENTADO | `miSelectCmdClick` vazio | definir semântica e implementar |
 | Select Block | NÃO IMPLEMENTADO | `miSelectBlockClick` vazio | implementar bloco lógico/seleção |
 | Find | OK | diálogo e serviço de busca existentes | manter |
 | Replace | PARCIAL | fluxo existe, mas há handlers auxiliares vazios | validar seleção e replace em projeto |
-| LogView | NÃO IMPLEMENTADO | menu visível chama `MenuItem16Click` vazio | ligar ao painel Output/Log moderno |
+| LogView | OK | `MenuItem16Click` delega para `CommandShowOutput` | manter |
 | Hide Chat | PARCIAL | `btHideChange` não altera visibilidade | ligar ao painel ou remover controle |
 | Associação de extensão/tipo | PARCIAL | `mnAssociarClick` vazio; existe `AssociarExtensao` | ligar UI ao serviço existente |
 | Troca manual de linguagem | PARCIAL | itens de Type existem; handlers antigos incompletos | usar registro de linguagens moderno |
@@ -172,7 +172,7 @@ de recursos visíveis não concluídos.
 | SQLite | OK | conexão e execução |
 | Executar SQL | OK | fluxos por banco |
 | Save SQL | OK | `MenuItem5Click` salva arquivo |
-| Load SQL | NÃO IMPLEMENTADO | `MenuItem6Click` vazio |
+| Load SQL | OK | `MenuItem6Click` carrega no editor SQL da conexão ativa |
 | Migration to PostgreSQL | NÃO IMPLEMENTADO | botão visível `Button3` com handler vazio |
 | Import CSV | OK/PARCIAL | implementação presente; validar casos de erro |
 | Dicionário de dados | OK | integração nova disponível |
