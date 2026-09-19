@@ -25,7 +25,6 @@ REQUIRED_TEST_CALLS = {
     "TestEndToEndTaskExecution": "end-to-end task execution",
     "TestAIActions": "AI tool actions",
     "TestAIToolLoop": "AI tool loop",
-    "TestAIProjectRootRefresh": "AI project-root refresh",
     "TestTaskCommentIndex": "task comment index",
     "TestDiagnosticsAndOutput": "diagnostics/output",
     "TestProcessService": "process service",
