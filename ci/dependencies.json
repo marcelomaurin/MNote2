@@ -2,7 +2,7 @@
   "schema": 1,
   "chatgpt": {
     "repository": "https://github.com/marcelomaurin/CHATGPT.git",
-    "commit": "e593fb758801cecb087e55e3222fc513cc35fee2",
+    "commit": "68402ccd68a6a33ff9723197f08d5c32911dfc46",
     "packages": [
       "openai_core",
       "openai_ml",
@@ -21,8 +21,6 @@
     "ZeosDBO",
     "TSalesSwitch",
     "ATFlatControls",
-    "BGRABitmap",
-    "ATSynEdit",
     "CEF4Delphi",
     "DCPcrypt",
     "EControl",
@@ -43,5 +41,13 @@
   "notes": [
     "The CHATGPT commit is pinned so CI does not silently consume a newer component revision.",
     "OPM package names are the source-package families used by the Lazarus project; Lazarus package names inside them are validated separately."
+  ],
+  "bgrabitmap": {
+    "repository": "https://github.com/bgrabitmap/bgrabitmap.git",
+    "commit": "44a65262e214feb89605d4bb555771f1a3f2df29"
+  },
+  "manual": [
+    "BGRABitmap",
+    "ATSynEdit"
   ]
 }
