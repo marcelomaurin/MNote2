@@ -22,11 +22,18 @@ chatgpt = data.get("chatgpt") or {}
 repo = chatgpt.get("repository", "")
 commit = chatgpt.get("commit", "")
 packages = chatgpt.get("packages") or []
+bgrabitmap = data.get("bgrabitmap") or {}
+bgra_repo = bgrabitmap.get("repository", "")
+bgra_commit = bgrabitmap.get("commit", "")
 
 if repo != "https://github.com/marcelomaurin/CHATGPT.git":
     fail("repositório CHATGPT inesperado")
 if not re.fullmatch(r"[0-9a-f]{40}", commit):
     fail("CHATGPT deve estar fixado por SHA completo de 40 caracteres")
+if bgra_repo != "https://github.com/bgrabitmap/bgrabitmap.git":
+    fail("repositório BGRABitmap inesperado")
+if not re.fullmatch(r"[0-9a-f]{40}", bgra_commit):
+    fail("BGRABitmap deve estar fixado por SHA completo de 40 caracteres")
 if not packages:
     fail("lista de pacotes CHATGPT vazia")
 if len(packages) != len(set(packages)):
