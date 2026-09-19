@@ -114,6 +114,25 @@ jobs:
           & $binary.FullName
           exit $LASTEXITCODE
 
+  chatgpt-dependencies:
+    name: CHATGPT dependency bootstrap (diagnostico)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout MNote2
+        uses: actions/checkout@v4
+
+      - name: Install Lazarus, Free Pascal and Zeos
+        uses: gcarreno/setup-lazarus@v3.4.1
+        with:
+          lazarus-version: "4.4"
+          include-packages: "zeosdbo"
+          with-cache: false
+
+      - name: Bootstrap pinned CHATGPT packages
+        shell: bash
+        run: bash ci/bootstrap_chatgpt.sh
+
   main-project-build:
     name: Main project build (informativo)
     runs-on: ubuntu-latest
