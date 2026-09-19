@@ -16,7 +16,7 @@ localizáveis. O catálogo entregue ao modelo é gerado por
 | `BuildDiagnostics` | Integrado; consulta o último build sem iniciar processo | `src/services/mnote_diagnostics.pas`, `src/ui/mnote_problems_panel.pas` e `src/ai/mnote_ai_actions.pas` | `TestAIActions`: ausência de build, snapshot e contador de processos |
 | `ListProjectFiles` | Integrado | `src/ai/mnote_ai_actions.pas` (`ExecuteListProjectFiles`) | `TestAIActions`: listagem limitada à fixture |
 | `GitLog` e `GitDiff` | Integrado em modo leitura | `src/ai/mnote_ai_actions.pas` | `TestAIActions`: rejeição de argumento Git injetável |
-| `DBDictionary` | Integrado quando o dicionário é fornecido pela aplicação | `src/ai/mnote_ai_actions.pas` (`ExecuteDictionary`) e `src/services/mnote_ai_service.pas` (`SetProjectRoot`) | `TestAIActions` e `TestAIProjectRootRefresh` |
+| `DBDictionary` | Integrado quando o dicionário é fornecido pela aplicação | `src/ai/mnote_ai_actions.pas` (`ExecuteDictionary`) e `src/services/mnote_ai_service.pas` (`SetProjectRoot`) | `TestAIActions` |
 | `Compile` | Integrado com confirmação; falha retorna diagnóstico e `ok:false` | `src/ai/mnote_ai_actions.pas` (`ExecuteCompile`) | `TestAIActions`: recusa sem confirmação e erro real |
 | Ciclo de ferramentas | Integrado; dossiê acumulado, catálogo reinjetado, correção única de contrato e limites de rodada/chamadas/orçamento | `src/services/mnote_ai_service.pas` (`ExecuteWithTools`) e `src/ai/mnote_ai_profile.pas` | `TestAIToolLoop` sem acesso à rede |
 | Mudanças de fonte | Integrado por fluxo separado, revisável | `src/sourcechange/*` | `TestSourceChanges` e `TestEndToEndTaskExecution` |
