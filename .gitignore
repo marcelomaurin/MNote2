@@ -106,3 +106,6 @@ tests/ci-bin/
 runtime-local/
 dist/
 release/
+
+# Reproducible CI dependency checkout
+.ci-deps/
