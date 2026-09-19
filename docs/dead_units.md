@@ -6,7 +6,7 @@ revalidado em 2026-09-19. Criterio: a unit nao aparece em nenhuma clausula
 
 | Unit | Situacao verificada | Decisao |
 |---|---|---|
-| `src/ui/mnote_ai_profiles_form.pas` | Zero referencias. Duplica `TfrmIAConfig`, mas ainda possui `TestClick`, ausente na versao viva. | manter temporariamente; portar `TestClick` antes de remover |
+| `src/ui/mnote_ai_profiles_form.pas` | Zero referencias. `TfrmIAConfig` ja possui `TestClick` com validacao de aba e persistencia da configuracao. | removida em 2026-09-19 |
 | `src/classes/setmquery.pas` | Sem referencias ativas. | removida em 2026-09-19 |
 | `src/cfgdb.pas` + `src/cfgdb.lfm` | Nao havia `uses`; apenas registro explicito no `MNote2.lpi`. | removidos em 2026-09-19 e projeto Lazarus atualizado |
 | `src/imgjson/funcoes2.pas` | Zero referencias ativas. | removida em 2026-09-19 |
@@ -23,7 +23,6 @@ revalidado em 2026-09-19. Criterio: a unit nao aparece em nenhuma clausula
 
 ## Proximos candidatos
 
-- Portar o teste de conexao de `mnote_ai_profiles_form.pas` para
-  `TfrmIAConfig` e remover a tela duplicada.
+- Tela duplicada de perfis IA removida; manter apenas `TfrmIAConfig` como interface de configuracao.
 - Colocar `tests/test_runner.lpr` no CI para que o fluxo de execucao de tarefas
   deixe de depender de teste manual.
