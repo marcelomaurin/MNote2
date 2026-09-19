@@ -92,3 +92,17 @@ tests/ci-bin/
 
 # Public configuration template is intentional; private *.cfg files remain ignored.
 !mnote.example.cfg
+
+# Distribution artifacts: publish in GitHub Releases, not in source control
+*.deb
+*.rpm
+*.msi
+*.dmg
+*.AppImage
+*.zip
+*.7z
+
+# Local embedded runtimes and generated distribution trees
+runtime-local/
+dist/
+release/
