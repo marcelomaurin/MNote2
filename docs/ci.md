@@ -74,3 +74,19 @@ O runner estendido também possui agora um projeto Lazarus próprio em
 de `-Fu`: o `lazbuild` passa a usar os pacotes registrados pelo bootstrap.
 O job `chatgpt-dependencies` compila e executa esse runner depois de preparar
 o checkout fixado do CHATGPT.
+
+
+### Bootstrap gráfico do desktop
+
+O Online Package Manager do Lazarus pode enumerar os arquivos do pacote
+BGRABitmap numa ordem em que `BGLControls` é compilado antes de
+`BGRABitmapPack`. Para evitar depender dessa ordem interna, o CI usa
+`ci/bootstrap_desktop_graphics.sh`.
+
+Esse bootstrap fixa o repositório oficial `bgrabitmap/bgrabitmap` por SHA,
+registra e compila primeiro `BGRABitmapPack`, e só depois baixa e compila
+`atsynedit_package` e `atsynedit_ex_package`.
+
+O CHATGPT usado pelo CI também está fixado em um commit que inclui a correção
+Linux de `pacote/funcoes.pas`, evitando a geração de um bloco `uses ;`
+vazio fora de Windows/Darwin.
