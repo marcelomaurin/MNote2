@@ -7,6 +7,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   project-integrity:
     name: Lazarus project integrity
@@ -22,6 +26,19 @@ jobs:
       - name: Validate version sync
         shell: bash
         run: python3 scripts/check_version_sync.py
+
+      - name: Validate dependency manifest
+        shell: bash
+        run: python3 scripts/check_dependency_manifest.py
+
+      - name: Validate extended test contract
+        shell: bash
+        run: python3 scripts/check_extended_test_contract.py
+
+      - name: Reject personal absolute paths in test runner
+        shell: bash
+        run: |
+          ! grep -Eiq '([A-Z]:\\\\Users\\\\|[A-Z]:\\\\projetos\\\\)' tests/run_tests.ps1
 
       - name: Verify CHATGPT package boundary
         shell: bash
@@ -105,6 +122,39 @@ jobs:
           & $binary.FullName
           exit $LASTEXITCODE
 
+  chatgpt-dependencies:
+    name: CHATGPT dependency bootstrap (diagnostico)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout MNote2
+        uses: actions/checkout@v4
+
+      - name: Install Lazarus, Free Pascal and Zeos
+        uses: gcarreno/setup-lazarus@v3.4.1
+        with:
+          lazarus-version: "4.4"
+          include-packages: "ZeosDBO"
+          with-cache: false
+
+      - name: Bootstrap pinned CHATGPT packages
+        shell: bash
+        run: bash ci/bootstrap_chatgpt.sh
+
+      - name: Compile extended test runner
+        shell: bash
+        run: lazbuild -B tests/test_runner.lpi
+
+      - name: Run extended test runner
+        shell: bash
+        run: |
+          binary="$(find tests/bin -type f -name test_runner 2>/dev/null | head -n 1)"
+          if [ -z "$binary" ]; then
+            echo "test_runner não foi gerado." >&2
+            exit 1
+          fi
+          "$binary"
+
   main-project-build:
     name: Main project build (informativo)
     runs-on: ubuntu-latest
@@ -113,11 +163,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Lazarus and Free Pascal
+      - name: Install Lazarus, Free Pascal and desktop packages
         uses: gcarreno/setup-lazarus@v3.4.1
         with:
           lazarus-version: "4.4"
+          include-packages: "ZeosDBO,TSalesSwitch,ATFlatControls,CEF4Delphi,DCPcrypt,EControl,EncConv,Indy10,ExamplePackage,Industrialstuff,MultiLog,Rx,poweredby,TIPEdit,lnet,gifanim,PythonForLazarus"
           with-cache: false
+
+      - name: Bootstrap BGRABitmap and ATSynEdit
+        shell: bash
+        run: bash ci/bootstrap_desktop_graphics.sh
+
+      - name: Bootstrap pinned CHATGPT packages
+        shell: bash
+        run: bash ci/bootstrap_chatgpt.sh
 
       - name: Build src/MNote2.lpi
         shell: bash

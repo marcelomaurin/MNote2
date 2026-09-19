@@ -1,20 +1,28 @@
 # Units sem referencia
 
-Levantamento verificado no clone de 2026-08-19. Criterio: a unit nao aparece em
-nenhuma clausula `uses` de arquivo `.pas` ou `.lpr` ativo (fora de `backup/`).
+Levantamento original verificado no clone de 2026-08-19. O estado abaixo foi
+revalidado em 2026-09-19. Criterio: a unit nao aparece em nenhuma clausula
+`uses` de arquivo `.pas` ou `.lpr` ativo (fora de `backup/`).
 
-| Unit | Linhas | Situacao verificada | Decisao |
-|---|---|---|---|
-| `src/ui/mnote_ai_profiles_form.pas` | 214 | Zero referencias em todo o repositorio. Declara `TMNoteAIProfilesForm`, que duplica `TfrmIAConfig` de `src/ia_config.pas`. A versao morta tem `TestClick` (teste de conexao do perfil), ausente na versao viva. | pendente |
-| `src/classes/setmquery.pas` | 226 | So aparece dentro de `src/link12244.res`. | pendente |
-| `src/cfgdb.pas` | 180 | Listada em `src/MNote2.lpi`, portanto compila e entra no binario, mas nenhum `uses` a importa. | pendente |
-| `src/imgjson/funcoes2.pas` | 155 | Zero referencias. | pendente |
-| `src/project/mnote_task_execution_flow.pas` | 109 | Referenciada apenas por `tests/test_runner.lpr`, que nao e invocado por `.github/workflows/ci.yml`. | pendente |
+| Unit | Situacao verificada | Decisao |
+|---|---|---|
+| `src/ui/mnote_ai_profiles_form.pas` | Zero referencias. `TfrmIAConfig` ja possui `TestClick` com validacao de aba e persistencia da configuracao. | removida em 2026-09-19 |
+| `src/classes/setmquery.pas` | Sem referencias ativas. | removida em 2026-09-19 |
+| `src/cfgdb.pas` + `src/cfgdb.lfm` | Nao havia `uses`; apenas registro explicito no `MNote2.lpi`. | removidos em 2026-09-19 e projeto Lazarus atualizado |
+| `src/imgjson/funcoes2.pas` | Zero referencias ativas. | removida em 2026-09-19 |
+| `src/project/mnote_task_execution_flow.pas` | Referenciada por `tests/test_runner.lpr`; portanto possui cobertura funcional fora do CI principal. | manter; integrar `test_runner` ao CI antes de nova decisao |
 
-## Encaminhamento proposto
+## Regra para novas remocoes
 
-1. `mnote_ai_profiles_form.pas`: portar `TestClick` para `TfrmIAConfig` e entao remover a unit. Nao remover antes de portar.
-2. `mnote_task_execution_flow.pas`: decidir se `tests/test_runner.lpr` entra no CI. Se nao entrar, a unit e removivel.
-3. As tres restantes: candidatas a remocao direta apos confirmacao manual.
+1. Confirmar ausencia de `uses`, registro no `.lpi`, inicializacao dinamica ou
+   referencia de recurso.
+2. Quando existir funcionalidade exclusiva em uma unit duplicada, portar a
+   funcionalidade antes de apagar a unit antiga.
+3. Atualizar esta tabela na mesma alteracao.
+4. Executar o validador de projeto e a suite de testes antes do merge.
 
-Nenhuma remocao deve ser feita sem atualizar esta tabela na mesma alteracao.
+## Proximos candidatos
+
+- Tela duplicada de perfis IA removida; manter apenas `TfrmIAConfig` como interface de configuracao.
+- Colocar `tests/test_runner.lpr` no CI para que o fluxo de execucao de tarefas
+  deixe de depender de teste manual.

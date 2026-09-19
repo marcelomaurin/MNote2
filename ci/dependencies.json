@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "chatgpt": {
+    "repository": "https://github.com/marcelomaurin/CHATGPT.git",
+    "commit": "777e7ab3dcb85b915e561f55a8813105052b4928",
+    "packages": [
+      "openai_core",
+      "openai_ml",
+      "openai_input",
+      "openai_output",
+      "openai_graph",
+      "openai_agent",
+      "openai_project_core",
+      "openai_files",
+      "openai_python",
+      "openai_rag",
+      "openai_aidbase"
+    ]
+  },
+  "opm": [
+    "ZeosDBO",
+    "TSalesSwitch",
+    "ATFlatControls",
+    "CEF4Delphi",
+    "DCPcrypt",
+    "EControl",
+    "EncConv",
+    "Indy10",
+    "ExamplePackage",
+    "Industrialstuff",
+    "MultiLog",
+    "Rx",
+    "poweredby",
+    "TIPEdit",
+    "lnet",
+    "gifanim",
+    "PythonForLazarus"
+  ],
+  "notes": [
+    "The CHATGPT commit is pinned so CI does not silently consume a newer component revision.",
+    "OPM package names are the source-package families used by the Lazarus project; Lazarus package names inside them are validated separately."
+  ],
+  "bgrabitmap": {
+    "repository": "https://github.com/bgrabitmap/bgrabitmap.git",
+    "commit": "44a65262e214feb89605d4bb555771f1a3f2df29"
+  },
+  "manual": [
+    "BGRABitmap",
+    "ATSynEdit",
+    "ExtraSyn",
+    "SynFacilSyn"
+  ]
+}

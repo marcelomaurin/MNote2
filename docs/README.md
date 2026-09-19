@@ -33,3 +33,9 @@
 
 O arquivo `mnote.cfg` é local e pode conter segredos; ele não deve ser
 versionado. Use `mnote.example.cfg`.
+
+
+## Auditoria funcional
+
+- [Auditoria funcional](functional_audit.md): estado real dos recursos do MNote2.
+- [Backlog funcional](functional_backlog.md): tarefas priorizadas para fechar funcionalidades incompletas.

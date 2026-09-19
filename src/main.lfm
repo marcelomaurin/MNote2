@@ -1715,25 +1715,32 @@ object frmMNote: TfrmMNote
       ImageIndex = 14
       object mnNone: TMenuItem
         Caption = 'None'
+        OnClick = mnNoneClick
       end
       object mnLazarus: TMenuItem
         Caption = 'Lazarus/Pascal'
+        OnClick = mnLazarusClick
       end
       object mnPython: TMenuItem
         Caption = 'Python'
+        OnClick = mnPythonClick
       end
       object mnC: TMenuItem
         Caption = 'C/C++'
+        OnClick = mnCClick
       end
       object mnSQL: TMenuItem
         Caption = 'SQL'
+        OnClick = mnSQLClick
         ImageIndex = 15
       end
       object mnPHP: TMenuItem
         Caption = 'PHP'
+        OnClick = mnPHPClick
       end
       object mnJava: TMenuItem
         Caption = 'Java'
+        OnClick = mnJavaClick
       end
     end
     object mnFechar2: TMenuItem

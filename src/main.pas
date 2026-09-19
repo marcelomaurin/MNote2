@@ -3096,7 +3096,7 @@ begin
           begin
              if ShowConfirm('Associa extensão '+ext + ' a aplicação!') then
              begin
-                  if  RegistrarExtensao(  ExtractFileExt(application.ExeName), 'Aplicativo de edição de texto', ExtractFileName(application.ExeName), Application.ExeName) then
+                  if RegistrarExtensao(ext, 'Arquivo ' + UpperCase(ext) + ' do MNote2', ExtractFileName(Application.ExeName), Application.ExeName) then
                   begin
                   end
                   else
@@ -3772,42 +3772,42 @@ end;
 
 procedure TfrmMNote.mnJavaClick(Sender: TObject);
 var
-   item : TItem;
-   syn  : TSynEdit;
+  PageItem: TItem;
 begin
-  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  syn := item.syn;
-  syn.Highlighter := nil;
+  if (pgMain = nil) or (pgMain.ActivePage = nil) then Exit;
+  PageItem := TItem(pgMain.ActivePage.Tag);
+  if PageItem <> nil then PageItem.ApplyLanguageProfile('java');
+  UpdateLanguageUI;
 end;
 
 procedure TfrmMNote.mnNoneClick(Sender: TObject);
 var
-   item : TItem;
-   syn  : TSynEdit;
+  PageItem: TItem;
 begin
-  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  syn := item.syn;
-  syn.Highlighter := nil;
+  if (pgMain = nil) or (pgMain.ActivePage = nil) then Exit;
+  PageItem := TItem(pgMain.ActivePage.Tag);
+  if PageItem <> nil then PageItem.ApplyLanguageProfile('text');
+  UpdateLanguageUI;
 end;
 
 procedure TfrmMNote.mnPHPClick(Sender: TObject);
 var
-   item : TItem;
-   syn  : TSynEdit;
+  PageItem: TItem;
 begin
-  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  syn := item.syn;
-  syn.Highlighter := nil;
+  if (pgMain = nil) or (pgMain.ActivePage = nil) then Exit;
+  PageItem := TItem(pgMain.ActivePage.Tag);
+  if PageItem <> nil then PageItem.ApplyLanguageProfile('php');
+  UpdateLanguageUI;
 end;
 
 procedure TfrmMNote.mnSQLClick(Sender: TObject);
 var
-   item : TItem;
-   syn  : TSynEdit;
+  PageItem: TItem;
 begin
-  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  syn := item.syn;
-  // configurar highlighter SQL se desejar
+  if (pgMain = nil) or (pgMain.ActivePage = nil) then Exit;
+  PageItem := TItem(pgMain.ActivePage.Tag);
+  if PageItem <> nil then PageItem.ApplyLanguageProfile('sql');
+  UpdateLanguageUI;
 end;
 
 procedure TfrmMNote.MenuItem15Click(Sender: TObject);
@@ -3918,12 +3918,12 @@ end;
 
 procedure TfrmMNote.mnCClick(Sender: TObject);
 var
-   item : TItem;
-   syn  : TSynEdit;
+  PageItem: TItem;
 begin
-  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  syn := item.syn;
-  // configurar highlighter C se desejar
+  if (pgMain = nil) or (pgMain.ActivePage = nil) then Exit;
+  PageItem := TItem(pgMain.ActivePage.Tag);
+  if PageItem <> nil then PageItem.ApplyLanguageProfile('cpp');
+  UpdateLanguageUI;
 end;
 
 procedure TfrmMNote.mnFechar2Click(Sender: TObject);
@@ -3954,16 +3954,31 @@ end;
 
 procedure TfrmMNote.mnLazarusClick(Sender: TObject);
 var
-   item : TItem;
-   syn  : TSynEdit;
+  PageItem: TItem;
 begin
-  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  syn := item.syn;
-  // configurar highlighter Pascal se desejar
+  if (pgMain = nil) or (pgMain.ActivePage = nil) then Exit;
+  PageItem := TItem(pgMain.ActivePage.Tag);
+  if PageItem <> nil then PageItem.ApplyLanguageProfile('pascal');
+  UpdateLanguageUI;
 end;
 
 procedure TfrmMNote.mnAssociarClick(Sender: TObject);
+var
+  PageItem: TItem;
 begin
+  if (pgMain = nil) or (pgMain.ActivePage = nil) then
+  begin
+    MessageHint('Nenhum documento ativo.');
+    Exit;
+  end;
+  PageItem := TItem(pgMain.ActivePage.Tag);
+  if PageItem = nil then Exit;
+  if Trim(PageItem.FileName) = '' then
+  begin
+    MessageHint('Salve o arquivo antes de associar a extensão.');
+    Exit;
+  end;
+  AssociarExtensao(PageItem);
 end;
 
 procedure TfrmMNote.MudaTodasaFontes();
@@ -4121,12 +4136,12 @@ end;
 
 procedure TfrmMNote.mnPythonClick(Sender: TObject);
 var
-   item : TItem;
-   syn  : TSynEdit;
+  PageItem: TItem;
 begin
-  item := TItem(pgMain.Pages[pgMain.ActivePageIndex].Tag);
-  syn := item.syn;
-  // configurar highlighter Python se desejar
+  if (pgMain = nil) or (pgMain.ActivePage = nil) then Exit;
+  PageItem := TItem(pgMain.ActivePage.Tag);
+  if PageItem <> nil then PageItem.ApplyLanguageProfile('python');
+  UpdateLanguageUI;
 end;
 
 procedure TfrmMNote.mnScriptClick(Sender: TObject);
