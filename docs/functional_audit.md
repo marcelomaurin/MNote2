@@ -46,8 +46,8 @@ Prioridade imediata:
 | Replace | PARCIAL | fluxo existe, mas há handlers auxiliares vazios | validar seleção e replace em projeto |
 | LogView | OK | `MenuItem16Click` delega para `CommandShowOutput` | manter |
 | Hide Chat | PARCIAL | `btHideChange` não altera visibilidade | ligar ao painel ou remover controle |
-| Associação de extensão/tipo | PARCIAL | `mnAssociarClick` vazio; existe `AssociarExtensao` | ligar UI ao serviço existente |
-| Troca manual de linguagem | PARCIAL | itens de Type existem; handlers antigos incompletos | usar registro de linguagens moderno |
+| Associação de extensão/tipo | OK | `mnAssociarClick` usa o documento ativo e `AssociarExtensao`; registro Windows corrigido para a extensão do arquivo | manter/testar no Windows |
+| Troca manual de linguagem | OK | menus Type chamam `TItem.ApplyLanguageProfile` sobre o registro moderno | ampliar para demais perfis quando necessário |
 | Português/English/Spanish | NÃO IMPLEMENTADO | Português chama handler vazio; demais sem fluxo equivalente | implementar i18n ou remover menu |
 
 ## Linguagens e highlighters
