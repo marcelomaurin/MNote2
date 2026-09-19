@@ -18,11 +18,11 @@
     ]
   },
   "opm": [
-    "zeosdbo",
+    "ZeosDBO",
     "TSalesSwitch",
     "ATFlatControls",
-    "ATSynEdit",
     "BGRABitmap",
+    "ATSynEdit",
     "CEF4Delphi",
     "DCPcrypt",
     "EControl",
