@@ -60,3 +60,44 @@ lazbuild --add-package-link "$EX_LPK"
 lazbuild -B "$EX_LPK"
 
 echo "BGRABitmap e ATSynEdit preparados."
+
+
+bootstrap_named_opm_package() {
+  local archive="$1"
+  local package_name="$2"
+  local target_dir="$DEPS_ROOT/$archive"
+
+  rm -rf "$target_dir"
+  mkdir -p "$target_dir"
+  curl -fsSL "https://packages.lazarus-ide.org/$archive.zip" -o "$DEPS_ROOT/$archive.zip"
+  unzip -q -o "$DEPS_ROOT/$archive.zip" -d "$target_dir"
+
+  local lpk
+  lpk="$(python3 - "$target_dir" "$package_name" <<'PY'
+from pathlib import Path
+import re, sys
+root = Path(sys.argv[1])
+wanted = sys.argv[2].lower()
+for path in root.rglob("*.lpk"):
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    m = re.search(r'<Name Value="([^"]+)"', text, re.I)
+    if m and m.group(1).lower() == wanted:
+        print(path)
+        break
+PY
+)"
+  if [ -z "$lpk" ]; then
+    echo "Pacote $package_name não encontrado em $archive.zip" >&2
+    find "$target_dir" -type f -name '*.lpk' -print >&2
+    exit 1
+  fi
+
+  echo "==> Link/build $package_name"
+  lazbuild --add-package-link "$lpk"
+  lazbuild -B "$lpk"
+}
+
+bootstrap_named_opm_package "ExtraSyn" "synuni"
+bootstrap_named_opm_package "SynFacilSyn" "synfacilsyn"
+
+echo "ExtraSyn e SynFacilSyn preparados."
