@@ -50,3 +50,21 @@ A sequência para tornar todo o CI obrigatório é:
 
 Até lá, o núcleo portátil e os contratos estruturais são gates obrigatórios e o
 build integral permanece um diagnóstico explícito.
+
+## Dependências reproduzíveis
+
+O arquivo `ci/dependencies.json` é a fonte de verdade das dependências externas
+do CI. O repositório CHATGPT é fixado por SHA completo e não por branch. O
+bootstrap `ci/bootstrap_chatgpt.sh` clona exatamente esse commit, registra os
+pacotes Lazarus na ordem declarada e força a compilação de cada pacote.
+
+O build desktop usa o suporte `include-packages` de
+`gcarreno/setup-lazarus` para provisionar as famílias do Online Package
+Manager usadas pelo projeto. Enquanto essa resolução ainda estiver sendo
+validada no runner limpo, os jobs de dependências/build principal permanecem
+diagnósticos. Quando ambos passarem de forma estável, `continue-on-error` deve
+ser removido e o build integral passa a ser gate obrigatório.
+
+Para atualizar o CHATGPT usado pelo CI, altere conscientemente o SHA em
+`ci/dependencies.json` e deixe o gate `check_dependency_manifest.py` validar
+o novo manifesto.
