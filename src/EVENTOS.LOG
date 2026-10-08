@@ -1,0 +1,87 @@
+2026-10-08 17:36:40 - ========================================
+2026-10-08 17:36:40 - === INICIANDO MNOTE2 ===
+2026-10-08 17:36:40 - --------------------------------------------------
+2026-10-08 17:36:40 - [Ponto 1] Carregar: Solicitada carga do arquivo: "D:\projetos\prefeitura\coderp\transcricao\html\login.php"
+2026-10-08 17:36:40 - [Ponto 1 OK]: Arquivo encontrado no disco. Tamanho: 9911 bytes
+2026-10-08 17:36:40 - [Ponto 2 OK]: Arquivo nao estava aberto. Prosseguindo para criar nova aba.
+2026-10-08 17:36:40 - [Ponto 3]: Invocando NovoItem()...
+2026-10-08 17:36:40 - [Ponto 3 OK]: Aba instanciada com sucesso. (Caption Inicial: "Novo", Pointer Item: 0A4C72A4, Pointer Syn: 0804CC4C)
+2026-10-08 17:36:40 - [Ponto 4 OK]: Diretorio: "D:\projetos\prefeitura\coderp\transcricao\html", Arquivo: "login.php", Extensao: ".php"
+2026-10-08 17:36:40 - [Ponto 5]: Executando item.Loadfile("D:\projetos\prefeitura\coderp\transcricao\html\login.php")...
+2026-10-08 17:36:40 - [Ponto 5 OK]: item.Loadfile concluido sem excecoes.
+2026-10-08 17:36:40 - [Ponto 7 OK]: Titulo final da aba configurado: "login.php"
+2026-10-08 17:36:40 - [Ponto 8 OK]: Controles visuais pnclient, pgMain e syn forçados para Visible=True e focados.
+2026-10-08 17:36:40 - [Ponto 9 OK]: UpdateIDEStatus executado.
+2026-10-08 17:36:40 - [Ponto 10 CONCLUSÃO]: CARGA FINALIZADA COM SUCESSO! Aba: "login.php", Linhas no SynEdit: 268, CharCount: 9911, Total Abas no pgMain: 1
+2026-10-08 17:36:40 - --------------------------------------------------
+2026-10-08 17:36:40 - --------------------------------------------------
+2026-10-08 17:36:40 - [Ponto 1] Carregar: Solicitada carga do arquivo: "D:\projetos\prefeitura\coderp\transcricao\html\visualizar.php"
+2026-10-08 17:36:40 - [Ponto 1 OK]: Arquivo encontrado no disco. Tamanho: 27047 bytes
+2026-10-08 17:36:40 - [Ponto 2 OK]: Arquivo nao estava aberto. Prosseguindo para criar nova aba.
+2026-10-08 17:36:40 - [Ponto 3]: Invocando NovoItem()...
+2026-10-08 17:36:40 - [Ponto 3 OK]: Aba instanciada com sucesso. (Caption Inicial: "Novo", Pointer Item: 0A4DEDD4, Pointer Syn: 0A4DD3EC)
+2026-10-08 17:36:40 - [Ponto 4 OK]: Diretorio: "D:\projetos\prefeitura\coderp\transcricao\html", Arquivo: "visualizar.php", Extensao: ".php"
+2026-10-08 17:36:40 - [Ponto 5]: Executando item.Loadfile("D:\projetos\prefeitura\coderp\transcricao\html\visualizar.php")...
+2026-10-08 17:36:40 - [Ponto 5 OK]: item.Loadfile concluido sem excecoes.
+2026-10-08 17:36:40 - [Ponto 7 OK]: Titulo final da aba configurado: "visualizar.php"
+2026-10-08 17:36:40 - [Ponto 8 OK]: Controles visuais pnclient, pgMain e syn forçados para Visible=True e focados.
+2026-10-08 17:36:40 - [Ponto 9 OK]: UpdateIDEStatus executado.
+2026-10-08 17:36:40 - [Ponto 10 CONCLUSÃO]: CARGA FINALIZADA COM SUCESSO! Aba: "visualizar.php", Linhas no SynEdit: 466, CharCount: 27047, Total Abas no pgMain: 2
+2026-10-08 17:36:40 - --------------------------------------------------
+2026-10-08 17:36:40 - --------------------------------------------------
+2026-10-08 17:36:40 - [Ponto 1] Carregar: Solicitada carga do arquivo: "D:\projetos\prefeitura\coderp\transcricao\html\variaveis.php"
+2026-10-08 17:36:40 - [Ponto 1 OK]: Arquivo encontrado no disco. Tamanho: 990 bytes
+2026-10-08 17:36:40 - [Ponto 2 OK]: Arquivo nao estava aberto. Prosseguindo para criar nova aba.
+2026-10-08 17:36:40 - [Ponto 3]: Invocando NovoItem()...
+2026-10-08 17:36:40 - [Ponto 3 OK]: Aba instanciada com sucesso. (Caption Inicial: "Novo", Pointer Item: 0A512A34, Pointer Syn: 0A4FA494)
+2026-10-08 17:36:40 - [Ponto 4 OK]: Diretorio: "D:\projetos\prefeitura\coderp\transcricao\html", Arquivo: "variaveis.php", Extensao: ".php"
+2026-10-08 17:36:40 - [Ponto 5]: Executando item.Loadfile("D:\projetos\prefeitura\coderp\transcricao\html\variaveis.php")...
+2026-10-08 17:36:40 - [Ponto 5 OK]: item.Loadfile concluido sem excecoes.
+2026-10-08 17:36:40 - [Ponto 7 OK]: Titulo final da aba configurado: "variaveis.php"
+2026-10-08 17:36:40 - [Ponto 8 OK]: Controles visuais pnclient, pgMain e syn forçados para Visible=True e focados.
+2026-10-08 17:36:40 - [Ponto 9 OK]: UpdateIDEStatus executado.
+2026-10-08 17:36:40 - [Ponto 10 CONCLUSÃO]: CARGA FINALIZADA COM SUCESSO! Aba: "variaveis.php", Linhas no SynEdit: 21, CharCount: 990, Total Abas no pgMain: 3
+2026-10-08 17:36:40 - --------------------------------------------------
+2026-10-08 17:36:40 - --------------------------------------------------
+2026-10-08 17:36:40 - [Ponto 1] Carregar: Solicitada carga do arquivo: "D:\projetos\prefeitura\coderp\transcricao\html\index.php"
+2026-10-08 17:36:40 - [Ponto 1 OK]: Arquivo encontrado no disco. Tamanho: 6419 bytes
+2026-10-08 17:36:40 - [Ponto 2 OK]: Arquivo nao estava aberto. Prosseguindo para criar nova aba.
+2026-10-08 17:36:40 - [Ponto 3]: Invocando NovoItem()...
+2026-10-08 17:36:40 - [Ponto 3 OK]: Aba instanciada com sucesso. (Caption Inicial: "Novo", Pointer Item: 0A512194, Pointer Syn: 0A519ED4)
+2026-10-08 17:36:40 - [Ponto 4 OK]: Diretorio: "D:\projetos\prefeitura\coderp\transcricao\html", Arquivo: "index.php", Extensao: ".php"
+2026-10-08 17:36:40 - [Ponto 5]: Executando item.Loadfile("D:\projetos\prefeitura\coderp\transcricao\html\index.php")...
+2026-10-08 17:36:40 - [Ponto 5 OK]: item.Loadfile concluido sem excecoes.
+2026-10-08 17:36:40 - [Ponto 7 OK]: Titulo final da aba configurado: "index.php"
+2026-10-08 17:36:40 - [Ponto 8 OK]: Controles visuais pnclient, pgMain e syn forçados para Visible=True e focados.
+2026-10-08 17:36:40 - [Ponto 9 OK]: UpdateIDEStatus executado.
+2026-10-08 17:36:40 - [Ponto 10 CONCLUSÃO]: CARGA FINALIZADA COM SUCESSO! Aba: "index.php", Linhas no SynEdit: 140, CharCount: 6419, Total Abas no pgMain: 4
+2026-10-08 17:36:40 - --------------------------------------------------
+2026-10-08 17:36:40 - --------------------------------------------------
+2026-10-08 17:36:40 - [Ponto 1] Carregar: Solicitada carga do arquivo: "D:\projetos\prefeitura\coderp\chatbot\html\variaveis.php"
+2026-10-08 17:36:40 - [Ponto 1 OK]: Arquivo encontrado no disco. Tamanho: 775 bytes
+2026-10-08 17:36:40 - [Ponto 2 OK]: Arquivo nao estava aberto. Prosseguindo para criar nova aba.
+2026-10-08 17:36:40 - [Ponto 3]: Invocando NovoItem()...
+2026-10-08 17:36:40 - [Ponto 3 OK]: Aba instanciada com sucesso. (Caption Inicial: "Novo", Pointer Item: 0A51297C, Pointer Syn: 0A541244)
+2026-10-08 17:36:40 - [Ponto 4 OK]: Diretorio: "D:\projetos\prefeitura\coderp\chatbot\html", Arquivo: "variaveis.php", Extensao: ".php"
+2026-10-08 17:36:40 - [Ponto 5]: Executando item.Loadfile("D:\projetos\prefeitura\coderp\chatbot\html\variaveis.php")...
+2026-10-08 17:36:40 - [Ponto 5 OK]: item.Loadfile concluido sem excecoes.
+2026-10-08 17:36:40 - [Ponto 7 OK]: Titulo final da aba configurado: "variaveis.php"
+2026-10-08 17:36:40 - [Ponto 8 OK]: Controles visuais pnclient, pgMain e syn forçados para Visible=True e focados.
+2026-10-08 17:36:40 - [Ponto 9 OK]: UpdateIDEStatus executado.
+2026-10-08 17:36:40 - [Ponto 10 CONCLUSÃO]: CARGA FINALIZADA COM SUCESSO! Aba: "variaveis.php", Linhas no SynEdit: 15, CharCount: 775, Total Abas no pgMain: 5
+2026-10-08 17:36:40 - --------------------------------------------------
+2026-10-08 17:36:40 - --------------------------------------------------
+2026-10-08 17:36:40 - [Ponto 1] Carregar: Solicitada carga do arquivo: "D:\projetos\prefeitura\coderp\altaresponsavel\http\ws\altas\altas_get.php"
+2026-10-08 17:36:40 - [Ponto 1 OK]: Arquivo encontrado no disco. Tamanho: 10908 bytes
+2026-10-08 17:36:40 - [Ponto 2 OK]: Arquivo nao estava aberto. Prosseguindo para criar nova aba.
+2026-10-08 17:36:40 - [Ponto 3]: Invocando NovoItem()...
+2026-10-08 17:36:40 - [Ponto 3 OK]: Aba instanciada com sucesso. (Caption Inicial: "Novo", Pointer Item: 0A512E84, Pointer Syn: 0A54D45C)
+2026-10-08 17:36:40 - [Ponto 4 OK]: Diretorio: "D:\projetos\prefeitura\coderp\altaresponsavel\http\ws\altas", Arquivo: "altas_get.php", Extensao: ".php"
+2026-10-08 17:36:40 - [Ponto 5]: Executando item.Loadfile("D:\projetos\prefeitura\coderp\altaresponsavel\http\ws\altas\altas_get.php")...
+2026-10-08 17:36:40 - [Ponto 5 OK]: item.Loadfile concluido sem excecoes.
+2026-10-08 17:36:40 - [Ponto 7 OK]: Titulo final da aba configurado: "altas_get.php"
+2026-10-08 17:36:40 - [Ponto 8 OK]: Controles visuais pnclient, pgMain e syn forçados para Visible=True e focados.
+2026-10-08 17:36:40 - [Ponto 9 OK]: UpdateIDEStatus executado.
+2026-10-08 17:36:40 - [Ponto 10 CONCLUSÃO]: CARGA FINALIZADA COM SUCESSO! Aba: "altas_get.php", Linhas no SynEdit: 264, CharCount: 10910, Total Abas no pgMain: 6
+2026-10-08 17:36:40 - --------------------------------------------------
+2026-10-08 17:36:40 - Startup [OK]: Inicializacao da IDE concluida com sucesso (Windows 32 bits)

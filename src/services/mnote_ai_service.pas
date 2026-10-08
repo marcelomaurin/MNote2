@@ -116,6 +116,8 @@ type
     function LibraryVersion: string;
     function SendQuestion(const AQuestion, ADeveloperMessage: string;
       out AResponse: string): Boolean;
+    function SendProfileQuestion(ARole: TMNoteAIRole;
+      const AQuestion, ADeveloperMessage: string; out AResponse: string): Boolean;
     function SendAsync(const AQuestion, ADeveloperMessage: string): Boolean;
     function SendRoutedAsync(AKind: TMNoteAIRequestKind; const AQuestion,
       ADeveloperMessage: string): Boolean;
@@ -1605,6 +1607,48 @@ begin
   Result := ExecuteQuestion(AQuestion, ADeveloperMessage, AResponse);
   SetState(aisReceiving);
   if Result then SetState(aisCompleted) else SetState(aisFailed);
+end;
+
+function TMNoteAIService.SendProfileQuestion(ARole: TMNoteAIRole;
+  const AQuestion, ADeveloperMessage: string; out AResponse: string): Boolean;
+var
+  ErrorText: string;
+begin
+  AResponse := '';
+  if IsBusy then
+  begin
+    SetError('Já existe uma operação de IA em andamento.');
+    Exit(False);
+  end;
+  ClearError;
+  FLastJSON := '';
+  FLastURL := '';
+  SetState(aisPreparing);
+  try
+    EnsureProfileDefaults;
+    FreeAndNil(FSession);
+    FSession := TMNoteAISession.Create;
+    FRouter.BeginSession;
+    FSessionMemory.StartFlow(AQuestion, 'MNote2/ProfileChat', '', 'Chat');
+    SetState(aisSending);
+    Result := ExecuteProfileCall(ARole, 'chat', AQuestion,
+      ADeveloperMessage, 0, 1, AResponse, ErrorText);
+    SetState(aisReceiving);
+    if Result then
+      SetState(aisCompleted)
+    else
+    begin
+      SetError(ErrorText);
+      SetState(aisFailed);
+    end;
+  except
+    on E: Exception do
+    begin
+      SetError(E.Message);
+      SetState(aisFailed);
+      Result := False;
+    end;
+  end;
 end;
 
 function TMNoteAIService.SendAsync(const AQuestion,

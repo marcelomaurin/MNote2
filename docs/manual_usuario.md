@@ -184,6 +184,34 @@ placeholders, mas nunca executa o SQL gerado. A transferência ao editor princip
 exige confirmação. Em produção, revise especialmente `UPDATE`, `DELETE`,
 `DROP`, `ALTER` e `CREATE`.
 
+### 9.1. Diagrama do banco
+
+Na pasta do banco no MQuery, use **Abrir diagrama do banco**. O Solution Explorer
+oferece o mesmo comando em cada banco conectado e em suas tabelas. O comando
+mantém a conexão da pasta escolhida, independentemente da aba ativa. Ao partir
+de uma tabela, mostra essa tabela e suas relações diretas; **Todas** remove o foco.
+
+Arraste as tabelas pelo cabeçalho. Use **+**, **−**, **Ajustar**, as barras de
+rolagem e o filtro de schema/tabela para navegar. **Organizar** distribui as
+caixas em grade, aproximando tabelas relacionadas. PK/FK indicam as chaves; o asterisco indica NOT NULL.
+
+**Salvar posições** grava posições, zoom, filtro e tabela em foco por banco, no diretório
+de configuração da aplicação, subpasta diagrams. **Exportar PNG** salva a imagem
+visível pelo filtro. **Atualizar** relê a conexão original e mantém posições de
+objetos ainda existentes; se a conexão mudou ou está desconectada, mantém o
+snapshot anterior e informa o erro. Objetos renomeados são tratados como novos.
+
+A leitura SQLite foi testada localmente e cobre o schema main. Oracle,
+PostgreSQL, SQL Server e MySQL têm integração pelo Zeos, ainda pendente de
+validação em servidores reais. A leitura ocorre em segundo plano com uma conexão
+independente. **Cancelar** descarta a nova leitura e mantém o diagrama anterior.
+Se o driver estiver aguardando uma resposta, o cancelamento será observado quando
+a operação retornar; a interface continua disponível. Fechar a janela não espera
+essa operação. Metadados não confirmados e objetos temporários da sessão original
+não são transportados. SQLite em memória é recusado neste modo; use um arquivo
+persistido. Não há edição da estrutura nem aplicação de DDL.
+Veja o [plano e acompanhamento](plano_diagrama_mquery.md) para as pendências.
+
 ## 10. Build, Problems, Output e Terminal
 
 Build e Rebuild escolhem o perfil do projeto e executam processo real fora da

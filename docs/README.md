@@ -16,6 +16,11 @@
 - [Ownership dos highlighters](highlighter_ownership.md)
 - [Portabilidade do dicionário](porte_dicionario.md)
 
+## Planos de implementação
+
+- [Diagrama multibanco do MQuery — plano e acompanhamento](plano_diagrama_mquery.md)
+- [Validação do diagrama nos servidores](validacao_diagrama_multibanco.md)
+
 ## Evidências
 
 - [Build de referência](build_baseline.md)

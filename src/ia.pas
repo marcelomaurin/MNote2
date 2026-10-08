@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls,
   StdCtrls, Buttons, setmain, folders, mquery2, fpjson, jsonparser,
   item, SynEditTypes, SynEdit, DateUtils, mnote_ai_service,
-  mnote_memory_map_panel;
+  mnote_memory_map_panel, mnote_ai_types;
 
 type
   TTipoAcao = (
@@ -65,8 +65,6 @@ type
     tsLog: TTabSheet;
     lblTipoIA: TLabel;
     cbTipoIA: TComboBox;
-    lblModeloIA: TLabel;
-    cbModeloIA: TComboBox;
     procedure btLimpaHistClick(Sender: TObject);
     procedure btPerguntarClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -75,7 +73,7 @@ type
     procedure mePensamentoChange(Sender: TObject);
     procedure mePerguntaKeyPress(Sender: TObject; var Key: char);
     procedure cbTipoIAChange(Sender: TObject);
-    procedure cbModeloIAChange(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     lstAcao: TStringList;
     lstRealizar: TStringList;
@@ -202,7 +200,11 @@ var
   LResposta: string;
 begin
   Resposta := '';
-  Result := MNoteAI.SendQuestion(Prompt, DevMsg, LResposta);
+  if cbTipoIA.ItemIndex <= 0 then
+    Result := MNoteAI.SendQuestion(Prompt, DevMsg, LResposta)
+  else
+    Result := MNoteAI.SendProfileQuestion(
+      TMNoteAIRole(cbTipoIA.ItemIndex - 1), Prompt, DevMsg, LResposta);
   if Result then
     Resposta := LResposta
   else
@@ -273,21 +275,28 @@ begin
 end;
 
 procedure TfrmIA.CarregarConfiguracoes();
+var
+  Role: TMNoteAIRole;
+  SelectedIndex: Integer;
 begin
-  // Inicializa e popula os combo boxes da IA
+  SelectedIndex := cbTipoIA.ItemIndex;
+  MNoteAI.EnsureProfileDefaults;
   cbTipoIA.Items.Clear;
-  cbTipoIA.Items.Add('OpenAI');      // 0
-  cbTipoIA.Items.Add('OpenRouter');  // 1
-  cbTipoIA.Items.Add('Cerebras');    // 2
-  cbTipoIA.Items.Add('Local');       // 3 - llama.cpp
-  cbTipoIA.Items.Add('Gemini');      // 4
-
-  if (FSetMain.Provider >= 0) and (FSetMain.Provider < cbTipoIA.Items.Count) then
-    cbTipoIA.ItemIndex := FSetMain.Provider
-  else
-    cbTipoIA.ItemIndex := 0;
-
+  cbTipoIA.Items.Add('IA principal');
+  for Role := Low(TMNoteAIRole) to High(TMNoteAIRole) do
+    if MNoteAI.Profiles.Profile(Role).Config.Enabled then
+      cbTipoIA.Items.Add(MNoteAIRoleName(Role))
+    else
+      cbTipoIA.Items.Add(MNoteAIRoleName(Role) + ' (desabilitado)');
+  if (SelectedIndex < 0) or (SelectedIndex >= cbTipoIA.Items.Count) then
+    SelectedIndex := 0;
+  cbTipoIA.ItemIndex := SelectedIndex;
   cbTipoIAChange(nil);
+end;
+
+procedure TfrmIA.FormShow(Sender: TObject);
+begin
+  CarregarConfiguracoes;
 end;
 
 procedure TfrmIA.FormCreate(Sender: TObject);
@@ -325,74 +334,8 @@ end;
 
 procedure TfrmIA.cbTipoIAChange(Sender: TObject);
 begin
-  if cbTipoIA.ItemIndex >= 0 then
-  begin
-    FSetMain.Provider := cbTipoIA.ItemIndex;
-    FSetMain.SalvaContexto(False);
-  end;
-
-  cbModeloIA.Items.Clear;
-  case FSetMain.Provider of
-    0: // OpenAI
-      begin
-        cbModeloIA.Items.Add('gpt-4o-mini');
-        cbModeloIA.Items.Add('gpt-4o');
-        cbModeloIA.Items.Add('gpt-4-turbo');
-        cbModeloIA.Items.Add('gpt-4');
-        cbModeloIA.Items.Add('gpt-3.5-turbo');
-        cbModeloIA.Items.Add('o1-mini');
-        cbModeloIA.Text := FSetMain.ModelOpenAI;
-      end;
-    1: // OpenRouter
-      begin
-        cbModeloIA.Items.Add('google/gemma-2-9b-it:free');
-        cbModeloIA.Items.Add('meta-llama/llama-3-8b-instruct:free');
-        cbModeloIA.Items.Add('mistralai/mistral-7b-instruct:free');
-        cbModeloIA.Items.Add('microsoft/phi-3-medium-128k-instruct:free');
-        cbModeloIA.Items.Add('deepseek/deepseek-chat');
-        cbModeloIA.Text := FSetMain.ModelOpenRouter;
-      end;
-    2: // Cerebras
-      begin
-        cbModeloIA.Items.Add('llama3.1-8b');
-        cbModeloIA.Items.Add('llama3.1-70b');
-        cbModeloIA.Items.Add('llama-3.3-70b');
-        cbModeloIA.Text := FSetMain.ModelCerebras;
-      end;
-    3: // Local
-      begin
-        cbModeloIA.Items.Add('llama3.2:3b');
-        cbModeloIA.Items.Add('mistral');
-        cbModeloIA.Items.Add('gemma2');
-        cbModeloIA.Items.Add('deepseek-r1:1.5b');
-        cbModeloIA.Items.Add('deepseek-r1:8b');
-        cbModeloIA.Items.Add('qwen2.5:14b');
-        cbModeloIA.Text := FSetMain.ModelLocal;
-      end;
-    4: // Gemini
-      begin
-        cbModeloIA.Items.Add('gemini-1.5-flash');
-        cbModeloIA.Items.Add('gemini-1.5-pro');
-        cbModeloIA.Items.Add('gemini-2.0-flash');
-        cbModeloIA.Items.Add('gemini-2.5-flash');
-        cbModeloIA.Items.Add('gemini-3.5-flash');
-        cbModeloIA.Text := FSetMain.ModelGemini;
-      end;
-  else
-    cbModeloIA.Text := '';
-  end;
-end;
-
-procedure TfrmIA.cbModeloIAChange(Sender: TObject);
-begin
-  case FSetMain.Provider of
-    0: FSetMain.ModelOpenAI := cbModeloIA.Text;
-    1: FSetMain.ModelOpenRouter := cbModeloIA.Text;
-    2: FSetMain.ModelCerebras := cbModeloIA.Text;
-    3: FSetMain.ModelLocal := cbModeloIA.Text;
-    4: FSetMain.ModelGemini := cbModeloIA.Text;
-  end;
-  FSetMain.SalvaContexto(False);
+  cbTipoIA.Hint := 'Usa o provedor, modelo e endpoint definidos na configuração das IAs.';
+  cbTipoIA.ShowHint := True;
 end;
 
 procedure TfrmIA.meHistoricoChange(Sender: TObject);

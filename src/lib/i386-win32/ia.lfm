@@ -9,6 +9,7 @@ object frmIA: TfrmIA
   Position = poMainFormCenter
   LCLVersion = '4.4.0.0'
   OnCreate = FormCreate
+  OnShow = FormShow
   object pgIA: TPageControl
     Left = 0
     Height = 446
@@ -162,35 +163,18 @@ object frmIA: TfrmIA
       Height = 15
       Top = 17
       Width = 51
-      Caption = 'Provedor:'
+      Caption = 'Perfil IA:'
       ParentColor = False
     end
     object cbTipoIA: TComboBox
       Left = 68
       Height = 23
       Top = 13
-      Width = 120
+      Width = 364
       ItemHeight = 15
       Style = csDropDownList
       TabOrder = 1
       OnChange = cbTipoIAChange
-    end
-    object lblModeloIA: TLabel
-      Left = 200
-      Height = 15
-      Top = 17
-      Width = 44
-      Caption = 'Modelo:'
-      ParentColor = False
-    end
-    object cbModeloIA: TComboBox
-      Left = 252
-      Height = 23
-      Top = 13
-      Width = 180
-      ItemHeight = 15
-      TabOrder = 2
-      OnChange = cbModeloIAChange
     end
   end
   object pnBotton: TPanel

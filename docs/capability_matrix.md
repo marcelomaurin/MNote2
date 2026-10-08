@@ -17,6 +17,7 @@ localizáveis. O catálogo entregue ao modelo é gerado por
 | `ListProjectFiles` | Integrado | `src/ai/mnote_ai_actions.pas` (`ExecuteListProjectFiles`) | `TestAIActions`: listagem limitada à fixture |
 | `GitLog` e `GitDiff` | Integrado em modo leitura | `src/ai/mnote_ai_actions.pas` | `TestAIActions`: rejeição de argumento Git injetável |
 | `DBDictionary` | Integrado quando o dicionário é fornecido pela aplicação | `src/ai/mnote_ai_actions.pas` (`ExecuteDictionary`) e `src/services/mnote_ai_service.pas` (`SetProjectRoot`) | `TestAIActions` e `TestAIProjectRootRefresh` |
+| Diagrama de banco por pasta | Leitura assíncrona, cancelamento, foco por tabela e layout v2; SQLite testado, quatro servidores pendentes | `src/services/mnote_db_diagram_*.pas`, `src/ui/mnote_db_diagram_form.pas` e integração das árvores | `tests/db_diagram_test.lpr`: 66 verificações; detalhes no [plano](plano_diagrama_mquery.md) |
 | `Compile` | Integrado com confirmação; falha retorna diagnóstico e `ok:false` | `src/ai/mnote_ai_actions.pas` (`ExecuteCompile`) | `TestAIActions`: recusa sem confirmação e erro real |
 | Ciclo de ferramentas | Integrado; dossiê acumulado, catálogo reinjetado, correção única de contrato e limites de rodada/chamadas/orçamento | `src/services/mnote_ai_service.pas` (`ExecuteWithTools`) e `src/ai/mnote_ai_profile.pas` | `TestAIToolLoop` sem acesso à rede |
 | Mudanças de fonte | Integrado por fluxo separado, revisável | `src/sourcechange/*` | `TestSourceChanges` e `TestEndToEndTaskExecution` |

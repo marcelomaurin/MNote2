@@ -439,6 +439,7 @@ type
     procedure RunCloseTabTest(Data: PtrInt);
     procedure RunSolutionExplorerTest(Data: PtrInt);
     procedure SyncSolutionDatabaseFromMQuery;
+    procedure OpenSolutionDiagram(Sender: TObject; const AContextId, ATable: string);
   end;
 
   function FileLoad(const FullName: string): Boolean;
@@ -1343,21 +1344,26 @@ begin
   Application.Terminate;
 end;
 
+procedure TfrmMNote.OpenSolutionDiagram(Sender: TObject; const AContextId, ATable: string);
+begin
+  if frmmquery2 <> nil then frmmquery2.OpenDiagramContext(AContextId, ATable);
+end;
+
 procedure TfrmMNote.SyncSolutionDatabaseFromMQuery;
 var
-  DatabaseName: string;
+  DatabaseName, ContextId: string;
   Tables: TStringList;
+  I: Integer;
 begin
   if (FSolutionExplorer = nil) or (frmmquery2 = nil) then Exit;
   Tables := TStringList.Create;
   try
-    if frmmquery2.GetActiveDatabaseTree(DatabaseName, Tables) then
-      FSolutionExplorer.SetDatabase(DatabaseName, Tables)
-    else
-      FSolutionExplorer.ClearDatabase;
-  finally
-    Tables.Free;
-  end;
+    FSolutionExplorer.ClearDatabase;
+    for I := 0 to 4 do
+      if frmmquery2.GetDatabaseTree(I, DatabaseName, ContextId, Tables) then
+        FSolutionExplorer.AddDatabaseContext(DatabaseName, ContextId, Tables);
+    FSolutionExplorer.Refresh;
+  finally Tables.Free; end;
 end;
 
 procedure TfrmMNote.AnalisaFonte();
@@ -1772,6 +1778,7 @@ begin
     else FSolutionExplorer.ClearDatabase;
     Exit;
   end;
+  if frmmquery2 <> nil then begin SyncSolutionDatabaseFromMQuery; Exit; end;
   DatabaseName := '';
   if FDBDictionaryPanel.Service.Connection <> nil then
   begin
@@ -2901,6 +2908,7 @@ begin
     lstFind, meResult, MainMenu1);
   FSolutionExplorer := TMNoteSolutionExplorerPanel.Create(Self);
   FSolutionExplorer.OnOpenFile := @OpenInventoryFile;
+  FSolutionExplorer.OnOpenDatabaseDiagram := @OpenSolutionDiagram;
   FSolutionExplorer.OnNewProject := @CommandProjectNew;
   FSolutionExplorer.OnOpenProject := @CommandProjectOpen;
   FSolutionExplorer.OnOpenFolder := @CommandProjectOpenFolder;
@@ -3064,18 +3072,12 @@ begin
     mnStay.Caption:='On Top';
     mnOnTopW.Caption:='On Top';
   end;
-  if not FSetMain.fixar then
-  begin
-    BorderStyle:=bsSizeable;
-    mnFixar.Caption:='Fix';
-    mnFixW.Caption:='Fix';
-  end
-  else
-  begin
-    BorderStyle:=bsSingle;
-    mnFixar.Caption:= 'Move';
-    mnFixW.caption := 'Move' ;
-  end;
+  // Legacy FIXAR must not restore a fixed/borderless IDE on startup.
+  BorderStyle := bsSizeable;
+  BorderIcons := [biSystemMenu, biMinimize, biMaximize];
+  FSetMain.fixar := False;
+  mnFixar.Caption := 'Fix';
+  mnFixW.Caption := 'Fix';
 end;
 
 procedure TfrmMNote.AssociarExtensao(item: Titem);
@@ -3935,7 +3937,8 @@ procedure TfrmMNote.mnFixarClick(Sender: TObject);
 begin
     if (BorderStyle = bsNone) then
     begin
-      BorderStyle:=bsSingle;
+      BorderStyle := bsSizeable;
+      BorderIcons := [biSystemMenu, biMinimize, biMaximize];
       Fsetmain.fixar := false;
       mnFixar.Caption:='Fix';
       mnFixW.caption := 'Fix';

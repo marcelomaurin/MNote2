@@ -15,7 +15,8 @@ uses
   ZCompatibility, ZTokenizer, ZSelectSchema, ZGenericSqlAnalyser, ZDbcLogging,
   ZVariant, ZPlainDriver, TypeDB, triggers, item, funcoes, chart,
   codigo, setmain, ZDbcIntfs, math, hint, Variants, LConvEncoding, base,
-  mnote_ai_service;
+  mnote_ai_service, mnote_db_diagram_model, mnote_db_diagram_reader,
+  mnote_db_diagram_form;
 
 const
   sqltabela   = 'Você poderia me fornecer a consulta SQL que deseja analisar? Assim que eu receber o SQL, irei extrair os nomes das tabelas envolvidas e gerar um código em JSON com esses nomes. A resposta será apresentada dentro de uma caixa de texto apropriada para cópia, Desta forma refaça a pergunta mesmo nao havendo certeza da resposta,claramente formatada como um código JSON:';
@@ -97,8 +98,6 @@ type
     Label1: TLabel;
     Label10: TLabel;
     Label11: TLabel;
-    Label12: TLabel;
-    Label13: TLabel;
     Label15: TLabel;
     Label16: TLabel;
     Label17: TLabel;
@@ -127,7 +126,6 @@ type
     lblinha1: TLabel;
     lblinha2: TLabel;
     lbTables1: TListBox;
-    ListBox1: TListBox;
     lbTables: TListBox;
     lstfind: TListBox;
     lstfind1: TListBox;
@@ -241,9 +239,6 @@ type
     SaveDialog1: TSaveDialog;
     Separator1: TMenuItem;
     Separator3: TMenuItem;
-    SpeedButton1: TSpeedButton;
-    SpeedButton2: TSpeedButton;
-    SpeedButton3: TSpeedButton;
     Splitter1: TSplitter;
     Splitter2: TSplitter;
     Splitter3: TSplitter;
@@ -270,7 +265,6 @@ type
     tsSQLPostgreSQL: TTabSheet;
     tsAbout: TTabSheet;
     tsSetupPostres: TTabSheet;
-    tsSetup: TTabSheet;
     tbConxao: TTabSheet;
     tbLog: TTabSheet;
     tbSQL: TTabSheet;
@@ -282,7 +276,6 @@ type
     tvsqlite: TTreeView;
     tvPost: TTreeView;
     tvMysql: TTreeView;
-    vlistequivalente: TStringGrid;
     zconmysql: TZConnection;
     zconsqlite: TZConnection;
     zconpost: TZConnection;
@@ -352,7 +345,6 @@ type
     procedure edSQLSynGutterChange(Sender: TObject);
     procedure FindDialog1Find(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure FormShow(Sender: TObject);
     procedure lstfindClick(Sender: TObject);
     procedure dropPostClick(Sender: TObject);
     procedure MenuItem12Click(Sender: TObject);
@@ -391,8 +383,6 @@ type
     procedure mnRefreshClick(Sender: TObject);
     procedure niPesquisarClick(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
-    procedure SpeedButton1Click(Sender: TObject);
-    procedure SpeedButton2Click(Sender: TObject);
     procedure SynCompletion1PositionChanged(Sender: TObject);
     procedure ToggleBox1Change(Sender: TObject);
     procedure FieldClickChange(Sender: TObject);
@@ -407,7 +397,6 @@ type
     function GeraSQLMy(Tabela : TTabela): string;
     function TipoConv(Tabela : TTabela; Posicao: integer): String;
     procedure PostApagaTabela(Nome: string);
-    procedure vlistequivalenteClick(Sender: TObject);
     procedure zconpostAfterConnect(Sender: TObject);
     procedure ZPgEventAlerter1Notify(Sender: TObject; Event: string;
       ProcessID: Integer; Payload: string);
@@ -525,6 +514,11 @@ type
 
     function ConectSQLite: Boolean;
   public
+    procedure InstallDiagramMenus;
+    procedure DiagramMenuClick(Sender: TObject);
+    function DiagramConnection(AIndex: Integer; out ASchema: string): TZConnection;
+    function GetDatabaseTree(AIndex: Integer; out AName, AContextId: string; ATables: TStrings): Boolean;
+    procedure OpenDiagramContext(const AContextId, ATable: string);
     function CriaDicionarioSQLite(const ATargetFile: string): string;
     function BuildCreateTableSQLite(const ATabela: string): string;
     function CriaListaDependenciasSQLite(const outFile: string): string;
@@ -792,8 +786,6 @@ begin
 end;
 
 function Tfrmmquery2.FormataSQL(Info: string): string;
-var
-  r: Integer;
 begin
   Info := StringReplace(Info, '`', '', [rfReplaceAll]);
 
@@ -809,10 +801,6 @@ begin
   Info := TrocarPalavra(Info, 'BEGIN',    LineEnding + 'BEGIN' + LineEnding);
   Info := TrocarPalavra(Info, 'END IF;',  LineEnding + 'END IF;' + LineEnding);
   Info := TrocarPalavra(Info, 'END;',     LineEnding + 'END;' + LineEnding);
-
-  if Assigned(vlistequivalente) then
-    for r := 1 to vlistequivalente.RowCount - 1 do
-      Info := TrocarPalavra(Info, vlistequivalente.Cells[0, r], vlistequivalente.Cells[1, r]);
 
   Result := Info;
 end;
@@ -846,6 +834,7 @@ begin
   tvAvo := nil;
   tvBisavo := nil;
   tvMysql.PopupMenu := nil;
+  if Node = tvitemmy then tvMysql.PopupMenu := pmDatabaseMy;
 
   if node <> nil then
   begin
@@ -1119,11 +1108,6 @@ begin
   end;
 end;
 
-procedure Tfrmmquery2.FormShow(Sender: TObject);
-begin
-  tsSetup.PageIndex := pgMain.PageCount - 1;
-end;
-
 procedure Tfrmmquery2.FormCreate(Sender: TObject);
 var
   tvitem : TTreeNode;
@@ -1179,8 +1163,7 @@ begin
   mnCriaDicionarioOracle.OnClick := @mnCriaDicionarioOracleClick;
   pmDatabaseOracle.Items.Add(mnCriaDicionarioOracle);
 
-  // Set setup tab sheet as the last tab sheet
-  tsSetup.PageIndex := pgMain.PageCount - 1;
+  InstallDiagramMenus;
 
   {$IFDEF WINDOWS}
   zconpost.LibraryLocation := FSetMain.DLLPostPath;
@@ -1222,7 +1205,6 @@ begin
   edPassOracle.Text := FSetMain.PasswordOracle;
   edSchemaOracle.Text := FSetMain.SchemaOracle;
 
-  OnShow := @FormShow;
 end;
 
 procedure Tfrmmquery2.setSelLength(var textComponent:TSynEdit; newValue:integer);
@@ -1300,10 +1282,6 @@ begin
   except
     ShowMessage('Falha na execução');
   end;
-end;
-
-procedure Tfrmmquery2.vlistequivalenteClick(Sender: TObject);
-begin
 end;
 
 procedure Tfrmmquery2.zconpostAfterConnect(Sender: TObject);
@@ -1718,17 +1696,6 @@ end;
 
 procedure Tfrmmquery2.PageControl1Change(Sender: TObject);
 begin
-end;
-
-procedure Tfrmmquery2.SpeedButton1Click(Sender: TObject);
-begin
-  vlistequivalente.RowCount := vlistequivalente.RowCount + 1;
-end;
-
-procedure Tfrmmquery2.SpeedButton2Click(Sender: TObject);
-begin
-  if (vlistequivalente.RowCount > 1) then
-    vlistequivalente.RowCount := vlistequivalente.RowCount - 1;
 end;
 
 procedure Tfrmmquery2.SynCompletion1PositionChanged(Sender: TObject);
@@ -2214,7 +2181,9 @@ procedure Tfrmmquery2.RefreshMy();
 var
   tvitem: TTreeNode;
 begin
+  try
   tvitemmy.DeleteChildren;
+  posicaofieldsmy := nil;
 
   if not ConectMy then
   begin
@@ -2235,10 +2204,12 @@ begin
 
     ListarTabelasMy();
     ListarViewsMy();
-    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   except
     on E: Exception do
       MessageHint('Erro ao preparar estrutura do MySQL: ' + E.Message);
+  end;
+  finally
+    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   end;
 end;
 
@@ -2246,7 +2217,9 @@ procedure Tfrmmquery2.RefreshPost;
 var
   tvitem: TTreeNode;
 begin
+  try
   tvitempost.DeleteChildren;
+  posicaofieldspost := nil;
   SynSQLSyn2.TableNames.Clear;
 
   if not ConectPost then
@@ -2272,10 +2245,12 @@ begin
     ListarTabelasPost();
     BuscaSequence(zpostqry1, DBPostgres);
     ListarViewsPost();
-    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   except
     on E: Exception do
       MessageHint('Erro ao preparar estrutura do PostgreSQL: ' + E.Message);
+  end;
+  finally
+    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   end;
 end;
 
@@ -2283,9 +2258,11 @@ procedure Tfrmmquery2.RefreshSQLite;
 var
   tvitem: TTreeNode;
 begin
+  try
   if tvitemLite = nil then Exit;
 
   tvitemLite.DeleteChildren;
+  posicaofieldslite := nil;
 
   if not ConectSQLite then
   begin
@@ -2303,10 +2280,12 @@ begin
 
     ListarTabelasSQLite;
     tvsqlite.FullExpand;
-    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   except
     on E: Exception do
       MessageHint('Erro ao preparar estrutura do SQLite: ' + E.Message);
+  end;
+  finally
+    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   end;
 end;
 
@@ -4154,6 +4133,91 @@ begin
   end;
 end;
 
+procedure Tfrmmquery2.InstallDiagramMenus;
+  procedure Add(Menu: TPopupMenu; Index: Integer);
+  var Item: TMenuItem;
+  begin
+    Item := TMenuItem.Create(Self); Item.Caption := 'Abrir diagrama do banco';
+    Item.Tag := Index; Item.OnClick := @DiagramMenuClick; Menu.Items.Add(Item);
+  end;
+begin
+  Add(pmDatabaseMy, 0); Add(pmTabelasMy, 0);
+  Add(pmDatabasePost, 1); Add(pmTabelasPost, 1); Add(pmTabelaPost, 1);
+  Add(pmDatabaseLite, 2); Add(pmTabelasLite, 2); Add(pmTabelaLite, 2);
+  Add(pmDatabaseMSSQL, 3); Add(pmDatabaseOracle, 4);
+  tvMysql.RightClickSelect := True; tvPost.RightClickSelect := True;
+  tvsqlite.RightClickSelect := True; tvMSSQL.RightClickSelect := True;
+  tvOracle.RightClickSelect := True;
+end;
+
+function Tfrmmquery2.DiagramConnection(AIndex: Integer; out ASchema: string): TZConnection;
+begin
+  Result := nil; ASchema := '';
+  case AIndex of
+    0: Result := zconmysql;
+    1: begin Result := zconpost; ASchema := Trim(edSchemaPost.Text); if ASchema = '' then ASchema := 'public'; end;
+    2: Result := zconsqlite;
+    3: begin Result := zconMSSQL; ASchema := Trim(edSchemaMSSQL.Text);
+         if ASchema = '' then ASchema := 'dbo'; end;
+    4: begin Result := zconOracle; ASchema := UpperCase(Trim(edSchemaOracle.Text));
+         if ASchema = '' then ASchema := UpperCase(zconOracle.User); end;
+  end;
+end;
+
+procedure Tfrmmquery2.DiagramMenuClick(Sender: TObject);
+var C: TZConnection; Schema, TableName: string; Tree: TTreeView; ParentNode: TTreeNode;
+begin
+  C := DiagramConnection(TMenuItem(Sender).Tag, Schema); Tree := nil; ParentNode := nil;
+  case TMenuItem(Sender).Tag of
+    0: begin Tree := tvMysql; ParentNode := posicaofieldsmy; end;
+    1: begin Tree := tvPost; ParentNode := posicaofieldspost; end;
+    2: begin Tree := tvsqlite; ParentNode := posicaofieldslite; end;
+    3: begin Tree := tvMSSQL; ParentNode := posicaofieldsMSSQL; end;
+    4: begin Tree := tvOracle; ParentNode := posicaofieldsOracle; end;
+  end;
+  TableName := '';
+  if (Tree <> nil) and (Tree.Selected <> nil) and (ParentNode <> nil) and
+    (Tree.Selected.Parent = ParentNode) then TableName := Tree.Selected.Text;
+  OpenDatabaseDiagram(Self, C, Schema, TableName);
+end;
+
+function Tfrmmquery2.GetDatabaseTree(AIndex: Integer; out AName, AContextId: string; ATables: TStrings): Boolean;
+var C: TZConnection; Schema: string; ParentNode, Node: TTreeNode;
+begin
+  Result := False; AName := ''; AContextId := ''; ATables.Clear;
+  C := DiagramConnection(AIndex, Schema);
+  if (C = nil) or not C.Connected then Exit;
+  AName := C.Protocol + ' / ' + C.HostName + ' / ' + C.Database;
+  if Schema <> '' then AName := AName + ' / ' + Schema;
+  AContextId := DiagramContextKey(DiagramConnectionContext(C, Schema));
+  ParentNode := nil;
+  case AIndex of
+    0: ParentNode := posicaofieldsmy;
+    1: ParentNode := posicaofieldspost;
+    2: ParentNode := posicaofieldslite;
+    3: ParentNode := posicaofieldsMSSQL;
+    4: ParentNode := posicaofieldsOracle;
+  end;
+  if ParentNode <> nil then begin
+    Node := ParentNode.GetFirstChild;
+    while Node <> nil do begin ATables.Add(Node.Text); Node := Node.GetNextSibling; end;
+  end;
+  Result := True;
+end;
+
+procedure Tfrmmquery2.OpenDiagramContext(const AContextId, ATable: string);
+var I: Integer; C: TZConnection; Schema: string;
+begin
+  for I := 0 to 4 do begin
+    C := DiagramConnection(I, Schema);
+    if (C <> nil) and C.Connected and
+      (DiagramContextKey(DiagramConnectionContext(C, Schema)) = AContextId) then begin
+      OpenDatabaseDiagram(Self, C, Schema, ATable); Exit;
+    end;
+  end;
+  MessageDlg('Diagrama', 'A conexão desta pasta mudou ou foi desconectada. Atualize a árvore após reconectar.', mtInformation, [mbOK], 0);
+end;
+
 function Tfrmmquery2.GetActiveDatabaseTree(out ADatabaseName: string;
   ATables: TStrings): Boolean;
 var
@@ -4531,7 +4595,9 @@ procedure Tfrmmquery2.btConectarMSSQLClick(Sender: TObject);
 var
   tvitem: TTreeNode;
 begin
+  try
   tvitemMSSQL.DeleteChildren;
+  posicaofieldsMSSQL := nil;
   edErroMSSQL.Clear;
 
   if not ConectMSSQL then
@@ -4553,13 +4619,18 @@ begin
     on E: Exception do
       edErroMSSQL.Lines.Add('Erro ao listar tabelas: ' + E.Message);
   end;
+  finally
+    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
+  end;
 end;
 
 procedure Tfrmmquery2.btConectarOracleClick(Sender: TObject);
 var
   tvitem: TTreeNode;
 begin
+  try
   tvitemOracle.DeleteChildren;
+  posicaofieldsOracle := nil;
   edErroOracle.Clear;
 
   if not ConectOracle then
@@ -4580,6 +4651,9 @@ begin
   except
     on E: Exception do
       edErroOracle.Lines.Add('Erro ao listar tabelas: ' + E.Message);
+  end;
+  finally
+    if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
   end;
 end;
 
@@ -4795,7 +4869,7 @@ end;
 
 procedure Tfrmmquery2.tvMSSQLChange(Sender: TObject; Node: TTreeNode);
 begin
-  if (Node = tvitemMSSQL) then
+  if (Node = tvitemMSSQL) or ((Node <> nil) and (Node.Parent = posicaofieldsMSSQL)) then
     tvMSSQL.PopupMenu := pmDatabaseMSSQL
   else
     tvMSSQL.PopupMenu := nil;
@@ -4803,7 +4877,7 @@ end;
 
 procedure Tfrmmquery2.tvOracleChange(Sender: TObject; Node: TTreeNode);
 begin
-  if (Node = tvitemOracle) then
+  if (Node = tvitemOracle) or ((Node <> nil) and (Node.Parent = posicaofieldsOracle)) then
     tvOracle.PopupMenu := pmDatabaseOracle
   else
     tvOracle.PopupMenu := nil;

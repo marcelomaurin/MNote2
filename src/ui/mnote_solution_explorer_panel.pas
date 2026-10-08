@@ -13,6 +13,9 @@ type
   TMNoteSolutionPathEvent = procedure(Sender: TObject;
     const APath: string) of object;
 
+  TMNoteSolutionDiagramEvent = procedure(Sender: TObject;
+    const AContextId, ATable: string) of object;
+
   TMNoteSolutionNodeKind = (snkSolution, snkProject, snkFolder, snkFile,
     snkDatabase, snkTableGroup, snkTable);
 
@@ -21,6 +24,14 @@ type
     Kind: TMNoteSolutionNodeKind;
     FullPath: string;
     Loaded: Boolean;
+    DatabaseContextId, DatabaseTable: string;
+  end;
+
+  TMNoteSolutionDatabase = class
+    Name, ContextId: string;
+    Tables: TStringList;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
   { TMNoteSolutionExplorerPanel }
@@ -35,6 +46,8 @@ type
     FProjectName: string;
     FProjectFile: string;
     FProjectKind: TMNoteProjectKind;
+    FDatabases: TObjectList;
+    FOnOpenDatabaseDiagram: TMNoteSolutionDiagramEvent;
     FDatabaseName: string;
     FDatabaseTables: TStringList;
     FOnOpenFile: TMNoteSolutionPathEvent;
@@ -70,6 +83,7 @@ type
     function ProjectNode: TTreeNode;
     procedure AddDatabaseNodes(ARoot: TTreeNode);
     procedure BuildPopup;
+    procedure OpenDatabaseDiagramClick(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -80,6 +94,8 @@ type
     procedure Refresh;
     procedure SetDatabase(const ADatabaseName: string; ATables: TStrings);
     procedure ClearDatabase;
+    procedure AddDatabaseContext(const AName, AContextId: string; ATables: TStrings);
+    property OnOpenDatabaseDiagram: TMNoteSolutionDiagramEvent read FOnOpenDatabaseDiagram write FOnOpenDatabaseDiagram;
     function ContainsNode(const ACaption: string): Boolean;
     procedure GetTreeSnapshot(AItems: TStrings);
     procedure SelectFile(const AFileName: string);
@@ -96,10 +112,16 @@ type
 
 implementation
 
+constructor TMNoteSolutionDatabase.Create;
+begin inherited Create; Tables := TStringList.Create; end;
+destructor TMNoteSolutionDatabase.Destroy;
+begin Tables.Free; inherited Destroy; end;
+
 constructor TMNoteSolutionExplorerPanel.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FNodeData := TObjectList.Create(True);
+  FDatabases := TObjectList.Create(True);
   FDatabaseTables := TStringList.Create;
   FDatabaseTables.Sorted := True;
   FDatabaseTables.Duplicates := dupIgnore;
@@ -107,6 +129,7 @@ end;
 
 destructor TMNoteSolutionExplorerPanel.Destroy;
 begin
+  FDatabases.Free;
   FDatabaseTables.Free;
   FNodeData.Free;
   inherited Destroy;
@@ -134,8 +157,21 @@ end;
 procedure TMNoteSolutionExplorerPanel.AddDatabaseNodes(ARoot: TTreeNode);
 var
   DatabaseNode, TablesNode: TTreeNode;
-  I: Integer;
+  I, J: Integer; D: TMNoteSolutionDatabase; N: TTreeNode;
 begin
+  if ARoot <> nil then
+    for J := 0 to FDatabases.Count - 1 do begin
+      D := TMNoteSolutionDatabase(FDatabases[J]);
+      DatabaseNode := AddPathNode(ARoot, D.Name, '', snkDatabase);
+      TMNoteSolutionNodeData(DatabaseNode.Data).DatabaseContextId := D.ContextId;
+      TablesNode := AddPathNode(DatabaseNode, Format('Tabelas (%d)', [D.Tables.Count]), '', snkTableGroup);
+      TMNoteSolutionNodeData(TablesNode.Data).DatabaseContextId := D.ContextId;
+      for I := 0 to D.Tables.Count - 1 do begin
+        N := AddPathNode(TablesNode, D.Tables[I], '', snkTable);
+        TMNoteSolutionNodeData(N.Data).DatabaseContextId := D.ContextId;
+        TMNoteSolutionNodeData(N.Data).DatabaseTable := D.Tables[I];
+      end;
+    end;
   if (ARoot = nil) or (Trim(FDatabaseName) = '') then Exit;
   DatabaseNode := AddPathNode(ARoot, 'Banco de dados ''' + FDatabaseName + '''',
     '', snkDatabase);
@@ -289,6 +325,8 @@ var
 begin
   Menu := TPopupMenu.Create(Self);
   AddItem(Menu, 'Abrir', @OpenSelected);
+  AddItem(Menu, 'Abrir diagrama do banco', @OpenDatabaseDiagramClick);
+  FTree.RightClickSelect := True;
   AddItem(Menu, 'Novo arquivo...', @NewFile);
   AddItem(Menu, 'Nova pasta...', @NewFolder);
   Menu.Items.AddSeparator;
@@ -316,6 +354,7 @@ begin
   FProjectName := '';
   FProjectFile := '';
   FProjectKind := mpkNone;
+  FDatabases.Clear;
   FDatabaseName := '';
   FDatabaseTables.Clear;
   if FTree <> nil then
@@ -370,9 +409,26 @@ end;
 
 procedure TMNoteSolutionExplorerPanel.ClearDatabase;
 begin
+  FDatabases.Clear;
   FDatabaseName := '';
   FDatabaseTables.Clear;
   if (FTree <> nil) and DirectoryExists(FRootPath) then Refresh;
+end;
+
+procedure TMNoteSolutionExplorerPanel.AddDatabaseContext(const AName, AContextId: string; ATables: TStrings);
+var D: TMNoteSolutionDatabase;
+begin
+  D := TMNoteSolutionDatabase.Create; D.Name := AName; D.ContextId := AContextId;
+  D.Tables.Assign(ATables); FDatabases.Add(D);
+end;
+
+procedure TMNoteSolutionExplorerPanel.OpenDatabaseDiagramClick(Sender: TObject);
+var D: TMNoteSolutionNodeData;
+begin
+  D := SelectedData;
+  if (D = nil) or not (D.Kind in [snkDatabase, snkTableGroup, snkTable]) or
+    (D.DatabaseContextId = '') then Exit;
+  if Assigned(FOnOpenDatabaseDiagram) then FOnOpenDatabaseDiagram(Self, D.DatabaseContextId, D.DatabaseTable);
 end;
 
 function TMNoteSolutionExplorerPanel.ContainsNode(

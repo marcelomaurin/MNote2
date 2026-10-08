@@ -89,6 +89,8 @@ type
     Responses: TStringList;
     Prompts: TStringList;
     Kinds: TStringList;
+    LastRole: TMNoteAIRole;
+    LastDeveloperMessage: string;
     constructor Create;
     destructor Destroy; override;
     function Call(Sender: TObject; ARole: TMNoteAIRole; const AKind,
@@ -167,6 +169,8 @@ function TAIProfileStub.Call(Sender: TObject; ARole: TMNoteAIRole;
   const AKind, AQuestion, ADeveloperMessage: string; AParentOrder,
   AAttempt: Integer; out AResponse, AError: string): Boolean;
 begin
+  LastRole := ARole;
+  LastDeveloperMessage := ADeveloperMessage;
   Prompts.Add(AQuestion);
   Kinds.Add(AKind);
   if FIndex >= Responses.Count then
@@ -1582,6 +1586,50 @@ begin
   end;
 end;
 
+procedure TestProfileChat;
+var
+  Service: TMNoteAIService;
+  Stub: TAIProfileStub;
+  Role: TMNoteAIRole;
+  Response: string;
+  Calls: Integer;
+begin
+  Service := TMNoteAIService.Create;
+  Stub := TAIProfileStub.Create;
+  try
+    Service.EnsureProfileDefaults;
+    Service.OnProfileCall := @Stub.Call;
+    for Role := Low(TMNoteAIRole) to High(TMNoteAIRole) do
+    begin
+      Service.Profiles.Profile(Role).Config.Enabled := True;
+      Service.Profiles.Profile(Role).Config.ModelName := 'test-model';
+      Service.Profiles.Profile(Role).Config.SystemPrompt := 'perfil-' + MNoteAIRoleID(Role);
+      Service.Profiles.Profile(Role).Config.InputBudget := 12000;
+      Service.Profiles.Profile(Role).Config.OutputBudget := 500;
+      Service.Profiles.Profile(Role).Config.ContextWindow := 0;
+      Stub.Responses.Add('resposta-' + MNoteAIRoleID(Role));
+      Check(Service.SendProfileQuestion(Role, 'teste', 'mensagem-chat', Response),
+        'Falha na chamada direta do perfil: ' + Service.LastError);
+      Check((Stub.LastRole = Role) and
+        (Response = 'resposta-' + MNoteAIRoleID(Role)),
+        'Chat chamou perfil diferente do selecionado');
+      Check((Pos('perfil-' + MNoteAIRoleID(Role), Stub.LastDeveloperMessage) > 0)
+        and (Pos('mensagem-chat', Stub.LastDeveloperMessage) > 0),
+        'Chat perdeu instruções do perfil ou da pergunta');
+    end;
+    Calls := Stub.Prompts.Count;
+    Service.Profiles.Profile(airTriage).Config.Enabled := False;
+    Check(not Service.SendProfileQuestion(airTriage, 'teste', '', Response),
+      'Chat aceitou perfil desabilitado');
+    Check((Stub.Prompts.Count = Calls) and (Service.LastError <> ''),
+      'Perfil desabilitado chamou provider ou não informou erro');
+  finally
+    Service.OnProfileCall := nil;
+    Service.Free;
+    Stub.Free;
+  end;
+end;
+
 procedure TestAIToolLoop;
 var
   Root, SourceFile, UnitBFile, ProfileFile, Response, ErrorText: string;
@@ -2298,6 +2346,8 @@ begin
     Writeln('OK: TMNoteEditorThemeService');
     TestCompletion;
     Writeln('OK: completion local, parser, snippets e índice de símbolos');
+    TestProfileChat;
+    Writeln('OK: chat usa o perfil selecionado e suas instruções');
     TestAIUtilities;
     Writeln('OK: prompt, estimativa de contexto e palavra de ativação');
     with TTestService.Create do
