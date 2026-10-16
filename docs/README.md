@@ -5,6 +5,10 @@
 - [Manual do usuário](manual_usuario.md)
 - [Matriz de capacidades](capability_matrix.md)
 
+## Acompanhamento de defeitos
+
+- [Lista de bugs e verificações](bugs.md)
+
 ## Arquitetura e contratos
 
 - [Arquitetura da IDE com IA](arquitetura_ide_ia.md)
