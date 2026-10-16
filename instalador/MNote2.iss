@@ -2,7 +2,7 @@
 ; 32-bit app for Windows x86/x64
 
 #define MyAppName "MNote2"
-#define MyAppVersion "2.68"
+#define MyAppVersion "2.70"
 #define MyAppPublisher "Maurinsoft"
 #define MyAppURL "http://maurinsoft.com.br"
 #define MyAppExeName "MNote2.exe"

@@ -200,7 +200,8 @@ begin
     Result := AnsiEndsText('.ppu', NameLower) or
       AnsiEndsText('.o', NameLower) or AnsiEndsText('.or', NameLower) or
       AnsiEndsText('.compiled', NameLower) or AnsiEndsText('.lps', NameLower) or
-      AnsiEndsText('.bak', NameLower) or AnsiEndsText('.tmp', NameLower);
+      AnsiEndsText('.bak', NameLower) or AnsiEndsText('.tmp', NameLower) or
+      AnsiEndsText('.ria', NameLower) or AnsiEndsText('.pia', NameLower);
 end;
 
 function TMNoteSolutionExplorerPanel.IsValidItemName(

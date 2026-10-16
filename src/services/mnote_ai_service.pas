@@ -1847,7 +1847,14 @@ procedure TMNoteAIService.SetProjectRoot(const ARootPath: string);
 var
   NewRoot: string;
 begin
-  if IsBusy or not DirectoryExists(ARootPath) then Exit;
+  if IsBusy then Exit;
+  if Trim(ARootPath) = '' then
+  begin
+    FProjectRoot := '';
+    FreeAndNil(FActionExecutor);
+    Exit;
+  end;
+  if not DirectoryExists(ARootPath) then Exit;
   NewRoot := ExcludeTrailingPathDelimiter(ExpandFileName(ARootPath));
   if SameFileName(NewRoot, FProjectRoot) then Exit;
   FProjectRoot := NewRoot;

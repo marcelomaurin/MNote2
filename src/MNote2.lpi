@@ -22,7 +22,7 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="2"/>
-      <MinorVersionNr Value="68"/>
+      <MinorVersionNr Value="70"/>
       <Language Value="0416"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -37,7 +37,7 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="30">
+    <RequiredPackages Count="31">
       <Item1>
         <PackageName Value="openai_graph"/>
       </Item1>
@@ -128,6 +128,9 @@
       <Item30>
         <PackageName Value="openai_output"/>
       </Item30>
+      <Item31>
+        <PackageName Value="openai_voice"/>
+      </Item31>
     </RequiredPackages>
     <Units Count="57">
       <Unit0>

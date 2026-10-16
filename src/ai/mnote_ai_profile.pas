@@ -93,7 +93,10 @@ begin
     FClient.Provider := TAIProvider(FConfig.Provider);
   if FConfig.ModelName <> '' then FClient.CustomModel := FConfig.ModelName;
   if FConfig.Endpoint <> '' then FClient.LocalIP := FConfig.Endpoint;
-  FClient.TOKEN := FSetMain.CHATGPT;
+  if FClient.Provider = AIP_LOCAL then
+    FClient.TOKEN := ''
+  else if Assigned(FSetMain) then
+    FClient.TOKEN := FSetMain.CHATGPT;
   FClient.MaxTokens := FConfig.OutputBudget;
   FClient.Temperature := FConfig.Temperature;
 end;

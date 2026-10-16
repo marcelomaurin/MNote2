@@ -6,7 +6,7 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  SysUtils,
+  SysUtils, Classes,
   {$IFDEF WINDOWS}Windows,{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms,
@@ -95,12 +95,18 @@ begin
   begin
     if RunMNoteSmokeTest(SmokeReport) then
     begin
-      if ConsoleAvailable then WriteLn(SmokeReport);
+      try
+        if ConsoleAvailable then WriteLn(SmokeReport);
+      except
+      end;
       Halt(0);
     end
     else
     begin
-      if ConsoleAvailable then WriteLn(StdErr, SmokeReport);
+      try
+        if ConsoleAvailable then WriteLn(StdErr, SmokeReport);
+      except
+      end;
       Halt(1);
     end;
   end;
