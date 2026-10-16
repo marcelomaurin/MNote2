@@ -487,13 +487,13 @@ Cuidados:
 
 ### `src/toolsfalar/toolsfalar.pas`
 
-Ferramenta para enviar texto a um serviço TCP de fala.
+Ferramenta para sintetização de voz utilizando o componente nativo `TAIVoiceSynthesizer` da biblioteca CHATGPT.
 
 Uso previsto:
 
-- integração com `srvFalar` ou serviço semelhante;
-- envio de texto para síntese de voz;
-- configuração de IP e porta.
+- síntese e reprodução de voz utilizando os provedores configurados (SAPI, eSpeak, OpenAI);
+- teste e execução interativa de sintetização de texto;
+- integração direta com o serviço central `MNoteVoiceOutput`.
 
 ### `src/toolsouvir/toolsouvir.pas`
 

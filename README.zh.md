@@ -81,7 +81,7 @@ MQuery2 作为内置 SQL 管理器运行。
 
 ### 语音工具
 
-- ToolsFalar 通过 TCP 将文本发送到语音合成服务，例如 srvFalar。
+- ToolsFalar 使用 CHATGPT 语音组件（TAIVoiceSynthesizer）进行本地语音合成。
 - ToolsOuvir 通过 TCP 接收外部命令和消息。
 - 可根据配置在启动时自动启用。
 - IP 和端口可在界面中设置。
@@ -92,7 +92,6 @@ MQuery2 作为内置 SQL 管理器运行。
 - Windows 安装器版本：2.64。
 - 会复制 MNote2.exe、DLL、.dci 文件、.txt 列表、.bat 脚本、示例和默认数据库。
 - 默认数据库复制到 C:db。
-- 包含安装后启动 srvFalar_1.4.exe 的选项。
 - 历史二进制和安装包位于 bin。
 - buildlinux.sh 保持 Linux/deb 打包流程。
 

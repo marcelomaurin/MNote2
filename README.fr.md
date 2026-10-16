@@ -81,7 +81,7 @@ Le module MQuery2 sert de gestionnaire SQL intégré.
 
 ### Outils vocaux
 
-- ToolsFalar envoie du texte via TCP vers un service de synthèse vocale comme srvFalar.
+- ToolsFalar synthétise la voix nativement via le composant vocal CHATGPT (TAIVoiceSynthesizer).
 - ToolsOuvir se connecte via TCP pour recevoir des commandes et messages externes.
 - Activation automatique optionnelle au démarrage selon la configuration.
 - IP et port configurés via l'interface.
@@ -92,7 +92,6 @@ Le module MQuery2 sert de gestionnaire SQL intégré.
 - Version de l'installateur Windows : 2.64.
 - Copie MNote2.exe, les DLL, les fichiers .dci, les listes .txt, les scripts .bat, les exemples et la base par défaut.
 - Copie la base par défaut dans C:db.
-- Inclut une option post-installation pour lancer srvFalar_1.4.exe.
 - Les paquets et binaires historiques se trouvent dans bin.
 - buildlinux.sh maintient le flux de packaging Linux/deb.
 

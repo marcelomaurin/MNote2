@@ -74,6 +74,18 @@ def main() -> None:
     if "mnote_voice_input_service" not in ouvir_text:
         fail("ToolsOuvir is not wired to the CHATGPT voice input service")
 
+    voice_output_service = SRC / "services" / "mnote_voice_output_service.pas"
+    tools_falar = SRC / "toolsfalar" / "toolsfalar.pas"
+    if not voice_output_service.exists():
+        fail("CHATGPT voice output service is missing")
+    if "aivoicesynthesizer" not in voice_output_service.read_text(encoding="utf-8", errors="ignore").lower():
+        fail("voice output service does not use CHATGPT component aivoicesynthesizer")
+    falar_text = tools_falar.read_text(encoding="utf-8", errors="ignore").lower()
+    if "mnote_voice_output_service" not in falar_text and "aivoicesynthesizer" not in falar_text:
+        fail("ToolsFalar is not wired to the CHATGPT voice output service")
+    if "srvfalar" in falar_text:
+        fail("ToolsFalar still references srvFalar")
+
     print("Lazarus project integrity: OK")
 
 

@@ -81,7 +81,7 @@ MQuery2 funciona como gestor SQL integrado.
 
 ### Herramientas de voz
 
-- ToolsFalar envía texto por TCP a un servicio de síntesis de voz como srvFalar.
+- ToolsFalar sintetiza voz de forma nativa utilizando el componente de voz de CHATGPT (TAIVoiceSynthesizer).
 - ToolsOuvir se conecta por TCP para recibir comandos y mensajes externos.
 - Activación automática opcional al iniciar, según configuración.
 - IP y puerto configurados desde la interfaz.
@@ -92,7 +92,6 @@ MQuery2 funciona como gestor SQL integrado.
 - Versión del instalador Windows: 2.64.
 - Copia MNote2.exe, DLLs, archivos .dci, listas .txt, scripts .bat, ejemplos y la base de datos predeterminada.
 - Copia la base de datos predeterminada a C:db.
-- Incluye una opción posinstalación para iniciar srvFalar_1.4.exe.
 - Los paquetes y binarios históricos están en bin.
 - buildlinux.sh mantiene el flujo de empaquetado Linux/deb.
 

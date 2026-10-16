@@ -81,7 +81,7 @@ MQuery2 works as the built-in SQL manager.
 
 ### Voice tools
 
-- ToolsFalar sends text over TCP to a speech-synthesis service such as srvFalar.
+- ToolsFalar synthesizes speech natively using the CHATGPT voice component (TAIVoiceSynthesizer).
 - ToolsOuvir connects over TCP to receive external commands and messages.
 - Optional automatic activation at startup, depending on configuration.
 - IP and port are configured through the UI.
@@ -92,7 +92,6 @@ MQuery2 works as the built-in SQL manager.
 - Windows installer version: 2.64.
 - Copies MNote2.exe, DLLs, .dci files, .txt lists, .bat scripts, samples, and the default database.
 - Copies the default database to C:db.
-- Includes a post-install option to launch srvFalar_1.4.exe.
 - Historical packages and binaries live under bin.
 - buildlinux.sh keeps the Linux/deb packaging flow.
 

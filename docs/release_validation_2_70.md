@@ -15,6 +15,7 @@ A versão 2.70 corrige estabilizações críticas do projeto e consolida o ambie
 8. Filtragem de arquivos de cache de IA (`.ria` e `.pia`) na árvore do Solution Explorer (`mnote_solution_explorer_panel.pas`).
 9. Limpeza adequada de `FProjectRoot` e `FActionExecutor` em `TMNoteAIService.SetProjectRoot` ao fechar projetos.
 10. Sincronização e bump de versão para 2.70 em todos os manifestos, código-fonte e documentação multilíngue.
+11. Remoção completa do `srvFalar` (exclusão de `src/srvfalar.py`, `bin/srvfalar*.deb`, referências do instalador Inno Setup e documentação) e modernização do `ToolsFalar` utilizando diretamente o componente nativo de síntese de voz (`TAIVoiceSynthesizer`) da biblioteca CHATGPT.
 
 ## Validações
 
@@ -34,5 +35,5 @@ A versão 2.70 corrige estabilizações críticas do projeto e consolida o ambie
 
 ## Artefatos
 
-- `src/MNote2.exe` — 16.429.587 bytes — SHA-256 `CF5AC44338C9799F8E3D44D23BF1C3E96D3C1591371E4C9FC4459B0D9605E32C`.
-- `bin/win_MNote2_70.exe` — 14.387.988 bytes — SHA-256 `379863583A7DA419F3FEF88F5A7F57C36B1092A36F978EFEC36348CC7466638B`.
+- `src/MNote2.exe` — 16.428.051 bytes — SHA-256 `3FEB3851372D1F63CFB95BEB8906DBE94D11437E9E1E788101E16EAACAA20C7E`.
+- `bin/win_MNote2_70.exe` — 14.388.037 bytes — SHA-256 `97529D27B2C449F53CEA462C1688E00D0CAE0EE93E1E2D0E6D71165767CF45D6`.

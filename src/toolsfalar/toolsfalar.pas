@@ -1,12 +1,13 @@
 unit toolsfalar;
 
 {$mode objfpc}{$H+}
+{$codepage utf8}
 
 interface
 
 uses
-  Classes, SysUtils, FileUtil, lNetComponents, Forms, Controls, Graphics,
-  Dialogs, StdCtrls, ExtCtrls, AdvLed, lNet, setmain;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
+  AdvLed, aivoicesynthesizer, mnote_voice_output_service;
 
 type
 
@@ -14,34 +15,25 @@ type
 
   TfrmToolsfalar = class(TForm)
     AdvLed1: TAdvLed;
+    btConfig: TButton;
     btFalar: TButton;
-    btConect: TButton;
-    btDisconect: TButton;
-    edIP: TEdit;
+    btParar: TButton;
     edFalar: TEdit;
-    edPort: TEdit;
-    Label1: TLabel;
-    Label2: TLabel;
     Label3: TLabel;
-    LTCPComponent1: TLTCPComponent;
+    lbStatus: TLabel;
     Shape1: TShape;
-    procedure btConectClick(Sender: TObject);
-    procedure btDisconectClick(Sender: TObject);
+    procedure btConfigClick(Sender: TObject);
     procedure btFalarClick(Sender: TObject);
+    procedure btPararClick(Sender: TObject);
     procedure edFalarKeyPress(Sender: TObject; var Key: char);
-    procedure edPortChange(Sender: TObject);
-    procedure LTCPComponent1Accept(aSocket: TLSocket);
-    procedure LTCPComponent1Connect(aSocket: TLSocket);
-    procedure LTCPComponent1Disconnect(aSocket: TLSocket);
-    procedure LTCPComponent1Error(const msg: string; aSocket: TLSocket);
-    procedure LTCPComponent1Receive(aSocket: TLSocket);
+    procedure FormCreate(Sender: TObject);
   private
     procedure SetReady(AReady: Boolean);
-    function ValidateSocket(out AHost: string; out APort: Word;
-      out AError: string): Boolean;
+    procedure UpdateStatus(const AMsg: string);
   public
     procedure Falar();
     procedure Falar(Texto: string);
+    procedure Parar();
     procedure Conectar();
     procedure Disconectar();
   end;
@@ -54,7 +46,13 @@ implementation
 {$R *.lfm}
 
 uses
-  mnote_voice_output_service;
+  voice_output_config;
+
+procedure TfrmToolsfalar.FormCreate(Sender: TObject);
+begin
+  SetReady(True);
+  UpdateStatus('Pronto para sintetizar voz (TAIVoiceSynthesizer)');
+end;
 
 procedure TfrmToolsfalar.SetReady(AReady: Boolean);
 begin
@@ -71,42 +69,32 @@ begin
   end;
 end;
 
-function TfrmToolsfalar.ValidateSocket(out AHost: string; out APort: Word;
-  out AError: string): Boolean;
+procedure TfrmToolsfalar.UpdateStatus(const AMsg: string);
+begin
+  if lbStatus <> nil then
+    lbStatus.Caption := AMsg;
+end;
+
+procedure TfrmToolsfalar.btConfigClick(Sender: TObject);
 var
-  PortValue: Integer;
+  Frm: TfrmVoiceOutputConfig;
 begin
-  AHost := Trim(edIP.Text);
-  APort := 0;
-  AError := '';
-  if AHost = '' then
-  begin
-    AError := 'Informe o endereço do servidor.';
-    Exit(False);
+  Frm := TfrmVoiceOutputConfig.Create(Self);
+  try
+    Frm.ShowModal;
+  finally
+    Frm.Free;
   end;
-  if (not TryStrToInt(Trim(edPort.Text), PortValue)) or
-     (PortValue < 1) or (PortValue > 65535) then
-  begin
-    AError := 'Informe uma porta válida entre 1 e 65535.';
-    Exit(False);
-  end;
-  APort := Word(PortValue);
-  Result := True;
-end;
-
-procedure TfrmToolsfalar.btConectClick(Sender: TObject);
-begin
-  Conectar();
-end;
-
-procedure TfrmToolsfalar.btDisconectClick(Sender: TObject);
-begin
-  Disconectar();
 end;
 
 procedure TfrmToolsfalar.btFalarClick(Sender: TObject);
 begin
   Falar();
+end;
+
+procedure TfrmToolsfalar.btPararClick(Sender: TObject);
+begin
+  Parar();
 end;
 
 procedure TfrmToolsfalar.edFalarKeyPress(Sender: TObject; var Key: char);
@@ -116,42 +104,6 @@ begin
     Key := #0;
     Falar();
   end;
-end;
-
-procedure TfrmToolsfalar.edPortChange(Sender: TObject);
-begin
-  { Evento mantido para compatibilidade com o formulário antigo. }
-end;
-
-procedure TfrmToolsfalar.LTCPComponent1Accept(aSocket: TLSocket);
-begin
-  SetReady(True);
-end;
-
-procedure TfrmToolsfalar.LTCPComponent1Connect(aSocket: TLSocket);
-begin
-  SetReady(True);
-end;
-
-procedure TfrmToolsfalar.LTCPComponent1Disconnect(aSocket: TLSocket);
-begin
-  SetReady(False);
-end;
-
-procedure TfrmToolsfalar.LTCPComponent1Error(const msg: string; aSocket: TLSocket);
-begin
-  SetReady(False);
-  if Trim(msg) <> '' then
-    ShowMessage('Erro de conexão: ' + msg);
-end;
-
-procedure TfrmToolsfalar.LTCPComponent1Receive(aSocket: TLSocket);
-var
-  info: String;
-begin
-  info := '';
-  if aSocket <> nil then
-    aSocket.GetMessage(info);
 end;
 
 procedure TfrmToolsfalar.Falar();
@@ -165,16 +117,18 @@ begin
     Exit;
   end;
 
-  { Caminho principal: componente TAIVoiceSynthesizer do projeto CHATGPT,
-    encapsulado pelo serviço do MNote2. O socket legado não é necessário
-    para sintetizar voz. }
+  UpdateStatus('Sintetizando áudio...');
+  SetReady(True);
+
   if MNoteVoiceOutput.Speak(Texto, True) then
-    SetReady(True)
+  begin
+    UpdateStatus('Áudio reproduzido com sucesso.');
+  end
   else
   begin
     SetReady(False);
-    ShowMessage('Não foi possível falar a resposta: ' +
-      MNoteVoiceOutput.LastError);
+    UpdateStatus('Erro na síntese: ' + MNoteVoiceOutput.LastError);
+    ShowMessage('Não foi possível falar: ' + MNoteVoiceOutput.LastError);
   end;
 end;
 
@@ -184,37 +138,28 @@ begin
   Falar();
 end;
 
-procedure TfrmToolsfalar.Conectar();
-var
-  Host, ErrorText: string;
-  Port: Word;
+procedure TfrmToolsfalar.Parar();
 begin
-  { Conexão mantida apenas por retrocompatibilidade com instalações que ainda
-    usam o serviço TCP antigo. A síntese local usa CHATGPT/TAIVoiceSynthesizer. }
-  if not ValidateSocket(Host, Port, ErrorText) then
-  begin
-    ShowMessage(ErrorText);
-    SetReady(False);
-    Exit;
-  end;
   try
-    LTCPComponent1.Connect(Host, Port);
-  except
-    on E: Exception do
-    begin
-      SetReady(False);
-      ShowMessage('Não foi possível conectar: ' + E.Message);
-    end;
+    if MNoteVoiceOutput.Synthesizer <> nil then
+      MNoteVoiceOutput.Synthesizer.Stop;
+  finally
+    SetReady(True);
+    UpdateStatus('Reprodução interrompida.');
   end;
+end;
+
+procedure TfrmToolsfalar.Conectar();
+begin
+  SetReady(True);
+  UpdateStatus('Serviço de voz nativo pronto.');
 end;
 
 procedure TfrmToolsfalar.Disconectar();
 begin
-  try
-    LTCPComponent1.Disconnect(True);
-  finally
-    SetReady(False);
-  end;
+  Parar();
+  SetReady(False);
+  UpdateStatus('Serviço de voz inativo.');
 end;
 
 end.
