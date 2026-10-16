@@ -1,5 +1,7 @@
 # Documentação do MNote2
 
+> Documentação de referência da IDE MNote2 2.68. Os recursos descritos nos manuais são capacidades declaradas pelo projeto; a situação dos testes e regressões deve ser consultada nos relatórios de validação e na lista de bugs.
+
 ## Uso
 
 - [Manual do usuário](manual_usuario.md)
@@ -7,7 +9,7 @@
 
 ## Acompanhamento de defeitos
 
-- [Lista de bugs e verificações](bugs.md)
+- [Lista de bugs e verificações](bugs.md) — 16 cenários pendentes de validação, sem defeitos confirmados nesta triagem documental.
 
 ## Arquitetura e contratos
 
