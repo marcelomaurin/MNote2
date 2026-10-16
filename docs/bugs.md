@@ -1,6 +1,10 @@
 # Lista de bugs e verificações — MNote2
 
-Atualizado em: 2026-10-16 | Branch: `master` | Referência: versão 2.68.
+Atualizado em: 2026-10-16 | Branch: `main` | Referência: versão 2.68.
+
+## Escopo e evidências
+
+O backlog foi compilado a partir dos recursos descritos na documentação, não de uma execução de testes. A validação 2.68 registra build desktop, testes, smoke e instalador aprovados no ambiente de referência em 2026-08-01; isso não comprova individualmente os cenários deste backlog. Atualizar a situação de cada item somente com reprodução e evidência identificável.
 
 ## Critérios
 Este documento é o ponto central de triagem de problemas. **Não confundir hipótese de falha com bug reproduzido.** Os itens abaixo são **verificações pendentes**, derivadas das funcionalidades declaradas no README e documentação. Não há falha de execução confirmada nesta revisão documental.
