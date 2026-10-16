@@ -10,10 +10,10 @@ Versão desta entrega: **2.68**.
 
 ## Destaques
 
-- shell no estilo Visual Studio com painéis persistentes e paleta de comandos;
+- interface de desenvolvimento com painéis persistentes e paleta de comandos;
 - Search/Replace UTF-8, regex, filtros, preview, backup e rollback;
 - perfis de linguagem, temas, snippets, símbolos, F12 e referências;
-- Solution Explorer no estilo Visual Studio, com projeto, arquivos e a conexão
+- explorador de soluções com projeto, arquivos e a conexão
   ativa do MQuery2 organizada por banco e tabelas;
 - projetos, Tasks, Task List, Gantt, Timeline e Risk Matrix;
 - seis papéis de IA, router determinístico, limites, cancelamento e AI Monitor;
