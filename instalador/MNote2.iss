@@ -22,7 +22,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={commonpf32}\{#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir={#ProjectRoot}\bin
-OutputBaseFilename=win_MNote2_68
+OutputBaseFilename=win_MNote2_70
 SetupIconFile={#ProjectRoot}\src\MNote2.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma
@@ -68,13 +68,13 @@ Source: "{#ProjectRoot}\libs\mysql\win32\lib\mysqlcppconn8-2-vs14.dll"; DestDir:
 Source: "{#ProjectRoot}\libs\postgres\win32\*.dll"; DestDir: "{app}\libs\postgres\win32"; Flags: ignoreversion
 
 ; Oracle 32-bit runtime
-Source: "{#ProjectRoot}\libs\oracle\win32\oci.dll"; DestDir: "{app}\libs\oracle\win32"; Flags: ignoreversion
+Source: "{#ProjectRoot}\libs\oracle\win32\oci.dll"; DestDir: "{app}\libs\oracle\win32"; Flags: ignoreversion skipifsourcedoesntexist
 
 ; SQLite 32-bit runtime
 Source: "{#ProjectRoot}\libs\sqlite\win32\sqlite3.dll"; DestDir: "{app}\libs\sqlite\win32"; Flags: ignoreversion
 
 ; Tools
-Source: "{#ProjectRoot}\tools\windows\srvFalar_1.4.exe"; DestDir: "{app}\tools"; Flags: ignoreversion
+Source: "{#ProjectRoot}\tools\windows\srvFalar_1.4.exe"; DestDir: "{app}\tools"; Flags: ignoreversion skipifsourcedoesntexist
 
 ; Samples
 Source: "{#ProjectRoot}\sample\gcc\hello.c"; DestDir: "{app}\sample\gcc"; Flags: ignoreversion
@@ -88,5 +88,5 @@ Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\tools\srvFalar_1.4.exe"; Description: "Iniciar srvFalar"; Flags: nowait postinstall skipifsilent runascurrentuser
+Filename: "{app}\tools\srvFalar_1.4.exe"; Description: "Iniciar srvFalar"; Flags: nowait postinstall skipifsilent runascurrentuser skipifdoesntexist
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser
