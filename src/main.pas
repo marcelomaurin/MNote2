@@ -223,6 +223,7 @@ type
     procedure MenuItem4Click(Sender: TObject);
     procedure miConfigClick(Sender: TObject);
     procedure miLLMTrainingClick(Sender: TObject);
+    procedure miAITasksClick(Sender: TObject);
     procedure miIAConfigClick(Sender: TObject);
     procedure miVoiceOutputConfigClick(Sender: TObject);
     procedure miPythonConfigClick(Sender: TObject);
@@ -453,7 +454,8 @@ implementation
 {$R *.lfm}
 
 uses
-  Sobre, base, ZDataset, DateUtils, aidb_types, mnote_llm_training_form;
+  Sobre, base, ZDataset, DateUtils, aidb_types, mnote_llm_training_form,
+  mnote_ai_tasks_form;
 
 { -------------------------------------------------------------------- }
 {  Helper para extrair texto de DOC/DOCX/PDF                           }
@@ -2907,11 +2909,16 @@ var
    ProjectRoot, ProjectName: string;
    ChatMemoryTab: TTabSheet;
    LLMTrainingMenu: TMenuItem;
+   AITasksMenu: TMenuItem;
 begin
   LLMTrainingMenu := TMenuItem.Create(Self);
   LLMTrainingMenu.Caption := 'Treinamento LLM (LoRA / QLoRA)...';
   LLMTrainingMenu.OnClick := @miLLMTrainingClick;
   MainMenu1.Items.Add(LLMTrainingMenu);
+  AITasksMenu := TMenuItem.Create(Self);
+  AITasksMenu.Caption := 'Análise IA por tarefas...';
+  AITasksMenu.OnClick := @miAITasksClick;
+  MainMenu1.Items.Add(AITasksMenu);
   LimpaEventosLog;
   RegistraEventosLog('========================================');
   RegistraEventosLog('=== INICIANDO MNOTE2 ===');
@@ -3918,6 +3925,24 @@ begin
     frmmquery2.Hide
   else
     frmmquery2.Show;
+end;
+
+procedure TfrmMNote.miAITasksClick(Sender: TObject);
+var
+  ProjectRoot: string;
+  Window: TMNoteAITasksForm;
+begin
+  if not GetProjectSearchFolder(ProjectRoot) then
+  begin
+    MessageHint('Abra um projeto antes de iniciar a análise por tarefas.');
+    Exit;
+  end;
+  Window := TMNoteAITasksForm.CreateForProject(Self, ProjectRoot);
+  try
+    Window.ShowModal;
+  finally
+    Window.Free;
+  end;
 end;
 
 procedure TfrmMNote.miLLMTrainingClick(Sender: TObject);
