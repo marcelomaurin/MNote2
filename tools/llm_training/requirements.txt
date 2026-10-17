@@ -1,0 +1,8 @@
+torch>=2.2
+transformers>=4.45,<5
+datasets>=2.20
+peft>=0.12
+accelerate>=0.33
+safetensors>=0.4
+# Para QLoRA em GPU CUDA compatível:
+bitsandbytes>=0.43
