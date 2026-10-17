@@ -26,6 +26,10 @@
 - [Ownership dos highlighters](highlighter_ownership.md)
 - [Portabilidade do dicionário](porte_dicionario.md)
 
+## Treinamento de IA
+
+- [Treinamento LLM com LoRA/QLoRA](treinamento_llm.md)
+
 ## Planos de implementação
 
 - [Diagrama multibanco do MQuery — plano e acompanhamento](plano_diagrama_mquery.md)
