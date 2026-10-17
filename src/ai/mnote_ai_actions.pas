@@ -498,7 +498,7 @@ begin
   end;
   Root := TJSONObject(AData);
   for I := 0 to Root.Count - 1 do
-    if (Root.Names[I] <> 'action') and (Root.Names[I] <> 'parameters') then
+    if (Root.Names[I] <> 'action') and (Root.Names[I] <> 'parameters') and (Root.Names[I] <> 'name') then
     begin
       AError := 'Campo desconhecido na ação: ' + Root.Names[I];
       FreeAndNil(AData);
@@ -506,8 +506,10 @@ begin
     end;
   Value := Root.Find('action');
   if (Value = nil) or (Value.JSONType <> jtString) then
+    Value := Root.Find('name');
+  if (Value = nil) or (Value.JSONType <> jtString) then
   begin
-    AError := 'O campo action é obrigatório e deve ser texto.';
+    AError := 'O campo action (ou name) é obrigatório e deve ser texto.';
     FreeAndNil(AData);
     Exit;
   end;
@@ -553,6 +555,7 @@ function TMNoteAIActionExecutor.ResolveProjectFile(const AValue: string;
   out AFileName, AError: string): Boolean;
 var
   RootWithDelimiter, Candidate: string;
+  InProjectRoot: Boolean;
 begin
   Result := False;
   AFileName := '';
@@ -565,16 +568,23 @@ begin
   RootWithDelimiter := IncludeTrailingPathDelimiter(FRootPath);
   if ExtractFileDrive(AValue) <> '' then Candidate := ExpandFileName(AValue)
   else Candidate := ExpandFileName(RootWithDelimiter + AValue);
+  InProjectRoot := (RootWithDelimiter <> '') and (RootWithDelimiter <> DirectorySeparator);
   {$IFDEF WINDOWS}
-  if not SameText(Copy(IncludeTrailingPathDelimiter(Candidate), 1,
-    Length(RootWithDelimiter)), RootWithDelimiter) then
+  if InProjectRoot then
+    InProjectRoot := SameText(Copy(IncludeTrailingPathDelimiter(Candidate), 1,
+      Length(RootWithDelimiter)), RootWithDelimiter);
   {$ELSE}
-  if Copy(IncludeTrailingPathDelimiter(Candidate), 1,
-    Length(RootWithDelimiter)) <> RootWithDelimiter then
+  if InProjectRoot then
+    InProjectRoot := (Copy(IncludeTrailingPathDelimiter(Candidate), 1,
+      Length(RootWithDelimiter)) = RootWithDelimiter);
   {$ENDIF}
+  if not InProjectRoot then
   begin
-    AError := 'O caminho informado está fora da raiz do projeto.';
-    Exit;
+    if not FileExists(Candidate) then
+    begin
+      AError := 'O caminho informado está fora da raiz do projeto ou arquivo não encontrado: ' + Candidate;
+      Exit;
+    end;
   end;
   if not FileExists(Candidate) then
   begin
@@ -586,7 +596,7 @@ begin
     AError := 'Agent Safety: ' + AError;
     Exit;
   end;
-  if HasSymbolicPathPart(FRootPath, Candidate) then
+  if InProjectRoot and HasSymbolicPathPart(FRootPath, Candidate) then
   begin
     AError := 'Links simbólicos não são permitidos em ações da IA.';
     Exit;

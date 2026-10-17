@@ -150,6 +150,7 @@ type
     property Bus: TMNoteAIBus read FBus;
     property Session: TMNoteAISession read FSession;
     property SessionMemory: TAIAgentMemoryMap read FSessionMemory;
+    property ProjectRoot: string read FProjectRoot;
     property ProfilesFileName: string read FProfilesFileName;
     property OnStateChanged: TMNoteAIStateEvent read FOnStateChanged
       write FOnStateChanged;
@@ -171,7 +172,7 @@ function MNoteAIStateName(AState: TMNoteAIState): string;
 implementation
 
 uses
-  jsonparser, LazUTF8, aiagent_flowevents, setmain, mnote_chatgpt_config,
+  jsonparser, LazUTF8, StrUtils, aiagent_flowevents, setmain, mnote_chatgpt_config,
   mnote_prompt_builder, mnote_token_usage, mnote_ai_profile_defaults;
 
 type
@@ -858,25 +859,38 @@ end;
 function TMNoteAIService.ExtractActionEnvelope(const AResponse: string;
   out AActionJSON: string): Boolean;
 var
-  Value, Header, Body: string;
-  LineEnd: Integer;
+  Value, Body: string;
+  LineEnd, P1, P2: Integer;
 begin
   Result := False;
   AActionJSON := '';
   Value := Trim(AResponse);
   if Value = '' then Exit;
-  if Copy(Value, 1, 3) = '```' then
+
+  P1 := Pos('```', Value);
+  if P1 > 0 then
   begin
-    LineEnd := Pos(#10, Value);
-    if LineEnd = 0 then Exit;
-    Header := Trim(Copy(Value, 1, LineEnd - 1));
-    if (Header <> '```') and (not SameText(Header, '```json')) then Exit;
-    if Copy(Value, Length(Value) - 2, 3) <> '```' then Exit;
-    Body := Trim(Copy(Value, LineEnd + 1,
-      Length(Value) - LineEnd - 3));
-    if Pos('```', Body) > 0 then Exit;
-    Value := Body;
+    LineEnd := PosEx(#10, Value, P1);
+    if LineEnd > 0 then
+    begin
+      P2 := PosEx('```', Value, LineEnd + 1);
+      if P2 > LineEnd then
+      begin
+        Body := Trim(Copy(Value, LineEnd + 1, P2 - LineEnd - 1));
+        if (Body <> '') and (Body[1] = '{') and (Body[Length(Body)] = '}') then
+          Value := Body;
+      end;
+    end;
   end;
+
+  if (Value <> '') and ((Value[1] <> '{') or (Value[Length(Value)] <> '}')) then
+  begin
+    P1 := Pos('{', Value);
+    P2 := RPos('}', Value);
+    if (P1 > 0) and (P2 > P1) then
+      Value := Trim(Copy(Value, P1, P2 - P1 + 1));
+  end;
+
   if (Value = '') or (Value[1] <> '{') or
     (Value[Length(Value)] <> '}') then Exit;
   AActionJSON := Value;
@@ -888,6 +902,7 @@ function TMNoteAIService.IsActionRequest(const AResponse: string;
 var
   Data: TJSONData;
   Root: TJSONObject;
+  Val: TJSONData;
 begin
   Result := False;
   AActionName := '';
@@ -899,10 +914,14 @@ begin
       Data := GetJSON(AActionJSON);
       if not (Data is TJSONObject) then Exit;
       Root := TJSONObject(Data);
-      if (Root.Find('action') = nil) or
-        (Root.Find('action').JSONType <> jtString) then Exit;
-      AActionName := Root.Strings['action'];
-      Result := AActionName <> '';
+      Val := Root.Find('action');
+      if (Val = nil) or (Val.JSONType <> jtString) then
+        Val := Root.Find('name');
+      if (Val <> nil) and (Val.JSONType = jtString) then
+      begin
+        AActionName := Val.AsString;
+        Result := AActionName <> '';
+      end;
     except
       Result := Pos('"action"', LowerCase(AActionJSON)) > 0;
     end;

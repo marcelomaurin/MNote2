@@ -1542,9 +1542,21 @@ object frmMNote: TfrmMNote
         Caption = 'Voice Output'
         OnClick = miVoiceOutputConfigClick
       end
+      object miVoiceRecognitionConfig: TMenuItem
+        Caption = 'Voice Recognition'
+        OnClick = miVoiceRecognitionConfigClick
+      end
       object miPythonConfig: TMenuItem
         Caption = 'Python'
         OnClick = miPythonConfigClick
+      end
+      object miScriptsConfig: TMenuItem
+        Caption = 'Scripts'
+        OnClick = miScriptsConfigClick
+      end
+      object miDatabaseConfig: TMenuItem
+        Caption = 'Database'
+        OnClick = miDatabaseConfigClick
       end
       object mnfont: TMenuItem
         Caption = 'Fonts'
@@ -1584,7 +1596,7 @@ object frmMNote: TfrmMNote
     end
     object MenuItem10: TMenuItem
       Caption = 'About'
-      ImageIndex = 12
+      ImageIndex = 31
       OnClick = MenuItem10Click
     end
   end

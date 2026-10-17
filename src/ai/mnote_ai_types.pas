@@ -145,13 +145,13 @@ begin
   Provider := 0;
   Enabled := True;
   case Role of
-    airTriage: begin InputBudget := 2000; OutputBudget := 500; end;
-    airLightWork: begin InputBudget := 4000; OutputBudget := 1500; end;
-    airRecovery: begin InputBudget := 4500; OutputBudget := 1500; end;
-    airArbiter: begin InputBudget := 2500; OutputBudget := 500; end;
-    airDatabase: begin InputBudget := 6000; OutputBudget := 1800; end;
+    airTriage: begin InputBudget := 8000; OutputBudget := 1000; end;
+    airLightWork: begin InputBudget := 32000; OutputBudget := 4000; end;
+    airRecovery: begin InputBudget := 16000; OutputBudget := 3000; end;
+    airArbiter: begin InputBudget := 8000; OutputBudget := 1000; end;
+    airDatabase: begin InputBudget := 32000; OutputBudget := 4000; end;
   else
-    begin InputBudget := 7000; OutputBudget := 2200; end;
+    begin InputBudget := 48000; OutputBudget := 4000; end;
   end;
   ContextWindow := 0;
   Temperature := 0.2;

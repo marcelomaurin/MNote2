@@ -238,8 +238,8 @@ end;
 
 procedure TMNoteMemoryMapPanel.BuildNodes;
 const
-  NodeHeight = 78;
-  NodeGap = 24;
+  NodeHeight = 96;
+  NodeGap = 18;
 var
   I, Depth, CanvasWidth, NodeWidth: Integer;
 begin
@@ -259,12 +259,12 @@ begin
   begin
     FNodes[I].ItemIndex := I;
     Depth := NodeDepth(FMemoryMap.Items[I]);
-    NodeWidth := CanvasWidth - 70 - (Depth * 28);
-    if NodeWidth < 210 then NodeWidth := 210;
-    FNodes[I].Bounds := Rect(38 + Depth * 28,
-      42 + I * (NodeHeight + NodeGap),
-      38 + Depth * 28 + NodeWidth,
-      42 + I * (NodeHeight + NodeGap) + NodeHeight);
+    NodeWidth := CanvasWidth - 56 - (Depth * 24);
+    if NodeWidth < 220 then NodeWidth := 220;
+    FNodes[I].Bounds := Rect(28 + Depth * 24,
+      32 + I * (NodeHeight + NodeGap),
+      28 + Depth * 24 + NodeWidth,
+      32 + I * (NodeHeight + NodeGap) + NodeHeight);
   end;
 end;
 
@@ -308,9 +308,10 @@ end;
 procedure TMNoteMemoryMapPanel.PaintMap(Sender: TObject);
 var
   I, ParentIndex: Integer;
-  NodeRect, ParentRect: TRect;
+  NodeRect, ParentRect, TextBounds: TRect;
   Item: TAIAgentMemoryMapItem;
   Accent: TColor;
+  TS: TTextStyle;
 begin
   FMapCanvas.Canvas.Brush.Color := MapColor(18, 22, 32);
   FMapCanvas.Canvas.FillRect(FMapCanvas.ClientRect);
@@ -376,10 +377,17 @@ begin
     FMapCanvas.Canvas.Font.Color := Accent;
     FMapCanvas.Canvas.TextOut(NodeRect.Right - 92, NodeRect.Top + 13,
       StatusText(Item.Status));
+    TextBounds := Rect(NodeRect.Left + 18, NodeRect.Top + 34,
+      NodeRect.Right - 16, NodeRect.Bottom - 8);
     FMapCanvas.Canvas.Font.Color := MapColor(164, 177, 202);
-    FMapCanvas.Canvas.Font.Height := -13;
-    FMapCanvas.Canvas.TextOut(NodeRect.Left + 18, NodeRect.Top + 40,
-      ShortText(Item.PedidoRecebido, 72));
+    FMapCanvas.Canvas.Font.Height := -12;
+    TS := FMapCanvas.Canvas.TextStyle;
+    TS.WordBreak := True;
+    TS.SingleLine := False;
+    TS.Clipping := True;
+    TS.ShowPrefix := False;
+    FMapCanvas.Canvas.TextRect(TextBounds, TextBounds.Left, TextBounds.Top,
+      ShortText(Item.PedidoRecebido, 220), TS);
   end;
 end;
 

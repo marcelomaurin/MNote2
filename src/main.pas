@@ -1,6 +1,7 @@
-unit main;
+﻿unit main;
 
 {$mode objfpc}{$H+}
+{$codepage utf8}
 
 interface
 
@@ -8,7 +9,7 @@ uses
   Classes, SysUtils, FileUtil, fpjson, SynEdit, Forms, Controls, Graphics, Dialogs,
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types,
   setmain, TypeDB, folders, funcoes, LCLType, ValEdit, PairSplitter, chgtext,
-  hint, registro, splash, setFolders, config, SynEditKeyCmds, PythonEngine,
+  hint, registro, splash, setFolders, scripts_config, database_config, SynEditKeyCmds, PythonEngine,
   rxctrls, LogTreeView, uPoweredby, mquery2, porradawebapi,
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir,
   newproject, uProjetoDB, IA, uPdfText, uDocText, mnote_python_service,
@@ -27,7 +28,7 @@ uses
   mnote_git_read_service, mnote_files_panel, mnote_components_lab_panel,
   mnote_project_context, mnote_solution_explorer_panel,
   mnote_neural_api_bootstrap, mnote_memory_map_panel,
-  voice_output_config, confpython, mnote_voice_output_service, mnote_visual_identity;
+  voice_output_config, voice_recognition_config, confpython, mnote_voice_output_service, mnote_visual_identity;
 
 type
 
@@ -112,7 +113,10 @@ type
     miConfig: TMenuItem;
     miIAConfig: TMenuItem;
     miVoiceOutputConfig: TMenuItem;
+    miVoiceRecognitionConfig: TMenuItem;
     miPythonConfig: TMenuItem;
+    miScriptsConfig: TMenuItem;
+    miDatabaseConfig: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem4: TMenuItem;
     MenuItem9: TMenuItem;
@@ -224,7 +228,10 @@ type
     procedure miConfigClick(Sender: TObject);
     procedure miIAConfigClick(Sender: TObject);
     procedure miVoiceOutputConfigClick(Sender: TObject);
+    procedure miVoiceRecognitionConfigClick(Sender: TObject);
     procedure miPythonConfigClick(Sender: TObject);
+    procedure miScriptsConfigClick(Sender: TObject);
+    procedure miDatabaseConfigClick(Sender: TObject);
     procedure miUndoClick(Sender: TObject);
     procedure mnFixWClick(Sender: TObject);
     procedure mnOnTopWClick(Sender: TObject);
@@ -465,7 +472,7 @@ begin
   Result := '';
   ext := LowerCase(ExtractFileExt(AFileName));
 
-  // 🔹 Ajuste os nomes das funções abaixo conforme tiver em uPdfText/uDocText
+  // ðŸ”¹ Ajuste os nomes das funções abaixo conforme tiver em uPdfText/uDocText
   if ext = '.pdf' then
   begin
     // Ex.: função em uPdfText
@@ -1502,31 +1509,38 @@ begin
 
   NavigationMenu := TMenuItem.Create(Self);
   NavigationMenu.Caption := 'Navegação';
+  NavigationMenu.ImageIndex := MNOTE_ICON_NAVIGATE;
   MainMenu1.Items.Add(NavigationMenu);
   GoDefinitionItem := TMenuItem.Create(Self);
   GoDefinitionItem.Caption := 'Ir para definição';
+  GoDefinitionItem.ImageIndex := MNOTE_ICON_NAVIGATE;
   GoDefinitionItem.ShortCut := Menus.ShortCut(VK_F12, []);
   GoDefinitionItem.OnClick := @CommandGotoDefinition;
   NavigationMenu.Add(GoDefinitionItem);
   FindReferencesItem := TMenuItem.Create(Self);
   FindReferencesItem.Caption := 'Localizar todas as referências';
+  FindReferencesItem.ImageIndex := MNOTE_ICON_SEARCH;
   FindReferencesItem.ShortCut := Menus.ShortCut(VK_F12, [ssShift]);
   FindReferencesItem.OnClick := @CommandFindReferences;
   NavigationMenu.Add(FindReferencesItem);
   AIMenu := TMenuItem.Create(Self);
   AIMenu.Caption := 'IA';
+  AIMenu.ImageIndex := MNOTE_ICON_AI;
   MainMenu1.Items.Add(AIMenu);
   AICompletionItem := TMenuItem.Create(Self);
   AICompletionItem.Caption := 'Sugerir continuação';
+  AICompletionItem.ImageIndex := MNOTE_ICON_AI;
   AICompletionItem.ShortCut := Menus.ShortCut(VK_SPACE, [ssCtrl, ssAlt]);
   AICompletionItem.OnClick := @CommandAICompletion;
   AIMenu.Add(AICompletionItem);
   AIProposeItem := TMenuItem.Create(Self);
   AIProposeItem.Caption := 'Propor correção com IA';
+  AIProposeItem.ImageIndex := MNOTE_ICON_AI;
   AIProposeItem.OnClick := @CommandAIProposeChange;
   AIMenu.Add(AIProposeItem);
   AILabItem := TMenuItem.Create(Self);
   AILabItem.Caption := 'AI Components Lab';
+  AILabItem.ImageIndex := MNOTE_ICON_LAB;
   AILabItem.OnClick := @CommandAIComponentsLab;
   AIMenu.Add(AILabItem);
 end;
@@ -2121,7 +2135,7 @@ begin
     EndLine := PageItem.syn.Lines.Count;
   end;
   Estimate := MNoteAI.EstimateContext(CodeText);
-  meDialog.Lines.Text := Format('%s — estimativa: %d tokens + %d de margem; limite %d; %s',
+  meDialog.Lines.Text := Format('%s â€” estimativa: %d tokens + %d de margem; limite %d; %s',
     [ATitle, Estimate.EstimatedTokens, Estimate.SafetyMargin,
      Estimate.ContextLimit, Estimate.Method]);
   if Estimate.ExceedsLimit and
@@ -2286,7 +2300,7 @@ begin
   if (FOutputPanel <> nil) and (MNoteAI.Session.Count > 0) then
   begin
     Step := MNoteAI.Session[MNoteAI.Session.Count - 1];
-    FOutputPanel.Add(mocAgent, Format('%d. %s — %s — %d ms',
+    FOutputPanel.Add(mocAgent, Format('%d. %s â€” %s â€” %d ms',
       [Step.Order, MNoteAIRoleName(Step.Role), Step.Status, Step.LatencyMS]) +
       LineEnding);
   end;
@@ -2770,11 +2784,13 @@ var
 begin
   FThemeMenu := TMenuItem.Create(Self);
   FThemeMenu.Caption := 'Theme';
+  FThemeMenu.ImageIndex := MNOTE_ICON_THEME;
   MainMenu1.Items.Add(FThemeMenu);
   for I := Low(FThemeItems) to High(FThemeItems) do
   begin
     FThemeItems[I] := TMenuItem.Create(Self);
     FThemeItems[I].Caption := ThemeNames[I];
+    FThemeItems[I].ImageIndex := MNOTE_ICON_THEME;
     FThemeItems[I].RadioItem := True;
     FThemeItems[I].GroupIndex := 42;
     FThemeItems[I].AutoCheck := False;
@@ -2937,7 +2953,7 @@ begin
   MNoteAI.OnActionConfirm := @ConfirmAIAction;
   ChatMemoryTab := TTabSheet.Create(PageControl1);
   ChatMemoryTab.PageControl := PageControl1;
-  ChatMemoryTab.Caption := 'Mapa de memória';
+  ChatMemoryTab.Caption := 'Mapa de Memória';
   FChatMemoryMapPanel := TMNoteMemoryMapPanel.Create(Self);
   FChatMemoryMapPanel.Parent := ChatMemoryTab;
   FChatMemoryMapPanel.SetMemoryMap(MNoteAI.SessionMemory);
@@ -3035,7 +3051,24 @@ begin
   ApplyThemeToAll;
   MNoteBuildProfessionalIcons(ImageList1);
   FIDEShell.ApplyIcons(ImageList1);
+  if (MenuItem10 <> nil) and (MainMenu1 <> nil) and (MainMenu1.Items <> nil) then
+  begin
+    MainMenu1.Items.Remove(MenuItem10);
+    MainMenu1.Items.Add(MenuItem10);
+  end;
+  if popFechar <> nil then popFechar.Images := ImageList1;
+  if popSysEdit <> nil then popSysEdit.Images := ImageList1;
+  if PopupMenu1 <> nil then PopupMenu1.Images := ImageList1;
+  if popFind <> nil then popFind.Images := ImageList1;
+  if pmResult <> nil then pmResult.Images := ImageList1;
+  if pmchatgpt <> nil then pmchatgpt.Images := ImageList1;
   MNoteApplyMenuIcons(MainMenu1);
+  MNoteApplyMenuIcons(popFechar);
+  MNoteApplyMenuIcons(popSysEdit);
+  MNoteApplyMenuIcons(PopupMenu1);
+  MNoteApplyMenuIcons(popFind);
+  MNoteApplyMenuIcons(pmResult);
+  MNoteApplyMenuIcons(pmchatgpt);
   MNoteApplyVisualIdentity(Self);
 
   frmSplash.UpdateStatus('Finalizando a inicialização...', 96);
@@ -3864,9 +3897,27 @@ end;
 
 procedure TfrmMNote.miConfigClick(Sender: TObject);
 begin
-  frmConfig := TfrmConfig.create(self);
-  frmConfig.showmodal();
-  frmConfig.free();
+  miScriptsConfigClick(Sender);
+end;
+
+procedure TfrmMNote.miScriptsConfigClick(Sender: TObject);
+begin
+  with TfrmScriptsConfig.Create(Self) do
+  try
+    ShowModal;
+  finally
+    Free;
+  end;
+end;
+
+procedure TfrmMNote.miDatabaseConfigClick(Sender: TObject);
+begin
+  with TfrmDatabaseConfig.Create(Self) do
+  try
+    ShowModal;
+  finally
+    Free;
+  end;
 end;
 
 procedure TfrmMNote.miUndoClick(Sender: TObject);
@@ -3995,13 +4046,18 @@ var
   fonte    : WideString;
   mapa     : WideString;
   ritem    : TItem;
+  OtherItem: TItem;
   syn      : TSynEdit;
   DevMsg   : string;
-  Estimate: TMNoteTokenEstimate;
+  Estimate : TMNoteTokenEstimate;
   FirstLine, LastLine: Integer;
   ContextLines: TStringList;
+  ActivePath: string;
+  OtherFiles: string;
+  SelectedSnippet: string;
+  ProjectDir: string;
 begin
-  if (pgMain = nil) or (pgMain.ActivePage = nil) then
+  if (pgMain = nil) or (pgMain.ActivePage = nil) or (pgMain.ActivePageIndex < 0) then
   begin
     MessageHint('Nenhuma aba ativa para analisar.');
     Exit;
@@ -4021,42 +4077,94 @@ begin
     Exit;
   end;
 
-  fonte := syn.SelText;
-  if fonte = '' then
+  ActivePath := ritem.Filename;
+  if ActivePath = '' then
+    ActivePath := pgMain.Pages[pgMain.ActivePageIndex].Caption;
+
+  ProjectDir := '';
+  if GetProjectSearchFolder(ProjectDir) and (ProjectDir <> '') then
+    MNoteAI.SetProjectRoot(ProjectDir)
+  else if (ritem.DirName <> '') and DirectoryExists(ritem.DirName) then
+    MNoteAI.SetProjectRoot(ritem.DirName)
+  else if FileExists(ActivePath) then
+    MNoteAI.SetProjectRoot(ExtractFileDir(ActivePath));
+
+  SelectedSnippet := syn.SelText;
+  if Length(syn.Lines.Text) <= 60000 then
+    fonte := syn.Lines.Text
+  else
   begin
     ContextLines := TStringList.Create;
     try
-      FirstLine := syn.CaretY - 20;
+      FirstLine := syn.CaretY - 120;
       if FirstLine < 1 then FirstLine := 1;
-      LastLine := syn.CaretY + 20;
+      LastLine := syn.CaretY + 120;
       if LastLine > syn.Lines.Count then LastLine := syn.Lines.Count;
       for i := FirstLine to LastLine do ContextLines.Add(syn.Lines[i - 1]);
-      fonte := ContextLines.Text;
+      fonte := Format('[Aviso: Arquivo extenso (%d linhas, %d caracteres). Exibindo linhas %d a %d. Para ler outras partes, use a ferramenta ReadFile.]'#10#10,
+        [syn.Lines.Count, Length(syn.Lines.Text), FirstLine, LastLine]) + ContextLines.Text;
     finally
       ContextLines.Free;
     end;
   end;
+
+  OtherFiles := '';
+  for i := 0 to pgMain.PageCount - 1 do
+  begin
+    if (i <> pgMain.ActivePageIndex) and (pgMain.Pages[i].Tag <> 0) then
+    begin
+      OtherItem := TItem(pgMain.Pages[i].Tag);
+      if (OtherItem <> nil) and (OtherItem.Filename <> '') then
+      begin
+        if OtherFiles <> '' then OtherFiles := OtherFiles + LineEnding;
+        OtherFiles := OtherFiles + '- ' + ExtractFileName(OtherItem.Filename) +
+          ' (caminho: ' + OtherItem.Filename + ')';
+      end;
+    end;
+  end;
+
   mequestion.Lines.Add(edChat.Text);
 
   if Assigned(frmIA) then
     mapa := frmIA.mePensamento.Lines.Text
   else
     mapa := '';
-
-  { A camada roteada monta o contrato de cada papel. Aqui enviamos apenas o
-    pedido e um contexto local limitado, evitando aninhar prompts completos. }
   if Length(mapa) > 6000 then mapa := Copy(mapa, Length(mapa) - 5999, 6000);
-  pergunta := 'PEDIDO DO USUÁRIO:'#10 + edChat.Text +
-    #10#10'CONTEXTO LOCAL DO EDITOR:'#10 + fonte +
-    #10#10'MEMÓRIA RECENTE:'#10 + mapa;
+
+  pergunta := 'PEDIDO DO USUÁRIO:'#10 + edChat.Text + #10#10 +
+    'ARQUIVO ATIVO NO EDITOR:'#10 +
+    'Nome: ' + ExtractFileName(ActivePath) + #10 +
+    'Caminho: ' + ActivePath + #10 +
+    'Total de linhas: ' + IntToStr(syn.Lines.Count) + ' | Linha do cursor: ' + IntToStr(syn.CaretY) + #10#10;
+
+  if SelectedSnippet <> '' then
+    pergunta := pergunta + 'TRECHO SELECIONADO NO EDITOR:'#10 + SelectedSnippet + #10#10;
+
+  pergunta := pergunta + 'CÓDIGO FONTE DO ARQUIVO ATIVO:'#10 + fonte + #10#10;
+
+  if OtherFiles <> '' then
+    pergunta := pergunta +
+      'OUTROS ARQUIVOS ABERTOS NO EDITOR (disponíveis para análise; use a ferramenta ReadFile com o caminho do arquivo se precisar examiná-los):'#10 +
+      OtherFiles + #10#10;
+
+  if (ProjectDir <> '') then
+    pergunta := pergunta +
+      'PASTA DO PROJETO / DIRETÓRIO DE TRABALHO: ' + ProjectDir + #10 +
+      'Caso necessite consultar outros arquivos do projeto, utilize a ferramenta ReadFile ou ListProjectFiles.'#10#10;
+
+  if mapa <> '' then
+    pergunta := pergunta + 'MEMÓRIA RECENTE:'#10 + mapa;
 
   DevMsg :=
-    'Voce é um assistente pessoal e teve as seguintes perguntas anteriores: ' +
-    meChatHist.Text +
-    ' , caso sugira alguma mudança sempre faça com alteração completa do fonte apresentado. ';
+    'Você é um assistente sênior de desenvolvimento de software integrado à IDE MNote2.' + LineEnding +
+    'O código fonte do arquivo ativo foi fornecido acima para sua análise direta.' + LineEnding +
+    'Responda em português com clareza, explicando o funcionamento, estrutura, boas práticas e pontos de atenção.' + LineEnding +
+    'Se precisar examinar outros arquivos abertos ou do projeto para responder, utilize a ferramenta ReadFile com o caminho do arquivo.' + LineEnding +
+    'Se sugerir alterações, forneça os códigos completos ou trechos corrigidos.';
 
   if Length(DevMsg) > 6000 then
     DevMsg := Copy(DevMsg, Length(DevMsg) - 5999, 6000);
+
   Estimate := MNoteAI.EstimateContext(pergunta + DevMsg);
   meDialog.Lines.Text := Format('Contexto — estimativa: %d tokens + %d de margem; limite %d; %s',
     [Estimate.EstimatedTokens, Estimate.SafetyMargin, Estimate.ContextLimit,
@@ -4064,8 +4172,8 @@ begin
   if Estimate.ExceedsLimit and
     (not ShowConfirm('O contexto estimado excede o limite configurado. Continuar?')) then
     Exit;
+
   FPendingAIQuestion := edChat.Text;
-  if GetProjectSearchFolder(resposta) then MNoteAI.SetProjectRoot(resposta);
   if not MNoteAI.SendRoutedAsync(aikConversation, pergunta, DevMsg) then
     MessageHint(MNoteAI.LastError);
 end;
@@ -4083,6 +4191,16 @@ end;
 procedure TfrmMNote.miVoiceOutputConfigClick(Sender: TObject);
 begin
   with TfrmVoiceOutputConfig.Create(Self) do
+  try
+    ShowModal;
+  finally
+    Free;
+  end;
+end;
+
+procedure TfrmMNote.miVoiceRecognitionConfigClick(Sender: TObject);
+begin
+  with TfrmVoiceRecognitionConfig.Create(Self) do
   try
     ShowModal;
   finally

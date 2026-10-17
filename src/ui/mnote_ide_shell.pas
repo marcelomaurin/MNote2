@@ -373,6 +373,25 @@ begin
   FOutputPage.ImageIndex := MNOTE_ICON_OUTPUT;
   FTerminalPage.ImageIndex := MNOTE_ICON_TERMINAL;
   FTaskListPage.ImageIndex := MNOTE_ICON_TASKS;
+
+  if FViewMenu <> nil then
+    FViewMenu.ImageIndex := MNOTE_ICON_VIEW;
+  if FResetLayoutItem <> nil then
+    FResetLayoutItem.ImageIndex := MNOTE_ICON_REFRESH;
+  if FViewItems[twkSolution] <> nil then FViewItems[twkSolution].ImageIndex := MNOTE_ICON_SOLUTION;
+  if FViewItems[twkFiles] <> nil then FViewItems[twkFiles].ImageIndex := MNOTE_ICON_FILE;
+  if FViewItems[twkDatabase] <> nil then FViewItems[twkDatabase].ImageIndex := MNOTE_ICON_DATABASE;
+  if FViewItems[twkAI] <> nil then FViewItems[twkAI].ImageIndex := MNOTE_ICON_AI;
+  if FViewItems[twkTasks] <> nil then FViewItems[twkTasks].ImageIndex := MNOTE_ICON_TASKS;
+  if FViewItems[twkProperties] <> nil then FViewItems[twkProperties].ImageIndex := MNOTE_ICON_PROPERTIES;
+  if FViewItems[twkChanges] <> nil then FViewItems[twkChanges].ImageIndex := MNOTE_ICON_CHANGES;
+  if FViewItems[twkAIMonitor] <> nil then FViewItems[twkAIMonitor].ImageIndex := MNOTE_ICON_MONITOR;
+  if FViewItems[twkComponentsLab] <> nil then FViewItems[twkComponentsLab].ImageIndex := MNOTE_ICON_LAB;
+  if FViewItems[twkSearch] <> nil then FViewItems[twkSearch].ImageIndex := MNOTE_ICON_SEARCH;
+  if FViewItems[twkProblems] <> nil then FViewItems[twkProblems].ImageIndex := MNOTE_ICON_PROBLEM;
+  if FViewItems[twkOutput] <> nil then FViewItems[twkOutput].ImageIndex := MNOTE_ICON_OUTPUT;
+  if FViewItems[twkTerminal] <> nil then FViewItems[twkTerminal].ImageIndex := MNOTE_ICON_TERMINAL;
+  if FViewItems[twkTaskList] <> nil then FViewItems[twkTaskList].ImageIndex := MNOTE_ICON_TASKS;
 end;
 
 procedure TMNoteIDEShell.ApplyLayout(ALeftWidth, ARightWidth,

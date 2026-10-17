@@ -22,7 +22,7 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="2"/>
-      <MinorVersionNr Value="70"/>
+      <MinorVersionNr Value="71"/>
       <Language Value="0416"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -132,7 +132,7 @@
         <PackageName Value="openai_voice"/>
       </Item31>
     </RequiredPackages>
-    <Units Count="57">
+    <Units Count="60">
       <Unit0>
         <Filename Value="MNote2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -226,11 +226,8 @@
         <ResourceBaseClass Value="Form"/>
       </Unit16>
       <Unit17>
-        <Filename Value="config.pas"/>
+        <Filename Value="scripts_config.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="frmconfig"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
       </Unit17>
       <Unit18>
         <Filename Value="setlstbnc.pas"/>
@@ -453,6 +450,14 @@
         <Filename Value="services/mnote_ssl_loader.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit57>
+      <Unit58>
+        <Filename Value="voice_recognition_config.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit58>
+      <Unit59>
+        <Filename Value="database_config.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit59>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -1,77 +1,152 @@
 object frmToolsOuvir: TfrmToolsOuvir
-  Left = 533
-  Height = 169
-  Top = 514
-  Width = 529
-  Caption = 'frmToolsOuvir'
-  ClientHeight = 169
-  ClientWidth = 529
+  Left = 400
+  Height = 330
+  Top = 300
+  Width = 530
+  BorderStyle = bsDialog
+  Caption = 'Reconhecedor de Voz - ChatGPT'
+  ClientHeight = 330
+  ClientWidth = 530
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  Position = poMainFormCenter
   LCLVersion = '3.2.0.0'
   object Shape1: TShape
     Left = 0
-    Height = 72
+    Height = 44
     Top = 0
-    Width = 529
+    Width = 530
     Align = alTop
-    OnChangeBounds = Shape1ChangeBounds
+    Brush.Color = clGreen
   end
-  object Label1: TLabel
-    Left = 8
-    Height = 17
-    Top = 6
-    Width = 17
-    Caption = 'IP:'
+  object AdvLed1: TAdvLed
+    Left = 12
+    Height = 24
+    Top = 10
+    Width = 24
+    State = lsOn
+  end
+  object lbStatus: TLabel
+    Left = 44
+    Height = 15
+    Top = 14
+    Width = 340
+    Caption = 'Pronto para ouvir (ChatGPT / TAISpeechRecognizer)'
+    Font.Color = clWhite
+    Font.Style = [fsBold]
     ParentColor = False
+    ParentFont = False
   end
-  object edIP: TEdit
-    Left = 27
-    Height = 34
-    Top = 3
-    Width = 192
+  object btConfig: TButton
+    Left = 418
+    Height = 26
+    Top = 9
+    Width = 100
+    Caption = 'Configurar...'
     TabOrder = 0
-    Text = '127.0.0.1'
+    OnClick = btConfigClick
   end
-  object Label2: TLabel
-    Left = 240
-    Height = 17
-    Top = 8
-    Width = 34
-    Caption = 'Port:'
+  object lbWakeWord: TLabel
+    Left = 14
+    Height = 15
+    Top = 52
+    Width = 160
+    Caption = 'Palavra de ativação (Wake Word):'
     ParentColor = False
   end
-  object edPort: TEdit
-    Left = 273
-    Height = 34
-    Top = 3
-    Width = 80
+  object edWakeWord: TEdit
+    Left = 14
+    Height = 23
+    Top = 70
+    Width = 230
+    ReadOnly = True
     TabOrder = 1
-    Text = '8097'
+    Text = 'OK MNote'
   end
-  object btDisconect: TButton
-    Left = 264
-    Height = 25
-    Top = 40
-    Width = 75
-    Caption = 'Disconect'
+  object lbEngine: TLabel
+    Left = 260
+    Height = 15
+    Top = 52
+    Width = 65
+    Caption = 'Mecanismo:'
+    ParentColor = False
+  end
+  object edEngine: TEdit
+    Left = 260
+    Height = 23
+    Top = 70
+    Width = 258
+    ReadOnly = True
     TabOrder = 2
-    OnClick = btDisconectClick
+    Text = 'ChatGPT / Whisper CLI'
   end
-  object btConect: TButton
-    Left = 176
-    Height = 25
-    Top = 40
-    Width = 75
-    Caption = 'Conect'
+  object lbOuvido: TLabel
+    Left = 14
+    Height = 15
+    Top = 102
+    Width = 125
+    Caption = 'Última fala reconhecida:'
+    ParentColor = False
+  end
+  object meOuvido: TMemo
+    Left = 14
+    Height = 70
+    Top = 120
+    Width = 504
+    ReadOnly = True
+    ScrollBars = ssAutoVertical
     TabOrder = 3
-    OnClick = btConectClick
   end
-  object LTCPComponent1: TLTCPComponent
-    Host = '192.168.0.6'
-    Port = 7091
-    OnReceive = LTCPComponent1Receive
-    Timeout = 0
-    ReuseAddress = True
-    Left = 374
-    Top = 53
+  object lbComando: TLabel
+    Left = 14
+    Height = 15
+    Top = 198
+    Width = 145
+    Caption = 'Último comando detectado:'
+    ParentColor = False
+  end
+  object edComando: TEdit
+    Left = 14
+    Height = 23
+    Top = 216
+    Width = 504
+    ReadOnly = True
+    TabOrder = 4
+  end
+  object btOuvir: TButton
+    Left = 14
+    Height = 32
+    Top = 276
+    Width = 110
+    Caption = 'Iniciar Escuta'
+    TabOrder = 5
+    OnClick = btOuvirClick
+  end
+  object btParar: TButton
+    Left = 132
+    Height = 32
+    Top = 276
+    Width = 110
+    Caption = 'Parar Escuta'
+    TabOrder = 6
+    OnClick = btPararClick
+  end
+  object btEnviarIA: TButton
+    Left = 250
+    Height = 32
+    Top = 276
+    Width = 140
+    Caption = 'Executar Comando'
+    TabOrder = 7
+    OnClick = btEnviarIAClick
+  end
+  object btFechar: TButton
+    Left = 418
+    Height = 32
+    Top = 276
+    Width = 100
+    Caption = 'Fechar'
+    TabOrder = 8
+    OnClick = btFecharClick
   end
 end

@@ -105,6 +105,11 @@ type
     FVoiceOutputVolume: Integer;
     FVoiceOutputRate: Integer;
     FVoiceOutputAsync: Boolean;
+    FWhisperCliPath: string;
+    FWhisperModelPath: string;
+    FWhisperLanguage: string;
+    FWhisperThreads: Integer;
+    FWhisperGPU: Boolean;
 
     FDefaultfolder : string;
     FProject : string;
@@ -244,6 +249,11 @@ type
       write FVoiceOutputRate;
     property VoiceOutputAsync: Boolean read FVoiceOutputAsync
       write FVoiceOutputAsync;
+    property WhisperCliPath: string read FWhisperCliPath write FWhisperCliPath;
+    property WhisperModelPath: string read FWhisperModelPath write FWhisperModelPath;
+    property WhisperLanguage: string read FWhisperLanguage write FWhisperLanguage;
+    property WhisperThreads: Integer read FWhisperThreads write FWhisperThreads;
+    property WhisperGPU: Boolean read FWhisperGPU write FWhisperGPU;
 
     property Defaultfolder : string read FDefaultfolder write FDefaultfolder;
     property Project : string read FProject write FProject;
@@ -338,6 +348,11 @@ begin
   FVoiceOutputVolume := 100;
   FVoiceOutputRate := 0;
   FVoiceOutputAsync := True;
+  FWhisperCliPath := '';
+  FWhisperModelPath := '';
+  FWhisperLanguage := 'pt';
+  FWhisperThreads := 0;
+  FWhisperGPU := False;
 
   if FFONT = nil then
     FFONT := TFont.Create;
@@ -671,6 +686,17 @@ begin
   if FVoiceOutputVolume > 100 then FVoiceOutputVolume := 100;
   if FVoiceOutputRate < -10 then FVoiceOutputRate := -10;
   if FVoiceOutputRate > 10 then FVoiceOutputRate := 10;
+  if BuscaChave(arquivo,'WHISPERCLIPATH:',posicao) then
+    FWhisperCliPath := RetiraInfo(arquivo.Strings[posicao]);
+  if BuscaChave(arquivo,'WHISPERMODELPATH:',posicao) then
+    FWhisperModelPath := RetiraInfo(arquivo.Strings[posicao]);
+  if BuscaChave(arquivo,'WHISPERLANGUAGE:',posicao) then
+    FWhisperLanguage := RetiraInfo(arquivo.Strings[posicao]);
+  if Trim(FWhisperLanguage) = '' then FWhisperLanguage := 'pt';
+  if BuscaChave(arquivo,'WHISPERTHREADS:',posicao) then
+    FWhisperThreads := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 0);
+  if BuscaChave(arquivo,'WHISPERGPU:',posicao) then
+    FWhisperGPU := RetiraInfo(arquivo.Strings[posicao]) <> '0';
 
   if BuscaChave(arquivo,'DEFAULTFOLDER:',posicao) then
     FDefaultfolder := RetiraInfo(arquivo.Strings[posicao]);
@@ -862,6 +888,11 @@ begin
   arquivo.Append('VOICEOUTPUTVOLUME:'+IntToStr(FVoiceOutputVolume));
   arquivo.Append('VOICEOUTPUTRATE:'+IntToStr(FVoiceOutputRate));
   arquivo.Append('VOICEOUTPUTASYNC:'+iif(FVoiceOutputAsync,'1','0'));
+  arquivo.Append('WHISPERCLIPATH:'+FWhisperCliPath);
+  arquivo.Append('WHISPERMODELPATH:'+FWhisperModelPath);
+  arquivo.Append('WHISPERLANGUAGE:'+FWhisperLanguage);
+  arquivo.Append('WHISPERTHREADS:'+IntToStr(FWhisperThreads));
+  arquivo.Append('WHISPERGPU:'+iif(FWhisperGPU,'1','0'));
 
   arquivo.Append('DEFAULTFOLDER:'+FDefaultfolder);
   arquivo.Append('PROJECT:'+FPROJECT);

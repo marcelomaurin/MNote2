@@ -92,6 +92,7 @@ tests/ci-bin/
 
 # Public configuration template is intentional; private *.cfg files remain ignored.
 !mnote.example.cfg
+!bin/*.exe
 
 # Local logs, test outputs and backups
 *.log

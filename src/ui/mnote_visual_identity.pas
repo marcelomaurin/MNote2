@@ -41,9 +41,22 @@ const
   MNOTE_ICON_STOP = 28;
   MNOTE_ICON_CLEAR = 29;
   MNOTE_ICON_VOICE = 30;
+  MNOTE_ICON_INFO = 31;
+  MNOTE_ICON_NAVIGATE = 32;
+  MNOTE_ICON_VIEW = 33;
+  MNOTE_ICON_THEME = 34;
+  MNOTE_ICON_EDIT = 35;
+  MNOTE_ICON_COPY = 36;
+  MNOTE_ICON_PASTE = 37;
+  MNOTE_ICON_CUT = 38;
+  MNOTE_ICON_UNDO = 39;
+  MNOTE_ICON_REDO = 40;
+  MNOTE_ICON_PYTHON = 41;
+  MNOTE_ICON_DEBUG = 42;
+  MNOTE_ICON_INSTALL = 43;
 
 procedure MNoteBuildProfessionalIcons(AImages: TImageList);
-procedure MNoteApplyMenuIcons(AMenu: TMainMenu);
+procedure MNoteApplyMenuIcons(AMenu: TMenu);
 procedure MNoteApplyVisualIdentity(AParent: TWinControl);
 function MNoteIconForCaption(const ACaption: string): Integer;
 function MNoteDecoratedButtonCaption(const ACaption: string): string;
@@ -274,6 +287,171 @@ begin
         C.Rectangle(8, 3, 16, 14); C.Arc(5, 8, 19, 19, 180 * 16, 180 * 16);
         Line(C, 12, 19, 12, 22); Line(C, 8, 22, 16, 22);
       end;
+    MNOTE_ICON_INFO:
+      begin
+        C.Ellipse(3, 3, 21, 21);
+        C.Brush.Style := bsSolid;
+        C.Brush.Color := MainColor;
+        C.Ellipse(11, 6, 13, 8);
+        Line(C, 12, 10, 12, 17);
+        Line(C, 10, 10, 12, 10);
+        Line(C, 10, 17, 14, 17);
+      end;
+    MNOTE_ICON_NAVIGATE:
+      begin
+        C.Ellipse(3, 3, 21, 21);
+        C.Brush.Style := bsSolid;
+        C.Brush.Color := RGBToColor(220, 50, 50);
+        C.Pen.Color := C.Brush.Color;
+        C.Polygon([Point(12, 6), Point(15, 12), Point(12, 11), Point(9, 12)]);
+        C.Brush.Color := RGBToColor(160, 160, 160);
+        C.Pen.Color := C.Brush.Color;
+        C.Polygon([Point(12, 18), Point(15, 12), Point(12, 13), Point(9, 12)]);
+      end;
+    MNOTE_ICON_VIEW:
+      begin
+        C.Pen.Color := MainColor;
+        C.Arc(3, 4, 21, 20, 20 * 16, 140 * 16);
+        C.Arc(3, 4, 21, 20, 200 * 16, 140 * 16);
+        C.Brush.Style := bsSolid;
+        C.Brush.Color := DetailColor;
+        C.Ellipse(9, 9, 15, 15);
+        C.Brush.Color := clBlack;
+        C.Ellipse(11, 11, 13, 13);
+      end;
+    MNOTE_ICON_THEME:
+      begin
+        C.Brush.Style := bsSolid;
+        C.Brush.Color := RGBToColor(245, 235, 220);
+        C.Pen.Color := RGBToColor(180, 140, 80);
+        C.Ellipse(3, 4, 21, 20);
+        C.Brush.Color := RGBToColor(225, 60, 60);
+        C.Pen.Color := C.Brush.Color;
+        C.Ellipse(6, 7, 9, 10);
+        C.Brush.Color := BrandBlue;
+        C.Pen.Color := C.Brush.Color;
+        C.Ellipse(11, 6, 14, 9);
+        C.Brush.Color := BrandGreen;
+        C.Pen.Color := C.Brush.Color;
+        C.Ellipse(15, 8, 18, 11);
+        C.Brush.Color := BrandAmber;
+        C.Pen.Color := C.Brush.Color;
+        C.Ellipse(15, 13, 18, 16);
+        C.Brush.Color := MaskColor;
+        C.Pen.Color := RGBToColor(180, 140, 80);
+        C.Ellipse(7, 13, 10, 16);
+      end;
+    MNOTE_ICON_EDIT:
+      begin
+        C.Pen.Color := BrandAmber;
+        C.Brush.Style := bsSolid;
+        C.Brush.Color := RGBToColor(255, 215, 100);
+        C.Polygon([Point(6, 18), Point(15, 5), Point(18, 8), Point(9, 21)]);
+        C.Brush.Color := RGBToColor(80, 80, 80);
+        C.Pen.Color := C.Brush.Color;
+        C.Polygon([Point(6, 18), Point(3, 21), Point(9, 21)]);
+        C.Brush.Color := RGBToColor(220, 100, 120);
+        C.Pen.Color := C.Brush.Color;
+        C.Polygon([Point(15, 5), Point(17, 3), Point(20, 6), Point(18, 8)]);
+      end;
+    MNOTE_ICON_COPY:
+      begin
+        C.Pen.Color := DetailColor;
+        C.Brush.Style := bsClear;
+        C.Rectangle(4, 3, 15, 16);
+        C.Pen.Color := MainColor;
+        C.Brush.Style := bsSolid;
+        C.Brush.Color := clWhite;
+        C.Rectangle(8, 7, 19, 21);
+        C.Pen.Color := DetailColor;
+        Line(C, 11, 10, 16, 10);
+        Line(C, 11, 13, 16, 13);
+        Line(C, 11, 16, 15, 16);
+      end;
+    MNOTE_ICON_PASTE:
+      begin
+        C.Brush.Style := bsSolid;
+        C.Brush.Color := RGBToColor(210, 175, 120);
+        C.Pen.Color := RGBToColor(160, 120, 70);
+        C.Rectangle(5, 5, 19, 21);
+        C.Brush.Color := clWhite;
+        C.Pen.Color := MainColor;
+        C.Rectangle(7, 8, 17, 19);
+        C.Brush.Color := RGBToColor(150, 160, 175);
+        C.Pen.Color := RGBToColor(100, 110, 125);
+        C.Rectangle(9, 3, 15, 7);
+      end;
+    MNOTE_ICON_CUT:
+      begin
+        C.Pen.Color := RGBToColor(100, 110, 130);
+        Line(C, 6, 6, 18, 18);
+        Line(C, 18, 6, 6, 18);
+        C.Brush.Style := bsSolid;
+        C.Brush.Color := RGBToColor(60, 60, 60);
+        C.Ellipse(11, 11, 13, 13);
+        C.Brush.Style := bsClear;
+        C.Pen.Color := BrandBlue;
+        C.Ellipse(3, 4, 8, 9);
+        C.Ellipse(3, 15, 8, 20);
+      end;
+    MNOTE_ICON_UNDO:
+      begin
+        C.Pen.Color := BrandBlue;
+        C.Arc(7, 7, 19, 19, 30 * 16, 210 * 16);
+        Line(C, 7, 13, 4, 10);
+        Line(C, 7, 13, 10, 10);
+      end;
+    MNOTE_ICON_REDO:
+      begin
+        C.Pen.Color := BrandBlue;
+        C.Arc(5, 7, 17, 19, 300 * 16, 210 * 16);
+        Line(C, 17, 13, 20, 10);
+        Line(C, 17, 13, 14, 10);
+      end;
+    MNOTE_ICON_PYTHON:
+      begin
+        C.Brush.Style := bsSolid;
+        C.Brush.Color := RGBToColor(55, 110, 180);
+        C.Pen.Color := C.Brush.Color;
+        C.Polygon([Point(6, 4), Point(14, 4), Point(14, 9), Point(9, 9), Point(9, 12), Point(6, 12)]);
+        C.Brush.Color := clWhite;
+        C.Ellipse(8, 6, 10, 8);
+        C.Brush.Color := RGBToColor(245, 195, 45);
+        C.Pen.Color := C.Brush.Color;
+        C.Polygon([Point(18, 20), Point(10, 20), Point(10, 15), Point(15, 15), Point(15, 12), Point(18, 12)]);
+        C.Brush.Color := clWhite;
+        C.Ellipse(14, 16, 16, 18);
+      end;
+    MNOTE_ICON_DEBUG:
+      begin
+        C.Brush.Style := bsSolid;
+        C.Brush.Color := RGBToColor(80, 170, 80);
+        C.Pen.Color := C.Brush.Color;
+        C.Ellipse(10, 4, 14, 8);
+        C.Brush.Style := bsClear;
+        C.Pen.Color := RGBToColor(70, 140, 70);
+        Line(C, 10, 4, 7, 2);
+        Line(C, 14, 4, 17, 2);
+        C.Brush.Style := bsSolid;
+        C.Brush.Color := RGBToColor(90, 185, 90);
+        C.Pen.Color := RGBToColor(50, 130, 50);
+        C.Ellipse(8, 7, 16, 18);
+        Line(C, 5, 9, 9, 10);
+        Line(C, 15, 10, 19, 9);
+        Line(C, 4, 13, 8, 13);
+        Line(C, 16, 13, 20, 13);
+        Line(C, 5, 17, 9, 16);
+        Line(C, 15, 16, 19, 17);
+      end;
+    MNOTE_ICON_INSTALL:
+      begin
+        C.Pen.Color := MainColor;
+        C.Rectangle(4, 9, 20, 21);
+        C.Pen.Color := BrandGreen;
+        Line(C, 12, 3, 12, 14);
+        Line(C, 12, 14, 8, 10);
+        Line(C, 12, 14, 16, 10);
+      end;
   end;
 end;
 
@@ -288,7 +466,7 @@ begin
   AImages.Height := 24;
   Bitmap := TBitmap.Create;
   try
-    for I := MNOTE_ICON_CLOSE to MNOTE_ICON_VOICE do
+    for I := MNOTE_ICON_CLOSE to MNOTE_ICON_INSTALL do
     begin
       DrawIcon(Bitmap, I);
       AImages.AddMasked(Bitmap, clFuchsia);
@@ -303,27 +481,56 @@ var
   Text: string;
 begin
   Text := LowerCase(StringReplace(ACaption, '&', '', [rfReplaceAll]));
+  Text := Trim(Text);
   Result := -1;
-  if (Pos('close', Text) > 0) or (Pos('fechar', Text) > 0) or
-    (Pos('exit', Text) > 0) then Result := MNOTE_ICON_CLOSE
+  if Text = '' then Exit;
+
+  // Specific edit actions
+  if (Text = 'undo') or (Text = 'desfazer') then Result := MNOTE_ICON_UNDO
+  else if (Text = 'redo') or (Text = 'refazer') then Result := MNOTE_ICON_REDO
+  else if (Text = 'cut') or (Pos('recort', Text) > 0) or (Text = 'cortar') then Result := MNOTE_ICON_CUT
+  else if (Pos('copy', Text) > 0) or (Pos('copiar', Text) > 0) then Result := MNOTE_ICON_COPY
+  else if (Pos('paste', Text) > 0) or (Pos('colar', Text) > 0) then Result := MNOTE_ICON_PASTE
+  else if (Pos('select', Text) > 0) or (Pos('selecion', Text) > 0) then Result := MNOTE_ICON_EDIT
+  else if (Text = 'edit') or (Text = 'editar') then Result := MNOTE_ICON_EDIT
+
+  // Python and development tools
+  else if Pos('python', Text) > 0 then Result := MNOTE_ICON_PYTHON
+  else if (Pos('debug', Text) > 0) or (Pos('depurar', Text) > 0) then Result := MNOTE_ICON_DEBUG
+  else if (Pos('install', Text) > 0) or (Pos('instalar', Text) > 0) then Result := MNOTE_ICON_INSTALL
+  else if (Pos('clean', Text) > 0) or (Pos('limpar', Text) > 0) or
+    (Pos('clear', Text) > 0) or (Pos('rejeitar', Text) > 0) then Result := MNOTE_ICON_CLEAR
+
+  // Navigation, Search & References
+  else if (Pos('defin', Text) > 0) or (Pos('goto', Text) > 0) or
+    (Pos('naveg', Text) > 0) or (Pos('navig', Text) > 0) then Result := MNOTE_ICON_NAVIGATE
+  else if (Pos('search', Text) > 0) or (Pos('find', Text) > 0) or
+    (Pos('pesq', Text) > 0) or (Pos('localiz', Text) > 0) or
+    (Pos('refer', Text) > 0) then Result := MNOTE_ICON_SEARCH
+
+  // General actions
+  else if (Pos('close', Text) > 0) or (Pos('fechar', Text) > 0) or
+    (Pos('exit', Text) > 0) or (Pos('sair', Text) > 0) then Result := MNOTE_ICON_CLOSE
   else if (Pos('voice', Text) > 0) or (Pos('falar', Text) > 0) or
     (Pos('ouvir', Text) > 0) then Result := MNOTE_ICON_VOICE
   else if (Pos('save', Text) > 0) or (Pos('salvar', Text) > 0) then Result := MNOTE_ICON_SAVE
   else if (Pos('new', Text) > 0) or (Pos('novo', Text) > 0) or
     (Pos('nova', Text) > 0) then Result := MNOTE_ICON_NEW
   else if (Pos('open', Text) > 0) or (Pos('load', Text) > 0) or
-    (Pos('abrir', Text) > 0) or (Pos('pasta', Text) > 0) then Result := MNOTE_ICON_OPEN
-  else if (Pos('search', Text) > 0) or (Pos('find', Text) > 0) or
-    (Pos('pesq', Text) > 0) then Result := MNOTE_ICON_SEARCH
+    (Pos('abrir', Text) > 0) or (Pos('folder', Text) > 0) or
+    (Pos('pasta', Text) > 0) then Result := MNOTE_ICON_OPEN
   else if (Pos('config', Text) > 0) or (Pos('setup', Text) > 0) then Result := MNOTE_ICON_SETTINGS
   else if (Pos('database', Text) > 0) or (Pos('mquery', Text) > 0) then Result := MNOTE_ICON_DATABASE
   else if Pos('sql', Text) > 0 then Result := MNOTE_ICON_SQL
-  else if (Pos('font', Text) > 0) then Result := MNOTE_ICON_FONT
-  else if (Pos('language', Text) > 0) or (Pos('idioma', Text) > 0) then Result := MNOTE_ICON_LANGUAGE
-  else if (Pos('project', Text) > 0) or (Pos('solution', Text) > 0) then Result := MNOTE_ICON_SOLUTION
+  else if Pos('font', Text) > 0 then Result := MNOTE_ICON_FONT
+  else if (Pos('language', Text) > 0) or (Pos('idioma', Text) > 0) or
+    (Text = 'portuguese') or (Text = 'english') or (Text = 'spanish') then Result := MNOTE_ICON_LANGUAGE
+  else if (Pos('project', Text) > 0) or (Pos('solution', Text) > 0) or
+    (Pos('projeto', Text) > 0) then Result := MNOTE_ICON_SOLUTION
   else if Pos('task', Text) > 0 then Result := MNOTE_ICON_TASKS
   else if Pos('propert', Text) > 0 then Result := MNOTE_ICON_PROPERTIES
-  else if (Pos('change', Text) > 0) or (Pos('replace', Text) > 0) then Result := MNOTE_ICON_CHANGES
+  else if (Pos('change', Text) > 0) or (Pos('replace', Text) > 0) or
+    (Pos('substitu', Text) > 0) then Result := MNOTE_ICON_CHANGES
   else if Pos('monitor', Text) > 0 then Result := MNOTE_ICON_MONITOR
   else if (Pos('lab', Text) > 0) or (Pos('json', Text) > 0) then Result := MNOTE_ICON_LAB
   else if Pos('problem', Text) > 0 then Result := MNOTE_ICON_PROBLEM
@@ -332,17 +539,30 @@ begin
   else if (Pos('run', Text) > 0) or (Pos('execut', Text) > 0) or
     (Pos('compil', Text) > 0) then Result := MNOTE_ICON_RUN
   else if (Pos('stop', Text) > 0) or (Pos('parar', Text) > 0) then Result := MNOTE_ICON_STOP
-  else if (Pos('clear', Text) > 0) or (Pos('limpar', Text) > 0) or
-    (Pos('rejeitar', Text) > 0) then Result := MNOTE_ICON_CLEAR
-  else if (Pos('export', Text) > 0) then Result := MNOTE_ICON_EXPORT
-  else if (Pos('atualizar', Text) > 0) or (Pos('refresh', Text) > 0) then Result := MNOTE_ICON_REFRESH
+  else if Pos('export', Text) > 0 then Result := MNOTE_ICON_EXPORT
+  else if (Pos('atualizar', Text) > 0) or (Pos('refresh', Text) > 0) or
+    (Pos('reset', Text) > 0) then Result := MNOTE_ICON_REFRESH
+  else if (Pos('view', Text) > 0) or (Pos('exibir', Text) > 0) or
+    (Pos('visualiz', Text) > 0) or (Pos('logview', Text) > 0) then Result := MNOTE_ICON_VIEW
+  else if (Pos('theme', Text) > 0) or (Pos('tema', Text) > 0) or
+    (Text = 'light') or (Text = 'dark') or (Text = 'blue') then Result := MNOTE_ICON_THEME
+  else if (Pos('about', Text) > 0) or (Pos('sobre', Text) > 0) or
+    (Pos('info', Text) > 0) then Result := MNOTE_ICON_INFO
   else if (Text = 'ia') or (Text = 'ai') or (Pos(' ia', Text) > 0) or
     (Pos('ia ', Text) = 1) or (Pos(' ai', Text) > 0) or
-    (Pos('ai ', Text) = 1) or (Pos('chatgpt', Text) > 0) then Result := MNOTE_ICON_AI
-  else if Pos('script', Text) > 0 then Result := MNOTE_ICON_CODE
+    (Pos('ai ', Text) = 1) or (Pos('chatgpt', Text) > 0) or
+    (Pos('suger', Text) > 0) or (Pos('propor', Text) > 0) then Result := MNOTE_ICON_AI
+  else if (Pos('script', Text) > 0) or (Pos('code', Text) > 0) or
+    (Pos('dos2unix', Text) > 0) or (Text = 'type') or (Text = 'tipo') or
+    (Text = 'none') or (Pos('pascal', Text) > 0) or (Pos('c/c++', Text) > 0) or
+    (Text = 'php') or (Text = 'java') then Result := MNOTE_ICON_CODE
+  else if (Pos('stress', Text) > 0) or (Pos('server', Text) > 0) or
+    (Pos('porrada', Text) > 0) then Result := MNOTE_ICON_SERVER
   else if Pos('tool', Text) > 0 then Result := MNOTE_ICON_TOOLS
-  else if Pos('window', Text) > 0 then Result := MNOTE_ICON_LAYOUT
-  else if Pos('file', Text) > 0 then Result := MNOTE_ICON_FILE;
+  else if (Pos('window', Text) > 0) or (Pos('janela', Text) > 0) or
+    (Text = 'fix') or (Text = 'on top') or (Text = 'desktop center') or
+    (Text = 'hide') then Result := MNOTE_ICON_LAYOUT
+  else if (Pos('file', Text) > 0) or (Pos('arquivo', Text) > 0) then Result := MNOTE_ICON_FILE;
 end;
 
 procedure ApplyMenuItemIcons(AItem: TMenuItem);
@@ -358,7 +578,7 @@ begin
   for I := 0 to AItem.Count - 1 do ApplyMenuItemIcons(AItem.Items[I]);
 end;
 
-procedure MNoteApplyMenuIcons(AMenu: TMainMenu);
+procedure MNoteApplyMenuIcons(AMenu: TMenu);
 var
   I: Integer;
 begin
@@ -388,6 +608,18 @@ begin
     MNOTE_ICON_DATABASE, MNOTE_ICON_SQL: Result := '▤ ';
     MNOTE_ICON_VOICE: Result := '♪ ';
     MNOTE_ICON_PROPERTIES: Result := '≡ ';
+    MNOTE_ICON_INFO: Result := 'ℹ ';
+    MNOTE_ICON_NAVIGATE: Result := '🧭 ';
+    MNOTE_ICON_VIEW: Result := '👁 ';
+    MNOTE_ICON_THEME: Result := '🎨 ';
+    MNOTE_ICON_EDIT: Result := '✎ ';
+    MNOTE_ICON_COPY, MNOTE_ICON_PASTE: Result := '📋 ';
+    MNOTE_ICON_CUT: Result := '✂ ';
+    MNOTE_ICON_UNDO: Result := '↺ ';
+    MNOTE_ICON_REDO: Result := '↻ ';
+    MNOTE_ICON_PYTHON: Result := '🐍 ';
+    MNOTE_ICON_DEBUG: Result := '🪲 ';
+    MNOTE_ICON_INSTALL: Result := '📦 ';
   else
     Result := '';
   end;
