@@ -2,7 +2,8 @@ unit mnote_ai_task_orchestrator;
 {$mode objfpc}{$H+}
 {$codepage utf8}
 interface
-uses Classes, SysUtils, Contnrs, fpjson, jsonparser, mnote_ai_service;
+uses Classes, SysUtils, Contnrs, fpjson, jsonparser, mnote_ai_service,
+  mnote_ai_types;
 
 type
   TMNoteAITaskState = (atsPending, atsRunning, atsCompleted, atsFailed, atsBlocked);
@@ -162,7 +163,7 @@ begin
 end;
 
 function TMNoteAITaskOrchestrator.ExecuteNext: Boolean;
-var I, J: Integer; Task: TMNoteAITask; Context, Answer: string;
+var I, J: Integer; Task: TMNoteAITask; Context, Answer, RunError: string;
 begin
   Result := False;
   FLastError := '';
@@ -195,7 +196,8 @@ begin
   Task.State := atsRunning;
   Save;
   try
-    if MNoteAI.SendQuestion(Task.Instruction, Context, Answer) then
+    if MNoteAI.ExecuteToolRequest(airLightWork, 'task_' + Task.Category,
+      Task.Instruction, Context, Answer, RunError, True) then
     begin
       Task.Evidence := Answer;
       Task.State := atsCompleted;
@@ -204,7 +206,7 @@ begin
     else
     begin
       Task.State := atsFailed;
-      Task.ErrorText := MNoteAI.LastError;
+      Task.ErrorText := RunError;
       FLastError := Task.ErrorText;
     end;
   except
