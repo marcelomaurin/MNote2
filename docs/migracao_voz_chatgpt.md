@@ -13,8 +13,12 @@ Eliminar a dependência de servidores externos de escuta e fala do MNote2, usand
 - Removidos `tools/windows/srvouve.py`, `src/srvfalar.py`, `src/fala.c` e os pacotes `bin/srvfalar*.deb`.
 - `scripts/check_lazarus_project.py` verifica a ausência dos serviços antigos e a integração das telas com a camada de voz.
 
+## Configuração na interface
+
+Em Configurações > Reconhecimento de voz, o usuário define o executável `whisper-cli`, arquivo do modelo Whisper, idioma, número de threads (0 = automático), uso de GPU e palavra de ativação. A tela permite **verificar o executável e o modelo**, mas ainda não executa uma gravação de microfone de teste. Ao salvar, os valores são persistidos em `mnote.cfg`, usando `WHISPERCLI`, `WHISPERMODEL`, `WHISPERLANGUAGE`, `WHISPERTHREADS`, `WHISPERGPU` e `VOICEWAKEWORD`. O serviço de entrada aplica esses valores diretamente aos componentes CHATGPT. Variáveis de ambiente são utilizadas apenas quando a configuração `FSetMain` não estiver disponível.
+
 ## Dependências e configuração
-O reconhecimento pela implementação atual depende de `WHISPER_CLI` e `WHISPER_MODEL`, com ajustes opcionais `WHISPER_LANGUAGE`, `WHISPER_THREADS` e `WHISPER_GPU`. Esses caminhos são usados pelo componente Whisper do projeto CHATGPT. A síntese usa a configuração de engine, voz, volume, taxa e modo assíncrono do MNote2.
+O reconhecimento exige um executável Whisper e um arquivo de modelo válidos, selecionados na própria configuração do MNote2. Os parâmetros são aplicados ao componente Whisper da biblioteca CHATGPT. A síntese usa a configuração de engine, voz, volume, taxa e modo assíncrono do MNote2.
 
 ## Validação pendente
 Mudanças publicadas no código-fonte, **sem compilação ou teste de microfone/alto-falante executado nesta sessão**. Para concluir a migração:
