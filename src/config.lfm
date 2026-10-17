@@ -250,32 +250,78 @@ object frmconfig: Tfrmconfig
       end
     end
     object tsToolsOuvir: TTabSheet
-      Caption = 'Tools Ouvir'
+      Caption = 'Reconhecimento de voz'
       ClientHeight = 311
       ClientWidth = 435
       object ckToolsOuvir: TCheckBox
-        Left = 16
-        Height = 19
-        Top = 16
-        Width = 107
-        Caption = 'EAR - ToolsOuvir'
+        Left = 12
+        Top = 8
+        Width = 245
+        Height = 20
+        Caption = 'Ativar reconhecimento de voz'
         TabOrder = 0
       end
-      object lbIP1: TLabel
-        Left = 17
-        Height = 15
-        Top = 41
-        Width = 45
-        Caption = 'IP Ouvir:'
-      end
-      object edIPOuvir: TIPEdit
-        Left = 17
-        Height = 23
-        Hint = 'Voice IP Server'
-        Top = 59
-        Width = 165
+      object edWhisperCLI: TFileNameEdit
+        Left = 12
+        Top = 48
+        Width = 405
+        Height = 24
         TabOrder = 1
-        Text = '  0.  0.  0.  0'
+        TextHint = 'Caminho do executável whisper-cli'
+      end
+      object edWhisperModel: TFileNameEdit
+        Left = 12
+        Top = 96
+        Width = 405
+        Height = 24
+        TabOrder = 2
+        TextHint = 'Caminho do arquivo do modelo Whisper'
+      end
+      object edWhisperLanguage: TEdit
+        Left = 12
+        Top = 144
+        Width = 76
+        Height = 24
+        TabOrder = 3
+        TextHint = 'pt'
+      end
+      object edWhisperThreads: TEdit
+        Left = 104
+        Top = 144
+        Width = 77
+        Height = 24
+        TabOrder = 4
+        TextHint = 'Threads (0=auto)'
+      end
+      object ckWhisperGPU: TCheckBox
+        Left = 194
+        Top = 146
+        Width = 125
+        Height = 20
+        Caption = 'Usar GPU'
+        TabOrder = 5
+      end
+      object edWakeWord: TEdit
+        Left = 12
+        Top = 193
+        Width = 206
+        Height = 24
+        TabOrder = 6
+        TextHint = 'Palavra de ativação'
+      end
+      object btTestWhisper: TButton
+        Left = 12
+        Top = 232
+        Width = 158
+        Height = 28
+        Caption = 'Verificar Whisper'
+        TabOrder = 7
+        OnClick = btTestWhisperClick
+      end
+      object lblWhisperResult: TLabel
+        Left = 12
+        Top = 273
+        Caption = 'Configure o modelo e o executável.'
       end
     end
   end
