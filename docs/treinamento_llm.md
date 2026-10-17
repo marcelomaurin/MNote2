@@ -4,6 +4,10 @@
 
 O treinamento tradicional em `src/imgjson` permanece preservado. A modalidade LLM utiliza fine-tuning supervisionado de um **modelo causal local em formato Transformers** com adaptadores LoRA/QLoRA. Não treina modelos do zero e não usa arquivos GGUF como entrada direta.
 
+## Interface da IDE
+
+No menu principal do MNote2, abra **Treinamento LLM (LoRA / QLoRA)**. Indique o Python do ambiente de treinamento, a pasta local do modelo Transformers, dataset JSONL e pasta de saída. Escolha modalidade, épocas, batch size e limite de tokens. Use **Validar configuração** para executar o diagnóstico sem treinar; **Iniciar treinamento** para executar, e **Interromper** para solicitar o encerramento do processo. O painel inferior exibe a saída do processo. A janela deve permanecer aberta durante o treino. O instalador inclui os scripts Python, mas não instala automaticamente as bibliotecas pesadas necessárias.
+
 ## Execução
 
 Crie ambiente Python dedicado, instale `tools/llm_training/requirements.txt`, copie `config.example.json` e aponte para um modelo local, dataset JSONL e uma pasta de saída separada.
@@ -29,4 +33,4 @@ A configuração exige caminho de modelo local e desabilita `trust_remote_code`;
 
 ## Estado de validação
 
-Implementação inicial do motor Python e exemplos. A interface visual Lazarus e testes reais de treinamento devem ser validados separadamente; não há alegação de build ou treino concluídos nesta entrega.
+Implementação inicial do motor Python, exemplos, interface Lazarus e empacotamento no instalador. Ainda não houve compilação da IDE nem teste real de treinamento nesta sessão; funcionalidades e compatibilidade devem ser validadas antes de release.
