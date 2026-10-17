@@ -11,6 +11,10 @@
 
 - [Lista de bugs e verificações](bugs.md) — 16 cenários pendentes de validação, sem defeitos confirmados nesta triagem documental.
 
+## Integrações de voz
+
+- [Migração para os componentes de voz CHATGPT](migracao_voz_chatgpt.md)
+
 ## Arquitetura e contratos
 
 - [Arquitetura da IDE com IA](arquitetura_ide_ia.md)
