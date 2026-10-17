@@ -197,6 +197,11 @@ begin
     'tools' + DirectorySeparator + 'llm_training' + DirectorySeparator +
     'train_lora.py');
   if not FileExists(Script) then
+    Script := ExpandFileName(ExtractFilePath(
+      ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))) +
+      'tools' + DirectorySeparator + 'llm_training' + DirectorySeparator +
+      'train_lora.py');
+  if not FileExists(Script) then
   begin
     FLog.Lines.Add('Script não encontrado: ' + Script);
     FLog.Lines.Add('Instale tools/llm_training junto ao executável.');
@@ -258,7 +263,6 @@ begin
     DrainOutput;
     FTimer.Enabled := False;
     FLog.Lines.Add('Processo encerrado. Código: ' + IntToStr(FProcess.ExitStatus));
-    FProcess.CloseInput;
     SetBusy(False);
   end;
 end;
