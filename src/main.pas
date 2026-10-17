@@ -222,6 +222,7 @@ type
     procedure mnrunClick(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure miConfigClick(Sender: TObject);
+    procedure miLLMTrainingClick(Sender: TObject);
     procedure miIAConfigClick(Sender: TObject);
     procedure miVoiceOutputConfigClick(Sender: TObject);
     procedure miPythonConfigClick(Sender: TObject);
@@ -452,7 +453,7 @@ implementation
 {$R *.lfm}
 
 uses
-  Sobre, base, ZDataset, DateUtils, aidb_types;
+  Sobre, base, ZDataset, DateUtils, aidb_types, mnote_llm_training_form;
 
 { -------------------------------------------------------------------- }
 {  Helper para extrair texto de DOC/DOCX/PDF                           }
@@ -2853,7 +2854,12 @@ var
    basePath : string;
    ProjectRoot, ProjectName: string;
    ChatMemoryTab: TTabSheet;
+   LLMTrainingMenu: TMenuItem;
 begin
+  LLMTrainingMenu := TMenuItem.Create(Self);
+  LLMTrainingMenu.Caption := 'Treinamento LLM (LoRA / QLoRA)...';
+  LLMTrainingMenu.OnClick := @miLLMTrainingClick;
+  MainMenu1.Items.Add(LLMTrainingMenu);
   LimpaEventosLog;
   RegistraEventosLog('========================================');
   RegistraEventosLog('=== INICIANDO MNOTE2 ===');
@@ -3860,6 +3866,18 @@ begin
     frmmquery2.Hide
   else
     frmmquery2.Show;
+end;
+
+procedure TfrmMNote.miLLMTrainingClick(Sender: TObject);
+var
+  Window: TLLMTrainingForm;
+begin
+  Window := TLLMTrainingForm.Create(Self);
+  try
+    Window.ShowModal;
+  finally
+    Window.Free;
+  end;
 end;
 
 procedure TfrmMNote.miConfigClick(Sender: TObject);
