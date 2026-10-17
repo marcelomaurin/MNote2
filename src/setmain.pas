@@ -99,6 +99,11 @@ type
     fIPFALAR : String;
     fIPOUVIR : String;
     FVoiceWakeWord: string;
+    FWhisperCLI: string;
+    FWhisperModel: string;
+    FWhisperLanguage: string;
+    FWhisperThreads: Integer;
+    FWhisperGPU: Boolean;
     FVoiceOutputEnabled: Boolean;
     FVoiceOutputEngine: Integer;
     FVoiceOutputName: string;
@@ -232,6 +237,11 @@ type
     property IPFALAR : string read fIPFALAR write fIPFALAR;
     property IPOUVIR : string read fIPOUVIR write fIPOUVIR;
     property VoiceWakeWord: string read FVoiceWakeWord write FVoiceWakeWord;
+    property WhisperCLI: string read FWhisperCLI write FWhisperCLI;
+    property WhisperModel: string read FWhisperModel write FWhisperModel;
+    property WhisperLanguage: string read FWhisperLanguage write FWhisperLanguage;
+    property WhisperThreads: Integer read FWhisperThreads write FWhisperThreads;
+    property WhisperGPU: Boolean read FWhisperGPU write FWhisperGPU;
     property VoiceOutputEnabled: Boolean read FVoiceOutputEnabled
       write FVoiceOutputEnabled;
     property VoiceOutputEngine: Integer read FVoiceOutputEngine
@@ -328,6 +338,11 @@ begin
   fIPFALAR := '127.0.0.1';
   fIPOUVIR := '127.0.0.1';
   FVoiceWakeWord := 'OK MNote';
+  FWhisperCLI := GetEnvironmentVariable('WHISPER_CLI');
+  FWhisperModel := GetEnvironmentVariable('WHISPER_MODEL');
+  FWhisperLanguage := 'pt';
+  FWhisperThreads := 0;
+  FWhisperGPU := False;
   FVoiceOutputEnabled := True;
   {$IFDEF WINDOWS}
   FVoiceOutputEngine := 1;
@@ -628,6 +643,11 @@ begin
     FSchemaOracle := RetiraInfo(arquivo.Strings[posicao]);
 
   // ===== tools =====
+  FWhisperCLI := GetEnvironmentVariable('WHISPER_CLI');
+  FWhisperModel := GetEnvironmentVariable('WHISPER_MODEL');
+  FWhisperLanguage := 'pt';
+  FWhisperThreads := 0;
+  FWhisperGPU := False;
   FVoiceOutputEnabled := True;
   {$IFDEF WINDOWS}
   FVoiceOutputEngine := 1;
@@ -649,6 +669,14 @@ begin
 
   if BuscaChave(arquivo,'IPOUVIR:',posicao) then
     fIPOUVIR := RetiraInfo(arquivo.Strings[posicao]);
+  if BuscaChave(arquivo,'WHISPERCLI:',posicao) then FWhisperCLI := RetiraInfo(arquivo.Strings[posicao]);
+  if BuscaChave(arquivo,'WHISPERMODEL:',posicao) then FWhisperModel := RetiraInfo(arquivo.Strings[posicao]);
+  if BuscaChave(arquivo,'WHISPERLANGUAGE:',posicao) then FWhisperLanguage := RetiraInfo(arquivo.Strings[posicao]);
+  if BuscaChave(arquivo,'WHISPERTHREADS:',posicao) then FWhisperThreads := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]),0);
+  if BuscaChave(arquivo,'WHISPERGPU:',posicao) then FWhisperGPU := RetiraInfo(arquivo.Strings[posicao]) = '1';
+  if FWhisperThreads < 0 then FWhisperThreads := 0;
+  if FWhisperThreads > 128 then FWhisperThreads := 128;
+  if Trim(FWhisperLanguage) = '' then FWhisperLanguage := 'pt';
   if BuscaChave(arquivo,'VOICEWAKEWORD:',posicao) then
     FVoiceWakeWord := RetiraInfo(arquivo.Strings[posicao]);
   if Trim(FVoiceWakeWord) = '' then FVoiceWakeWord := 'OK MNote';
@@ -855,6 +883,11 @@ begin
   arquivo.Append('TOOLSOUVIR:'+iif(FToolsOuvir,'1','0'));
   arquivo.Append('IPFALAR:'+fIPFALAR);
   arquivo.Append('IPOUVIR:'+fIPOUVIR);
+  arquivo.Append('WHISPERCLI:'+FWhisperCLI);
+  arquivo.Append('WHISPERMODEL:'+FWhisperModel);
+  arquivo.Append('WHISPERLANGUAGE:'+FWhisperLanguage);
+  arquivo.Append('WHISPERTHREADS:'+IntToStr(FWhisperThreads));
+  arquivo.Append('WHISPERGPU:'+iif(FWhisperGPU,'1','0'));
   arquivo.Append('VOICEWAKEWORD:'+FVoiceWakeWord);
   arquivo.Append('VOICEOUTPUTENABLED:'+iif(FVoiceOutputEnabled,'1','0'));
   arquivo.Append('VOICEOUTPUTENGINE:'+IntToStr(FVoiceOutputEngine));
