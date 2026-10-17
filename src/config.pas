@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, EditBtn,
-  ComCtrls, IPEdit, setmain;
+  ComCtrls, setmain, mnote_voice_input_service;
 
 type
 
@@ -24,7 +24,15 @@ type
     edDLLMSSQLPATH: TFileNameEdit;
     edDLLOraclePATH: TFileNameEdit;
     edInstall: TFileNameEdit;
-    edIPOuvir: TIPEdit;
+    edWhisperCLI: TFileNameEdit;
+    edWhisperModel: TFileNameEdit;
+    edWhisperLanguage: TEdit;
+    edWhisperThreads: TEdit;
+    ckWhisperGPU: TCheckBox;
+    edWakeWord: TEdit;
+    btTestWhisper: TButton;
+    lblWhisperResult: TLabel;
+    procedure btTestWhisperClick(Sender: TObject);
     edRun: TFileNameEdit;
     Label1: TLabel;
     Label12: TLabel;
@@ -35,7 +43,6 @@ type
     Label7: TLabel;
     Label8: TLabel;
     Label9: TLabel;
-    lbIP1: TLabel;
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
     TabSheet4: TTabSheet;
@@ -58,11 +65,26 @@ implementation
 { Tfrmconfig }
 
 function Tfrmconfig.ValidateControls(out AError: string): Boolean;
+var Threads: Integer;
 begin
   AError := '';
-  if ckToolsOuvir.Checked and (Trim(edIPOuvir.Text) = '') then
+  if ckToolsOuvir.Checked then
   begin
-    AError := 'Informe o IP do reconhecimento de voz ou desative a opção.';
+    if not FileExists(Trim(edWhisperCLI.Text)) then
+    begin
+      AError := 'Selecione um executável Whisper existente.';
+      Exit(False);
+    end;
+    if not FileExists(Trim(edWhisperModel.Text)) then
+    begin
+      AError := 'Selecione um modelo Whisper existente.';
+      Exit(False);
+    end;
+  end;
+  if (not TryStrToInt(Trim(edWhisperThreads.Text), Threads)) or
+    (Threads < 0) or (Threads > 128) then
+  begin
+    AError := 'Threads deve estar entre 0 e 128 (0 = automático).';
     Exit(False);
   end;
   Result := True;
@@ -88,7 +110,12 @@ begin
   FSetMain.DLLMSSQLPath := Trim(edDLLMSSQLPATH.Text);
   FSetMain.DLLOraclePath := Trim(edDLLOraclePATH.Text);
   FSetMain.ToolsOuvir := ckToolsOuvir.Checked;
-  FSetMain.IPOUVIR := Trim(edIPOUVIR.Text);
+  FSetMain.WhisperCLI := Trim(edWhisperCLI.Text);
+  FSetMain.WhisperModel := Trim(edWhisperModel.Text);
+  FSetMain.WhisperLanguage := Trim(edWhisperLanguage.Text);
+  FSetMain.WhisperThreads := StrToIntDef(Trim(edWhisperThreads.Text), 0);
+  FSetMain.WhisperGPU := ckWhisperGPU.Checked;
+  FSetMain.VoiceWakeWord := Trim(edWakeWord.Text);
   FSetMain.SalvaContexto(False);
   ModalResult := mrOK;
   Close;
@@ -106,7 +133,51 @@ begin
   edDLLMSSQLPATH.Text := FSetMain.DLLMSSQLPath;
   edDLLOraclePATH.Text := FSetMain.DLLOraclePath;
   ckToolsOuvir.Checked := FSetMain.ToolsOuvir;
-  edIPOUVIR.Text := FSetMain.IPOUVIR;
+  edWhisperCLI.Text := FSetMain.WhisperCLI;
+  edWhisperModel.Text := FSetMain.WhisperModel;
+  edWhisperLanguage.Text := FSetMain.WhisperLanguage;
+  edWhisperThreads.Text := IntToStr(FSetMain.WhisperThreads);
+  ckWhisperGPU.Checked := FSetMain.WhisperGPU;
+  edWakeWord.Text := FSetMain.VoiceWakeWord;
+end;
+
+procedure Tfrmconfig.btTestWhisperClick(Sender: TObject);
+var
+  Service: TMNoteVoiceInputService;
+  Reason: string;
+  OldCLI, OldModel, OldLang, OldWake: string;
+  OldThreads: Integer;
+  OldGPU: Boolean;
+begin
+  OldCLI := FSetMain.WhisperCLI;
+  OldModel := FSetMain.WhisperModel;
+  OldLang := FSetMain.WhisperLanguage;
+  OldWake := FSetMain.VoiceWakeWord;
+  OldThreads := FSetMain.WhisperThreads;
+  OldGPU := FSetMain.WhisperGPU;
+  try
+    FSetMain.WhisperCLI := Trim(edWhisperCLI.Text);
+    FSetMain.WhisperModel := Trim(edWhisperModel.Text);
+    FSetMain.WhisperLanguage := Trim(edWhisperLanguage.Text);
+    FSetMain.WhisperThreads := StrToIntDef(Trim(edWhisperThreads.Text),0);
+    FSetMain.WhisperGPU := ckWhisperGPU.Checked;
+    Service := TMNoteVoiceInputService.Create(Self);
+    try
+      if Service.Available(Reason) then
+        lblWhisperResult.Caption := 'Whisper: executável e modelo válidos.'
+      else
+        lblWhisperResult.Caption := 'Whisper: ' + Reason;
+    finally
+      Service.Free;
+    end;
+  finally
+    FSetMain.WhisperCLI := OldCLI;
+    FSetMain.WhisperModel := OldModel;
+    FSetMain.WhisperLanguage := OldLang;
+    FSetMain.VoiceWakeWord := OldWake;
+    FSetMain.WhisperThreads := OldThreads;
+    FSetMain.WhisperGPU := OldGPU;
+  end;
 end;
 
 procedure Tfrmconfig.btCancelClick(Sender: TObject);
