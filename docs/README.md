@@ -1,3 +1,7 @@
+## Análise de IA por tarefas
+
+- [Gerenciador de tarefas de análise](analise_ia_por_tarefas.md)
+
 # Documentação do MNote2
 
 > Documentação de referência da IDE MNote2 2.68. Os recursos descritos nos manuais são capacidades declaradas pelo projeto; a situação dos testes e regressões deve ser consultada nos relatórios de validação e na lista de bugs.
