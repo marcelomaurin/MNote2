@@ -2,7 +2,7 @@ unit mnote_ai_tasks_form;
 {$mode objfpc}{$H+}
 {$codepage utf8}
 interface
-uses Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls,
+uses Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, Dialogs,
   mnote_ai_task_orchestrator;
 type
   TMNoteAITasksForm = class(TForm)
