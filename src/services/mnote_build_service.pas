@@ -67,6 +67,8 @@ type
       out AError: string): Boolean;
     function Start(const ARoot: string; ARebuild: Boolean;
       out AError: string): Boolean;
+    function StartSource(const AFile: string; ARun: Boolean;
+      out AError: string): Boolean;
     procedure Cancel;
     function Running: Boolean;
     property OnOutput: TMNoteBuildOutputEvent read FOnOutput write FOnOutput;
@@ -316,6 +318,111 @@ begin
     Result := True;
   finally
     Arguments.Free;
+  end;
+end;
+
+function TMNoteBuildService.StartSource(const AFile: string; ARun: Boolean;
+  out AError: string): Boolean;
+var
+  Ext, Source, OutputFile, Compiler: string;
+  Args: TStringList;
+begin
+  Result := False;
+  AError := '';
+  ReleaseFinishedThread;
+  if Running then
+  begin
+    AError := 'Já existe uma operação em execução.';
+    Exit;
+  end;
+  Source := ExpandFileName(AFile);
+  if not FileExists(Source) then
+  begin
+    AError := 'Salve o arquivo antes de compilar ou executar.';
+    Exit;
+  end;
+  Ext := LowerCase(ExtractFileExt(Source));
+  Args := TStringList.Create;
+  try
+    {$IFDEF WINDOWS}
+    OutputFile := ChangeFileExt(Source, '.exe');
+    {$ELSE}
+    OutputFile := ChangeFileExt(Source, '');
+    {$ENDIF}
+    Compiler := '';
+    case Ext of
+      '.c':
+        if ARun then
+        begin
+          if not FileExists(OutputFile) then
+          begin
+            AError := 'Compile o arquivo C antes de executar.';
+            Exit;
+          end;
+          Compiler := OutputFile;
+        end
+        else
+        begin
+          Compiler := 'gcc';
+          Args.Add(Source);
+          Args.Add('-o');
+          Args.Add(OutputFile);
+          Args.Add('-Wall');
+          Args.Add('-Wextra');
+        end;
+      '.pas', '.pp', '.lpr':
+        if ARun then
+        begin
+          if not FileExists(OutputFile) then
+          begin
+            AError := 'Compile o arquivo Pascal antes de executar.';
+            Exit;
+          end;
+          Compiler := OutputFile;
+        end
+        else
+        begin
+          Compiler := 'fpc';
+          Args.Add(Source);
+        end;
+      '.py':
+        begin
+          {$IFDEF WINDOWS}
+          Compiler := 'python';
+          {$ELSE}
+          Compiler := 'python3';
+          {$ENDIF}
+          if not ARun then
+          begin
+            Args.Add('-c');
+            Args.Add('import ast,sys; ast.parse(open(sys.argv[1], encoding="utf-8-sig").read(), filename=sys.argv[1])');
+          end;
+          Args.Add(Source);
+        end;
+      '.php', '.phtml':
+        begin
+          Compiler := 'php';
+          if not ARun then Args.Add('-l');
+          Args.Add(Source);
+        end;
+      '.js', '.mjs', '.cjs':
+        begin
+          Compiler := 'node';
+          if not ARun then Args.Add('--check');
+          Args.Add(Source);
+        end;
+      else
+      begin
+        AError := 'Linguagem sem perfil de build/execução: ' + Ext;
+        Exit;
+      end;
+    end;
+    FThread := TMNoteBuildThread.Create(Self, Compiler, Args,
+      ExtractFileDir(Source), 10 * 60 * 1000);
+    FThread.Start;
+    Result := True;
+  finally
+    Args.Free;
   end;
 end;
 
