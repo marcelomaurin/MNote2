@@ -26,6 +26,10 @@
 - [Ownership dos highlighters](highlighter_ownership.md)
 - [Portabilidade do dicionário](porte_dicionario.md)
 
+## Compilação e execução
+
+- [C, Pascal, Python, PHP e JavaScript](compilacao_multilinguagem.md)
+
 ## Treinamento de IA
 
 - [Treinamento LLM com LoRA/QLoRA](treinamento_llm.md)
