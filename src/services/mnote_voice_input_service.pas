@@ -6,7 +6,7 @@ unit mnote_voice_input_service;
 interface
 
 uses
-  Classes, SysUtils, Forms, aiaudio, aispeechrecognizer, aiwhisperengine;
+  Classes, SysUtils, Forms, aiaudio, aispeechrecognizer, aiwhisperengine, setmain;
 
 type
   TMNoteVoiceTextEvent = procedure(Sender: TObject; const AText: string) of object;
@@ -67,18 +67,27 @@ procedure TMNoteVoiceInputService.ApplyEnvironmentConfiguration;
 var
   Value: string;
 begin
-  FEngine.ExecutablePath := Trim(GetEnvironmentVariable('WHISPER_CLI'));
-  FEngine.ModelPath := Trim(GetEnvironmentVariable('WHISPER_MODEL'));
-  FRecognizer.ModelPath := FEngine.ModelPath;
-
-  Value := Trim(GetEnvironmentVariable('WHISPER_LANGUAGE'));
-  if Value <> '' then FRecognizer.Language := Value;
-
-  Value := Trim(GetEnvironmentVariable('WHISPER_THREADS'));
-  if Value <> '' then FRecognizer.Threads := StrToIntDef(Value, 0);
-
-  Value := LowerCase(Trim(GetEnvironmentVariable('WHISPER_GPU')));
-  FRecognizer.UseGPU := (Value = '1') or (Value = 'true') or (Value = 'yes');
+  if FSetMain <> nil then
+  begin
+    FEngine.ExecutablePath := Trim(FSetMain.WhisperCLI);
+    FEngine.ModelPath := Trim(FSetMain.WhisperModel);
+    FRecognizer.ModelPath := FEngine.ModelPath;
+    FRecognizer.Language := Trim(FSetMain.WhisperLanguage);
+    FRecognizer.Threads := FSetMain.WhisperThreads;
+    FRecognizer.UseGPU := FSetMain.WhisperGPU;
+  end
+  else
+  begin
+    FEngine.ExecutablePath := Trim(GetEnvironmentVariable('WHISPER_CLI'));
+    FEngine.ModelPath := Trim(GetEnvironmentVariable('WHISPER_MODEL'));
+    FRecognizer.ModelPath := FEngine.ModelPath;
+    Value := Trim(GetEnvironmentVariable('WHISPER_LANGUAGE'));
+    if Value <> '' then FRecognizer.Language := Value;
+    FRecognizer.Threads := StrToIntDef(GetEnvironmentVariable('WHISPER_THREADS'), 0);
+    Value := LowerCase(Trim(GetEnvironmentVariable('WHISPER_GPU')));
+    FRecognizer.UseGPU := (Value = '1') or (Value = 'true') or (Value = 'yes');
+  end;
+  if FRecognizer.Language = '' then FRecognizer.Language := 'pt';
 end;
 
 function TMNoteVoiceInputService.DefaultCaptureFile: string;
