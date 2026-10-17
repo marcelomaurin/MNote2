@@ -74,7 +74,6 @@ Source: "{#ProjectRoot}\libs\oracle\win32\oci.dll"; DestDir: "{app}\libs\oracle\
 Source: "{#ProjectRoot}\libs\sqlite\win32\sqlite3.dll"; DestDir: "{app}\libs\sqlite\win32"; Flags: ignoreversion
 
 ; Tools
-Source: "{#ProjectRoot}\tools\windows\srvFalar_1.4.exe"; DestDir: "{app}\tools"; Flags: ignoreversion
 
 ; Samples
 Source: "{#ProjectRoot}\sample\gcc\hello.c"; DestDir: "{app}\sample\gcc"; Flags: ignoreversion
@@ -88,5 +87,4 @@ Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\tools\srvFalar_1.4.exe"; Description: "Iniciar srvFalar"; Flags: nowait postinstall skipifsilent runascurrentuser
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser
