@@ -75,6 +75,9 @@ Source: "{#ProjectRoot}\libs\sqlite\win32\sqlite3.dll"; DestDir: "{app}\libs\sql
 
 ; Tools
 
+; LLM training backend (Python environment installed separately)
+Source: "{#ProjectRoot}\\tools\\llm_training\\*"; DestDir: "{app}\\tools\\llm_training"; Flags: ignoreversion recursesubdirs createallsubdirs
+
 ; Samples
 Source: "{#ProjectRoot}\sample\gcc\hello.c"; DestDir: "{app}\sample\gcc"; Flags: ignoreversion
 Source: "{#ProjectRoot}\sample\python\hello\hello.py"; DestDir: "{app}\sample\python\hello"; Flags: ignoreversion
