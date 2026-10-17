@@ -1,0 +1,14 @@
+{
+  "model_path": "/caminho/modelo-huggingface-local",
+  "dataset_path": "/caminho/dados.jsonl",
+  "output_dir": "/caminho/saida-adapter",
+  "mode": "lora",
+  "epochs": 1,
+  "batch_size": 1,
+  "gradient_accumulation": 4,
+  "max_length": 512,
+  "learning_rate": 0.0002,
+  "lora_r": 8,
+  "lora_alpha": 16,
+  "target_modules": ["q_proj", "v_proj"]
+}
