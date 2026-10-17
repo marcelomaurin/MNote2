@@ -1588,7 +1588,33 @@ begin
 end;
 
 procedure TfrmMNote.CommandProjectBuild(Sender: TObject);
+var
+  Item: TItem;
+  E, Ext: string;
 begin
+  if (pgMain.ActivePage <> nil) and (FBuildService <> nil) then
+  begin
+    Item := TItem(pgMain.ActivePage.Tag);
+    if Item <> nil then
+    begin
+      Ext := LowerCase(ExtractFileExt(Item.FileName));
+      if (Ext = '.c') or (Ext = '.pas') or (Ext = '.pp') or
+         (Ext = '.py') or (Ext = '.php') or (Ext = '.phtml') or
+         (Ext = '.js') or (Ext = '.mjs') or (Ext = '.cjs') then
+      begin
+        SalvarTudo;
+        if FOutputPanel <> nil then
+        begin
+          FOutputPanel.Clear(mocBuild);
+          FOutputPanel.Select(mocBuild);
+        end;
+        if FIDEShell <> nil then FIDEShell.ShowToolWindow(twkOutput);
+        if not FBuildService.StartSource(Item.FileName, False, E) then
+          MessageHint(E);
+        Exit;
+      end;
+    end;
+  end;
   StartProjectBuild(False);
 end;
 
@@ -1674,7 +1700,33 @@ begin
 end;
 
 procedure TfrmMNote.CommandProjectRun(Sender: TObject);
+var
+  Item: TItem;
+  E, Ext: string;
 begin
+  if (pgMain.ActivePage <> nil) and (FBuildService <> nil) then
+  begin
+    Item := TItem(pgMain.ActivePage.Tag);
+    if Item <> nil then
+    begin
+      Ext := LowerCase(ExtractFileExt(Item.FileName));
+      if (Ext = '.c') or (Ext = '.pas') or (Ext = '.pp') or
+         (Ext = '.py') or (Ext = '.php') or (Ext = '.phtml') or
+         (Ext = '.js') or (Ext = '.mjs') or (Ext = '.cjs') then
+      begin
+        SalvarTudo;
+        if FOutputPanel <> nil then
+        begin
+          FOutputPanel.Clear(mocBuild);
+          FOutputPanel.Select(mocBuild);
+        end;
+        if FIDEShell <> nil then FIDEShell.ShowToolWindow(twkOutput);
+        if not FBuildService.StartSource(Item.FileName, True, E) then
+          MessageHint(E);
+        Exit;
+      end;
+    end;
+  end;
   mnrunClick(Sender);
 end;
 
