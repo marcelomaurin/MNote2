@@ -74,6 +74,19 @@ def main() -> None:
     if "mnote_voice_input_service" not in ouvir_text:
         fail("ToolsOuvir is not wired to the CHATGPT voice input service")
 
+    falar_text = (SRC / "toolsfalar" / "toolsfalar.pas").read_text(encoding="utf-8", errors="ignore").lower()
+    if "mnote_voice_output_service" not in falar_text:
+        fail("ToolsFalar must use CHATGPT voice output service")
+    for path in (SRC / "srvfalar.py", ROOT / "tools" / "windows" / "srvouve.py", SRC / "fala.c"):
+        if path.exists():
+            fail(f"legacy voice server still exists: {path}")
+    installer = (ROOT / "instalador" / "MNote2.iss").read_text(encoding="utf-8", errors="ignore").lower()
+    if "srvfalar" in installer:
+        fail("installer still invokes legacy voice server")
+    for path in (tools_ouvir, SRC / "toolsfalar" / "toolsfalar.pas"):
+        content = path.read_text(encoding="utf-8", errors="ignore").lower()
+        if "ltcpcomponent" in content:
+            fail(f"legacy TCP transport remains in voice form: {path}")
     print("Lazarus project integrity: OK")
 
 
