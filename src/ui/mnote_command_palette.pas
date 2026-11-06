@@ -30,6 +30,7 @@ type
     FFileMenuItem: TMenuItem;
     FOnCollectFiles: TMNoteCollectFilesEvent;
     FOnOpenFile: TMNoteOpenFileEvent;
+    FOnClose: TNotifyEvent;
     procedure EditChange(Sender: TObject);
     procedure EditKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure ResultsDblClick(Sender: TObject);
@@ -47,9 +48,13 @@ type
       ARegistry: TMNoteCommandRegistry);
     procedure ShowPalette(AMode: TMNotePaletteMode);
     procedure ClosePalette;
+    procedure TogglePalette(AMode: TMNotePaletteMode);
+    function IsOpen: Boolean;
+    property Mode: TMNotePaletteMode read FMode;
     property OnCollectFiles: TMNoteCollectFilesEvent read FOnCollectFiles
       write FOnCollectFiles;
     property OnOpenFile: TMNoteOpenFileEvent read FOnOpenFile write FOnOpenFile;
+    property OnClose: TNotifyEvent read FOnClose write FOnClose;
   end;
 
 implementation
@@ -142,10 +147,25 @@ begin
   FEdit.SetFocus;
 end;
 
+function TMNoteCommandPalette.IsOpen: Boolean;
+begin
+  Result := (FResults <> nil) and FResults.Visible;
+end;
+
+procedure TMNoteCommandPalette.TogglePalette(AMode: TMNotePaletteMode);
+begin
+  if IsOpen and (FMode = AMode) then
+    ClosePalette
+  else
+    ShowPalette(AMode);
+end;
+
 procedure TMNoteCommandPalette.ClosePalette;
 begin
   FEdit.Clear;
   SetExpanded(False);
+  if Assigned(FOnClose) then
+    FOnClose(Self);
 end;
 
 procedure TMNoteCommandPalette.EditChange(Sender: TObject);
@@ -165,6 +185,23 @@ begin
     VK_ESCAPE:
       begin
         ClosePalette;
+        Key := 0;
+      end;
+    VK_Q:
+      if Shift = [ssCtrl] then
+      begin
+        TogglePalette(pmCommands);
+        Key := 0;
+      end;
+    VK_P:
+      if Shift = [ssCtrl] then
+      begin
+        TogglePalette(pmFiles);
+        Key := 0;
+      end
+      else if Shift = [ssCtrl, ssShift] then
+      begin
+        TogglePalette(pmCommands);
         Key := 0;
       end;
     VK_RETURN:
@@ -199,12 +236,12 @@ end;
 
 procedure TMNoteCommandPalette.CommandMenuClick(Sender: TObject);
 begin
-  ShowPalette(pmCommands);
+  TogglePalette(pmCommands);
 end;
 
 procedure TMNoteCommandPalette.FileMenuClick(Sender: TObject);
 begin
-  ShowPalette(pmFiles);
+  TogglePalette(pmFiles);
 end;
 
 procedure TMNoteCommandPalette.InsertCommand(ACommand: TMNoteCommand;

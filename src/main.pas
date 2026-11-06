@@ -325,6 +325,7 @@ type
     procedure CommandReplace(Sender: TObject);
     procedure CollectPaletteFiles(AFiles: TStrings);
     procedure OpenPaletteFile(const AFileName: string);
+    procedure PaletteClosed(Sender: TObject);
     procedure CollectSearchDocuments(ADocuments: TMNoteSearchDocuments);
     procedure NavigateSearchResult(const AFileName: string;
       ALine, AColumn, ALength: Integer);
@@ -2516,6 +2517,18 @@ begin
     LoadArquivo(AFileName);
 end;
 
+procedure TfrmMNote.PaletteClosed(Sender: TObject);
+var
+  PageItem: TItem;
+begin
+  if (pgMain <> nil) and (pgMain.ActivePage <> nil) and (pgMain.ActivePage.Tag <> 0) then
+  begin
+    PageItem := TItem(pgMain.ActivePage.Tag);
+    if (PageItem <> nil) and (PageItem.syn <> nil) and PageItem.syn.CanFocus then
+      PageItem.syn.SetFocus;
+  end;
+end;
+
 procedure TfrmMNote.CollectSearchDocuments(
   ADocuments: TMNoteSearchDocuments);
 var
@@ -2982,6 +2995,7 @@ begin
   FCommandPalette := TMNoteCommandPalette.Create(Self);
   FCommandPalette.OnCollectFiles := @CollectPaletteFiles;
   FCommandPalette.OnOpenFile := @OpenPaletteFile;
+  FCommandPalette.OnClose := @PaletteClosed;
   FCommandPalette.Initialize(Panel1, MainMenu1, FCommandRegistry);
   FLanguageToolbar := TMNoteLanguageToolbar.Create(Self);
   FLanguageToolbar.Initialize(Panel1, FCommandRegistry);
