@@ -2993,6 +2993,17 @@ object frmmquery2: Tfrmmquery2
     Top = 440
     object MenuItem3: TMenuItem
       Caption = 'File'
+      object miLoadConnection: TMenuItem
+        Caption = 'Load Connection'
+        OnClick = miLoadConnectionClick
+      end
+      object miSaveConnection: TMenuItem
+        Caption = 'Save Connection'
+        OnClick = miSaveConnectionClick
+      end
+      object miConnSep: TMenuItem
+        Caption = '-'
+      end
       object MenuItem6: TMenuItem
         Caption = 'Load SQL'
         OnClick = MenuItem6Click

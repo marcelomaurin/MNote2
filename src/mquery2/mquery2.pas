@@ -16,7 +16,7 @@ uses
   ZVariant, ZPlainDriver, TypeDB, triggers, item, funcoes, chart,
   codigo, setmain, ZDbcIntfs, math, hint, Variants, LConvEncoding, base,
   mnote_ai_service, mnote_db_diagram_model, mnote_db_diagram_reader,
-  mnote_db_diagram_form;
+  mnote_db_diagram_form, fpjson, jsonparser;
 
 const
   sqltabela   = 'Você poderia me fornecer a consulta SQL que deseja analisar? Assim que eu receber o SQL, irei extrair os nomes das tabelas envolvidas e gerar um código em JSON com esses nomes. A resposta será apresentada dentro de uma caixa de texto apropriada para cópia, Desta forma refaça a pergunta mesmo nao havendo certeza da resposta,claramente formatada como um código JSON:';
@@ -470,11 +470,19 @@ type
     mnCriaDicionarioOracle: TMenuItem;
     pmTabelaMSSQL: TPopupMenu;
     pmTabelaOracle: TPopupMenu;
-
+    miLoadConnection: TMenuItem;
+    miSaveConnection: TMenuItem;
+    miConnSep: TMenuItem;
     btSalvarPost: TButton;
     btSalvarMy: TButton;
     btSalvarLite: TButton;
     FCompletions: array[0..4] of TSynCompletion;
+
+    procedure miLoadConnectionClick(Sender: TObject);
+    procedure miSaveConnectionClick(Sender: TObject);
+    function SalvarConexaoArquivo(const AFileName: string; AEngineIndex: Integer = -1): Boolean;
+    function CarregarConexaoArquivo(const AFileName: string): Boolean;
+    function GetActiveSQLEditor: TSynEdit;
 
     procedure btSalvarPostClick(Sender: TObject);
     procedure btSalvarMyClick(Sender: TObject);
@@ -596,6 +604,9 @@ type
 function MontarScriptSQL(const ATableName, ATipoScript: string; AColunas, APKs: TStrings): string;
 function ExtractFieldName(const S: string): string;
 procedure ExtractPKNames(const S: string; AList: TStrings);
+function NormalizarTipoBanco(const ATipo: string): string;
+function ConnectionToJsonString(const ATipo, AHost: string; APort: Integer; const ADatabase, AUsername, APassword, ASchema: string): string;
+function JsonStringToConnection(const AJson: string; out ATipo, AHost: string; out APort: Integer; out ADatabase, AUsername, APassword, ASchema: string): Boolean;
 
 var
   frmmquery2: Tfrmmquery2;
@@ -1220,6 +1231,14 @@ begin
     ShowMessage('Set Mysql Path in config');
   {$ENDIF}
 
+  if Assigned(FSetMain) then
+  begin
+    edHostName.Text := FSetMain.HostnameMy;
+    edBanco.Text := FSetMain.BancoMy;
+    edusuario.Text := FSetMain.UsernameMy;
+    edPasswrd.Text := FSetMain.PasswordMy;
+  end;
+
   edHostNamePost.Text := FSetmain.HostnamePost;
   edBancoPost.Text := FSetmain.BancoPOST;
   edusuarioPost.Text := FSetmain.UsernamePost;
@@ -1337,15 +1356,38 @@ begin
   PostApagaTabela(nome);
 end;
 
-procedure Tfrmmquery2.MenuItem5Click(Sender: TObject);
+function Tfrmmquery2.GetActiveSQLEditor: TSynEdit;
 begin
+  if pgMain.ActivePage = tsMysql then Result := edSQL
+  else if pgMain.ActivePage = tsPostgree then Result := edSQLPost
+  else if pgMain.ActivePage = tsSqlite then Result := edSQL1
+  else if pgMain.ActivePage = tsMSSQL then Result := edSQLMSSQL
+  else if pgMain.ActivePage = tsOracle then Result := edSQLOracle
+  else Result := edSQL;
+end;
+
+procedure Tfrmmquery2.MenuItem5Click(Sender: TObject);
+var
+  ed: TSynEdit;
+begin
+  ed := GetActiveSQLEditor;
   SaveDialog1.Title := 'Salvar SQL';
+  SaveDialog1.Filter := 'Arquivos SQL (*.sql)|*.sql|Todos os Arquivos (*.*)|*.*';
+  SaveDialog1.DefaultExt := 'sql';
   if SaveDialog1.Execute then
-    edSQL.Lines.SaveToFile(SaveDialog1.FileName);
+    ed.Lines.SaveToFile(SaveDialog1.FileName);
 end;
 
 procedure Tfrmmquery2.MenuItem6Click(Sender: TObject);
+var
+  ed: TSynEdit;
 begin
+  ed := GetActiveSQLEditor;
+  OpenDialog1.Title := 'Carregar SQL';
+  OpenDialog1.Filter := 'Arquivos SQL (*.sql)|*.sql|Todos os Arquivos (*.*)|*.*';
+  OpenDialog1.DefaultExt := 'sql';
+  if OpenDialog1.Execute then
+    ed.Lines.LoadFromFile(OpenDialog1.FileName);
 end;
 
 procedure Tfrmmquery2.MenuItem8Click(Sender: TObject);
@@ -1822,14 +1864,20 @@ begin
 end;
 
 function Tfrmmquery2.ConectSQLite: Boolean;
+var
+  DbPath: string;
 begin
   Result := False;
 
   if zconsqlite.Connected then
     zconsqlite.Disconnect;
 
+  DbPath := Trim(edDatabase.Text);
+  if (Length(DbPath) >= 2) and (DbPath[1] = #34) and (DbPath[Length(DbPath)] = #34) then
+    DbPath := Copy(DbPath, 2, Length(DbPath) - 2);
+
   zconsqlite.Protocol := 'sqlite';
-  zconsqlite.Database := Trim(edDatabase.Text);
+  zconsqlite.Database := DbPath;
 
   if FSetMain <> nil then
   begin
@@ -2735,67 +2783,104 @@ var
   tvindice : TTreeNode;
   tvFK : TTreeNode;
   tvTrigger : TTreeNode;
-  TabelaNome : string;
-  a : integer;
+  TabelaNome, BancoFiltro : string;
+  a, QtdTabelas : integer;
 begin
   zmyqry.Close;
   pnlProgresso.Visible := true;
-  zmyqry.SQL.Text := 'select * from information_schema.tables';
-  zmyqry.Open;
-  zmyqry.First;
-  pgbar.Max := zmyqry.RecordCount;
-  pgbar.Position := 0;
-
-  posicaofieldsmy.DeleteChildren;
-
-  while not zmyqry.EOF do
-  begin
-    if zmyqry.FieldByName('table_schema').AsString = edBanco.Text then
-    begin
-      TabelaNome := zmyqry.FieldByName('table_name').AsString;
-      SynCompletion1.ItemList.Append(TabelaNome);
-      Tabela := TTabela.Create(zmyqry1, TabelaNome, DBMysql);
-
-      tvitem := TTreenode.Create(tvMysql.Items);
-      tvitem.ImageIndex := 14;
-      tvitem := tvMysql.Items.AddNode(tvitem, posicaofieldsmy, TabelaNome, TObject(Tabela), naAddChild);
-
-      tvcolunas := tvMysql.Items.AddChildObject(tvitem,'fields', TObject(ETDBCampos));
-      tvcolunas.ImageIndex := 16;
-      for a := 0 to tabela.Count-1 do
+  QtdTabelas := 0;
+  BancoFiltro := Trim(edBanco.Text);
+  try
+    zmyqry.SQL.Text :=
+      'SELECT table_name, table_schema '+
+      'FROM information_schema.tables '+
+      'WHERE (LOWER(table_schema) = LOWER(:banco) OR :banco = '''') '+
+      '  AND table_type IN (''BASE TABLE'', ''SYSTEM VERSIONED'') '+
+      'ORDER BY table_name';
+    zmyqry.ParamByName('banco').AsString := BancoFiltro;
+    try
+      zmyqry.Open;
+      if zmyqry.IsEmpty and (BancoFiltro <> '') then
       begin
-        tvTemp := tvMysql.Items.AddChildObject(tvcolunas, tabela.fieldname[a], Pointer(a));
-        tvtemp.ImageIndex := 16;
+        zmyqry.Close;
+        zmyqry.SQL.Text := 'SHOW FULL TABLES WHERE Table_type = ''BASE TABLE''';
+        zmyqry.Open;
       end;
-
-      tvindice := tvMysql.Items.AddChildObject(tvitem,'Primary Key', Pointer(ETDBPK));
-      tvindice.ImageIndex := 17;
-      for a := 0 to tabela.chaves.primarykeys.Count-1 do
-      begin
-        tvTemp := tvMysql.Items.AddChildObject(tvindice, tabela.chaves.primarykeys[a], Pointer(a));
-        tvTemp.ImageIndex := 18;
-      end;
-
-      tvFK := tvMysql.Items.AddChildObject(tvitem,'Chave Extrangeira', TObject(ETDBFK));
-      for a := 0 to tabela.chaves.coinstraintname.Count-1 do
-        tvMysql.Items.AddChildObject(tvFK, tabela.chaves.coinstraintname[a], Pointer(a));
-
-      if (tabela.triggers.Triggername.Count > 0) then
-      begin
-        tvTrigger := tvMysql.Items.AddChildObject(tvitem,'Triggers', Pointer(ETDTriggers));
-        for a := 0 to tabela.triggers.Triggername.Count-1 do
-          tvMysql.Items.AddChildObject(tvTrigger, tabela.triggers.Triggername[a], Pointer(a));
-      end;
+    except
+      zmyqry.Close;
+      zmyqry.SQL.Text := 'SHOW FULL TABLES WHERE Table_type = ''BASE TABLE''';
+      zmyqry.Open;
     end;
 
-    zmyqry.Next;
-    pgbar.Position := pgbar.Position + 1;
-    Application.ProcessMessages;
-  end;
+    pgbar.Max := zmyqry.RecordCount;
+    pgbar.Position := 0;
 
-  pnlProgresso.Visible := false;
-  tvMysql.FullExpand;
-  AtualizarAutocomplete(0);
+    posicaofieldsmy.DeleteChildren;
+
+    while not zmyqry.EOF do
+    begin
+      TabelaNome := zmyqry.Fields[0].AsString;
+      if (zmyqry.FindField('table_name') <> nil) then
+        TabelaNome := zmyqry.FieldByName('table_name').AsString
+      else if (zmyqry.FindField('TABLE_NAME') <> nil) then
+        TabelaNome := zmyqry.FieldByName('TABLE_NAME').AsString;
+
+      TabelaNome := Trim(TabelaNome);
+      if TabelaNome <> '' then
+      begin
+        Inc(QtdTabelas);
+        SynCompletion1.ItemList.Append(TabelaNome);
+
+        tvitem := tvMysql.Items.AddChildObject(posicaofieldsmy, TabelaNome, Pointer(nil));
+        tvitem.ImageIndex := 14;
+
+        try
+          Tabela := TTabela.Create(zmyqry1, TabelaNome, DBMysql);
+          tvitem.Data := TObject(Tabela);
+
+          tvcolunas := tvMysql.Items.AddChildObject(tvitem, 'fields', TObject(ETDBCampos));
+          tvcolunas.ImageIndex := 16;
+          for a := 0 to tabela.Count - 1 do
+          begin
+            tvTemp := tvMysql.Items.AddChildObject(tvcolunas, tabela.fieldname[a], Pointer(a));
+            tvtemp.ImageIndex := 16;
+          end;
+
+          tvindice := tvMysql.Items.AddChildObject(tvitem, 'Primary Key', Pointer(ETDBPK));
+          tvindice.ImageIndex := 17;
+          for a := 0 to tabela.chaves.primarykeys.Count - 1 do
+          begin
+            tvTemp := tvMysql.Items.AddChildObject(tvindice, tabela.chaves.primarykeys[a], Pointer(a));
+            tvTemp.ImageIndex := 18;
+          end;
+
+          tvFK := tvMysql.Items.AddChildObject(tvitem, 'Chave Extrangeira', TObject(ETDBFK));
+          for a := 0 to tabela.chaves.coinstraintname.Count - 1 do
+            tvMysql.Items.AddChildObject(tvFK, tabela.chaves.coinstraintname[a], Pointer(a));
+
+          if (tabela.triggers.Triggername.Count > 0) then
+          begin
+            tvTrigger := tvMysql.Items.AddChildObject(tvitem, 'Triggers', Pointer(ETDTriggers));
+            for a := 0 to tabela.triggers.Triggername.Count - 1 do
+              tvMysql.Items.AddChildObject(tvTrigger, tabela.triggers.Triggername[a], Pointer(a));
+          end;
+        except
+        end;
+      end;
+
+      zmyqry.Next;
+      pgbar.Position := pgbar.Position + 1;
+      Application.ProcessMessages;
+    end;
+  finally
+    pnlProgresso.Visible := false;
+    posicaofieldsmy.Expanded := True;
+    if posicaofieldsmy.Parent <> nil then
+      posicaofieldsmy.Parent.Expanded := True;
+    tvMysql.FullExpand;
+    AtualizarAutocomplete(0);
+    edlog.Append(Format('MySQL: %d tabelas carregadas.', [QtdTabelas]));
+  end;
 end;
 
 procedure Tfrmmquery2.ListarTabelasSQLite();
@@ -2804,6 +2889,7 @@ var
   tbl, colLine, fkLine: string;
   lastFkId, curFkId, parentTable: string;
   childCols, parentCols: TStringList;
+  QtdTabelas: Integer;
 begin
   if posicaofieldslite = nil then Exit;
 
@@ -2817,105 +2903,110 @@ begin
     'ORDER BY name';
   zliteqry.Open;
 
+  QtdTabelas := 0;
   childCols := TStringList.Create;
   parentCols := TStringList.Create;
   try
     while not zliteqry.EOF do
     begin
-      tbl := zliteqry.FieldByName('name').AsString;
-
-      tvItem := TTreeNode.Create(tvsqlite.Items);
-      tvItem.ImageIndex := 14;
-      tvItem := tvsqlite.Items.AddNode(tvItem, posicaofieldslite, tbl, Pointer(nil), naAddChild);
-
-      tvCols := tvsqlite.Items.AddChildObject(tvItem, 'fields', Pointer(ETDBCampos));
-      tvCols.ImageIndex := 16;
-
-      zliteqry1.Close;
-      zliteqry1.SQL.Text := 'PRAGMA table_info(' + QuotedStr(tbl) + ')';
-      zliteqry1.Open;
-
-      tvPK := tvsqlite.Items.AddChildObject(tvItem, 'Primary Key', Pointer(ETDBPK));
-      tvPK.ImageIndex := 17;
-
-      while not zliteqry1.EOF do
+      tbl := Trim(zliteqry.FieldByName('name').AsString);
+      if tbl <> '' then
       begin
-        colLine := zliteqry1.FieldByName('name').AsString + ' : ' +
-                   zliteqry1.FieldByName('type').AsString;
+        Inc(QtdTabelas);
+        tvItem := tvsqlite.Items.AddChildObject(posicaofieldslite, tbl, Pointer(nil));
+        tvItem.ImageIndex := 14;
 
-        if zliteqry1.FieldByName('notnull').AsInteger = 1 then
-          colLine := colLine + ' NOT NULL';
+        try
+          tvCols := tvsqlite.Items.AddChildObject(tvItem, 'fields', Pointer(ETDBCampos));
+          tvCols.ImageIndex := 16;
 
-        if not zliteqry1.FieldByName('dflt_value').IsNull then
-          colLine := colLine + ' DEFAULT ' + zliteqry1.FieldByName('dflt_value').AsString;
+          zliteqry1.Close;
+          zliteqry1.SQL.Text := 'PRAGMA table_info(' + QuotedStr(tbl) + ')';
+          zliteqry1.Open;
 
-        tvTemp := tvsqlite.Items.AddChildObject(tvCols, colLine, Pointer(0));
-        tvTemp.ImageIndex := 19;
+          tvPK := tvsqlite.Items.AddChildObject(tvItem, 'Primary Key', Pointer(ETDBPK));
+          tvPK.ImageIndex := 17;
 
-        if zliteqry1.FieldByName('pk').AsInteger > 0 then
-        begin
-          tvTemp := tvsqlite.Items.AddChildObject(tvPK,
-            zliteqry1.FieldByName('name').AsString, Pointer(0));
-          tvTemp.ImageIndex := 18;
+          while not zliteqry1.EOF do
+          begin
+            colLine := zliteqry1.FieldByName('name').AsString + ' : ' +
+                       zliteqry1.FieldByName('type').AsString;
+
+            if zliteqry1.FieldByName('notnull').AsInteger = 1 then
+              colLine := colLine + ' NOT NULL';
+
+            if not zliteqry1.FieldByName('dflt_value').IsNull then
+              colLine := colLine + ' DEFAULT ' + zliteqry1.FieldByName('dflt_value').AsString;
+
+            tvTemp := tvsqlite.Items.AddChildObject(tvCols, colLine, Pointer(0));
+            tvTemp.ImageIndex := 19;
+
+            if zliteqry1.FieldByName('pk').AsInteger > 0 then
+            begin
+              tvTemp := tvsqlite.Items.AddChildObject(tvPK, zliteqry1.FieldByName('name').AsString, Pointer(0));
+              tvTemp.ImageIndex := 18;
+            end;
+
+            zliteqry1.Next;
+          end;
+        except
         end;
 
-        zliteqry1.Next;
-      end;
+        try
+          zliteqry1.Close;
+          zliteqry1.SQL.Text := 'PRAGMA foreign_key_list(' + QuotedStr(tbl) + ')';
+          zliteqry1.Open;
 
-      tvFK := tvsqlite.Items.AddChildObject(tvItem, 'Chave Estrangeira', Pointer(ETDBFK));
+          if not zliteqry1.EOF then
+          begin
+            tvFK := tvsqlite.Items.AddChildObject(tvItem, 'Chave Estrangeira', Pointer(ETDBFK));
+            lastFkId := '';
+            parentTable := '';
+            childCols.Clear;
+            parentCols.Clear;
 
-      zliteqry2.Close;
-      zliteqry2.SQL.Text := 'PRAGMA foreign_key_list(' + QuotedStr(tbl) + ')';
-      zliteqry2.Open;
+            while not zliteqry1.EOF do
+            begin
+              curFkId := zliteqry1.FieldByName('id').AsString;
+              if (lastFkId <> '') and (curFkId <> lastFkId) then
+              begin
+                fkLine := 'FK_' + tbl + '_' + lastFkId + ' (' + childCols.CommaText + ') -> ' +
+                          parentTable + ' (' + parentCols.CommaText + ')';
+                tvTemp := tvsqlite.Items.AddChildObject(tvFK, fkLine, Pointer(0));
+                childCols.Clear;
+                parentCols.Clear;
+              end;
 
-      lastFkId := '';
-      childCols.Clear;
-      parentCols.Clear;
-      parentTable := '';
+              lastFkId := curFkId;
+              parentTable := zliteqry1.FieldByName('table').AsString;
+              childCols.Add(zliteqry1.FieldByName('from').AsString);
+              parentCols.Add(zliteqry1.FieldByName('to').AsString);
 
-      while not zliteqry2.EOF do
-      begin
-        curFkId := zliteqry2.FieldByName('id').AsString;
+              zliteqry1.Next;
+            end;
 
-        if (lastFkId <> '') and (curFkId <> lastFkId) then
-        begin
-          fkLine := Format('%s (%s) -> %s (%s)',
-            [tbl,
-             StringReplace(childCols.CommaText, ',', ', ', [rfReplaceAll]),
-             parentTable,
-             StringReplace(parentCols.CommaText, ',', ', ', [rfReplaceAll])]);
-          tvsqlite.Items.AddChildObject(tvFK, fkLine, Pointer(0));
-          childCols.Clear;
-          parentCols.Clear;
+            if lastFkId <> '' then
+            begin
+              fkLine := 'FK_' + tbl + '_' + lastFkId + ' (' + childCols.CommaText + ') -> ' +
+                        parentTable + ' (' + parentCols.CommaText + ')';
+              tvsqlite.Items.AddChildObject(tvFK, fkLine, Pointer(0));
+            end;
+          end;
+        except
         end;
-
-        parentTable := zliteqry2.FieldByName('table').AsString;
-        childCols.Add(zliteqry2.FieldByName('from').AsString);
-        parentCols.Add(zliteqry2.FieldByName('to').AsString);
-
-        lastFkId := curFkId;
-        zliteqry2.Next;
       end;
 
-      if (lastFkId <> '') and (childCols.Count > 0) then
-      begin
-        fkLine := Format('%s (%s) -> %s (%s)',
-          [tbl,
-           StringReplace(childCols.CommaText, ',', ', ', [rfReplaceAll]),
-           parentTable,
-           StringReplace(parentCols.CommaText, ',', ', ', [rfReplaceAll])]);
-        tvsqlite.Items.AddChildObject(tvFK, fkLine, Pointer(0));
-      end;
-
-      SynCompletion1.ItemList.Append(tbl);
       zliteqry.Next;
-      Application.ProcessMessages;
     end;
-
-    zliteqry.Close;
   finally
     childCols.Free;
     parentCols.Free;
+    posicaofieldslite.Expanded := True;
+    if posicaofieldslite.Parent <> nil then
+      posicaofieldslite.Parent.Expanded := True;
+    tvsqlite.FullExpand;
+    AtualizarAutocomplete(2);
+    edLog1.Append(Format('SQLite: %d tabelas carregadas.', [QtdTabelas]));
   end;
 end;
 
@@ -2972,6 +3063,7 @@ var
   tvItem, tvTemp, tvColunas, tvIndice, tvFK, tvTrigger: TTreeNode;
   TabelaNome, SchemaNome: string;
   ColLine : string;
+  QtdTabelas: Integer;
 
   procedure OpenListaTabelas;
   begin
@@ -2979,29 +3071,51 @@ var
     zpostqry.SQL.Text :=
       'SELECT schemaname, tablename '+
       'FROM pg_catalog.pg_tables '+
-      'WHERE schemaname = :schema '+
+      'WHERE (LOWER(schemaname) = LOWER(:schema) OR :schema = '''') '+
       'ORDER BY tablename';
     zpostqry.ParamByName('schema').AsString := SchemaNome;
     try
       zpostqry.Open;
+      if zpostqry.IsEmpty and (SchemaNome <> '') then
+      begin
+        zpostqry.Close;
+        zpostqry.SQL.Text :=
+          'SELECT schemaname, tablename '+
+          'FROM pg_catalog.pg_tables '+
+          'WHERE schemaname NOT IN (''pg_catalog'', ''information_schema'') '+
+          'ORDER BY tablename';
+        zpostqry.Open;
+      end;
     except
       zpostqry.Close;
       zpostqry.SQL.Text :=
         'SELECT n.nspname AS schemaname, c.relname AS tablename '+
         'FROM pg_catalog.pg_class c '+
         'JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace '+
-        'WHERE n.nspname = :schema '+
-        '  AND c.relkind = ''r'' '+
+        'WHERE (LOWER(n.nspname) = LOWER(:schema) OR :schema = '''') '+
+        '  AND c.relkind IN (''r'', ''p'') '+
         'ORDER BY c.relname';
       zpostqry.ParamByName('schema').AsString := SchemaNome;
-      zpostqry.Open;
+      try
+        zpostqry.Open;
+      except
+        zpostqry.Close;
+        zpostqry.SQL.Text :=
+          'SELECT n.nspname AS schemaname, c.relname AS tablename '+
+          'FROM pg_catalog.pg_class c '+
+          'JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace '+
+          'WHERE n.nspname NOT IN (''pg_catalog'', ''information_schema'') '+
+          '  AND c.relkind IN (''r'', ''p'') '+
+          'ORDER BY c.relname';
+        zpostqry.Open;
+      end;
     end;
   end;
 
   procedure AddColunas(const ASchema, ATable: string; AParent: TTreeNode);
   begin
-    zpostqry1.Close;
-    zpostqry1.SQL.Text :=
+    zpostqry2.Close;
+    zpostqry2.SQL.Text :=
       'SELECT a.attnum, a.attname AS column_name, '+
       '       pg_catalog.format_type(a.atttypid, a.atttypmod) AS data_type, '+
       '       NOT a.attnotnull AS is_nullable, '+
@@ -3011,39 +3125,40 @@ var
       '  ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum '+
       'JOIN pg_catalog.pg_class c ON c.oid = a.attrelid '+
       'JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace '+
-      'WHERE n.nspname = :schema '+
+      'WHERE (LOWER(n.nspname) = LOWER(:schema) OR :schema = '''') '+
       '  AND c.relname = :table '+
       '  AND a.attnum > 0 AND NOT a.attisdropped '+
       'ORDER BY a.attnum';
-    zpostqry1.ParamByName('schema').AsString := ASchema;
-    zpostqry1.ParamByName('table').AsString  := ATable;
-    zpostqry1.Open;
+    zpostqry2.ParamByName('schema').AsString := ASchema;
+    zpostqry2.ParamByName('table').AsString  := ATable;
+    zpostqry2.Open;
 
     tvColunas := tvPost.Items.AddChildObject(AParent, 'fields', Pointer(ETDBCampos));
     tvColunas.ImageIndex := 16;
 
-    while not zpostqry1.EOF do
+    while not zpostqry2.EOF do
     begin
-      ColLine := zpostqry1.FieldByName('column_name').AsString + ' : ' +
-                 zpostqry1.FieldByName('data_type').AsString;
+      ColLine := zpostqry2.FieldByName('column_name').AsString + ' : ' +
+                 zpostqry2.FieldByName('data_type').AsString;
 
-      if not zpostqry1.FieldByName('is_nullable').AsBoolean then
+      if not zpostqry2.FieldByName('is_nullable').AsBoolean then
         ColLine := ColLine + ' NOT NULL';
 
-      if not zpostqry1.FieldByName('column_default').IsNull then
-        ColLine := ColLine + ' DEFAULT ' + zpostqry1.FieldByName('column_default').AsString;
+      if not zpostqry2.FieldByName('column_default').IsNull then
+        ColLine := ColLine + ' DEFAULT ' + zpostqry2.FieldByName('column_default').AsString;
 
       tvTemp := tvPost.Items.AddChildObject(tvColunas, ColLine, Pointer(0));
       tvTemp.ImageIndex := 19;
 
-      zpostqry1.Next;
+      zpostqry2.Next;
     end;
+    zpostqry2.Close;
   end;
 
   procedure AddPK(const ASchema, ATable: string; AParent: TTreeNode);
   begin
-    zpostqry1.Close;
-    zpostqry1.SQL.Text :=
+    zpostqry2.Close;
+    zpostqry2.SQL.Text :=
       'SELECT c.conname, '+
       '       array_agg(a.attname ORDER BY u.ord) AS cols '+
       'FROM pg_catalog.pg_constraint c '+
@@ -3052,28 +3167,29 @@ var
       'JOIN LATERAL unnest(c.conkey) WITH ORDINALITY AS u(attnum, ord) ON TRUE '+
       'JOIN pg_catalog.pg_attribute a ON a.attrelid = t.oid AND a.attnum = u.attnum '+
       'WHERE c.contype = ''p'' '+
-      '  AND n.nspname = :schema '+
+      '  AND (LOWER(n.nspname) = LOWER(:schema) OR :schema = '''') '+
       '  AND t.relname = :table '+
       'GROUP BY c.conname '+
       'ORDER BY c.conname';
-    zpostqry1.ParamByName('schema').AsString := ASchema;
-    zpostqry1.ParamByName('table').AsString  := ATable;
-    zpostqry1.Open;
+    zpostqry2.ParamByName('schema').AsString := ASchema;
+    zpostqry2.ParamByName('table').AsString  := ATable;
+    zpostqry2.Open;
 
     tvIndice := tvPost.Items.AddChildObject(AParent, 'Primary Key', Pointer(ETDBPK));
     tvIndice.ImageIndex := 17;
 
-    while not zpostqry1.EOF do
+    while not zpostqry2.EOF do
     begin
       tvTemp := tvPost.Items.AddChildObject(
                   tvIndice,
-                  zpostqry1.FieldByName('conname').AsString + ' ('+
-                  zpostqry1.FieldByName('cols').AsString + ')',
+                  zpostqry2.FieldByName('conname').AsString + ' ('+
+                  zpostqry2.FieldByName('cols').AsString + ')',
                   Pointer(0)
                 );
       tvTemp.ImageIndex := 18;
-      zpostqry1.Next;
+      zpostqry2.Next;
     end;
+    zpostqry2.Close;
   end;
 
   procedure AddFK(const ASchema, ATable: string; AParent: TTreeNode);
@@ -3097,7 +3213,7 @@ var
       'JOIN pg_catalog.pg_attribute a1 ON a1.attrelid = t1.oid AND a1.attnum = u.attnum '+
       'JOIN pg_catalog.pg_attribute a2 ON a2.attrelid = t2.oid AND a2.attnum = v.attnum '+
       'WHERE c.contype = ''f'' '+
-      '  AND n1.nspname = :schema '+
+      '  AND (LOWER(n1.nspname) = LOWER(:schema) OR :schema = '''') '+
       '  AND t1.relname = :table '+
       'GROUP BY c.conname, ref_schema, ref_table, c.oid '+
       'ORDER BY c.conname';
@@ -3121,44 +3237,45 @@ var
 
       zpostqry2.Next;
     end;
+    zpostqry2.Close;
   end;
 
   procedure AddTriggers(const ASchema, ATable: string; AParent: TTreeNode);
   begin
-    zpostqry1.Close;
-    zpostqry1.SQL.Text :=
+    zpostqry2.Close;
+    zpostqry2.SQL.Text :=
       'SELECT tg.tgname, pg_get_triggerdef(tg.oid, TRUE) AS def '+
       'FROM pg_catalog.pg_trigger tg '+
       'JOIN pg_catalog.pg_class t ON t.oid = tg.tgrelid '+
       'JOIN pg_catalog.pg_namespace n ON n.oid = t.relnamespace '+
-      'WHERE n.nspname = :schema '+
+      'WHERE (LOWER(n.nspname) = LOWER(:schema) OR :schema = '''') '+
       '  AND t.relname = :table '+
       '  AND NOT tg.tgisinternal '+
       'ORDER BY tg.tgname';
-    zpostqry1.ParamByName('schema').AsString := ASchema;
-    zpostqry1.ParamByName('table').AsString  := ATable;
-    zpostqry1.Open;
+    zpostqry2.ParamByName('schema').AsString := ASchema;
+    zpostqry2.ParamByName('table').AsString  := ATable;
+    zpostqry2.Open;
 
-    if not zpostqry1.EOF then
+    if not zpostqry2.EOF then
     begin
       tvTrigger := tvPost.Items.AddChildObject(AParent, 'Triggers', Pointer(ETDTriggers));
-      while not zpostqry1.EOF do
+      while not zpostqry2.EOF do
       begin
         tvTemp := tvPost.Items.AddChildObject(tvTrigger,
-                   zpostqry1.FieldByName('tgname').AsString, Pointer(0));
+                   zpostqry2.FieldByName('tgname').AsString, Pointer(0));
         tvPost.Items.AddChildObject(tvTemp,
-                   zpostqry1.FieldByName('def').AsString, Pointer(0));
-        zpostqry1.Next;
+                   zpostqry2.FieldByName('def').AsString, Pointer(0));
+        zpostqry2.Next;
       end;
     end;
+    zpostqry2.Close;
   end;
 
-//var
-  //SchemaNome: string;
 begin
   SchemaNome := Trim(edSchemaPost.Text);
   if SchemaNome = '' then SchemaNome := 'public';
 
+  QtdTabelas := 0;
   try
     posicaofieldspost.DeleteChildren;
 
@@ -3167,28 +3284,31 @@ begin
 
     while not zpostqry.EOF do
     begin
-      if SameText(zpostqry.FieldByName('schemaname').AsString, SchemaNome) then
+      TabelaNome := zpostqry.FieldByName('tablename').AsString;
+      if Trim(TabelaNome) <> '' then
       begin
-        TabelaNome := zpostqry.FieldByName('tablename').AsString;
-
+        Inc(QtdTabelas);
         SynSQLSyn2.TableNames.Append(TabelaNome);
 
-        tvItem := TTreeNode.Create(tvPost.Items);
+        tvItem := tvPost.Items.AddChildObject(posicaofieldspost, TabelaNome, Pointer(nil));
         tvItem.ImageIndex := 14;
-        tvItem := tvPost.Items.AddNode(tvItem, posicaofieldspost, TabelaNome, Pointer(nil), naAddChild);
 
-        AddColunas(SchemaNome, TabelaNome, tvItem);
-        AddPK(SchemaNome, TabelaNome, tvItem);
-        AddFK(SchemaNome, TabelaNome, tvItem);
-        AddTriggers(SchemaNome, TabelaNome, tvItem);
+        try AddColunas(SchemaNome, TabelaNome, tvItem); except end;
+        try AddPK(SchemaNome, TabelaNome, tvItem); except end;
+        try AddFK(SchemaNome, TabelaNome, tvItem); except end;
+        try AddTriggers(SchemaNome, TabelaNome, tvItem); except end;
       end;
 
       zpostqry.Next;
       Application.ProcessMessages;
     end;
   finally
+    posicaofieldspost.Expanded := True;
+    if posicaofieldspost.Parent <> nil then
+      posicaofieldspost.Parent.Expanded := True;
     tvPost.FullExpand;
     AtualizarAutocomplete(1);
+    edlog.Append(Format('PostgreSQL: %d tabelas carregadas.', [QtdTabelas]));
   end;
 end;
 
@@ -4734,65 +4854,95 @@ var
   tvItem, tvColunas: TTreeNode;
   SchemaNome, TabelaNome, ColLine: string;
   colQry: TZQuery;
+  QtdTabelas: Integer;
 begin
   SchemaNome := Trim(edSchemaMSSQL.Text);
-  if SchemaNome = '' then
-    SchemaNome := 'dbo';
+  if SchemaNome = '' then SchemaNome := 'dbo';
+
+  posicaofieldsMSSQL.DeleteChildren;
+  QtdTabelas := 0;
 
   zmssqlqry.Close;
   zmssqlqry.SQL.Text :=
-    'SELECT TABLE_SCHEMA, TABLE_NAME ' +
-    'FROM INFORMATION_SCHEMA.TABLES ' +
-    'WHERE TABLE_TYPE = ''BASE TABLE'' ' +
-    '  AND TABLE_SCHEMA = :schema ' +
+    'SELECT TABLE_SCHEMA, TABLE_NAME '+
+    'FROM INFORMATION_SCHEMA.TABLES '+
+    'WHERE TABLE_TYPE = ''BASE TABLE'' '+
+    '  AND (LOWER(TABLE_SCHEMA) = LOWER(:schema) OR :schema = '''') '+
     'ORDER BY TABLE_NAME';
   zmssqlqry.ParamByName('schema').AsString := SchemaNome;
-  zmssqlqry.Open;
-
-  colQry := TZQuery.Create(nil);
   try
-    colQry.Connection := zconMSSQL;
+    zmssqlqry.Open;
+    if zmssqlqry.IsEmpty and (SchemaNome <> '') then
+    begin
+      zmssqlqry.Close;
+      zmssqlqry.SQL.Text :=
+        'SELECT TABLE_SCHEMA, TABLE_NAME '+
+        'FROM INFORMATION_SCHEMA.TABLES '+
+        'WHERE TABLE_TYPE = ''BASE TABLE'' '+
+        'ORDER BY TABLE_NAME';
+      zmssqlqry.Open;
+    end;
+  except
+    zmssqlqry.Close;
+    zmssqlqry.SQL.Text :=
+      'SELECT TABLE_SCHEMA, TABLE_NAME '+
+      'FROM INFORMATION_SCHEMA.TABLES '+
+      'WHERE TABLE_TYPE = ''BASE TABLE'' '+
+      'ORDER BY TABLE_NAME';
+    zmssqlqry.Open;
+  end;
+
+  colQry := TZQuery.Create(Self);
+  colQry.Connection := zconMSSQL;
+  try
     while not zmssqlqry.EOF do
     begin
       TabelaNome := zmssqlqry.FieldByName('TABLE_NAME').AsString;
-      tvItem := tvMSSQL.Items.AddChildObject(posicaofieldsMSSQL, TabelaNome, Pointer(ETDTabelas));
-      tvItem.ImageIndex := 14;
-
-      colQry.Close;
-      colQry.SQL.Text :=
-        'SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE ' +
-        'FROM INFORMATION_SCHEMA.COLUMNS ' +
-        'WHERE TABLE_SCHEMA = :schema ' +
-        '  AND TABLE_NAME = :table ' +
-        'ORDER BY ORDINAL_POSITION';
-      colQry.ParamByName('schema').AsString := SchemaNome;
-      colQry.ParamByName('table').AsString := TabelaNome;
-      colQry.Open;
-
-      tvColunas := tvMSSQL.Items.AddChildObject(tvItem, 'fields', Pointer(ETDBCampos));
-      tvColunas.ImageIndex := 16;
-
-      while not colQry.EOF do
+      if Trim(TabelaNome) <> '' then
       begin
-        ColLine := colQry.FieldByName('COLUMN_NAME').AsString + ' : ' +
-                   colQry.FieldByName('DATA_TYPE').AsString;
+        Inc(QtdTabelas);
+        tvItem := tvMSSQL.Items.AddChildObject(posicaofieldsMSSQL, TabelaNome, Pointer(nil));
+        tvItem.ImageIndex := 14;
 
-        if not colQry.FieldByName('CHARACTER_MAXIMUM_LENGTH').IsNull then
-          ColLine := ColLine + '(' + colQry.FieldByName('CHARACTER_MAXIMUM_LENGTH').AsString + ')';
+        try
+          colQry.Close;
+          colQry.SQL.Text :=
+            'SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT '+
+            'FROM INFORMATION_SCHEMA.COLUMNS '+
+            'WHERE TABLE_NAME = :table '+
+            'ORDER BY ORDINAL_POSITION';
+          colQry.ParamByName('table').AsString := TabelaNome;
+          colQry.Open;
 
-        if colQry.FieldByName('IS_NULLABLE').AsString = 'NO' then
-          ColLine := ColLine + ' NOT NULL';
+          tvColunas := tvMSSQL.Items.AddChildObject(tvItem, 'fields', Pointer(ETDBCampos));
+          tvColunas.ImageIndex := 16;
 
-        tvMSSQL.Items.AddChildObject(tvColunas, ColLine, Pointer(ETDBCampos));
-        colQry.Next;
+          while not colQry.EOF do
+          begin
+            ColLine := colQry.FieldByName('COLUMN_NAME').AsString + ' : ' +
+                       colQry.FieldByName('DATA_TYPE').AsString;
+            if colQry.FieldByName('IS_NULLABLE').AsString = 'NO' then
+              ColLine := ColLine + ' NOT NULL';
+            if not colQry.FieldByName('COLUMN_DEFAULT').IsNull then
+              ColLine := ColLine + ' DEFAULT ' + colQry.FieldByName('COLUMN_DEFAULT').AsString;
+
+            tvMSSQL.Items.AddChildObject(tvColunas, ColLine, Pointer(0));
+            colQry.Next;
+          end;
+        except
+        end;
       end;
-
       zmssqlqry.Next;
     end;
   finally
     colQry.Free;
+    posicaofieldsMSSQL.Expanded := True;
+    if posicaofieldsMSSQL.Parent <> nil then
+      posicaofieldsMSSQL.Parent.Expanded := True;
+    tvMSSQL.FullExpand;
+    AtualizarAutocomplete(3);
+    edErroMSSQL.Lines.Add(Format('SQL Server: %d tabelas carregadas.', [QtdTabelas]));
   end;
-  AtualizarAutocomplete(3);
 end;
 
 procedure Tfrmmquery2.ListarTabelasOracle();
@@ -4800,67 +4950,85 @@ var
   tvItem, tvColunas: TTreeNode;
   SchemaNome, TabelaNome, ColLine: string;
   colQry: TZQuery;
+  QtdTabelas: Integer;
 begin
   SchemaNome := UpperCase(Trim(edSchemaOracle.Text));
-  if SchemaNome = '' then
-    SchemaNome := UpperCase(Trim(edUserOracle.Text));
+
+  posicaofieldsOracle.DeleteChildren;
+  QtdTabelas := 0;
 
   zoracleqry.Close;
   zoracleqry.SQL.Text :=
-    'SELECT OWNER, TABLE_NAME ' +
-    'FROM ALL_TABLES ' +
-    'WHERE OWNER = :schema ' +
+    'SELECT OWNER, TABLE_NAME '+
+    'FROM ALL_TABLES '+
+    'WHERE (OWNER = :schema OR :schema = '''') '+
     'ORDER BY TABLE_NAME';
   zoracleqry.ParamByName('schema').AsString := SchemaNome;
-  zoracleqry.Open;
-
-  colQry := TZQuery.Create(nil);
   try
-    colQry.Connection := zconOracle;
+    zoracleqry.Open;
+    if zoracleqry.IsEmpty then
+    begin
+      zoracleqry.Close;
+      zoracleqry.SQL.Text := 'SELECT USER AS OWNER, TABLE_NAME FROM USER_TABLES ORDER BY TABLE_NAME';
+      zoracleqry.Open;
+    end;
+  except
+    zoracleqry.Close;
+    zoracleqry.SQL.Text := 'SELECT USER AS OWNER, TABLE_NAME FROM USER_TABLES ORDER BY TABLE_NAME';
+    zoracleqry.Open;
+  end;
+
+  colQry := TZQuery.Create(Self);
+  colQry.Connection := zconOracle;
+  try
     while not zoracleqry.EOF do
     begin
       TabelaNome := zoracleqry.FieldByName('TABLE_NAME').AsString;
-      tvItem := tvOracle.Items.AddChildObject(posicaofieldsOracle, TabelaNome, Pointer(ETDTabelas));
-      tvItem.ImageIndex := 14;
-
-      colQry.Close;
-      colQry.SQL.Text :=
-        'SELECT COLUMN_NAME, DATA_TYPE, DATA_LENGTH, NULLABLE ' +
-        'FROM ALL_TAB_COLUMNS ' +
-        'WHERE OWNER = :schema ' +
-        '  AND TABLE_NAME = :table ' +
-        'ORDER BY COLUMN_ID';
-      colQry.ParamByName('schema').AsString := SchemaNome;
-      colQry.ParamByName('table').AsString := TabelaNome;
-      colQry.Open;
-
-      tvColunas := tvOracle.Items.AddChildObject(tvItem, 'fields', Pointer(ETDBCampos));
-      tvColunas.ImageIndex := 16;
-
-      while not colQry.EOF do
+      if Trim(TabelaNome) <> '' then
       begin
-        ColLine := colQry.FieldByName('COLUMN_NAME').AsString + ' : ' +
-                   colQry.FieldByName('DATA_TYPE').AsString;
+        Inc(QtdTabelas);
+        tvItem := tvOracle.Items.AddChildObject(posicaofieldsOracle, TabelaNome, Pointer(nil));
+        tvItem.ImageIndex := 14;
 
-        if (colQry.FieldByName('DATA_TYPE').AsString = 'VARCHAR2') or
-           (colQry.FieldByName('DATA_TYPE').AsString = 'CHAR') then
-        begin
-          ColLine := ColLine + '(' + colQry.FieldByName('DATA_LENGTH').AsString + ')';
+        try
+          colQry.Close;
+          colQry.SQL.Text :=
+            'SELECT COLUMN_NAME, DATA_TYPE, NULLABLE, DATA_DEFAULT '+
+            'FROM ALL_TAB_COLUMNS '+
+            'WHERE TABLE_NAME = :table '+
+            'ORDER BY COLUMN_ID';
+          colQry.ParamByName('table').AsString := TabelaNome;
+          colQry.Open;
+
+          tvColunas := tvOracle.Items.AddChildObject(tvItem, 'fields', Pointer(ETDBCampos));
+          tvColunas.ImageIndex := 16;
+
+          while not colQry.EOF do
+          begin
+            ColLine := colQry.FieldByName('COLUMN_NAME').AsString + ' : ' +
+                       colQry.FieldByName('DATA_TYPE').AsString;
+            if colQry.FieldByName('NULLABLE').AsString = 'N' then
+              ColLine := ColLine + ' NOT NULL';
+            if not colQry.FieldByName('DATA_DEFAULT').IsNull then
+              ColLine := ColLine + ' DEFAULT ' + colQry.FieldByName('DATA_DEFAULT').AsString;
+
+            tvOracle.Items.AddChildObject(tvColunas, ColLine, Pointer(0));
+            colQry.Next;
+          end;
+        except
         end;
-
-        if colQry.FieldByName('NULLABLE').AsString = 'N' then
-          ColLine := ColLine + ' NOT NULL';
-
-        tvOracle.Items.AddChildObject(tvColunas, ColLine, Pointer(ETDBCampos));
-        colQry.Next;
       end;
-
       zoracleqry.Next;
     end;
   finally
     colQry.Free;
+    posicaofieldsOracle.Expanded := True;
+    if posicaofieldsOracle.Parent <> nil then
+      posicaofieldsOracle.Parent.Expanded := True;
+    tvOracle.FullExpand;
+    AtualizarAutocomplete(4);
+    edErroOracle.Lines.Add(Format('Oracle: %d tabelas carregadas.', [QtdTabelas]));
   end;
-  AtualizarAutocomplete(4);
 end;
 
 procedure Tfrmmquery2.btExecutarMSSQLClick(Sender: TObject);
@@ -6248,6 +6416,335 @@ begin
     FCompletions[AEngineIndex].ItemList.Assign(Items);
   finally
     Items.Free;
+  end;
+end;
+
+
+function NormalizarTipoBanco(const ATipo: string): string;
+var
+  S: string;
+begin
+  S := LowerCase(Trim(ATipo));
+  if (Pos('mysql', S) > 0) or (Pos('mariadb', S) > 0) then
+    Result := 'mysql'
+  else if (Pos('post', S) > 0) or (Pos('pg', S) > 0) then
+    Result := 'postgres'
+  else if Pos('sqlite', S) > 0 then
+    Result := 'sqlite'
+  else if (Pos('sqlserver', S) > 0) or (Pos('mssql', S) > 0) or (Pos('server', S) > 0) then
+    Result := 'sqlserver'
+  else if Pos('oracle', S) > 0 then
+    Result := 'oracle'
+  else
+    Result := S;
+end;
+
+function ConnectionToJsonString(const ATipo, AHost: string; APort: Integer;
+  const ADatabase, AUsername, APassword, ASchema: string): string;
+var
+  JObj: TJSONObject;
+begin
+  JObj := TJSONObject.Create;
+  try
+    JObj.Add('type', NormalizarTipoBanco(ATipo));
+    if Trim(AHost) <> '' then
+      JObj.Add('host', Trim(AHost));
+    if APort > 0 then
+      JObj.Add('port', APort);
+    if Trim(ADatabase) <> '' then
+      JObj.Add('database', Trim(ADatabase));
+    if Trim(AUsername) <> '' then
+      JObj.Add('username', Trim(AUsername));
+    if Trim(APassword) <> '' then
+      JObj.Add('password', APassword);
+    if Trim(ASchema) <> '' then
+      JObj.Add('schema', Trim(ASchema));
+    Result := JObj.FormatJSON;
+  finally
+    JObj.Free;
+  end;
+end;
+
+function JsonStringToConnection(const AJson: string;
+  out ATipo, AHost: string; out APort: Integer;
+  out ADatabase, AUsername, APassword, ASchema: string): Boolean;
+var
+  JData: TJSONData;
+  JObj: TJSONObject;
+begin
+  Result := False;
+  ATipo := '';
+  AHost := '';
+  APort := 0;
+  ADatabase := '';
+  AUsername := '';
+  APassword := '';
+  ASchema := '';
+
+  if Trim(AJson) = '' then Exit;
+
+  try
+    JData := GetJSON(AJson);
+    try
+      if (JData is TJSONObject) then
+      begin
+        JObj := TJSONObject(JData);
+        if JObj.Find('type') <> nil then
+          ATipo := JObj.Get('type', '')
+        else if JObj.Find('driver') <> nil then
+          ATipo := JObj.Get('driver', '')
+        else if JObj.Find('banco') <> nil then
+          ATipo := JObj.Get('banco', '');
+
+        ATipo := NormalizarTipoBanco(ATipo);
+
+        AHost := JObj.Get('host', '');
+        APort := JObj.Get('port', 0);
+
+        if JObj.Find('database') <> nil then
+          ADatabase := JObj.Get('database', '')
+        else if JObj.Find('banco') <> nil then
+          ADatabase := JObj.Get('banco', '');
+
+        if JObj.Find('username') <> nil then
+          AUsername := JObj.Get('username', '')
+        else if JObj.Find('user') <> nil then
+          AUsername := JObj.Get('user', '');
+
+        if JObj.Find('password') <> nil then
+          APassword := JObj.Get('password', '')
+        else if JObj.Find('pass') <> nil then
+          APassword := JObj.Get('pass', '');
+
+        ASchema := JObj.Get('schema', '');
+
+        Result := (ATipo <> '');
+      end;
+    finally
+      JData.Free;
+    end;
+  except
+    Result := False;
+  end;
+end;
+
+function Tfrmmquery2.SalvarConexaoArquivo(const AFileName: string; AEngineIndex: Integer): Boolean;
+var
+  tipo, host, db, user, pass, schema, jsonText: string;
+  porta: Integer;
+  sl: TStringList;
+begin
+  Result := False;
+  if AEngineIndex < 0 then
+    AEngineIndex := GetActiveEngineIndex;
+
+  porta := 0;
+  host := '';
+  db := '';
+  user := '';
+  pass := '';
+  schema := '';
+
+  case AEngineIndex of
+    0:
+    begin
+      tipo := 'mysql';
+      host := Trim(edHostName.Text);
+      db := Trim(edBanco.Text);
+      user := Trim(edusuario.Text);
+      pass := edPasswrd.Text;
+      porta := 3306;
+    end;
+    1:
+    begin
+      tipo := 'postgres';
+      host := Trim(edHostNamePost.Text);
+      db := Trim(edBancoPost.Text);
+      user := Trim(edusuarioPost.Text);
+      pass := edPasswrdPost.Text;
+      schema := Trim(edSchemaPost.Text);
+      if zconpost.Port > 0 then
+        porta := zconpost.Port
+      else
+        porta := 5432;
+    end;
+    2:
+    begin
+      tipo := 'sqlite';
+      db := Trim(edDatabase.Text);
+      porta := 0;
+    end;
+    3:
+    begin
+      tipo := 'sqlserver';
+      host := Trim(edHostMSSQL.Text);
+      db := Trim(edBancoMSSQL.Text);
+      user := Trim(edUserMSSQL.Text);
+      pass := edPassMSSQL.Text;
+      schema := Trim(edSchemaMSSQL.Text);
+      if zconMSSQL.Port > 0 then
+        porta := zconMSSQL.Port
+      else
+        porta := 1433;
+    end;
+    4:
+    begin
+      tipo := 'oracle';
+      host := Trim(edHostOracle.Text);
+      db := Trim(edBancoOracle.Text);
+      user := Trim(edUserOracle.Text);
+      pass := edPassOracle.Text;
+      schema := Trim(edSchemaOracle.Text);
+      if zconOracle.Port > 0 then
+        porta := zconOracle.Port
+      else
+        porta := 1521;
+    end;
+    else
+    begin
+      ShowMessage('Selecione uma aba de banco de dados (MySQL, PostgreSQL, SQLite, SQL Server ou Oracle).');
+      Exit;
+    end;
+  end;
+
+  jsonText := ConnectionToJsonString(tipo, host, porta, db, user, pass, schema);
+  sl := TStringList.Create;
+  try
+    sl.Text := jsonText;
+    sl.SaveToFile(AFileName);
+    Result := True;
+  finally
+    sl.Free;
+  end;
+end;
+
+function Tfrmmquery2.CarregarConexaoArquivo(const AFileName: string): Boolean;
+var
+  sl: TStringList;
+  tipo, host, db, user, pass, schema: string;
+  porta: Integer;
+begin
+  Result := False;
+  if not FileExists(AFileName) then
+  begin
+    ShowMessage('Arquivo não encontrado: ' + AFileName);
+    Exit;
+  end;
+
+  sl := TStringList.Create;
+  try
+    sl.LoadFromFile(AFileName);
+    if not JsonStringToConnection(sl.Text, tipo, host, porta, db, user, pass, schema) then
+    begin
+      ShowMessage('Formato de arquivo .con inválido ou tipo de banco não identificado.');
+      Exit;
+    end;
+  finally
+    sl.Free;
+  end;
+
+  case tipo of
+    'mysql':
+    begin
+      pgMain.ActivePage := tsMysql;
+      if host <> '' then edHostName.Text := host;
+      if db <> '' then edBanco.Text := db;
+      if user <> '' then edusuario.Text := user;
+      if pass <> '' then edPasswrd.Text := pass;
+      RefreshMy;
+      Result := True;
+    end;
+    'postgres':
+    begin
+      pgMain.ActivePage := tsPostgree;
+      if host <> '' then edHostNamePost.Text := host;
+      if db <> '' then edBancoPost.Text := db;
+      if user <> '' then edusuarioPost.Text := user;
+      if pass <> '' then edPasswrdPost.Text := pass;
+      if schema <> '' then edSchemaPost.Text := schema;
+      if porta > 0 then zconpost.Port := porta;
+      RefreshPost;
+      Result := True;
+    end;
+    'sqlite':
+    begin
+      pgMain.ActivePage := tsSqlite;
+      if db <> '' then edDatabase.Text := db;
+      RefreshSQLite;
+      Result := True;
+    end;
+    'sqlserver':
+    begin
+      pgMain.ActivePage := tsMSSQL;
+      if host <> '' then edHostMSSQL.Text := host;
+      if db <> '' then edBancoMSSQL.Text := db;
+      if user <> '' then edUserMSSQL.Text := user;
+      if pass <> '' then edPassMSSQL.Text := pass;
+      if schema <> '' then edSchemaMSSQL.Text := schema;
+      if porta > 0 then zconMSSQL.Port := porta;
+      btConectarMSSQLClick(nil);
+      Result := True;
+    end;
+    'oracle':
+    begin
+      pgMain.ActivePage := tsOracle;
+      if host <> '' then edHostOracle.Text := host;
+      if db <> '' then edBancoOracle.Text := db;
+      if user <> '' then edUserOracle.Text := user;
+      if pass <> '' then edPassOracle.Text := pass;
+      if schema <> '' then edSchemaOracle.Text := schema;
+      if porta > 0 then zconOracle.Port := porta;
+      btConectarOracleClick(nil);
+      Result := True;
+    end;
+    else
+    begin
+      ShowMessage('Tipo de banco desconhecido: ' + tipo);
+      Exit;
+    end;
+  end;
+end;
+
+procedure Tfrmmquery2.miLoadConnectionClick(Sender: TObject);
+begin
+  OpenDialog1.Title := 'Load Connection';
+  OpenDialog1.Filter := 'Arquivos de Conexão (*.con)|*.con|Arquivos JSON (*.json)|*.json|Todos os Arquivos (*.*)|*.*';
+  OpenDialog1.DefaultExt := 'con';
+  if OpenDialog1.Execute then
+  begin
+    if CarregarConexaoArquivo(OpenDialog1.FileName) then
+      ShowMessage('Conexão carregada com sucesso a partir de ' + ExtractFileName(OpenDialog1.FileName));
+  end;
+end;
+
+procedure Tfrmmquery2.miSaveConnectionClick(Sender: TObject);
+var
+  idx: Integer;
+  sugestao: string;
+begin
+  idx := GetActiveEngineIndex;
+  if idx < 0 then
+  begin
+    ShowMessage('Selecione uma aba de banco de dados (MySQL, PostgreSQL, SQLite, SQL Server ou Oracle) para salvar a conexão.');
+    Exit;
+  end;
+
+  case idx of
+    0: sugestao := 'mysql_conexao.con';
+    1: sugestao := 'postgres_conexao.con';
+    2: sugestao := 'sqlite_conexao.con';
+    3: sugestao := 'sqlserver_conexao.con';
+    4: sugestao := 'oracle_conexao.con';
+  end;
+
+  SaveDialog1.Title := 'Save Connection';
+  SaveDialog1.Filter := 'Arquivos de Conexão (*.con)|*.con|Arquivos JSON (*.json)|*.json|Todos os Arquivos (*.*)|*.*';
+  SaveDialog1.DefaultExt := 'con';
+  SaveDialog1.FileName := sugestao;
+  if SaveDialog1.Execute then
+  begin
+    if SalvarConexaoArquivo(SaveDialog1.FileName, idx) then
+      ShowMessage('Conexão salva com sucesso em ' + ExtractFileName(SaveDialog1.FileName));
   end;
 end;
 

@@ -1964,7 +1964,66 @@ begin
   end;
 end;
 
+procedure TestMQueryConnectionFile;
+var
+  JsonStr, Tipo, Host, Db, User, Pass, Schema: string;
+  Porta: Integer;
+begin
+  // Test NormalizarTipoBanco
+  Check(NormalizarTipoBanco('MySQL') = 'mysql', 'NormalizarTipoBanco MySQL falhou');
+  Check(NormalizarTipoBanco('PostgreSQL') = 'postgres', 'NormalizarTipoBanco PostgreSQL falhou');
+  Check(NormalizarTipoBanco('sqlite3') = 'sqlite', 'NormalizarTipoBanco sqlite3 falhou');
+  Check(NormalizarTipoBanco('MSSQL') = 'sqlserver', 'NormalizarTipoBanco MSSQL falhou');
+  Check(NormalizarTipoBanco('SQLServer') = 'sqlserver', 'NormalizarTipoBanco SQLServer falhou');
+  Check(NormalizarTipoBanco('Oracle') = 'oracle', 'NormalizarTipoBanco Oracle falhou');
+
+  // Test MySQL serializacao e parse
+  JsonStr := ConnectionToJsonString('mysql', '127.0.0.1', 3306, 'mydb', 'root', 'pwd123', '');
+  Check(Pos('"type": "mysql"', JsonStr) > 0, 'JSON MySQL nao contem type');
+  Check(JsonStringToConnection(JsonStr, Tipo, Host, Porta, Db, User, Pass, Schema), 'Parse MySQL falhou');
+  Check(Tipo = 'mysql', 'Tipo MySQL incorreto: ' + Tipo);
+  Check(Host = '127.0.0.1', 'Host MySQL incorreto: ' + Host);
+  Check(Porta = 3306, 'Porta MySQL incorreta');
+  Check(Db = 'mydb', 'Db MySQL incorreto: ' + Db);
+  Check(User = 'root', 'User MySQL incorreto: ' + User);
+  Check(Pass = 'pwd123', 'Pass MySQL incorreto');
+
+  // Test PostgreSQL com schema
+  JsonStr := ConnectionToJsonString('postgres', 'localhost', 5432, 'pgdb', 'postgres', 'secret', 'public');
+  Check(Pos('"type": "postgres"', JsonStr) > 0, 'JSON Postgres nao contem type');
+  Check(JsonStringToConnection(JsonStr, Tipo, Host, Porta, Db, User, Pass, Schema), 'Parse Postgres falhou');
+  Check(Tipo = 'postgres', 'Tipo Postgres incorreto');
+  Check(Schema = 'public', 'Schema Postgres incorreto: ' + Schema);
+
+  // Test SQLite
+  JsonStr := ConnectionToJsonString('sqlite', '', 0, 'C:\data\test.db', '', '', '');
+  Check(JsonStringToConnection(JsonStr, Tipo, Host, Porta, Db, User, Pass, Schema), 'Parse SQLite falhou');
+  Check(Tipo = 'sqlite', 'Tipo SQLite incorreto');
+  Check(Db = 'C:\data\test.db', 'Db SQLite incorreto: ' + Db);
+
+  // Test SQL Server
+  JsonStr := ConnectionToJsonString('sqlserver', '10.0.0.1', 1433, 'sqldb', 'sa', 'adm123', 'dbo');
+  Check(JsonStringToConnection(JsonStr, Tipo, Host, Porta, Db, User, Pass, Schema), 'Parse SQL Server falhou');
+  Check(Tipo = 'sqlserver', 'Tipo SQL Server incorreto');
+  Check(Schema = 'dbo', 'Schema SQL Server incorreto: ' + Schema);
+
+  // Test Oracle
+  JsonStr := ConnectionToJsonString('oracle', 'orahost', 1521, 'XE', 'system', 'syspass', 'HR');
+  Check(JsonStringToConnection(JsonStr, Tipo, Host, Porta, Db, User, Pass, Schema), 'Parse Oracle falhou');
+  Check(Tipo = 'oracle', 'Tipo Oracle incorreto');
+  Check(Db = 'XE', 'Db Oracle incorreto: ' + Db);
+
+  // Test chaves alternativas (driver, banco, user, pass)
+  JsonStr := '{"driver": "postgresql", "banco": "custom_db", "user": "appuser", "pass": "apppwd"}';
+  Check(JsonStringToConnection(JsonStr, Tipo, Host, Porta, Db, User, Pass, Schema), 'Parse chaves alternativas falhou');
+  Check(Tipo = 'postgres', 'Tipo alternativo incorreto');
+  Check(Db = 'custom_db', 'Db alternativo incorreto: ' + Db);
+  Check(User = 'appuser', 'User alternativo incorreto: ' + User);
+  Check(Pass = 'apppwd', 'Pass alternativo incorreto: ' + Pass);
+end;
+
 procedure TestMQueryScriptAndAutocomplete;
+
 var
   Cols, PKs, PKList: TStringList;
   SQL: string;
@@ -2123,6 +2182,8 @@ begin
     TestNeuralApiBootstrap;
     TestMQueryScriptAndAutocomplete;
     Writeln('OK: MQuery scripts SQL (SELECT, INSERT, UPDATE, DELETE), autocomplete e edicao DBGrid');
+    TestMQueryConnectionFile;
+    Writeln('OK: MQuery arquivos de conexao .con JSON (MySQL, Postgres, SQLite, SQL Server, Oracle)');
     Writeln('OK: descoberta, pasta e integridade do instalador neural-api');
     TestProjectCore;
     TestProjectContext;
