@@ -2471,6 +2471,16 @@ begin
       Check(ThemeService.LoadFromFile(DarkThemeFile) and
         (ThemeService.Current.Name = 'Dark'),
         'Tema Dark versionado não foi carregado');
+      ThemeService.LoadBuiltInTheme('Dark');
+      Check(ThemeService.Current.Name = 'Dark', 'LoadBuiltInTheme Dark falhou');
+      ThemeService.LoadBuiltInTheme('Blue');
+      Check(ThemeService.Current.Name = 'Blue', 'LoadBuiltInTheme Blue falhou');
+      ThemeService.LoadBuiltInTheme('Light');
+      Check(ThemeService.Current.Name = 'Light', 'LoadBuiltInTheme Light falhou');
+      Check(ThemeService.LoadTheme('Dark', '') and (ThemeService.Current.Name = 'Dark'),
+        'LoadTheme Dark com arquivo vazio falhou');
+      Check(ThemeService.LoadTheme('Blue', 'arquivo_inexistente.json') and (ThemeService.Current.Name = 'Blue'),
+        'LoadTheme Blue com arquivo inexistente deveria usar fallback built-in');
       SaveFixtureText(InvalidThemeFile, '{tema inválido');
       Check(not ThemeService.LoadFromFile(InvalidThemeFile),
         'JSON de tema inválido deveria ativar fallback');

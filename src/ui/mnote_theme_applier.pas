@@ -54,7 +54,7 @@ begin
       Attribute := AEditor.Highlighter.Attribute[I];
       Attribute.Foreground := SemanticColor(Attribute.Name + ' ' +
         Attribute.StoredName, ATheme);
-      Attribute.Background := TColor(ATheme.EditorBackground);
+      Attribute.Background := clNone;
     end;
   AEditor.Invalidate;
 end;

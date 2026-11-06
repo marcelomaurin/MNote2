@@ -39,7 +39,9 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure LoadBuiltInTheme(const AName: string);
     function LoadFromFile(const AFileName: string): Boolean;
+    function LoadTheme(const AThemeName: string; const AFileName: string = ''): Boolean;
     property Current: TMNoteEditorTheme read FCurrent;
   end;
 
@@ -81,19 +83,75 @@ end;
 
 procedure TMNoteEditorThemeService.LoadFallback;
 begin
-  FCurrent.Name := 'Light';
-  FCurrent.EditorBackground := $FFFFFF;
-  FCurrent.EditorForeground := $1E1E1E;
-  FCurrent.SelectionBackground := $FFD6AD;
-  FCurrent.SelectionForeground := $000000;
-  FCurrent.CurrentLine := $F3F3F3;
-  FCurrent.GutterBackground := $F7F7F7;
-  FCurrent.CommentColor := $008000;
-  FCurrent.KeywordColor := $FF0000;
-  FCurrent.StringColor := $1515A3;
-  FCurrent.NumberColor := $588609;
-  FCurrent.IdentifierColor := $1E1E1E;
-  FCurrent.SymbolColor := $000000;
+  LoadBuiltInTheme('Light');
+end;
+
+procedure TMNoteEditorThemeService.LoadBuiltInTheme(const AName: string);
+var
+  ThemeUpper: string;
+begin
+  ThemeUpper := UpperCase(Trim(AName));
+  if ThemeUpper = 'DARK' then
+  begin
+    FCurrent.Name := 'Dark';
+    FCurrent.EditorBackground := ParseColor('#1E1E1E', 0);
+    FCurrent.EditorForeground := ParseColor('#D4D4D4', 0);
+    FCurrent.SelectionBackground := ParseColor('#264F78', 0);
+    FCurrent.SelectionForeground := ParseColor('#FFFFFF', 0);
+    FCurrent.CurrentLine := ParseColor('#2A2D2E', 0);
+    FCurrent.GutterBackground := ParseColor('#252526', 0);
+    FCurrent.CommentColor := ParseColor('#6A9955', 0);
+    FCurrent.KeywordColor := ParseColor('#569CD6', 0);
+    FCurrent.StringColor := ParseColor('#CE9178', 0);
+    FCurrent.NumberColor := ParseColor('#B5CEA8', 0);
+    FCurrent.IdentifierColor := ParseColor('#D4D4D4', 0);
+    FCurrent.SymbolColor := ParseColor('#D4D4D4', 0);
+  end
+  else if ThemeUpper = 'BLUE' then
+  begin
+    FCurrent.Name := 'Blue';
+    FCurrent.EditorBackground := ParseColor('#FFFFFF', 0);
+    FCurrent.EditorForeground := ParseColor('#1E1E1E', 0);
+    FCurrent.SelectionBackground := ParseColor('#3399FF', 0);
+    FCurrent.SelectionForeground := ParseColor('#FFFFFF', 0);
+    FCurrent.CurrentLine := ParseColor('#EAF2F8', 0);
+    FCurrent.GutterBackground := ParseColor('#DCE6F1', 0);
+    FCurrent.CommentColor := ParseColor('#008000', 0);
+    FCurrent.KeywordColor := ParseColor('#0000FF', 0);
+    FCurrent.StringColor := ParseColor('#A31515', 0);
+    FCurrent.NumberColor := ParseColor('#098658', 0);
+    FCurrent.IdentifierColor := ParseColor('#1E1E1E', 0);
+    FCurrent.SymbolColor := ParseColor('#000000', 0);
+  end
+  else
+  begin
+    FCurrent.Name := 'Light';
+    FCurrent.EditorBackground := ParseColor('#FFFFFF', 0);
+    FCurrent.EditorForeground := ParseColor('#1E1E1E', 0);
+    FCurrent.SelectionBackground := ParseColor('#ADD6FF', 0);
+    FCurrent.SelectionForeground := ParseColor('#000000', 0);
+    FCurrent.CurrentLine := ParseColor('#F3F3F3', 0);
+    FCurrent.GutterBackground := ParseColor('#F7F7F7', 0);
+    FCurrent.CommentColor := ParseColor('#008000', 0);
+    FCurrent.KeywordColor := ParseColor('#0000FF', 0);
+    FCurrent.StringColor := ParseColor('#A31515', 0);
+    FCurrent.NumberColor := ParseColor('#098658', 0);
+    FCurrent.IdentifierColor := ParseColor('#1E1E1E', 0);
+    FCurrent.SymbolColor := ParseColor('#000000', 0);
+  end;
+end;
+
+function TMNoteEditorThemeService.LoadTheme(const AThemeName: string; const AFileName: string): Boolean;
+begin
+  ClearError;
+  if (AFileName <> '') and FileExists(AFileName) then
+  begin
+    Result := LoadFromFile(AFileName);
+    if Result then Exit;
+  end;
+
+  LoadBuiltInTheme(AThemeName);
+  Result := True;
 end;
 
 function TMNoteEditorThemeService.ParseColor(const AValue: string;

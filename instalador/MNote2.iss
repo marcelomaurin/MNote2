@@ -82,6 +82,9 @@ Source: "{#ProjectRoot}\sample\python\hello\hello.py"; DestDir: "{app}\sample\py
 ; Default database template used by New Project
 Source: "{#ProjectRoot}\db\projeto_padrao.db"; DestDir: "{app}\db"; Flags: ignoreversion
 
+; Editor themes
+Source: "{#ProjectRoot}\themes\*.json"; DestDir: "{app}\themes"; Flags: ignoreversion
+
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon

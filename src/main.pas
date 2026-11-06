@@ -2801,15 +2801,28 @@ begin
 end;
 
 procedure TfrmMNote.ThemeMenuClick(Sender: TObject);
+const
+  ThemeNames: array[0..2] of string = ('Light', 'Dark', 'Blue');
+var
+  ThemeName: string;
 begin
-  ApplyTheme(TMenuItem(Sender).Caption);
+  ThemeName := '';
+  if (Sender is TMenuItem) then
+  begin
+    if (TMenuItem(Sender).Tag >= Low(ThemeNames)) and (TMenuItem(Sender).Tag <= High(ThemeNames)) then
+      ThemeName := ThemeNames[TMenuItem(Sender).Tag]
+    else
+      ThemeName := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
+  end;
+  ApplyTheme(ThemeName);
 end;
 
 function TfrmMNote.ThemeFilePath(const AThemeName: string): string;
 var
-  ThemeFile: string;
+  ThemeFile, CleanName: string;
 begin
-  ThemeFile := LowerCase(AThemeName) + '.json';
+  CleanName := LowerCase(Trim(StringReplace(AThemeName, '&', '', [rfReplaceAll])));
+  ThemeFile := CleanName + '.json';
   Result := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)) +
     'themes' + PathDelim + ThemeFile;
   if FileExists(Result) then Exit;
@@ -2823,16 +2836,18 @@ end;
 procedure TfrmMNote.ApplyTheme(const AThemeName: string);
 var
   I: Integer;
-  ThemeName: string;
+  ThemeName, CleanName: string;
 begin
   if FThemeService = nil then Exit;
-  ThemeName := AThemeName;
-  if Trim(ThemeName) = '' then ThemeName := 'Light';
-  if not FThemeService.LoadFromFile(ThemeFilePath(ThemeName)) then
-    ThemeName := 'Light';
+  CleanName := Trim(StringReplace(AThemeName, '&', '', [rfReplaceAll]));
+  if CleanName = '' then CleanName := 'Light';
+  if not FThemeService.LoadTheme(CleanName, ThemeFilePath(CleanName)) then
+    CleanName := 'Light';
+  ThemeName := FThemeService.Current.Name;
   FSetMain.EditorTheme := ThemeName;
+  FSetMain.SalvaContexto(False);
   for I := Low(FThemeItems) to High(FThemeItems) do
-    FThemeItems[I].Checked := SameText(FThemeItems[I].Caption, ThemeName);
+    FThemeItems[I].Checked := SameText(StringReplace(FThemeItems[I].Caption, '&', '', [rfReplaceAll]), ThemeName);
   ApplyThemeToAll;
 end;
 
@@ -2847,7 +2862,13 @@ begin
     PageItem := TItem(pgMain.Pages[I].Tag);
     if (PageItem = nil) or (PageItem.syn = nil) then Continue;
     TMNoteThemeApplier.Apply(PageItem.syn, FThemeService.Current);
-    PageItem.syn.Font := FSetMain.Font;
+    if FSetMain.Font <> nil then
+    begin
+      PageItem.syn.Font.Name := FSetMain.Font.Name;
+      PageItem.syn.Font.Size := FSetMain.Font.Size;
+      PageItem.syn.Font.Style := FSetMain.Font.Style;
+    end;
+    PageItem.syn.Font.Color := TColor(FThemeService.Current.EditorForeground);
     if FSetMain.EditorTabWidth > 0 then
       PageItem.syn.TabWidth := FSetMain.EditorTabWidth;
     if FSetMain.EditorShowSpaces then
@@ -2858,6 +2879,7 @@ begin
     if PageItem.syn.Gutter.LineNumberPart <> nil then
       PageItem.syn.Gutter.LineNumberPart.Visible :=
         FSetMain.EditorShowLineNumbers;
+    PageItem.syn.Invalidate;
   end;
 end;
 

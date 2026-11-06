@@ -6,7 +6,8 @@ program ci_core_runner;
 uses
   SysUtils, mnote_search_types, mnote_text_search_service,
   mnote_token_estimator, mnote_token_usage, mnote_voice_command,
-  mnote_unified_diff, mnote_completion_types, mnote_pascal_semantic_resolver;
+  mnote_unified_diff, mnote_completion_types, mnote_pascal_semantic_resolver,
+  mnote_editor_theme;
 
 procedure Check(ACondition: Boolean; const AMessage: string);
 begin
@@ -60,6 +61,7 @@ var
   UsageField, CommandText, Diff, Rebuilt, ErrorText: string;
   Fallback: Boolean;
   Hunks: array of Boolean;
+  ThemeService: TMNoteEditorThemeService;
 begin
   try
     Search := TMNoteTextSearchService.Create;
@@ -107,6 +109,23 @@ begin
       (Rebuilt =
         'A'#10'b'#10'c'#10'd'#10'e'#10'f'#10'g'#10'h'#10'i'#10'j'#10'o'#10),
       'aplicação parcial do diff falhou: ' + ErrorText);
+        ThemeService := TMNoteEditorThemeService.Create;
+    try
+      ThemeService.LoadBuiltInTheme('Dark');
+      Check(ThemeService.Current.Name = 'Dark', 'LoadBuiltInTheme Dark falhou');
+      ThemeService.LoadBuiltInTheme('Blue');
+      Check(ThemeService.Current.Name = 'Blue', 'LoadBuiltInTheme Blue falhou');
+      ThemeService.LoadBuiltInTheme('Light');
+      Check(ThemeService.Current.Name = 'Light', 'LoadBuiltInTheme Light falhou');
+      Check(ThemeService.LoadTheme('Dark', '') and (ThemeService.Current.Name = 'Dark'),
+        'LoadTheme Dark com arquivo vazio falhou');
+      Check(ThemeService.LoadTheme('Blue', 'arquivo_inexistente.json') and (ThemeService.Current.Name = 'Blue'),
+        'LoadTheme Blue com arquivo inexistente deveria usar fallback built-in');
+      Check(ThemeService.LoadTheme('Light', '') and (ThemeService.Current.Name = 'Light'),
+        'LoadTheme Light falhou');
+    finally
+      ThemeService.Free;
+    end;
     WriteLn('OK: núcleo portátil compilado e validado em ',
       {$I %FPCTARGETCPU%}, '-', {$I %FPCTARGETOS%});
     Halt(0);
