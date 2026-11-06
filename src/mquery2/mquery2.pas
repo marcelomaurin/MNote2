@@ -281,12 +281,12 @@ type
     zconpost: TZConnection;
     zmyqry: TZReadOnlyQuery;
     zmyqry1: TZReadOnlyQuery;
-    zmyqry2: TZReadOnlyQuery;
+    zmyqry2: TZQuery;
     zliteqry: TZReadOnlyQuery;
     zliteqry1: TZReadOnlyQuery;
-    zliteqry2: TZReadOnlyQuery;
+    zliteqry2: TZQuery;
     zpostqry: TZReadOnlyQuery;
-    zpostqry1: TZReadOnlyQuery;
+    zpostqry1: TZQuery;
     zpostqry2: TZReadOnlyQuery;
     zpostqry3: TZReadOnlyQuery;
     Zqrypost: TZQuery;
@@ -468,6 +468,37 @@ type
     mnCriaDicionarioMSSQL: TMenuItem;
     pmDatabaseOracle: TPopupMenu;
     mnCriaDicionarioOracle: TMenuItem;
+    pmTabelaMSSQL: TPopupMenu;
+    pmTabelaOracle: TPopupMenu;
+
+    btSalvarPost: TButton;
+    btSalvarMy: TButton;
+    btSalvarLite: TButton;
+    FCompletions: array[0..4] of TSynCompletion;
+
+    procedure btSalvarPostClick(Sender: TObject);
+    procedure btSalvarMyClick(Sender: TObject);
+    procedure btSalvarLiteClick(Sender: TObject);
+    procedure btSalvarDynamicClick(Sender: TObject);
+    procedure SalvarAlteracoes(AGrid: TDBGrid; ADataSet: TDataSet);
+
+    procedure miScriptSelectClick(Sender: TObject);
+    procedure miScriptInsertClick(Sender: TObject);
+    procedure miScriptUpdateClick(Sender: TObject);
+    procedure miScriptDeleteClick(Sender: TObject);
+
+    function GetSelectedTableNode(ATree: TTreeView; AParentRoot: TTreeNode): TTreeNode;
+    procedure ObterTabelaInfo(ATableNode: TTreeNode; out ATableName: string; AColunas, APKs: TStrings);
+    procedure GerarScriptTabela(AEngineIndex: Integer; const ATipoScript: string);
+    procedure InstallTableScriptMenus;
+    procedure AddScriptMenuItems(AMenu: TPopupMenu; AEngineIndex: Integer);
+    procedure InicializarGridEditing;
+
+    procedure InicializarAutocomplete;
+    procedure ConfigurarCompletion(AComp: TSynCompletion; AEditor: TSynEdit);
+    procedure AtualizarAutocomplete(AEngineIndex: Integer);
+    function GetActiveEngineIndex: Integer;
+    procedure pgMainChange(Sender: TObject);
 
     procedure mnCriaDicionarioMSSQLClick(Sender: TObject);
     procedure mnCriaDicionarioOracleClick(Sender: TObject);
@@ -561,6 +592,10 @@ type
     procedure OpenSelectMy();
     procedure OpenSelectLite();
   end;
+
+function MontarScriptSQL(const ATableName, ATipoScript: string; AColunas, APKs: TStrings): string;
+function ExtractFieldName(const S: string): string;
+procedure ExtractPKNames(const S: string; AList: TStrings);
 
 var
   frmmquery2: Tfrmmquery2;
@@ -842,10 +877,7 @@ begin
     begin
       if (node.parent = posicaofieldsmy) then
       begin
-        if Node.data <> nil then
-          tvMysql.PopupMenu := pmTabelasMy
-        else
-          edsql.Text := 'no data';
+        tvMysql.PopupMenu := pmTabelaMy;
       end
       else
         edSQL.Text := '';
@@ -1023,7 +1055,7 @@ begin
     tvPost.PopupMenu := pmDatabasePost
   else
   begin
-    if(node = tvTablePost) then
+    if(node = tvTablePost) or (node = posicaofieldspost) then
     begin
       ProcuraTVPost(Node.Text);
       tvPost.PopupMenu := pmTabelasPost;
@@ -1032,7 +1064,7 @@ begin
     begin
       if (node <> nil) then
       begin
-        if(node.ImageIndex= 14) then
+        if(node.ImageIndex = 14) or ((node.Parent <> nil) and (node.Parent = posicaofieldspost)) then
           tvPost.PopupMenu := pmTabelaPost
         else
           tvPost.PopupMenu := nil;
@@ -1164,6 +1196,10 @@ begin
   pmDatabaseOracle.Items.Add(mnCriaDicionarioOracle);
 
   InstallDiagramMenus;
+  InstallTableScriptMenus;
+  InicializarGridEditing;
+  InicializarAutocomplete;
+  pgMain.OnChange := @pgMainChange;
 
   {$IFDEF WINDOWS}
   zconpost.LibraryLocation := FSetMain.DLLPostPath;
@@ -2243,7 +2279,7 @@ begin
     posicaoFunctionPost := tvPost.Items.AddChildObject(tvDatabasePost, 'Functions', Pointer(ETDFunctions));
 
     ListarTabelasPost();
-    BuscaSequence(zpostqry1, DBPostgres);
+    BuscaSequence(zpostqry, DBPostgres);
     ListarViewsPost();
   except
     on E: Exception do
@@ -2280,6 +2316,7 @@ begin
 
     ListarTabelasSQLite;
     tvsqlite.FullExpand;
+    AtualizarAutocomplete(2);
   except
     on E: Exception do
       MessageHint('Erro ao preparar estrutura do SQLite: ' + E.Message);
@@ -2580,6 +2617,7 @@ begin
     edlog.Append('SQL OPEN:' + edSQLPost.Lines.Text);
     dbnavpost.DataSource := dspos;
     dbgridpost.DataSource := dspos;
+    dbgridpost.ReadOnly := False;
 
     zpostqry1.Prepare;
     zpostqry1.Open;
@@ -2596,12 +2634,14 @@ end;
 procedure Tfrmmquery2.OpenSelectMy();
 begin
   try
+    zmyqry2.Close;
     zmyqry2.SQL.Text := edSQL.Lines.Text;
 
     dsmy.DataSet := zmyqry2;
     edlog.Append('SQL OPEN:' + edSQL.Lines.Text);
     dbnavmy.DataSource := dsmy;
     dbgridmy.DataSource := dsmy;
+    dbgridmy.ReadOnly := False;
 
     zmyqry2.Open;
     pgMysql.ActivePage := tsgrid;
@@ -2625,12 +2665,14 @@ begin
   try
     zliteqry2.Close;
     zliteqry2.SQL.Text := edSQL1.Lines.Text;
-    zliteqry2.Open;
 
     dslite.DataSet := zliteqry2;
     edLog1.Append('SQL OPEN(SQLite):' + edSQL1.Lines.Text);
     dbnavmy1.DataSource := dslite;
     dbgridmy1.DataSource := dslite;
+    dbgridmy1.ReadOnly := False;
+
+    zliteqry2.Open;
 
     pgSQLite.ActivePage := tsgrid1;
   except
@@ -2753,6 +2795,7 @@ begin
 
   pnlProgresso.Visible := false;
   tvMysql.FullExpand;
+  AtualizarAutocomplete(0);
 end;
 
 procedure Tfrmmquery2.ListarTabelasSQLite();
@@ -3145,6 +3188,7 @@ begin
     end;
   finally
     tvPost.FullExpand;
+    AtualizarAutocomplete(1);
   end;
 end;
 
@@ -4141,10 +4185,11 @@ procedure Tfrmmquery2.InstallDiagramMenus;
     Item.Tag := Index; Item.OnClick := @DiagramMenuClick; Menu.Items.Add(Item);
   end;
 begin
-  Add(pmDatabaseMy, 0); Add(pmTabelasMy, 0);
+  Add(pmDatabaseMy, 0); Add(pmTabelasMy, 0); Add(pmTabelaMy, 0);
   Add(pmDatabasePost, 1); Add(pmTabelasPost, 1); Add(pmTabelaPost, 1);
   Add(pmDatabaseLite, 2); Add(pmTabelasLite, 2); Add(pmTabelaLite, 2);
-  Add(pmDatabaseMSSQL, 3); Add(pmDatabaseOracle, 4);
+  Add(pmDatabaseMSSQL, 3); Add(pmTabelaMSSQL, 3);
+  Add(pmDatabaseOracle, 4); Add(pmTabelaOracle, 4);
   tvMysql.RightClickSelect := True; tvPost.RightClickSelect := True;
   tvsqlite.RightClickSelect := True; tvMSSQL.RightClickSelect := True;
   tvOracle.RightClickSelect := True;
@@ -4352,10 +4397,12 @@ procedure Tfrmmquery2.CreateDynamicDBTab(const ATitle: string; var ATab: TTabShe
   var ADBGrid: TDBGrid; var AErrorMemo: TMemo; AConnectHandler, AExecHandler: TNotifyEvent;
   ATreeChangeHandler: TTVChangedEvent);
 var
-  leftPanel, rightPanel, setupPanel, workPanel, sqlPanel, sqlBarPanel: TPanel;
+  leftPanel, rightPanel, setupPanel, workPanel, sqlPanel, sqlBarPanel, resBarPanel: TPanel;
   splitter, workSplitter: TSplitter;
   resultsPC: TPageControl;
   tsResults, tsErrors: TTabSheet;
+  resNav: TDBNavigator;
+  saveBtn: TButton;
 
   function CreateInputGroup(AParent: TWinControl; ALeft, ATop, AWidth: Integer; const ALabelText: string; var AEdit: TEdit): TLabel;
   var
@@ -4491,11 +4538,36 @@ begin
   tsResults.PageControl := resultsPC;
   tsResults.Caption := 'Resultados';
 
+  resBarPanel := TPanel.Create(Self);
+  resBarPanel.Parent := tsResults;
+  resBarPanel.Align := alTop;
+  resBarPanel.Height := 38;
+  resBarPanel.BevelOuter := bvNone;
+
+  resNav := TDBNavigator.Create(Self);
+  resNav.Parent := resBarPanel;
+  resNav.DataSource := ADataSource;
+  resNav.Left := 8;
+  resNav.Top := 6;
+  resNav.Width := 241;
+  resNav.Height := 25;
+
+  saveBtn := TButton.Create(Self);
+  saveBtn.Parent := resBarPanel;
+  saveBtn.Caption := 'Salvar';
+  saveBtn.Hint := 'Salva as alterações feitas no grid diretamente no banco de dados';
+  saveBtn.ShowHint := True;
+  saveBtn.Left := resNav.Left + resNav.Width + 8;
+  saveBtn.Top := 6;
+  saveBtn.Width := 75;
+  saveBtn.Height := 25;
+  saveBtn.OnClick := @btSalvarDynamicClick;
+
   ADBGrid := TDBGrid.Create(Self);
   ADBGrid.Parent := tsResults;
   ADBGrid.Align := alClient;
   ADBGrid.DataSource := ADataSource;
-  ADBGrid.ReadOnly := True;
+  ADBGrid.ReadOnly := False;
 
   // Errors/Log Tab
   tsErrors := TTabSheet.Create(Self);
@@ -4720,6 +4792,7 @@ begin
   finally
     colQry.Free;
   end;
+  AtualizarAutocomplete(3);
 end;
 
 procedure Tfrmmquery2.ListarTabelasOracle();
@@ -4787,6 +4860,7 @@ begin
   finally
     colQry.Free;
   end;
+  AtualizarAutocomplete(4);
 end;
 
 procedure Tfrmmquery2.btExecutarMSSQLClick(Sender: TObject);
@@ -4814,6 +4888,7 @@ begin
     // Check if query is a SELECT statement to open or just execute
     if UpperCase(Copy(SQL, 1, 6)) = 'SELECT' then
     begin
+      dbgridMSSQL.ReadOnly := False;
       zmssqlqry.Open;
       edErroMSSQL.Lines.Add(Format('Consulta executada com sucesso! %d registros retornados.', [zmssqlqry.RecordCount]));
     end
@@ -4853,6 +4928,7 @@ begin
     // Check if query is a SELECT statement to open or just execute
     if UpperCase(Copy(SQL, 1, 6)) = 'SELECT' then
     begin
+      dbgridOracle.ReadOnly := False;
       zoracleqry.Open;
       edErroOracle.Lines.Add(Format('Consulta executada com sucesso! %d registros retornados.', [zoracleqry.RecordCount]));
     end
@@ -4869,16 +4945,20 @@ end;
 
 procedure Tfrmmquery2.tvMSSQLChange(Sender: TObject; Node: TTreeNode);
 begin
-  if (Node = tvitemMSSQL) or ((Node <> nil) and (Node.Parent = posicaofieldsMSSQL)) then
+  if Node = tvitemMSSQL then
     tvMSSQL.PopupMenu := pmDatabaseMSSQL
+  else if (Node <> nil) and (Node.Parent = posicaofieldsMSSQL) then
+    tvMSSQL.PopupMenu := pmTabelaMSSQL
   else
     tvMSSQL.PopupMenu := nil;
 end;
 
 procedure Tfrmmquery2.tvOracleChange(Sender: TObject; Node: TTreeNode);
 begin
-  if (Node = tvitemOracle) or ((Node <> nil) and (Node.Parent = posicaofieldsOracle)) then
+  if Node = tvitemOracle then
     tvOracle.PopupMenu := pmDatabaseOracle
+  else if (Node <> nil) and (Node.Parent = posicaofieldsOracle) then
+    tvOracle.PopupMenu := pmTabelaOracle
   else
     tvOracle.PopupMenu := nil;
 end;
@@ -5517,6 +5597,657 @@ begin
     Result := outSQL.Text;
   finally
     outSQL.Free;
+  end;
+end;
+
+function ExtractFieldName(const S: string): string;
+var
+  P: Integer;
+begin
+  P := Pos(':', S);
+  if P > 0 then
+    Result := Trim(Copy(S, 1, P - 1))
+  else
+    Result := Trim(S);
+end;
+
+procedure ExtractPKNames(const S: string; AList: TStrings);
+var
+  P1, P2: Integer;
+  ColsStr, Item: string;
+  Parts: TStringList;
+  I: Integer;
+begin
+  if AList = nil then Exit;
+  P1 := Pos('(', S);
+  P2 := Pos(')', S);
+  if (P1 > 0) and (P2 > P1) then
+  begin
+    ColsStr := Copy(S, P1 + 1, P2 - P1 - 1);
+    ColsStr := StringReplace(ColsStr, '{', '', [rfReplaceAll]);
+    ColsStr := StringReplace(ColsStr, '}', '', [rfReplaceAll]);
+    Parts := TStringList.Create;
+    try
+      Parts.Delimiter := ',';
+      Parts.StrictDelimiter := True;
+      Parts.DelimitedText := ColsStr;
+      for I := 0 to Parts.Count - 1 do
+      begin
+        Item := Trim(Parts[I]);
+        if (Item <> '') and (AList.IndexOf(Item) < 0) then
+          AList.Add(Item);
+      end;
+    finally
+      Parts.Free;
+    end;
+  end
+  else
+  begin
+    Item := ExtractFieldName(S);
+    if (Item <> '') and (AList.IndexOf(Item) < 0) then
+      AList.Add(Item);
+  end;
+end;
+
+function MontarScriptSQL(const ATableName, ATipoScript: string; AColunas, APKs: TStrings): string;
+var
+  SQLText: string;
+  I: Integer;
+  ColName: string;
+  HasCol: Boolean;
+begin
+  Result := '';
+  if Trim(ATableName) = '' then Exit;
+
+  if SameText(ATipoScript, 'SELECT') then
+  begin
+    SQLText := 'SELECT' + sLineBreak;
+    if (AColunas <> nil) and (AColunas.Count > 0) then
+    begin
+      for I := 0 to AColunas.Count - 1 do
+      begin
+        if I < AColunas.Count - 1 then
+          SQLText := SQLText + '  ' + AColunas[I] + ',' + sLineBreak
+        else
+          SQLText := SQLText + '  ' + AColunas[I] + sLineBreak;
+      end;
+    end
+    else
+      SQLText := SQLText + '  *' + sLineBreak;
+
+    SQLText := SQLText + 'FROM ' + ATableName + ';' + sLineBreak;
+  end
+  else if SameText(ATipoScript, 'INSERT') then
+  begin
+    SQLText := 'INSERT INTO ' + ATableName + ' (' + sLineBreak;
+    if (AColunas <> nil) and (AColunas.Count > 0) then
+    begin
+      for I := 0 to AColunas.Count - 1 do
+      begin
+        if I < AColunas.Count - 1 then
+          SQLText := SQLText + '  ' + AColunas[I] + ',' + sLineBreak
+        else
+          SQLText := SQLText + '  ' + AColunas[I] + sLineBreak;
+      end;
+      SQLText := SQLText + ') VALUES (' + sLineBreak;
+      for I := 0 to AColunas.Count - 1 do
+      begin
+        ColName := AColunas[I];
+        if (APKs <> nil) and (APKs.IndexOf(ColName) >= 0) then
+        begin
+          if I < AColunas.Count - 1 then
+            SQLText := SQLText + '  1, -- ' + ColName + sLineBreak
+          else
+            SQLText := SQLText + '  1  -- ' + ColName + sLineBreak;
+        end
+        else
+        begin
+          if I < AColunas.Count - 1 then
+            SQLText := SQLText + '  ' + QuotedStr('valor_' + ColName) + ',' + sLineBreak
+          else
+            SQLText := SQLText + '  ' + QuotedStr('valor_' + ColName) + sLineBreak;
+        end;
+      end;
+      SQLText := SQLText + ');' + sLineBreak;
+    end
+    else
+      SQLText := SQLText + '  /* colunas */' + sLineBreak + ') VALUES (' + sLineBreak + '  /* valores */' + sLineBreak + ');' + sLineBreak;
+  end
+  else if SameText(ATipoScript, 'UPDATE') then
+  begin
+    SQLText := 'UPDATE ' + ATableName + sLineBreak + 'SET' + sLineBreak;
+    HasCol := False;
+    if (AColunas <> nil) and (AColunas.Count > 0) then
+    begin
+      for I := 0 to AColunas.Count - 1 do
+      begin
+        ColName := AColunas[I];
+        if (APKs = nil) or (APKs.Count = 0) or (APKs.IndexOf(ColName) < 0) then
+        begin
+          if HasCol then
+            SQLText := SQLText + ',' + sLineBreak;
+          SQLText := SQLText + '  ' + ColName + ' = ' + QuotedStr('valor_' + ColName);
+          HasCol := True;
+        end;
+      end;
+    end;
+    if not HasCol then
+    begin
+      if (AColunas <> nil) and (AColunas.Count > 0) then
+        SQLText := SQLText + '  ' + AColunas[0] + ' = ' + QuotedStr('valor_' + AColunas[0])
+      else
+        SQLText := SQLText + '  /* coluna = valor */';
+    end;
+    SQLText := SQLText + sLineBreak + 'WHERE' + sLineBreak;
+    if (APKs <> nil) and (APKs.Count > 0) then
+    begin
+      for I := 0 to APKs.Count - 1 do
+      begin
+        if I = 0 then
+          SQLText := SQLText + '  ' + APKs[I] + ' = 1' + sLineBreak
+        else
+          SQLText := SQLText + '  AND ' + APKs[I] + ' = 1' + sLineBreak;
+      end;
+      SQLText := SQLText + ';' + sLineBreak;
+    end
+    else
+      SQLText := SQLText + '  /* informe a condição */ 1 = 1;' + sLineBreak;
+  end
+  else if SameText(ATipoScript, 'DELETE') then
+  begin
+    SQLText := 'DELETE FROM ' + ATableName + sLineBreak + 'WHERE' + sLineBreak;
+    if (APKs <> nil) and (APKs.Count > 0) then
+    begin
+      for I := 0 to APKs.Count - 1 do
+      begin
+        if I = 0 then
+          SQLText := SQLText + '  ' + APKs[I] + ' = 1' + sLineBreak
+        else
+          SQLText := SQLText + '  AND ' + APKs[I] + ' = 1' + sLineBreak;
+      end;
+      SQLText := SQLText + ';' + sLineBreak;
+    end
+    else
+      SQLText := SQLText + '  /* informe a condição */ 1 = 0;' + sLineBreak;
+  end;
+
+  Result := SQLText;
+end;
+
+procedure Tfrmmquery2.btSalvarPostClick(Sender: TObject);
+begin
+  SalvarAlteracoes(dbgridpost, zpostqry1);
+end;
+
+procedure Tfrmmquery2.btSalvarMyClick(Sender: TObject);
+begin
+  SalvarAlteracoes(dbgridmy, zmyqry2);
+end;
+
+procedure Tfrmmquery2.btSalvarLiteClick(Sender: TObject);
+begin
+  SalvarAlteracoes(dbgridmy1, zliteqry2);
+end;
+
+procedure Tfrmmquery2.btSalvarDynamicClick(Sender: TObject);
+begin
+  if pgMain.ActivePage = tsMSSQL then
+    SalvarAlteracoes(dbgridMSSQL, zmssqlqry)
+  else if pgMain.ActivePage = tsOracle then
+    SalvarAlteracoes(dbgridOracle, zoracleqry);
+end;
+
+procedure Tfrmmquery2.SalvarAlteracoes(AGrid: TDBGrid; ADataSet: TDataSet);
+var
+  Qry: TZQuery;
+begin
+  if (ADataSet = nil) or (not ADataSet.Active) then
+  begin
+    ShowMessage('Nenhum conjunto de dados aberto para salvar.');
+    Exit;
+  end;
+
+  try
+    if AGrid <> nil then
+      AGrid.EditorMode := False;
+
+    if ADataSet.State in [dsEdit, dsInsert] then
+      ADataSet.Post;
+
+    if ADataSet is TZQuery then
+    begin
+      Qry := TZQuery(ADataSet);
+      if (Qry.Connection <> nil) and (not Qry.Connection.AutoCommit) then
+        Qry.Connection.Commit;
+    end;
+
+    ShowMessage('Modificações salvas com sucesso no banco de dados!');
+  except
+    on E: Exception do
+      ShowMessage('Erro ao salvar no banco de dados: ' + E.Message);
+  end;
+end;
+
+function Tfrmmquery2.GetSelectedTableNode(ATree: TTreeView; AParentRoot: TTreeNode): TTreeNode;
+var
+  N: TTreeNode;
+begin
+  Result := nil;
+  if (ATree = nil) or (ATree.Selected = nil) or (AParentRoot = nil) then Exit;
+  N := ATree.Selected;
+  while (N <> nil) and (N.Parent <> AParentRoot) do
+    N := N.Parent;
+  if (N <> nil) and (N.Parent = AParentRoot) then
+    Result := N;
+end;
+
+procedure Tfrmmquery2.ObterTabelaInfo(ATableNode: TTreeNode; out ATableName: string; AColunas, APKs: TStrings);
+var
+  ChildNode, SubNode: TTreeNode;
+  RawText, ColName: string;
+begin
+  ATableName := '';
+  if AColunas <> nil then AColunas.Clear;
+  if APKs <> nil then APKs.Clear;
+  if ATableNode = nil then Exit;
+
+  ATableName := Trim(ATableNode.Text);
+
+  ChildNode := ATableNode.GetFirstChild;
+  while ChildNode <> nil do
+  begin
+    if SameText(ChildNode.Text, 'fields') or (ChildNode.Data = Pointer(ETDBCampos)) then
+    begin
+      SubNode := ChildNode.GetFirstChild;
+      while SubNode <> nil do
+      begin
+        RawText := SubNode.Text;
+        ColName := ExtractFieldName(RawText);
+        if (ColName <> '') and (AColunas <> nil) and (AColunas.IndexOf(ColName) < 0) then
+          AColunas.Add(ColName);
+        SubNode := SubNode.GetNextSibling;
+      end;
+    end
+    else if SameText(ChildNode.Text, 'Primary Key') or (ChildNode.Data = Pointer(ETDBPK)) then
+    begin
+      SubNode := ChildNode.GetFirstChild;
+      while SubNode <> nil do
+      begin
+        if APKs <> nil then
+          ExtractPKNames(SubNode.Text, APKs);
+        SubNode := SubNode.GetNextSibling;
+      end;
+    end;
+    ChildNode := ChildNode.GetNextSibling;
+  end;
+end;
+
+procedure Tfrmmquery2.GerarScriptTabela(AEngineIndex: Integer; const ATipoScript: string);
+var
+  Tree: TTreeView;
+  ParentRoot: TTreeNode;
+  TableNode: TTreeNode;
+  TableName: string;
+  Colunas, PKs: TStringList;
+  SQLText: string;
+begin
+  Tree := nil;
+  ParentRoot := nil;
+
+  case AEngineIndex of
+    0: begin Tree := tvMysql; ParentRoot := posicaofieldsmy; end;
+    1: begin Tree := tvPost; ParentRoot := posicaofieldspost; end;
+    2: begin Tree := tvsqlite; ParentRoot := posicaofieldslite; end;
+    3: begin Tree := tvMSSQL; ParentRoot := posicaofieldsMSSQL; end;
+    4: begin Tree := tvOracle; ParentRoot := posicaofieldsOracle; end;
+  end;
+
+  if (Tree = nil) or (Tree.Selected = nil) or (ParentRoot = nil) then
+  begin
+    ShowMessage('Selecione uma tabela na árvore.');
+    Exit;
+  end;
+
+  TableNode := GetSelectedTableNode(Tree, ParentRoot);
+  if TableNode = nil then
+  begin
+    ShowMessage('Selecione uma tabela válida.');
+    Exit;
+  end;
+
+  Colunas := TStringList.Create;
+  PKs := TStringList.Create;
+  try
+    ObterTabelaInfo(TableNode, TableName, Colunas, PKs);
+    SQLText := MontarScriptSQL(TableName, ATipoScript, Colunas, PKs);
+
+    case AEngineIndex of
+      0:
+      begin
+        edSQL.Clear;
+        edSQL.Lines.Text := SQLText;
+        pgMysql.ActivePage := tbSQL;
+        pgMain.ActivePage := tsMysql;
+        edSQL.SetFocus;
+      end;
+      1:
+      begin
+        edSQLPost.Clear;
+        edSQLPost.Lines.Text := SQLText;
+        pcPostgree.ActivePage := tsSQLPostgreSQL;
+        pgMain.ActivePage := tsPostgree;
+        edSQLPost.SetFocus;
+      end;
+      2:
+      begin
+        edSQL1.Clear;
+        edSQL1.Lines.Text := SQLText;
+        pgSQLite.ActivePage := tbSQL1;
+        pgMain.ActivePage := tsSqlite;
+        edSQL1.SetFocus;
+      end;
+      3:
+      begin
+        edSQLMSSQL.Clear;
+        edSQLMSSQL.Lines.Text := SQLText;
+        pgMain.ActivePage := tsMSSQL;
+        edSQLMSSQL.SetFocus;
+      end;
+      4:
+      begin
+        edSQLOracle.Clear;
+        edSQLOracle.Lines.Text := SQLText;
+        pgMain.ActivePage := tsOracle;
+        edSQLOracle.SetFocus;
+      end;
+    end;
+  finally
+    Colunas.Free;
+    PKs.Free;
+  end;
+end;
+
+procedure Tfrmmquery2.miScriptSelectClick(Sender: TObject);
+begin
+  GerarScriptTabela(TMenuItem(Sender).Tag, 'SELECT');
+end;
+
+procedure Tfrmmquery2.miScriptInsertClick(Sender: TObject);
+begin
+  GerarScriptTabela(TMenuItem(Sender).Tag, 'INSERT');
+end;
+
+procedure Tfrmmquery2.miScriptUpdateClick(Sender: TObject);
+begin
+  GerarScriptTabela(TMenuItem(Sender).Tag, 'UPDATE');
+end;
+
+procedure Tfrmmquery2.miScriptDeleteClick(Sender: TObject);
+begin
+  GerarScriptTabela(TMenuItem(Sender).Tag, 'DELETE');
+end;
+
+procedure Tfrmmquery2.AddScriptMenuItems(AMenu: TPopupMenu; AEngineIndex: Integer);
+var
+  Sep: TMenuItem;
+  MenuScripts: TMenuItem;
+  ItemSelect, ItemInsert, ItemUpdate, ItemDelete: TMenuItem;
+begin
+  if AMenu = nil then Exit;
+
+  if AMenu.Items.Count > 0 then
+  begin
+    Sep := TMenuItem.Create(Self);
+    Sep.Caption := '-';
+    AMenu.Items.Add(Sep);
+  end;
+
+  MenuScripts := TMenuItem.Create(Self);
+  MenuScripts.Caption := 'Gerar Script';
+  AMenu.Items.Add(MenuScripts);
+
+  ItemSelect := TMenuItem.Create(Self);
+  ItemSelect.Caption := 'SELECT';
+  ItemSelect.Tag := AEngineIndex;
+  ItemSelect.OnClick := @miScriptSelectClick;
+  MenuScripts.Add(ItemSelect);
+
+  ItemInsert := TMenuItem.Create(Self);
+  ItemInsert.Caption := 'INSERT';
+  ItemInsert.Tag := AEngineIndex;
+  ItemInsert.OnClick := @miScriptInsertClick;
+  MenuScripts.Add(ItemInsert);
+
+  ItemUpdate := TMenuItem.Create(Self);
+  ItemUpdate.Caption := 'UPDATE';
+  ItemUpdate.Tag := AEngineIndex;
+  ItemUpdate.OnClick := @miScriptUpdateClick;
+  MenuScripts.Add(ItemUpdate);
+
+  ItemDelete := TMenuItem.Create(Self);
+  ItemDelete.Caption := 'DELETE';
+  ItemDelete.Tag := AEngineIndex;
+  ItemDelete.OnClick := @miScriptDeleteClick;
+  MenuScripts.Add(ItemDelete);
+end;
+
+procedure Tfrmmquery2.InstallTableScriptMenus;
+begin
+  if pmTabelaMSSQL = nil then
+    pmTabelaMSSQL := TPopupMenu.Create(Self);
+  if pmTabelaOracle = nil then
+    pmTabelaOracle := TPopupMenu.Create(Self);
+
+  AddScriptMenuItems(pmTabelaMy, 0);
+  AddScriptMenuItems(pmTabelaPost, 1);
+  AddScriptMenuItems(pmTabelaLite, 2);
+  AddScriptMenuItems(pmTabelaMSSQL, 3);
+  AddScriptMenuItems(pmTabelaOracle, 4);
+end;
+
+procedure Tfrmmquery2.InicializarGridEditing;
+begin
+  // PostgreSQL Panel6
+  btSalvarPost := TButton.Create(Self);
+  btSalvarPost.Parent := Panel6;
+  btSalvarPost.Caption := 'Salvar';
+  btSalvarPost.Hint := 'Salva as alterações feitas no grid diretamente no banco de dados';
+  btSalvarPost.ShowHint := True;
+  btSalvarPost.Left := dbnavpost.Left + dbnavpost.Width + 8;
+  btSalvarPost.Top := dbnavpost.Top;
+  btSalvarPost.Width := 75;
+  btSalvarPost.Height := dbnavpost.Height;
+  btSalvarPost.OnClick := @btSalvarPostClick;
+
+  // MySQL Panel3
+  btSalvarMy := TButton.Create(Self);
+  btSalvarMy.Parent := Panel3;
+  btSalvarMy.Caption := 'Salvar';
+  btSalvarMy.Hint := 'Salva as alterações feitas no grid diretamente no banco de dados';
+  btSalvarMy.ShowHint := True;
+  btSalvarMy.Left := dbnavmy.Left + dbnavmy.Width + 8;
+  btSalvarMy.Top := dbnavmy.Top;
+  btSalvarMy.Width := 75;
+  btSalvarMy.Height := dbnavmy.Height;
+  btSalvarMy.OnClick := @btSalvarMyClick;
+
+  // SQLite Panel18
+  btSalvarLite := TButton.Create(Self);
+  btSalvarLite.Parent := Panel18;
+  btSalvarLite.Caption := 'Salvar';
+  btSalvarLite.Hint := 'Salva as alterações feitas no grid diretamente no banco de dados';
+  btSalvarLite.ShowHint := True;
+  btSalvarLite.Left := dbnavmy1.Left + dbnavmy1.Width + 8;
+  btSalvarLite.Top := dbnavmy1.Top;
+  btSalvarLite.Width := 75;
+  btSalvarLite.Height := dbnavmy1.Height;
+  btSalvarLite.OnClick := @btSalvarLiteClick;
+end;
+
+procedure Tfrmmquery2.ConfigurarCompletion(AComp: TSynCompletion; AEditor: TSynEdit);
+begin
+  if (AComp = nil) or (AEditor = nil) then Exit;
+  AComp.Editor := AEditor;
+  AComp.ShortCut := Menus.ShortCut(VK_SPACE, [ssCtrl]);
+  AComp.EndOfTokenChr := '()[]+-*/=<>;, ';
+  AComp.CaseSensitive := False;
+  AComp.Width := 400;
+  AComp.LinesInWindow := 12;
+  AComp.AutoUseSingleIdent := False;
+end;
+
+procedure Tfrmmquery2.InicializarAutocomplete;
+var
+  I: Integer;
+begin
+  FCompletions[0] := SynCompletion1;
+  ConfigurarCompletion(FCompletions[0], edSQL);
+
+  if FCompletions[1] = nil then
+    FCompletions[1] := TSynCompletion.Create(Self);
+  ConfigurarCompletion(FCompletions[1], edSQLPost);
+
+  if FCompletions[2] = nil then
+    FCompletions[2] := TSynCompletion.Create(Self);
+  ConfigurarCompletion(FCompletions[2], edSQL1);
+
+  if FCompletions[3] = nil then
+    FCompletions[3] := TSynCompletion.Create(Self);
+  ConfigurarCompletion(FCompletions[3], edSQLMSSQL);
+
+  if FCompletions[4] = nil then
+    FCompletions[4] := TSynCompletion.Create(Self);
+  ConfigurarCompletion(FCompletions[4], edSQLOracle);
+
+  for I := 0 to 4 do
+    AtualizarAutocomplete(I);
+end;
+
+function Tfrmmquery2.GetActiveEngineIndex: Integer;
+begin
+  if pgMain.ActivePage = tsMysql then Result := 0
+  else if pgMain.ActivePage = tsPostgree then Result := 1
+  else if pgMain.ActivePage = tsSqlite then Result := 2
+  else if pgMain.ActivePage = tsMSSQL then Result := 3
+  else if pgMain.ActivePage = tsOracle then Result := 4
+  else Result := -1;
+end;
+
+procedure Tfrmmquery2.pgMainChange(Sender: TObject);
+var
+  Idx: Integer;
+begin
+  Idx := GetActiveEngineIndex;
+  if Idx >= 0 then
+    AtualizarAutocomplete(Idx);
+end;
+
+procedure Tfrmmquery2.AtualizarAutocomplete(AEngineIndex: Integer);
+var
+  ParentRoot, TblNode, ChildNode, ColNode: TTreeNode;
+  TblName, RawText, ColName: string;
+  Items: TStringList;
+begin
+  if (AEngineIndex < 0) or (AEngineIndex > 4) then Exit;
+  if FCompletions[AEngineIndex] = nil then Exit;
+
+  ParentRoot := nil;
+  case AEngineIndex of
+    0: ParentRoot := posicaofieldsmy;
+    1: ParentRoot := posicaofieldspost;
+    2: ParentRoot := posicaofieldslite;
+    3: ParentRoot := posicaofieldsMSSQL;
+    4: ParentRoot := posicaofieldsOracle;
+  end;
+
+  Items := TStringList.Create;
+  try
+    Items.Sorted := True;
+    Items.Duplicates := dupIgnore;
+
+    Items.Add('SELECT');
+    Items.Add('FROM');
+    Items.Add('WHERE');
+    Items.Add('INSERT INTO');
+    Items.Add('VALUES');
+    Items.Add('UPDATE');
+    Items.Add('SET');
+    Items.Add('DELETE FROM');
+    Items.Add('JOIN');
+    Items.Add('INNER JOIN');
+    Items.Add('LEFT JOIN');
+    Items.Add('RIGHT JOIN');
+    Items.Add('FULL JOIN');
+    Items.Add('CROSS JOIN');
+    Items.Add('ON');
+    Items.Add('GROUP BY');
+    Items.Add('ORDER BY');
+    Items.Add('HAVING');
+    Items.Add('LIMIT');
+    Items.Add('OFFSET');
+    Items.Add('DISTINCT');
+    Items.Add('AS');
+    Items.Add('AND');
+    Items.Add('OR');
+    Items.Add('NOT');
+    Items.Add('IN');
+    Items.Add('EXISTS');
+    Items.Add('BETWEEN');
+    Items.Add('LIKE');
+    Items.Add('IS NULL');
+    Items.Add('IS NOT NULL');
+    Items.Add('UNION');
+    Items.Add('UNION ALL');
+    Items.Add('CASE');
+    Items.Add('WHEN');
+    Items.Add('THEN');
+    Items.Add('ELSE');
+    Items.Add('END');
+    Items.Add('COUNT');
+    Items.Add('SUM');
+    Items.Add('AVG');
+    Items.Add('MIN');
+    Items.Add('MAX');
+    Items.Add('COALESCE');
+
+    if ParentRoot <> nil then
+    begin
+      TblNode := ParentRoot.GetFirstChild;
+      while TblNode <> nil do
+      begin
+        TblName := Trim(TblNode.Text);
+        if TblName <> '' then
+        begin
+          Items.Add(TblName);
+
+          ChildNode := TblNode.GetFirstChild;
+          while ChildNode <> nil do
+          begin
+            if SameText(ChildNode.Text, 'fields') or (ChildNode.Data = Pointer(ETDBCampos)) then
+            begin
+              ColNode := ChildNode.GetFirstChild;
+              while ColNode <> nil do
+              begin
+                RawText := ColNode.Text;
+                ColName := ExtractFieldName(RawText);
+                if ColName <> '' then
+                begin
+                  Items.Add(ColName);
+                  Items.Add(TblName + '.' + ColName);
+                end;
+                ColNode := ColNode.GetNextSibling;
+              end;
+            end;
+            ChildNode := ChildNode.GetNextSibling;
+          end;
+        end;
+        TblNode := TblNode.GetNextSibling;
+      end;
+    end;
+
+    FCompletions[AEngineIndex].ItemList.Assign(Items);
+  finally
+    Items.Free;
   end;
 end;
 

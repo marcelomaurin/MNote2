@@ -2913,7 +2913,6 @@ object frmmquery2: Tfrmmquery2
       'RawStringEncoding=DB_CP'
       'codepage=UTF8'
     )
-    UseMetadata = False
     DesignConnection = True
     AfterConnect = zconpostAfterConnect
     DisableSavepoints = False
@@ -2954,13 +2953,13 @@ object frmmquery2: Tfrmmquery2
     Left = 680
     Top = 400
   end
-  object zpostqry1: TZReadOnlyQuery
+  object zpostqry1: TZQuery
     Connection = zconpost
     Params = <>
     Left = 744
     Top = 392
   end
-  object zmyqry2: TZReadOnlyQuery
+  object zmyqry2: TZQuery
     Connection = zconmysql
     Params = <>
     Left = 744
@@ -6892,7 +6891,7 @@ object frmmquery2: Tfrmmquery2
     Left = 680
     Top = 488
   end
-  object zliteqry2: TZReadOnlyQuery
+  object zliteqry2: TZQuery
     Connection = zconsqlite
     Params = <>
     Left = 752

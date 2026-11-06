@@ -26,7 +26,7 @@ uses
   mnote_project_context,
   mnote_document_export_service, mnote_capability_catalog,
   mnote_dependency_graph_service, mnote_sql_validation_service,
-  mnote_neural_api_bootstrap;
+  mnote_neural_api_bootstrap, mquery2;
 
 type
   TTestService = class(TMNoteServiceBase)
@@ -1964,6 +1964,81 @@ begin
   end;
 end;
 
+procedure TestMQueryScriptAndAutocomplete;
+var
+  Cols, PKs, PKList: TStringList;
+  SQL: string;
+begin
+  // Test ExtractFieldName
+  Check(ExtractFieldName('id : integer NOT NULL') = 'id', 'ExtractFieldName falhou com tipo e NOT NULL');
+  Check(ExtractFieldName('nome: varchar(100)') = 'nome', 'ExtractFieldName falhou com tipo');
+  Check(ExtractFieldName('email') = 'email', 'ExtractFieldName falhou sem dois pontos');
+
+  // Test ExtractPKNames
+  PKList := TStringList.Create;
+  try
+    ExtractPKNames('pk_usuarios (id)', PKList);
+    Check((PKList.Count = 1) and (PKList[0] = 'id'), 'ExtractPKNames falhou com parenteses simples');
+    PKList.Clear;
+    ExtractPKNames('pk_composite ({user_id, role_id})', PKList);
+    Check((PKList.Count = 2) and (PKList[0] = 'user_id') and (PKList[1] = 'role_id'), 'ExtractPKNames falhou com chaves compostas');
+    PKList.Clear;
+    ExtractPKNames('codigo', PKList);
+    Check((PKList.Count = 1) and (PKList[0] = 'codigo'), 'ExtractPKNames falhou com nome simples');
+  finally
+    PKList.Free;
+  end;
+
+  // Test MontarScriptSQL
+  Cols := TStringList.Create;
+  PKs := TStringList.Create;
+  try
+    Cols.Add('id');
+    Cols.Add('nome');
+    Cols.Add('email');
+    PKs.Add('id');
+
+    // SELECT
+    SQL := MontarScriptSQL('clientes', 'SELECT', Cols, PKs);
+    Check(Pos('SELECT', SQL) > 0, 'MontarScriptSQL SELECT nao contem SELECT');
+    Check(Pos('id,', SQL) > 0, 'MontarScriptSQL SELECT nao contem id,');
+    Check(Pos('FROM clientes;', SQL) > 0, 'MontarScriptSQL SELECT nao contem FROM clientes;');
+
+    // INSERT
+    SQL := MontarScriptSQL('clientes', 'INSERT', Cols, PKs);
+    Check(Pos('INSERT INTO clientes', SQL) > 0, 'MontarScriptSQL INSERT nao contem tabela');
+    Check(Pos('VALUES', SQL) > 0, 'MontarScriptSQL INSERT nao contem VALUES');
+    Check(Pos('1, -- id', SQL) > 0, 'MontarScriptSQL INSERT nao usou valor para PK id');
+    Check(Pos('''valor_nome''', SQL) > 0, 'MontarScriptSQL INSERT nao contem valor_nome');
+
+    // UPDATE
+    SQL := MontarScriptSQL('clientes', 'UPDATE', Cols, PKs);
+    Check(Pos('UPDATE clientes', SQL) > 0, 'MontarScriptSQL UPDATE nao contem tabela');
+    Check(Pos('SET', SQL) > 0, 'MontarScriptSQL UPDATE nao contem SET');
+    Check(Pos('nome = ''valor_nome''', SQL) > 0, 'MontarScriptSQL UPDATE nao contem atribuicao nome');
+    Check(Pos('WHERE', SQL) > 0, 'MontarScriptSQL UPDATE nao contem WHERE');
+    Check(Pos('id = 1;', SQL) > 0, 'MontarScriptSQL UPDATE nao contem id = 1;');
+
+    // DELETE
+    SQL := MontarScriptSQL('clientes', 'DELETE', Cols, PKs);
+    Check(Pos('DELETE FROM clientes', SQL) > 0, 'MontarScriptSQL DELETE nao contem tabela');
+    Check(Pos('WHERE', SQL) > 0, 'MontarScriptSQL DELETE nao contem WHERE');
+    Check(Pos('id = 1;', SQL) > 0, 'MontarScriptSQL DELETE nao contem id = 1;');
+
+    // Test without PK
+    PKs.Clear;
+    SQL := MontarScriptSQL('clientes', 'UPDATE', Cols, PKs);
+    Check(Pos('WHERE', SQL) > 0, 'MontarScriptSQL UPDATE sem PK nao contem WHERE');
+    Check(Pos('1 = 1;', SQL) > 0, 'MontarScriptSQL UPDATE sem PK nao contem 1 = 1;');
+
+    SQL := MontarScriptSQL('clientes', 'DELETE', Cols, PKs);
+    Check(Pos('1 = 0;', SQL) > 0, 'MontarScriptSQL DELETE sem PK nao contem protecao 1 = 0;');
+  finally
+    Cols.Free;
+    PKs.Free;
+  end;
+end;
+
 procedure TestNeuralApiBootstrap;
 const
   ContentsJSON =
@@ -2046,6 +2121,8 @@ var
 begin
   try
     TestNeuralApiBootstrap;
+    TestMQueryScriptAndAutocomplete;
+    Writeln('OK: MQuery scripts SQL (SELECT, INSERT, UPDATE, DELETE), autocomplete e edicao DBGrid');
     Writeln('OK: descoberta, pasta e integridade do instalador neural-api');
     TestProjectCore;
     TestProjectContext;
