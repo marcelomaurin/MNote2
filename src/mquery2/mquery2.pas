@@ -187,6 +187,9 @@ type
     miEsconder: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
+    miLoadConnection: TMenuItem;
+    miSaveConnection: TMenuItem;
+    miConnSep: TMenuItem;
     MenuItem4: TMenuItem;
     MenuItem5: TMenuItem;
     MenuItem6: TMenuItem;
@@ -351,6 +354,8 @@ type
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem5Click(Sender: TObject);
     procedure MenuItem6Click(Sender: TObject);
+    procedure miLoadConnectionClick(Sender: TObject);
+    procedure miSaveConnectionClick(Sender: TObject);
     procedure MenuItem8Click(Sender: TObject);
     procedure miCFunctionClick(Sender: TObject);
     procedure miChartClick(Sender: TObject);
@@ -400,6 +405,7 @@ type
     procedure zconpostAfterConnect(Sender: TObject);
     procedure ZPgEventAlerter1Notify(Sender: TObject; Event: string;
       ProcessID: Integer; Payload: string);
+
   private
 
     posicaofieldsmy : TTreeNode;
@@ -470,16 +476,10 @@ type
     mnCriaDicionarioOracle: TMenuItem;
     pmTabelaMSSQL: TPopupMenu;
     pmTabelaOracle: TPopupMenu;
-    miLoadConnection: TMenuItem;
-    miSaveConnection: TMenuItem;
-    miConnSep: TMenuItem;
     btSalvarPost: TButton;
     btSalvarMy: TButton;
     btSalvarLite: TButton;
     FCompletions: array[0..4] of TSynCompletion;
-
-    procedure miLoadConnectionClick(Sender: TObject);
-    procedure miSaveConnectionClick(Sender: TObject);
     function SalvarConexaoArquivo(const AFileName: string; AEngineIndex: Integer = -1): Boolean;
     function CarregarConexaoArquivo(const AFileName: string): Boolean;
     function GetActiveSQLEditor: TSynEdit;
