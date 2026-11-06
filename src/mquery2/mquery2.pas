@@ -434,6 +434,12 @@ type
 
     // ===== SQL Server (MSSQL) Dynamic Controls =====
     tsMSSQL: TTabSheet;
+    pcMSSQL: TPageControl;
+    tsConnMSSQL: TTabSheet;
+    tsSQLMSSQL: TTabSheet;
+    tsGridMSSQL: TTabSheet;
+    tsLogMSSQL: TTabSheet;
+    tsToolsMSSQL: TTabSheet;
     zconMSSQL: TZConnection;
     zmssqlqry: TZQuery;
     dsmssql: TDataSource;
@@ -453,6 +459,12 @@ type
 
      // ===== Oracle Dynamic Controls =====
     tsOracle: TTabSheet;
+    pcOracle: TPageControl;
+    tsConnOracle: TTabSheet;
+    tsSQLOracle: TTabSheet;
+    tsGridOracle: TTabSheet;
+    tsLogOracle: TTabSheet;
+    tsToolsOracle: TTabSheet;
     zconOracle: TZConnection;
     zoracleqry: TZQuery;
     dsoracle: TDataSource;
@@ -488,6 +500,8 @@ type
     procedure btSalvarMyClick(Sender: TObject);
     procedure btSalvarLiteClick(Sender: TObject);
     procedure btSalvarDynamicClick(Sender: TObject);
+    procedure btLimparSQLDynamicClick(Sender: TObject);
+    procedure btLimparLogDynamicClick(Sender: TObject);
     procedure SalvarAlteracoes(AGrid: TDBGrid; ADataSet: TDataSet);
 
     procedure miScriptSelectClick(Sender: TObject);
@@ -513,11 +527,14 @@ type
 
     // Dynamic UI Creation Helper
     procedure CreateDynamicDBTab(const ATitle: string; var ATab: TTabSheet;
+      var APC: TPageControl;
+      var ATSConn, ATSSQL, ATSGrid, ATSLog, ATSTools: TTabSheet;
       var AConnection: TZConnection; var AQuery: TZQuery; var ADataSource: TDataSource;
       var ATreeView: TTreeView; var AHostEdit, ABancoEdit, AUserEdit, APassEdit, ASchemaEdit: TEdit;
       var AConnectBtn: TButton; var ASynEdit: TSynEdit; var AExecBtn: TButton;
       var ADBGrid: TDBGrid; var AErrorMemo: TMemo; AConnectHandler, AExecHandler: TNotifyEvent;
-      ATreeChangeHandler: TTVChangedEvent);
+      ATreeChangeHandler: TTVChangedEvent; AToolsDicionarioHandler: TNotifyEvent;
+      ADiagramTag: Integer);
 
     procedure btConectarMSSQLClick(Sender: TObject);
     procedure btExecutarMSSQLClick(Sender: TObject);
@@ -1172,10 +1189,13 @@ begin
   tvitemLite.ImageIndex := -1;
 
   // Create SQL Server tab programmatically
-  CreateDynamicDBTab('SQL Server', tsMSSQL, zconMSSQL, zmssqlqry, dsmssql,
+  CreateDynamicDBTab('SQL Server', tsMSSQL, pcMSSQL,
+    tsConnMSSQL, tsSQLMSSQL, tsGridMSSQL, tsLogMSSQL, tsToolsMSSQL,
+    zconMSSQL, zmssqlqry, dsmssql,
     tvMSSQL, edHostMSSQL, edBancoMSSQL, edUserMSSQL, edPassMSSQL, edSchemaMSSQL,
     btConectarMSSQL, edSQLMSSQL, btExecMSSQL, dbgridMSSQL, edErroMSSQL,
-    @btConectarMSSQLClick, @btExecutarMSSQLClick, @tvMSSQLChange);
+    @btConectarMSSQLClick, @btExecutarMSSQLClick, @tvMSSQLChange,
+    @mnCriaDicionarioMSSQLClick, 3);
 
   // Initialize SQL Server tree node database parent
   tvitem := TTreeNode.Create(tvMSSQL.Items);
@@ -1183,10 +1203,13 @@ begin
   tvitemMSSQL.ImageIndex := -1;
 
   // Create Oracle tab programmatically
-  CreateDynamicDBTab('Oracle', tsOracle, zconOracle, zoracleqry, dsoracle,
+  CreateDynamicDBTab('Oracle', tsOracle, pcOracle,
+    tsConnOracle, tsSQLOracle, tsGridOracle, tsLogOracle, tsToolsOracle,
+    zconOracle, zoracleqry, dsoracle,
     tvOracle, edHostOracle, edBancoOracle, edUserOracle, edPassOracle, edSchemaOracle,
     btConectarOracle, edSQLOracle, btExecOracle, dbgridOracle, edErroOracle,
-    @btConectarOracleClick, @btExecutarOracleClick, @tvOracleChange);
+    @btConectarOracleClick, @btExecutarOracleClick, @tvOracleChange,
+    @mnCriaDicionarioOracleClick, 4);
 
   // Initialize Oracle tree node database parent
   tvitem := TTreeNode.Create(tvOracle.Items);
@@ -4510,19 +4533,36 @@ begin
             (aInnerRect.Bottom >= aOuterRect.Top)    and (aInnerRect.Bottom <= aOuterRect.Bottom);
 end;
 
+procedure Tfrmmquery2.btLimparSQLDynamicClick(Sender: TObject);
+var
+  ed: TSynEdit;
+begin
+  ed := GetActiveSQLEditor;
+  if ed <> nil then ed.Clear;
+end;
+
+procedure Tfrmmquery2.btLimparLogDynamicClick(Sender: TObject);
+begin
+  if pgMain.ActivePage = tsMSSQL then
+    edErroMSSQL.Clear
+  else if pgMain.ActivePage = tsOracle then
+    edErroOracle.Clear;
+end;
+
 procedure Tfrmmquery2.CreateDynamicDBTab(const ATitle: string; var ATab: TTabSheet;
+  var APC: TPageControl;
+  var ATSConn, ATSSQL, ATSGrid, ATSLog, ATSTools: TTabSheet;
   var AConnection: TZConnection; var AQuery: TZQuery; var ADataSource: TDataSource;
   var ATreeView: TTreeView; var AHostEdit, ABancoEdit, AUserEdit, APassEdit, ASchemaEdit: TEdit;
   var AConnectBtn: TButton; var ASynEdit: TSynEdit; var AExecBtn: TButton;
   var ADBGrid: TDBGrid; var AErrorMemo: TMemo; AConnectHandler, AExecHandler: TNotifyEvent;
-  ATreeChangeHandler: TTVChangedEvent);
+  ATreeChangeHandler: TTVChangedEvent; AToolsDicionarioHandler: TNotifyEvent;
+  ADiagramTag: Integer);
 var
-  leftPanel, rightPanel, setupPanel, workPanel, sqlPanel, sqlBarPanel, resBarPanel: TPanel;
-  splitter, workSplitter: TSplitter;
-  resultsPC: TPageControl;
-  tsResults, tsErrors: TTabSheet;
+  leftPanel, rightPanel, connPanel, toolsPanel, sqlBarPanel, gridBarPanel, logBarPanel: TPanel;
+  splitter: TSplitter;
   resNav: TDBNavigator;
-  saveBtn: TButton;
+  saveBtn, clearSqlBtn, clearLogBtn, dicBtn, diagBtn: TButton;
 
   function CreateInputGroup(AParent: TWinControl; ALeft, ATop, AWidth: Integer; const ALabelText: string; var AEdit: TEdit): TLabel;
   var
@@ -4544,7 +4584,7 @@ var
   end;
 
 begin
-  // Create TabSheet
+  // Create Main TabSheet on pgMain
   ATab := TTabSheet.Create(Self);
   ATab.PageControl := pgMain;
   ATab.Caption := ATitle;
@@ -4567,6 +4607,7 @@ begin
   ATreeView := TTreeView.Create(Self);
   ATreeView.Parent := leftPanel;
   ATreeView.Align := alClient;
+  ATreeView.Images := ImageList1;
   ATreeView.OnChange := ATreeChangeHandler;
   ATreeView.ReadOnly := True;
 
@@ -4576,129 +4617,171 @@ begin
   splitter.Align := alLeft;
   splitter.Width := 5;
 
-  // Right Panel for setup and workspace
+  // Right Panel
   rightPanel := TPanel.Create(Self);
   rightPanel.Parent := ATab;
   rightPanel.Align := alClient;
   rightPanel.BevelOuter := bvNone;
 
-  // Connection Setup Panel
-  setupPanel := TPanel.Create(Self);
-  setupPanel.Parent := rightPanel;
-  setupPanel.Align := alTop;
-  setupPanel.Height := 75;
-  setupPanel.BevelOuter := bvNone;
+  // Sub PageControl matching PostgreSQL layout (Connection, SQL, Grid, Log, Tools)
+  APC := TPageControl.Create(Self);
+  APC.Parent := rightPanel;
+  APC.Align := alClient;
 
-  // Create input edits
-  CreateInputGroup(setupPanel, 10, 10, 150, 'Servidor/Host:', AHostEdit);
-  CreateInputGroup(setupPanel, 170, 10, 120, 'Banco de Dados:', ABancoEdit);
-  CreateInputGroup(setupPanel, 300, 10, 100, 'Usuário:', AUserEdit);
-  CreateInputGroup(setupPanel, 410, 10, 100, 'Senha:', APassEdit);
+  // 1. Connection Sub-Tab
+  ATSConn := TTabSheet.Create(Self);
+  ATSConn.PageControl := APC;
+  ATSConn.Caption := 'Connection';
+
+  connPanel := TPanel.Create(Self);
+  connPanel.Parent := ATSConn;
+  connPanel.Align := alClient;
+  connPanel.BevelOuter := bvNone;
+
+  CreateInputGroup(connPanel, 24, 20, 320, 'Servidor/Host:', AHostEdit);
+  CreateInputGroup(connPanel, 24, 75, 320, 'Banco de Dados:', ABancoEdit);
+  CreateInputGroup(connPanel, 24, 130, 320, 'Schema/Porta:', ASchemaEdit);
+  CreateInputGroup(connPanel, 24, 185, 320, 'Usuário:', AUserEdit);
+  CreateInputGroup(connPanel, 24, 240, 320, 'Senha:', APassEdit);
   APassEdit.PasswordChar := '*';
-  CreateInputGroup(setupPanel, 520, 10, 80, 'Schema/Porta:', ASchemaEdit);
+  APassEdit.EchoMode := emPassword;
 
-  // Connection Button
   AConnectBtn := TButton.Create(Self);
-  AConnectBtn.Parent := setupPanel;
-  AConnectBtn.Left := 615;
-  AConnectBtn.Top := 28;
-  AConnectBtn.Width := 95;
-  AConnectBtn.Height := 25;
+  AConnectBtn.Parent := connPanel;
+  AConnectBtn.Left := 24;
+  AConnectBtn.Top := 300;
+  AConnectBtn.Width := 110;
+  AConnectBtn.Height := 30;
   AConnectBtn.Caption := 'Conectar';
   AConnectBtn.OnClick := AConnectHandler;
 
-  // Workbench Panel (SQL Editor and Results Split)
-  workPanel := TPanel.Create(Self);
-  workPanel.Parent := rightPanel;
-  workPanel.Align := alClient;
-  workPanel.BevelOuter := bvNone;
+  // 2. SQL Sub-Tab
+  ATSSQL := TTabSheet.Create(Self);
+  ATSSQL.PageControl := APC;
+  ATSSQL.Caption := 'SQL';
 
-  // Upper section: SQL Panel
-  sqlPanel := TPanel.Create(Self);
-  sqlPanel.Parent := workPanel;
-  sqlPanel.Align := alTop;
-  sqlPanel.Height := 180;
-  sqlPanel.BevelOuter := bvNone;
-
-  // SynEdit
   ASynEdit := TSynEdit.Create(Self);
-  ASynEdit.Parent := sqlPanel;
+  ASynEdit.Parent := ATSSQL;
   ASynEdit.Align := alClient;
-  ASynEdit.Highlighter := SynSQLSyn2; // Shared Highlighter
+  ASynEdit.Highlighter := SynSQLSyn2;
 
-  // SQL Execution Bar at the bottom of the SQL Panel
   sqlBarPanel := TPanel.Create(Self);
-  sqlBarPanel.Parent := sqlPanel;
+  sqlBarPanel.Parent := ATSSQL;
   sqlBarPanel.Align := alBottom;
-  sqlBarPanel.Height := 32;
+  sqlBarPanel.Height := 42;
   sqlBarPanel.BevelOuter := bvNone;
 
   AExecBtn := TButton.Create(Self);
   AExecBtn.Parent := sqlBarPanel;
   AExecBtn.Left := 10;
-  AExecBtn.Top := 3;
-  AExecBtn.Width := 100;
-  AExecBtn.Height := 26;
+  AExecBtn.Top := 7;
+  AExecBtn.Width := 110;
+  AExecBtn.Height := 28;
   AExecBtn.Caption := 'Executar SQL';
   AExecBtn.OnClick := AExecHandler;
 
-  // Horizontal Splitter inside workspace
-  workSplitter := TSplitter.Create(Self);
-  workSplitter.Parent := workPanel;
-  workSplitter.Align := alTop;
-  workSplitter.Height := 5;
+  clearSqlBtn := TButton.Create(Self);
+  clearSqlBtn.Parent := sqlBarPanel;
+  clearSqlBtn.Left := 130;
+  clearSqlBtn.Top := 7;
+  clearSqlBtn.Width := 80;
+  clearSqlBtn.Height := 28;
+  clearSqlBtn.Caption := 'Limpar';
+  clearSqlBtn.OnClick := @btLimparSQLDynamicClick;
 
-  // Lower section: results & logs TabControl
-  resultsPC := TPageControl.Create(Self);
-  resultsPC.Parent := workPanel;
-  resultsPC.Align := alClient;
+  // 3. Grid Sub-Tab
+  ATSGrid := TTabSheet.Create(Self);
+  ATSGrid.PageControl := APC;
+  ATSGrid.Caption := 'Grid';
 
-  // Results Tab
-  tsResults := TTabSheet.Create(Self);
-  tsResults.PageControl := resultsPC;
-  tsResults.Caption := 'Resultados';
-
-  resBarPanel := TPanel.Create(Self);
-  resBarPanel.Parent := tsResults;
-  resBarPanel.Align := alTop;
-  resBarPanel.Height := 38;
-  resBarPanel.BevelOuter := bvNone;
+  gridBarPanel := TPanel.Create(Self);
+  gridBarPanel.Parent := ATSGrid;
+  gridBarPanel.Align := alTop;
+  gridBarPanel.Height := 42;
+  gridBarPanel.BevelOuter := bvNone;
 
   resNav := TDBNavigator.Create(Self);
-  resNav.Parent := resBarPanel;
+  resNav.Parent := gridBarPanel;
   resNav.DataSource := ADataSource;
-  resNav.Left := 8;
-  resNav.Top := 6;
-  resNav.Width := 241;
-  resNav.Height := 25;
+  resNav.Left := 10;
+  resNav.Top := 8;
+  resNav.Width := 240;
+  resNav.Height := 26;
 
   saveBtn := TButton.Create(Self);
-  saveBtn.Parent := resBarPanel;
+  saveBtn.Parent := gridBarPanel;
   saveBtn.Caption := 'Salvar';
   saveBtn.Hint := 'Salva as alterações feitas no grid diretamente no banco de dados';
   saveBtn.ShowHint := True;
-  saveBtn.Left := resNav.Left + resNav.Width + 8;
-  saveBtn.Top := 6;
-  saveBtn.Width := 75;
-  saveBtn.Height := 25;
+  saveBtn.Left := resNav.Left + resNav.Width + 10;
+  saveBtn.Top := 8;
+  saveBtn.Width := 80;
+  saveBtn.Height := 26;
   saveBtn.OnClick := @btSalvarDynamicClick;
 
   ADBGrid := TDBGrid.Create(Self);
-  ADBGrid.Parent := tsResults;
+  ADBGrid.Parent := ATSGrid;
   ADBGrid.Align := alClient;
   ADBGrid.DataSource := ADataSource;
   ADBGrid.ReadOnly := False;
 
-  // Errors/Log Tab
-  tsErrors := TTabSheet.Create(Self);
-  tsErrors.PageControl := resultsPC;
-  tsErrors.Caption := 'Erros / Log';
+  // 4. Log Sub-Tab
+  ATSLog := TTabSheet.Create(Self);
+  ATSLog.PageControl := APC;
+  ATSLog.Caption := 'Log';
+
+  logBarPanel := TPanel.Create(Self);
+  logBarPanel.Parent := ATSLog;
+  logBarPanel.Align := alTop;
+  logBarPanel.Height := 36;
+  logBarPanel.BevelOuter := bvNone;
+
+  clearLogBtn := TButton.Create(Self);
+  clearLogBtn.Parent := logBarPanel;
+  clearLogBtn.Left := 10;
+  clearLogBtn.Top := 5;
+  clearLogBtn.Width := 90;
+  clearLogBtn.Height := 26;
+  clearLogBtn.Caption := 'Limpar Log';
+  clearLogBtn.OnClick := @btLimparLogDynamicClick;
 
   AErrorMemo := TMemo.Create(Self);
-  AErrorMemo.Parent := tsErrors;
+  AErrorMemo.Parent := ATSLog;
   AErrorMemo.Align := alClient;
   AErrorMemo.ReadOnly := True;
-  AErrorMemo.ScrollBars := ssAutoVertical;
+  AErrorMemo.ScrollBars := ssAutoBoth;
+
+  // 5. Tools Sub-Tab
+  ATSTools := TTabSheet.Create(Self);
+  ATSTools.PageControl := APC;
+  ATSTools.Caption := 'Tools';
+
+  toolsPanel := TPanel.Create(Self);
+  toolsPanel.Parent := ATSTools;
+  toolsPanel.Align := alClient;
+  toolsPanel.BevelOuter := bvNone;
+
+  dicBtn := TButton.Create(Self);
+  dicBtn.Parent := toolsPanel;
+  dicBtn.Left := 24;
+  dicBtn.Top := 24;
+  dicBtn.Width := 220;
+  dicBtn.Height := 32;
+  dicBtn.Caption := 'Dicionário de Dados';
+  dicBtn.OnClick := AToolsDicionarioHandler;
+
+  diagBtn := TButton.Create(Self);
+  diagBtn.Parent := toolsPanel;
+  diagBtn.Left := 24;
+  diagBtn.Top := 68;
+  diagBtn.Width := 220;
+  diagBtn.Height := 32;
+  diagBtn.Caption := 'Diagrama ER do Banco';
+  diagBtn.Tag := ADiagramTag;
+  diagBtn.OnClick := @DiagramMenuClick;
+
+  // Start with Connection tab active
+  APC.ActivePage := ATSConn;
 end;
 
 function Tfrmmquery2.ConectMSSQL: Boolean;
@@ -4795,6 +4878,7 @@ begin
   if not ConectMSSQL then
   begin
     edErroMSSQL.Lines.Add('Falha ao conectar no SQL Server.');
+    if pcMSSQL <> nil then pcMSSQL.ActivePage := tsLogMSSQL;
     Exit;
   end;
 
@@ -4807,9 +4891,13 @@ begin
 
     ListarTabelasMSSQL();
     edErroMSSQL.Lines.Add('Conectado com sucesso ao SQL Server!');
+    if pcMSSQL <> nil then pcMSSQL.ActivePage := tsSQLMSSQL;
   except
     on E: Exception do
+    begin
       edErroMSSQL.Lines.Add('Erro ao listar tabelas: ' + E.Message);
+      if pcMSSQL <> nil then pcMSSQL.ActivePage := tsLogMSSQL;
+    end;
   end;
   finally
     if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
@@ -4828,6 +4916,7 @@ begin
   if not ConectOracle then
   begin
     edErroOracle.Lines.Add('Falha ao conectar no Oracle.');
+    if pcOracle <> nil then pcOracle.ActivePage := tsLogOracle;
     Exit;
   end;
 
@@ -4840,9 +4929,13 @@ begin
 
     ListarTabelasOracle();
     edErroOracle.Lines.Add('Conectado com sucesso ao Oracle!');
+    if pcOracle <> nil then pcOracle.ActivePage := tsSQLOracle;
   except
     on E: Exception do
+    begin
       edErroOracle.Lines.Add('Erro ao listar tabelas: ' + E.Message);
+      if pcOracle <> nil then pcOracle.ActivePage := tsLogOracle;
+    end;
   end;
   finally
     if frmMNote <> nil then frmMNote.SyncSolutionDatabaseFromMQuery;
@@ -5059,15 +5152,20 @@ begin
       dbgridMSSQL.ReadOnly := False;
       zmssqlqry.Open;
       edErroMSSQL.Lines.Add(Format('Consulta executada com sucesso! %d registros retornados.', [zmssqlqry.RecordCount]));
+      if pcMSSQL <> nil then pcMSSQL.ActivePage := tsGridMSSQL;
     end
     else
     begin
       zmssqlqry.ExecSQL;
       edErroMSSQL.Lines.Add(Format('Comando executado com sucesso! %d linhas afetadas.', [zmssqlqry.RowsAffected]));
+      if pcMSSQL <> nil then pcMSSQL.ActivePage := tsLogMSSQL;
     end;
   except
     on E: Exception do
+    begin
       edErroMSSQL.Lines.Add('Erro ao executar SQL: ' + E.Message);
+      if pcMSSQL <> nil then pcMSSQL.ActivePage := tsLogMSSQL;
+    end;
   end;
 end;
 
@@ -5099,15 +5197,20 @@ begin
       dbgridOracle.ReadOnly := False;
       zoracleqry.Open;
       edErroOracle.Lines.Add(Format('Consulta executada com sucesso! %d registros retornados.', [zoracleqry.RecordCount]));
+      if pcOracle <> nil then pcOracle.ActivePage := tsGridOracle;
     end
     else
     begin
       zoracleqry.ExecSQL;
       edErroOracle.Lines.Add(Format('Comando executado com sucesso! %d linhas afetadas.', [zoracleqry.RowsAffected]));
+      if pcOracle <> nil then pcOracle.ActivePage := tsLogOracle;
     end;
   except
     on E: Exception do
+    begin
       edErroOracle.Lines.Add('Erro ao executar SQL: ' + E.Message);
+      if pcOracle <> nil then pcOracle.ActivePage := tsLogOracle;
+    end;
   end;
 end;
 
@@ -5152,6 +5255,7 @@ begin
 
   edSQLMSSQL.Text := CriaDicionarioMSSQL(fileName);
   pgMain.ActivePage := tsMSSQL;
+  if pcMSSQL <> nil then pcMSSQL.ActivePage := tsSQLMSSQL;
 
   ShowMessage('Dicionário SQL Server salvo em:' + LineEnding + fileName);
 end;
@@ -5177,6 +5281,7 @@ begin
 
   edSQLOracle.Text := CriaDicionarioOracle(fileName);
   pgMain.ActivePage := tsOracle;
+  if pcOracle <> nil then pcOracle.ActivePage := tsSQLOracle;
 
   ShowMessage('Dicionário Oracle salvo em:' + LineEnding + fileName);
 end;
@@ -6119,6 +6224,7 @@ begin
         edSQLMSSQL.Clear;
         edSQLMSSQL.Lines.Text := SQLText;
         pgMain.ActivePage := tsMSSQL;
+        if pcMSSQL <> nil then pcMSSQL.ActivePage := tsSQLMSSQL;
         edSQLMSSQL.SetFocus;
       end;
       4:
@@ -6126,6 +6232,7 @@ begin
         edSQLOracle.Clear;
         edSQLOracle.Lines.Text := SQLText;
         pgMain.ActivePage := tsOracle;
+        if pcOracle <> nil then pcOracle.ActivePage := tsSQLOracle;
         edSQLOracle.SetFocus;
       end;
     end;
