@@ -322,6 +322,8 @@ type
     procedure CommandSaveAll(Sender: TObject);
     procedure CommandClose(Sender: TObject);
     procedure CommandFind(Sender: TObject);
+    procedure CommandFindFiles(Sender: TObject);
+    procedure CommandFindDirectory(Sender: TObject);
     procedure CommandReplace(Sender: TObject);
     procedure CollectPaletteFiles(AFiles: TStrings);
     procedure OpenPaletteFile(const AFileName: string);
@@ -1439,10 +1441,14 @@ begin
     MenuItem9.ShortCutKey2, @CommandSaveAll);
   FCommandRegistry.RegisterCommand('file.close', 'Fechar documento', 'Arquivo',
     mnFechar.ShortCut, @CommandClose);
-  FCommandRegistry.RegisterCommand('edit.find', 'Localizar', 'Editar',
-    mnPesqItem.ShortCut, @CommandFind);
-  FCommandRegistry.RegisterCommand('edit.replace', 'Substituir', 'Editar',
-    mnReplaceItem.ShortCut, @CommandReplace);
+  FCommandRegistry.RegisterCommand('search.find_tab', 'Pesquisa na aba', 'Pesquisar',
+    ShortCut(VK_F, [ssCtrl]), @CommandFind);
+  FCommandRegistry.RegisterCommand('search.find_files', 'Pesquisa em fontes', 'Pesquisar',
+    ShortCut(VK_F, [ssCtrl, ssShift]), @CommandFindFiles);
+  FCommandRegistry.RegisterCommand('search.find_directory', 'Pesquisa por diretório', 'Pesquisar',
+    0, @CommandFindDirectory);
+  FCommandRegistry.RegisterCommand('search.replace_tab', 'Substituir na aba', 'Pesquisar',
+    ShortCut(VK_H, [ssCtrl]), @CommandReplace);
   FCommandRegistry.RegisterCommand('project.new', 'Novo Projeto', 'Projeto', 0,
     @CommandProjectNew);
   FCommandRegistry.RegisterCommand('project.open', 'Abrir Projeto',
@@ -1588,15 +1594,27 @@ end;
 procedure TfrmMNote.CommandFind(Sender: TObject);
 begin
   if FSearchPanel <> nil then
-    FSearchPanel.ShowFind
+    FSearchPanel.ShowFindInTab
   else
     FindDialog1.Execute;
+end;
+
+procedure TfrmMNote.CommandFindFiles(Sender: TObject);
+begin
+  if FSearchPanel <> nil then
+    FSearchPanel.ShowFindInFiles;
+end;
+
+procedure TfrmMNote.CommandFindDirectory(Sender: TObject);
+begin
+  if FSearchPanel <> nil then
+    FSearchPanel.ShowFindInDirectory;
 end;
 
 procedure TfrmMNote.CommandReplace(Sender: TObject);
 begin
   if FSearchPanel <> nil then
-    FSearchPanel.ShowReplace
+    FSearchPanel.ShowReplaceInTab
   else
     ReplaceDialog1.Execute;
 end;
@@ -3004,6 +3022,9 @@ begin
   FSearchPanel.OnNavigate := @NavigateSearchResult;
   FSearchPanel.OnGetProjectFolder := @GetProjectSearchFolder;
   FSearchPanel.Initialize(Panel4, MainMenu1, FIDEShell.SearchResultsList);
+  mnPesqItem.ShortCut := 0;
+  mnPesqItem.ShortCutKey2 := 0;
+  mnReplaceItem.ShortCut := 0;
   ProjectRoot := '';
   if FProjectContext.IsOpen then ProjectRoot := FProjectContext.RootPath;
   if ProjectRoot <> '' then MNoteAI.SetProjectRoot(ProjectRoot)

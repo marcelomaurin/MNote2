@@ -45,8 +45,13 @@ type
     FCurrentIndex: Integer;
     FReplaceMode: Boolean;
     FHistory: TStringList;
+    FSearchMenu: TMenuItem;
+    FFindTabMenuItem: TMenuItem;
+    FFindFilesMenuItem: TMenuItem;
+    FFindDirMenuItem: TMenuItem;
     FNextMenuItem: TMenuItem;
     FPreviousMenuItem: TMenuItem;
+    FReplaceTabMenuItem: TMenuItem;
     FReplaceFilesMenuItem: TMenuItem;
     FFileService: TMNoteFileSearchService;
     FFileReplaceService: TMNoteFileReplaceService;
@@ -65,6 +70,10 @@ type
     procedure ReplaceAllClick(Sender: TObject);
     procedure NextMenuClick(Sender: TObject);
     procedure PreviousMenuClick(Sender: TObject);
+    procedure FindTabMenuClick(Sender: TObject);
+    procedure FindFilesMenuClick(Sender: TObject);
+    procedure FindDirMenuClick(Sender: TObject);
+    procedure ReplaceTabMenuClick(Sender: TObject);
     procedure ReplaceFilesMenuClick(Sender: TObject);
     procedure FileSearchCompleted(Sender: TObject; ACancelled: Boolean);
     procedure ResultsDblClick(Sender: TObject);
@@ -87,7 +96,11 @@ type
     procedure SetActiveEditor(AEditor: TSynEdit; const AFileName: string);
     procedure EditorChanged;
     procedure ShowFind;
+    procedure ShowFindInTab;
+    procedure ShowFindInDirectory;
+    procedure ShowFindInFiles;
     procedure ShowReplace;
+    procedure ShowReplaceInTab;
     procedure Close;
     procedure FindNext;
     procedure FindPrevious;
@@ -135,7 +148,8 @@ end;
 procedure TMNoteSearchPanel.Initialize(AParent: TWinControl;
   AMainMenu: TMainMenu; AResultsList: TListView);
 var
-  EditMenu: TMenuItem;
+  I: Integer;
+  Sep1, Sep2: TMenuItem;
 begin
   FResultsList := AResultsList;
   FResultsList.OnDblClick := @ResultsDblClick;
@@ -251,25 +265,71 @@ begin
   FDebounce.Interval := 250;
   FDebounce.OnTimer := @DebounceTimer;
 
-  if AMainMenu.Items.Count > 1 then
-    EditMenu := AMainMenu.Items[1]
-  else
-    EditMenu := AMainMenu.Items;
+  FSearchMenu := nil;
+  for I := 0 to AMainMenu.Items.Count - 1 do
+    if SameText(StringReplace(AMainMenu.Items[I].Caption, '&', '', [rfReplaceAll]), 'Search') then
+    begin
+      FSearchMenu := AMainMenu.Items[I];
+      Break;
+    end;
+  if FSearchMenu = nil then
+  begin
+    FSearchMenu := TMenuItem.Create(Self);
+    FSearchMenu.Caption := 'Search';
+    if AMainMenu.Items.Count >= 3 then
+      AMainMenu.Items.Insert(3, FSearchMenu)
+    else
+      AMainMenu.Items.Add(FSearchMenu);
+  end;
+
+  FFindTabMenuItem := TMenuItem.Create(Self);
+  FFindTabMenuItem.Caption := 'Pesquisa na aba...';
+  FFindTabMenuItem.ShortCut := Menus.ShortCut(VK_F, [ssCtrl]);
+  FFindTabMenuItem.OnClick := @FindTabMenuClick;
+  FSearchMenu.Add(FFindTabMenuItem);
+
+  FFindFilesMenuItem := TMenuItem.Create(Self);
+  FFindFilesMenuItem.Caption := 'Pesquisa em fontes...';
+  FFindFilesMenuItem.ShortCut := Menus.ShortCut(VK_F, [ssCtrl, ssShift]);
+  FFindFilesMenuItem.OnClick := @FindFilesMenuClick;
+  FSearchMenu.Add(FFindFilesMenuItem);
+
+  FFindDirMenuItem := TMenuItem.Create(Self);
+  FFindDirMenuItem.Caption := 'Pesquisa por diretório...';
+  FFindDirMenuItem.OnClick := @FindDirMenuClick;
+  FSearchMenu.Add(FFindDirMenuItem);
+
+  Sep1 := TMenuItem.Create(Self);
+  Sep1.Caption := '-';
+  FSearchMenu.Add(Sep1);
+
   FNextMenuItem := TMenuItem.Create(Self);
   FNextMenuItem.Caption := 'Find Next';
   FNextMenuItem.ShortCut := Menus.ShortCut(VK_F3, []);
   FNextMenuItem.OnClick := @NextMenuClick;
-  EditMenu.Add(FNextMenuItem);
+  FSearchMenu.Add(FNextMenuItem);
+
   FPreviousMenuItem := TMenuItem.Create(Self);
   FPreviousMenuItem.Caption := 'Find Previous';
   FPreviousMenuItem.ShortCut := Menus.ShortCut(VK_F3, [ssShift]);
   FPreviousMenuItem.OnClick := @PreviousMenuClick;
-  EditMenu.Add(FPreviousMenuItem);
+  FSearchMenu.Add(FPreviousMenuItem);
+
+  Sep2 := TMenuItem.Create(Self);
+  Sep2.Caption := '-';
+  FSearchMenu.Add(Sep2);
+
+  FReplaceTabMenuItem := TMenuItem.Create(Self);
+  FReplaceTabMenuItem.Caption := 'Substituir na aba...';
+  FReplaceTabMenuItem.ShortCut := Menus.ShortCut(VK_H, [ssCtrl]);
+  FReplaceTabMenuItem.OnClick := @ReplaceTabMenuClick;
+  FSearchMenu.Add(FReplaceTabMenuItem);
+
   FReplaceFilesMenuItem := TMenuItem.Create(Self);
   FReplaceFilesMenuItem.Caption := 'Replace in Files...';
   FReplaceFilesMenuItem.ShortCut := Menus.ShortCut(VK_H, [ssCtrl, ssShift]);
   FReplaceFilesMenuItem.OnClick := @ReplaceFilesMenuClick;
-  EditMenu.Add(FReplaceFilesMenuItem);
+  FSearchMenu.Add(FReplaceFilesMenuItem);
   FFileService.OnCompleted := @FileSearchCompleted;
 end;
 
@@ -326,6 +386,56 @@ begin
   FReplaceButton.Visible := True;
   FReplaceAllButton.Visible := True;
   FPreserveCase.Visible := True;
+end;
+
+procedure TMNoteSearchPanel.ShowFindInTab;
+begin
+  if FScope <> nil then
+    FScope.ItemIndex := 0;
+  ShowFind;
+end;
+
+procedure TMNoteSearchPanel.ShowFindInFiles;
+begin
+  if FScope <> nil then
+    FScope.ItemIndex := 2;
+  ShowFind;
+end;
+
+procedure TMNoteSearchPanel.ShowFindInDirectory;
+begin
+  if not SelectDirectory('Selecione a pasta para pesquisar', '', FFolderRoot) then
+    Exit;
+  if FScope <> nil then
+    FScope.ItemIndex := 3;
+  ShowFind;
+end;
+
+procedure TMNoteSearchPanel.ShowReplaceInTab;
+begin
+  if FScope <> nil then
+    FScope.ItemIndex := 0;
+  ShowReplace;
+end;
+
+procedure TMNoteSearchPanel.FindTabMenuClick(Sender: TObject);
+begin
+  ShowFindInTab;
+end;
+
+procedure TMNoteSearchPanel.FindFilesMenuClick(Sender: TObject);
+begin
+  ShowFindInFiles;
+end;
+
+procedure TMNoteSearchPanel.FindDirMenuClick(Sender: TObject);
+begin
+  ShowFindInDirectory;
+end;
+
+procedure TMNoteSearchPanel.ReplaceTabMenuClick(Sender: TObject);
+begin
+  ShowReplaceInTab;
 end;
 
 procedure TMNoteSearchPanel.Close;

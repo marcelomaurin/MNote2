@@ -25,7 +25,7 @@ type
     FMatchedFiles: TStringList;
     FOriginalHeight: Integer;
     FMode: TMNotePaletteMode;
-    FSearchMenu: TMenuItem;
+    FViewMenu: TMenuItem;
     FCommandMenuItem: TMenuItem;
     FFileMenuItem: TMenuItem;
     FOnCollectFiles: TMNoteCollectFilesEvent;
@@ -78,6 +78,8 @@ end;
 
 procedure TMNoteCommandPalette.Initialize(ATopPanel: TPanel;
   AMainMenu: TMainMenu; ARegistry: TMNoteCommandRegistry);
+var
+  I: Integer;
 begin
   FTopPanel := ATopPanel;
   FRegistry := ARegistry;
@@ -107,22 +109,35 @@ begin
   FResults.OnDblClick := @ResultsDblClick;
   FResults.Visible := False;
 
-  FSearchMenu := TMenuItem.Create(Self);
-  FSearchMenu.Caption := 'Search';
-  AMainMenu.Items.Add(FSearchMenu);
+  FViewMenu := nil;
+  for I := 0 to AMainMenu.Items.Count - 1 do
+    if SameText(StringReplace(AMainMenu.Items[I].Caption, '&', '', [rfReplaceAll]), 'View') then
+    begin
+      FViewMenu := AMainMenu.Items[I];
+      Break;
+    end;
+  if FViewMenu = nil then
+  begin
+    FViewMenu := TMenuItem.Create(Self);
+    FViewMenu.Caption := 'View';
+    if AMainMenu.Items.Count >= 2 then
+      AMainMenu.Items.Insert(2, FViewMenu)
+    else
+      AMainMenu.Items.Add(FViewMenu);
+  end;
 
   FCommandMenuItem := TMenuItem.Create(Self);
   FCommandMenuItem.Caption := 'Command Palette...';
   FCommandMenuItem.ShortCut := Menus.ShortCut(VK_Q, [ssCtrl]);
   FCommandMenuItem.ShortCutKey2 := Menus.ShortCut(VK_P, [ssCtrl, ssShift]);
   FCommandMenuItem.OnClick := @CommandMenuClick;
-  FSearchMenu.Add(FCommandMenuItem);
+  FViewMenu.Add(FCommandMenuItem);
 
   FFileMenuItem := TMenuItem.Create(Self);
   FFileMenuItem.Caption := 'Quick Open File...';
   FFileMenuItem.ShortCut := Menus.ShortCut(VK_P, [ssCtrl]);
   FFileMenuItem.OnClick := @FileMenuClick;
-  FSearchMenu.Add(FFileMenuItem);
+  FViewMenu.Add(FFileMenuItem);
 end;
 
 procedure TMNoteCommandPalette.SetExpanded(AValue: Boolean);
