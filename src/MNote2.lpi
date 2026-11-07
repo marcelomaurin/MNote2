@@ -22,7 +22,7 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="2"/>
-      <MinorVersionNr Value="73"/>
+      <MinorVersionNr Value="74"/>
       <Language Value="0416"/>
     </VersionInfo>
     <BuildModes Count="1">

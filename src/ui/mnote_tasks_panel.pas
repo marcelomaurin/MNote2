@@ -192,6 +192,62 @@ begin
   end;
 end;
 
+function SafeGetArray(AObj: TJSONObject; const AName: string): TJSONArray;
+var
+  Data: TJSONData;
+begin
+  Result := nil;
+  if AObj = nil then Exit;
+  Data := AObj.Find(AName);
+  if (Data <> nil) and (Data is TJSONArray) then
+    Result := TJSONArray(Data);
+end;
+
+function SafeGetObject(AObj: TJSONObject; const AName: string): TJSONObject;
+var
+  Data: TJSONData;
+begin
+  Result := nil;
+  if AObj = nil then Exit;
+  Data := AObj.Find(AName);
+  if (Data <> nil) and (Data is TJSONObject) then
+    Result := TJSONObject(Data);
+end;
+
+function EnsureArray(AObj: TJSONObject; const AName: string): TJSONArray;
+var
+  Data: TJSONData;
+begin
+  Result := nil;
+  if AObj = nil then Exit;
+  Data := AObj.Find(AName);
+  if (Data <> nil) and (Data is TJSONArray) then
+    Result := TJSONArray(Data)
+  else
+  begin
+    if Data <> nil then AObj.Delete(AName);
+    Result := TJSONArray.Create;
+    AObj.Add(AName, Result);
+  end;
+end;
+
+function EnsureObject(AObj: TJSONObject; const AName: string): TJSONObject;
+var
+  Data: TJSONData;
+begin
+  Result := nil;
+  if AObj = nil then Exit;
+  Data := AObj.Find(AName);
+  if (Data <> nil) and (Data is TJSONObject) then
+    Result := TJSONObject(Data)
+  else
+  begin
+    if Data <> nil then AObj.Delete(AName);
+    Result := TJSONObject.Create;
+    AObj.Add(AName, Result);
+  end;
+end;
+
 procedure CalculateWBS(ATasks: TJSONArray);
 var
   I, L, K: Integer;
@@ -805,11 +861,12 @@ end;
 procedure TMNoteTasksPanel.RefreshList;
 var
   I: Integer;
-  Task, Hours: TJSONObject;
+  Task: TJSONObject;
   Item: TListItem;
   TasksArray: TJSONArray;
   WBSVal, TitleVal, KindVal, StatusVal, PriorityVal, AssignedVal: string;
   LevelVal, ProgVal, HoursVal: Integer;
+  EstObj: TJSONObject;
 begin
   TasksArray := FService.Tasks.Tasks;
   CalculateWBS(TasksArray);
@@ -817,38 +874,40 @@ begin
   FList.Items.BeginUpdate;
   try
     FList.Items.Clear;
-    for I := 0 to TasksArray.Count - 1 do
-    begin
-      if not (TasksArray.Items[I] is TJSONObject) then Continue;
-      Task := TasksArray.Objects[I];
+    if TasksArray <> nil then
+      for I := 0 to TasksArray.Count - 1 do
+      begin
+        if not (TasksArray.Items[I] is TJSONObject) then Continue;
+        Task := TasksArray.Objects[I];
 
-      WBSVal := Task.Get('wbs', '');
-      LevelVal := Task.Get('level', 1);
-      KindVal := Task.Get('kind', 'code');
-      TitleVal := Task.Get('title', '');
-      if LevelVal > 1 then
-        TitleVal := StringOfChar(' ', (LevelVal - 1) * 3) + TitleVal;
+        WBSVal := Task.Get('wbs', '');
+        LevelVal := Task.Get('level', 1);
+        KindVal := Task.Get('kind', 'code');
+        TitleVal := Task.Get('title', '');
+        if LevelVal > 1 then
+          TitleVal := StringOfChar(' ', (LevelVal - 1) * 3) + TitleVal;
 
-      StatusVal := Task.Get('status', 'planned');
-      PriorityVal := Task.Get('priority', 'medium');
-      AssignedVal := Task.Get('assigned_to', 'Dev');
-      ProgVal := Task.Get('progress_percent', 0);
+        StatusVal := Task.Get('status', 'planned');
+        PriorityVal := Task.Get('priority', 'medium');
+        AssignedVal := Task.Get('assigned_to', 'Dev');
+        ProgVal := Task.Get('progress_percent', 0);
 
-      HoursVal := 1;
-      if Task.Find('estimated_hours') is TJSONObject then
-        HoursVal := Task.Objects['estimated_hours'].Get('mid_level', 1);
+        HoursVal := 1;
+        EstObj := SafeGetObject(Task, 'estimated_hours');
+        if EstObj <> nil then
+          HoursVal := EstObj.Get('mid_level', 1);
 
-      Item := FList.Items.Add;
-      Item.Caption := WBSVal;
-      Item.SubItems.Add(Task.Get('id', ''));
-      Item.SubItems.Add(TitleVal);
-      Item.SubItems.Add(KindVal);
-      Item.SubItems.Add(StatusVal);
-      Item.SubItems.Add(PriorityVal);
-      Item.SubItems.Add(AssignedVal);
-      Item.SubItems.Add(IntToStr(ProgVal));
-      Item.SubItems.Add(IntToStr(HoursVal));
-    end;
+        Item := FList.Items.Add;
+        Item.Caption := WBSVal;
+        Item.SubItems.Add(Task.Get('id', ''));
+        Item.SubItems.Add(TitleVal);
+        Item.SubItems.Add(KindVal);
+        Item.SubItems.Add(StatusVal);
+        Item.SubItems.Add(PriorityVal);
+        Item.SubItems.Add(AssignedVal);
+        Item.SubItems.Add(IntToStr(ProgVal));
+        Item.SubItems.Add(IntToStr(HoursVal));
+      end;
   finally
     FList.Items.EndUpdate;
   end;
@@ -864,7 +923,7 @@ begin
   FmeProjectConstraints.Text := FService.Project.Constraints;
   FmeProjectDeliverables.Text := FService.Project.ExpectedDeliverables;
 
-  ProjObj := FService.Project.ProjectData.Objects['project'];
+  ProjObj := SafeGetObject(FService.Project.ProjectData, 'project');
   if ProjObj <> nil then
   begin
     FedProjectAuthor.Text := ProjObj.Get('author', '');
@@ -883,10 +942,10 @@ begin
   FlvFunctional.Items.BeginUpdate;
   try
     FlvFunctional.Items.Clear;
-    Agile := FService.Project.ProjectData.Objects['agile_documents'];
+    Agile := SafeGetObject(FService.Project.ProjectData, 'agile_documents');
     if Agile <> nil then
     begin
-      FRArray := Agile.Arrays['functional_requirements'];
+      FRArray := SafeGetArray(Agile, 'functional_requirements');
       if FRArray <> nil then
         for I := 0 to FRArray.Count - 1 do
           if FRArray.Items[I] is TJSONObject then
@@ -909,7 +968,7 @@ begin
     FlvNonFunctional.Items.Clear;
     if Agile <> nil then
     begin
-      NFRArray := Agile.Arrays['non_functional_requirements'];
+      NFRArray := SafeGetArray(Agile, 'non_functional_requirements');
       if NFRArray <> nil then
         for I := 0 to NFRArray.Count - 1 do
           if NFRArray.Items[I] is TJSONObject then
@@ -933,9 +992,9 @@ var
   DBArray: TJSONArray;
   Obj: TJSONObject;
 begin
-  Agile := FService.Project.ProjectData.Objects['agile_documents'];
+  Agile := SafeGetObject(FService.Project.ProjectData, 'agile_documents');
   if Agile = nil then Exit;
-  DBArray := Agile.Arrays['database_connections'];
+  DBArray := SafeGetArray(Agile, 'database_connections');
   if (DBArray <> nil) and (DBArray.Count > 0) and (DBArray.Items[0] is TJSONObject) then
   begin
     Obj := DBArray.Objects[0];
@@ -959,10 +1018,10 @@ begin
   FlvAPIs.Items.BeginUpdate;
   try
     FlvAPIs.Items.Clear;
-    Agile := FService.Project.ProjectData.Objects['agile_documents'];
+    Agile := SafeGetObject(FService.Project.ProjectData, 'agile_documents');
     if Agile <> nil then
     begin
-      APIArray := Agile.Arrays['external_apis'];
+      APIArray := SafeGetArray(Agile, 'external_apis');
       if APIArray <> nil then
         for I := 0 to APIArray.Count - 1 do
           if APIArray.Items[I] is TJSONObject then
@@ -1017,9 +1076,30 @@ begin
 end;
 
 procedure TMNoteTasksPanel.SaveAndRefresh;
+var
+  SaveDlg: TSaveDialog;
 begin
-  if not FService.Save then
-    MessageDlg('Tarefas', FService.LastError, mtError, [mbOK], 0);
+  if FService.FileName = '' then
+  begin
+    SaveDlg := TSaveDialog.Create(nil);
+    try
+      SaveDlg.Title := 'Salvar Projeto MNote';
+      SaveDlg.Filter := 'Projeto MNote (*.mnoteproj.json)|*.mnoteproj.json|Todos os arquivos (*.*)|*.*';
+      SaveDlg.DefaultExt := 'mnoteproj.json';
+      if SaveDlg.Execute then
+      begin
+        if not FService.SaveAs(SaveDlg.FileName) then
+          MessageDlg('Projeto', FService.LastError, mtError, [mbOK], 0);
+      end;
+    finally
+      SaveDlg.Free;
+    end;
+  end
+  else
+  begin
+    if not FService.Save then
+      MessageDlg('Tarefas', FService.LastError, mtError, [mbOK], 0);
+  end;
   Refresh;
 end;
 
@@ -1066,31 +1146,34 @@ begin
     'Commits: ' + JSONArrayText(Task.Find('commits')) + LineEnding + LineEnding +
     'Notas:' + LineEnding + Task.Get('notes', '');
 
-  History := FService.Project.ProjectData.Arrays['task_actions'];
+  History := SafeGetArray(FService.Project.ProjectData, 'task_actions');
   if History <> nil then
   begin
     FDetails.Lines.Add(LineEnding + '--- Histórico de Ações ---');
     for I := 0 to History.Count - 1 do
     begin
-      Entry := History.Objects[I];
-      if SameText(Entry.Get('task_id', ''), Task.Get('id', '')) then
-        FDetails.Lines.Add(Format('%s: %s (%s -> %s) %s',
-          [Entry.Get('created_at', ''), Entry.Get('action', ''),
-           Entry.Get('previous_status', ''), Entry.Get('new_status', ''),
-           Entry.Get('comment', '')]));
+      if History.Items[I] is TJSONObject then
+      begin
+        Entry := History.Objects[I];
+        if SameText(Entry.Get('task_id', ''), Task.Get('id', '')) then
+          FDetails.Lines.Add(Format('%s: %s (%s -> %s) %s',
+            [Entry.Get('created_at', ''), Entry.Get('action', ''),
+             Entry.Get('previous_status', ''), Entry.Get('new_status', ''),
+             Entry.Get('comment', '')]));
+      end;
     end;
   end;
 
   FLinks.Items.Clear;
-  Dependencies := Task.Arrays['dependencies'];
+  Dependencies := SafeGetArray(Task, 'dependencies');
   if Dependencies <> nil then
     for I := 0 to Dependencies.Count - 1 do
       FLinks.Items.Add('DEPENDÊNCIA: ' + Dependencies.Strings[I]);
-  Files := Task.Arrays['files_affected'];
+  Files := SafeGetArray(Task, 'files_affected');
   if Files <> nil then
     for I := 0 to Files.Count - 1 do
       FLinks.Items.Add('ARQUIVO: ' + Files.Strings[I]);
-  Commits := Task.Arrays['commits'];
+  Commits := SafeGetArray(Task, 'commits');
   if Commits <> nil then
     for I := 0 to Commits.Count - 1 do
       FLinks.Items.Add('COMMIT: ' + Commits.Strings[I]);
@@ -1165,8 +1248,8 @@ begin
       KindCombo.ItemIndex := KindCombo.Items.IndexOf(SelectedKind);
       PriorityCombo.ItemIndex := PriorityCombo.Items.IndexOf(ATask.Get('priority', 'medium'));
       StatusCombo.ItemIndex := StatusCombo.Items.IndexOf(ATask.Get('status', 'planned'));
-      if ATask.Find('estimated_hours') is TJSONObject then
-        HoursEdit.Text := IntToStr(ATask.Objects['estimated_hours'].Get('mid_level', 1));
+      if SafeGetObject(ATask, 'estimated_hours') <> nil then
+        HoursEdit.Text := IntToStr(SafeGetObject(ATask, 'estimated_hours').Get('mid_level', 1));
       FilesEdit.Text := JSONArrayText(ATask.Find('files_affected'));
     end;
 
@@ -1370,10 +1453,10 @@ begin
     if FService.Project.ExpectedDeliverables <> '' then
       Lines.Add('Critérios de Sucesso: ' + FService.Project.ExpectedDeliverables);
 
-    Agile := FService.Project.ProjectData.Objects['agile_documents'];
+    Agile := SafeGetObject(FService.Project.ProjectData, 'agile_documents');
     if Agile <> nil then
     begin
-      FRArray := Agile.Arrays['functional_requirements'];
+      FRArray := SafeGetArray(Agile, 'functional_requirements');
       if (FRArray <> nil) and (FRArray.Count > 0) then
       begin
         Lines.Add('');
@@ -1382,7 +1465,7 @@ begin
           Lines.Add('- ' + FRArray.Items[I].AsJSON);
       end;
 
-      NFRArray := Agile.Arrays['non_functional_requirements'];
+      NFRArray := SafeGetArray(Agile, 'non_functional_requirements');
       if (NFRArray <> nil) and (NFRArray.Count > 0) then
       begin
         Lines.Add('');
@@ -1391,7 +1474,7 @@ begin
           Lines.Add('- ' + NFRArray.Items[I].AsJSON);
       end;
 
-      DBArray := Agile.Arrays['database_connections'];
+      DBArray := SafeGetArray(Agile, 'database_connections');
       if (DBArray <> nil) and (DBArray.Count > 0) then
       begin
         Lines.Add('');
@@ -1400,7 +1483,7 @@ begin
           Lines.Add('- ' + DBArray.Items[I].AsJSON);
       end;
 
-      APIArray := Agile.Arrays['external_apis'];
+      APIArray := SafeGetArray(Agile, 'external_apis');
       if (APIArray <> nil) and (APIArray.Count > 0) then
       begin
         Lines.Add('');
@@ -1424,7 +1507,7 @@ begin
     if ATask.Get('acceptance_criteria', '') <> '' then
       Lines.Add('Critérios de Aceite: ' + ATask.Get('acceptance_criteria', ''));
 
-    FilesArray := ATask.Arrays['files_affected'];
+    FilesArray := SafeGetArray(ATask, 'files_affected');
     if (FilesArray <> nil) and (FilesArray.Count > 0) then
       Lines.Add('Arquivos Afetados: ' + FilesArray.AsJSON);
 
@@ -1522,12 +1605,13 @@ begin
     Info := TLabel.Create(Dialog); Info.Parent := Dialog; Info.SetBounds(12, 10, 780, 20);
     Info.Caption := 'Marque as tarefas que serão persistidas. Nada é salvo antes desta confirmação.';
     Checklist := TCheckListBox.Create(Dialog); Checklist.Parent := Dialog; Checklist.SetBounds(12, 34, 350, 475);
-    Tasks := Plan.Arrays['tasks'];
-    for I := 0 to Tasks.Count - 1 do
-    begin
-      Checklist.Items.Add(Tasks.Objects[I].Strings['id'] + ' — ' + Tasks.Objects[I].Strings['title']);
-      Checklist.Checked[I] := True;
-    end;
+    Tasks := SafeGetArray(Plan, 'tasks');
+    if Tasks <> nil then
+      for I := 0 to Tasks.Count - 1 do
+      begin
+        Checklist.Items.Add(Tasks.Objects[I].Strings['id'] + ' — ' + Tasks.Objects[I].Strings['title']);
+        Checklist.Checked[I] := True;
+      end;
     Preview := TMemo.Create(Dialog); Preview.Parent := Dialog; Preview.SetBounds(370, 34, 425, 475);
     Preview.ReadOnly := True; Preview.ScrollBars := ssAutoBoth;
     Preview.Lines.Text := Plan.FormatJSON;
@@ -1610,7 +1694,7 @@ begin
   FService.Project.Constraints := FmeProjectConstraints.Text;
   FService.Project.ExpectedDeliverables := FmeProjectDeliverables.Text;
 
-  ProjObj := FService.Project.ProjectData.Objects['project'];
+  ProjObj := EnsureObject(FService.Project.ProjectData, 'project');
   if ProjObj <> nil then
   begin
     if ProjObj.IndexOfName('author') >= 0 then ProjObj.Strings['author'] := Trim(FedProjectAuthor.Text)
@@ -1649,10 +1733,8 @@ begin
   DescStr := '';
   if not InputQuery('Novo Requisito Funcional', 'Descrição detalhada:', DescStr) then Exit;
 
-  Agile := FService.Project.ProjectData.Objects['agile_documents'];
-  if Agile = nil then Exit;
-  FRArray := Agile.Arrays['functional_requirements'];
-  if FRArray = nil then Exit;
+  Agile := EnsureObject(FService.Project.ProjectData, 'agile_documents');
+  FRArray := EnsureArray(Agile, 'functional_requirements');
 
   NewID := 'RF' + Format('%.3d', [FRArray.Count + 1]);
   RFObj := TJSONObject.Create([
@@ -1676,9 +1758,9 @@ var
 begin
   if (FlvFunctional.Selected = nil) then Exit;
   Idx := FlvFunctional.Selected.Index;
-  Agile := FService.Project.ProjectData.Objects['agile_documents'];
+  Agile := SafeGetObject(FService.Project.ProjectData, 'agile_documents');
   if Agile = nil then Exit;
-  FRArray := Agile.Arrays['functional_requirements'];
+  FRArray := SafeGetArray(Agile, 'functional_requirements');
   if (FRArray = nil) or (Idx >= FRArray.Count) then Exit;
 
   RFObj := FRArray.Objects[Idx];
@@ -1702,9 +1784,9 @@ begin
   Idx := FlvFunctional.Selected.Index;
   if MessageDlg('Requisitos', 'Deseja excluir este Requisito Funcional?', mtConfirmation, [mbYes, mbNo], 0) <> mrYes then Exit;
 
-  Agile := FService.Project.ProjectData.Objects['agile_documents'];
+  Agile := SafeGetObject(FService.Project.ProjectData, 'agile_documents');
   if Agile = nil then Exit;
-  FRArray := Agile.Arrays['functional_requirements'];
+  FRArray := SafeGetArray(Agile, 'functional_requirements');
   if (FRArray = nil) or (Idx >= FRArray.Count) then Exit;
 
   FRArray.Delete(Idx);
@@ -1724,10 +1806,8 @@ begin
   DescStr := '';
   if not InputQuery('Novo Requisito Não-Funcional', 'Descrição detalhada do RNF:', DescStr) then Exit;
 
-  Agile := FService.Project.ProjectData.Objects['agile_documents'];
-  if Agile = nil then Exit;
-  NFRArray := Agile.Arrays['non_functional_requirements'];
-  if NFRArray = nil then Exit;
+  Agile := EnsureObject(FService.Project.ProjectData, 'agile_documents');
+  NFRArray := EnsureArray(Agile, 'non_functional_requirements');
 
   NewID := 'RNF' + Format('%.3d', [NFRArray.Count + 1]);
   Obj := TJSONObject.Create([
@@ -1750,9 +1830,9 @@ var
 begin
   if (FlvNonFunctional.Selected = nil) then Exit;
   Idx := FlvNonFunctional.Selected.Index;
-  Agile := FService.Project.ProjectData.Objects['agile_documents'];
+  Agile := SafeGetObject(FService.Project.ProjectData, 'agile_documents');
   if Agile = nil then Exit;
-  NFRArray := Agile.Arrays['non_functional_requirements'];
+  NFRArray := SafeGetArray(Agile, 'non_functional_requirements');
   if (NFRArray = nil) or (Idx >= NFRArray.Count) then Exit;
 
   Obj := NFRArray.Objects[Idx];
@@ -1776,9 +1856,9 @@ begin
   Idx := FlvNonFunctional.Selected.Index;
   if MessageDlg('Requisitos', 'Deseja excluir este Requisito Não-Funcional?', mtConfirmation, [mbYes, mbNo], 0) <> mrYes then Exit;
 
-  Agile := FService.Project.ProjectData.Objects['agile_documents'];
+  Agile := SafeGetObject(FService.Project.ProjectData, 'agile_documents');
   if Agile = nil then Exit;
-  NFRArray := Agile.Arrays['non_functional_requirements'];
+  NFRArray := SafeGetArray(Agile, 'non_functional_requirements');
   if (NFRArray = nil) or (Idx >= NFRArray.Count) then Exit;
 
   NFRArray.Delete(Idx);
@@ -1892,15 +1972,8 @@ var
   DBArray: TJSONArray;
   DBObj: TJSONObject;
 begin
-  Agile := FService.Project.ProjectData.Objects['agile_documents'];
-  if Agile = nil then Exit;
-  if not (Agile.Find('database_connections') is TJSONArray) then
-  begin
-    if Agile.IndexOfName('database_connections') >= 0 then
-      Agile.Delete('database_connections');
-    Agile.Add('database_connections', TJSONArray.Create);
-  end;
-  DBArray := Agile.Arrays['database_connections'];
+  Agile := EnsureObject(FService.Project.ProjectData, 'agile_documents');
+  DBArray := EnsureArray(Agile, 'database_connections');
   DBArray.Clear;
   DBObj := TJSONObject.Create([
     'db_type', FcbDBType.ItemIndex,
@@ -1932,14 +2005,8 @@ begin
   AuthStr := 'Bearer';
   if not InputQuery('Nova Web API', 'Tipo de Autenticação (Bearer / ApiKey / Basic / None):', AuthStr) then Exit;
 
-  Agile := FService.Project.ProjectData.Objects['agile_documents'];
-  if Agile = nil then Exit;
-  if not (Agile.Find('external_apis') is TJSONArray) then
-  begin
-    if Agile.IndexOfName('external_apis') >= 0 then Agile.Delete('external_apis');
-    Agile.Add('external_apis', TJSONArray.Create);
-  end;
-  APIArray := Agile.Arrays['external_apis'];
+  Agile := EnsureObject(FService.Project.ProjectData, 'agile_documents');
+  APIArray := EnsureArray(Agile, 'external_apis');
 
   NewID := 'API' + Format('%.3d', [APIArray.Count + 1]);
   Obj := TJSONObject.Create([
@@ -1965,9 +2032,9 @@ var
 begin
   if FlvAPIs.Selected = nil then Exit;
   Idx := FlvAPIs.Selected.Index;
-  Agile := FService.Project.ProjectData.Objects['agile_documents'];
+  Agile := SafeGetObject(FService.Project.ProjectData, 'agile_documents');
   if Agile = nil then Exit;
-  APIArray := Agile.Arrays['external_apis'];
+  APIArray := SafeGetArray(Agile, 'external_apis');
   if (APIArray = nil) or (Idx >= APIArray.Count) then Exit;
 
   Obj := APIArray.Objects[Idx];
@@ -1991,9 +2058,9 @@ begin
   Idx := FlvAPIs.Selected.Index;
   if MessageDlg('Web APIs', 'Deseja excluir esta especificação de API?', mtConfirmation, [mbYes, mbNo], 0) <> mrYes then Exit;
 
-  Agile := FService.Project.ProjectData.Objects['agile_documents'];
+  Agile := SafeGetObject(FService.Project.ProjectData, 'agile_documents');
   if Agile = nil then Exit;
-  APIArray := Agile.Arrays['external_apis'];
+  APIArray := SafeGetArray(Agile, 'external_apis');
   if (APIArray = nil) or (Idx >= APIArray.Count) then Exit;
 
   APIArray.Delete(Idx);
@@ -2010,10 +2077,10 @@ begin
   if FlvAPIs.Selected <> nil then
   begin
     Idx := FlvAPIs.Selected.Index;
-    Agile := FService.Project.ProjectData.Objects['agile_documents'];
+    Agile := SafeGetObject(FService.Project.ProjectData, 'agile_documents');
     if Agile <> nil then
     begin
-      APIArray := Agile.Arrays['external_apis'];
+      APIArray := SafeGetArray(Agile, 'external_apis');
       if (APIArray <> nil) and (Idx < APIArray.Count) then
       begin
         Obj := APIArray.Objects[Idx];
@@ -2034,9 +2101,9 @@ var
 begin
   if not Selected then Exit;
   Idx := Item.Index;
-  Agile := FService.Project.ProjectData.Objects['agile_documents'];
+  Agile := SafeGetObject(FService.Project.ProjectData, 'agile_documents');
   if Agile = nil then Exit;
-  APIArray := Agile.Arrays['external_apis'];
+  APIArray := SafeGetArray(Agile, 'external_apis');
   if (APIArray = nil) or (Idx >= APIArray.Count) then Exit;
 
   FmeAPISpec.Text := APIArray.Objects[Idx].Get('payload_spec', '');
