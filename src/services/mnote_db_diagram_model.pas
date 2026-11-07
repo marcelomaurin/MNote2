@@ -16,6 +16,7 @@ type
     Catalog, SchemaName, Name: string;
     Columns: TObjectList;
     X, Y: Integer;
+    Hidden: Boolean;  // removida do diagrama pelo usuario (nao afeta o banco)
     constructor Create;
     destructor Destroy; override;
     function Key: string;
@@ -46,6 +47,13 @@ type
     procedure FocusTable(const AName: string);
     function MatchesView(T: TDiagramTable): Boolean;
     procedure PreserveView(Old: TDiagramModel);
+    function HiddenCount: Integer;
+    procedure ShowHiddenTables;
+    procedure HideAllTables;
+    { Converte filtro e foco atuais em tabelas ocultas, para que a inclusao
+      manual de tabelas nao seja anulada pelo filtro ou pelo foco }
+    procedure MaterializeView;
+    procedure AddNeighbours(T: TDiagramTable; AList: TList);
   end;
 function DiagramObjectKey(const ACatalog, ASchema, AName: string): string;
 function DiagramContextKey(const AContext: TDiagramContext): string;
@@ -139,6 +147,7 @@ function TDiagramModel.MatchesView(T: TDiagramTable): Boolean;
 var I: Integer; R: TDiagramRelation;
 begin
   Result := False;
+  if T.Hidden then Exit;
   if (FilterText <> '') and (Pos(LowerCase(FilterText), LowerCase(T.Caption)) = 0) then Exit;
   if (FocusKey = '') or (T.Key = FocusKey) then Exit(True);
   for I := 0 to Relations.Count - 1 do begin
@@ -161,8 +170,47 @@ begin
   if FindTable(Old.FocusKey) <> nil then FocusKey := Old.FocusKey;
   for I := 0 to Tables.Count - 1 do begin
     T := TDiagramTable(Tables[I]); Previous := Old.FindTable(T.Key);
-    if Previous <> nil then begin T.X := Previous.X; T.Y := Previous.Y; end
+    if Previous <> nil then begin T.X := Previous.X; T.Y := Previous.Y; T.Hidden := Previous.Hidden; end
     else begin T.X := 30; T.Y := NextY; Inc(NextY, 100 + T.Columns.Count * 20); end;
+  end;
+end;
+function TDiagramModel.HiddenCount: Integer;
+var I: Integer;
+begin
+  Result := 0;
+  for I := 0 to Tables.Count - 1 do
+    if TDiagramTable(Tables[I]).Hidden then Inc(Result);
+end;
+procedure TDiagramModel.ShowHiddenTables;
+var I: Integer;
+begin
+  for I := 0 to Tables.Count - 1 do TDiagramTable(Tables[I]).Hidden := False;
+end;
+procedure TDiagramModel.HideAllTables;
+var I: Integer;
+begin
+  for I := 0 to Tables.Count - 1 do TDiagramTable(Tables[I]).Hidden := True;
+  FocusKey := ''; FilterText := '';
+end;
+procedure TDiagramModel.MaterializeView;
+var I: Integer; T: TDiagramTable;
+begin
+  if (FilterText = '') and (FocusKey = '') then Exit;
+  for I := 0 to Tables.Count - 1 do begin
+    T := TDiagramTable(Tables[I]);
+    T.Hidden := not MatchesView(T);
+  end;
+  FilterText := ''; FocusKey := '';
+end;
+procedure TDiagramModel.AddNeighbours(T: TDiagramTable; AList: TList);
+var I: Integer; R: TDiagramRelation; N: TDiagramTable;
+begin
+  // Tabelas ligadas a T por chave estrangeira, nos dois sentidos
+  for I := 0 to Relations.Count - 1 do begin
+    R := TDiagramRelation(Relations[I]); N := nil;
+    if R.SourceKey = T.Key then N := FindTable(R.TargetKey)
+    else if R.TargetKey = T.Key then N := FindTable(R.SourceKey);
+    if (N <> nil) and (N <> T) and (AList.IndexOf(N) < 0) then AList.Add(N);
   end;
 end;
 procedure TDiagramModel.Arrange;

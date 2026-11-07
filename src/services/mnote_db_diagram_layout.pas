@@ -2,6 +2,9 @@ unit mnote_db_diagram_layout;
 {$mode objfpc}{$H+}
 interface
 uses Classes, SysUtils, Math, fpjson, jsonparser, mnote_db_diagram_model;
+const
+  DIAGRAM_ZOOM_MIN = 0.2;
+  DIAGRAM_ZOOM_MAX = 3.0;
 procedure SaveDiagramLayout(M: TDiagramModel; Zoom: Double; const FileName: string);
 procedure LoadDiagramLayout(M: TDiagramModel; var Zoom: Double; const FileName: string);
 implementation
@@ -14,7 +17,9 @@ begin
     Items := TJSONArray.Create; Root.Add('tables', Items);
     for I := 0 to M.Tables.Count - 1 do begin
       T := TDiagramTable(M.Tables[I]); Item := TJSONObject.Create;
-      Item.Add('key', T.Key); Item.Add('x', T.X); Item.Add('y', T.Y); Items.Add(Item);
+      Item.Add('key', T.Key); Item.Add('x', T.X); Item.Add('y', T.Y);
+      if T.Hidden then Item.Add('hidden', True);
+      Items.Add(Item);
     end;
     ForceDirectories(ExtractFileDir(ExpandFileName(FileName))); Text.Text := Root.FormatJSON;
     Text.SaveToFile(FileName);
@@ -40,14 +45,17 @@ begin
         (Item.Get('key', '') = '') then raise Exception.Create('Invalid table position or key');
     end;
     NewZoom := Root.Get('zoom', 1.0);
-    if IsNan(NewZoom) or IsInfinite(NewZoom) or (NewZoom < 0.4) or (NewZoom > 2.0) then
+    if IsNan(NewZoom) or IsInfinite(NewZoom) or (NewZoom < DIAGRAM_ZOOM_MIN) or (NewZoom > DIAGRAM_ZOOM_MAX) then
       raise Exception.Create('Invalid zoom');
     NewFilter := Root.Get('filter', ''); NewFocus := Root.Get('focus', '');
     Zoom := NewZoom; M.FilterText := NewFilter;
     if M.FindTable(NewFocus) <> nil then M.FocusKey := NewFocus else M.FocusKey := '';
     for I := 0 to Items.Count - 1 do begin
       Item := Items.Objects[I]; T := M.FindTable(Item.Get('key', ''));
-      if T <> nil then begin T.X := Item.Get('x', 0); T.Y := Item.Get('y', 0); end;
+      if T <> nil then begin
+        T.X := Item.Get('x', 0); T.Y := Item.Get('y', 0);
+        T.Hidden := Item.Get('hidden', False);
+      end;
     end;
   finally Data.Free; Text.Free; end;
 end;

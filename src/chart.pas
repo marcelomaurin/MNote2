@@ -9,7 +9,7 @@ uses
   ExtCtrls, Math, DB, ZConnection, ZDataset, SynEdit, funcoes;
 
 type
-  TChartCommType = (ccNone, ccMySQL, ccPostgres);
+  TChartCommType = (ccNone, ccMySQL, ccPostgres, ccMSSQL, ccOracle, ccSQLite);
 
   TChartDataPoint = record
     LabelText: string;
@@ -82,6 +82,9 @@ begin
   case FCommType of
     ccMySQL:    Result := frmmquery2.zmyqry2;
     ccPostgres: Result := frmmquery2.zpostqry1;
+    ccMSSQL:    Result := frmmquery2.DynGridDataSet(3);
+    ccOracle:   Result := frmmquery2.DynGridDataSet(4);
+    ccSQLite:   Result := frmmquery2.zliteqry2;
   else
     Result := nil;
   end;

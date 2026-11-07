@@ -1,0 +1,26 @@
+CLIENTE ORACLE PARA O MNOTE2 (32 BITS)
+======================================
+
+O Query Tools do MNote2 procura o oci.dll nesta pasta (libs\oracle\win32).
+O MNote2 é um programa de 32 bits, então o cliente também precisa ser de 32 bits.
+
+1. Baixe o Oracle Instant Client para Windows 32 bits, pacote "Basic" ou
+   "Basic Light", na página oficial da Oracle:
+   https://www.oracle.com/database/technologies/instant-client/microsoft-windows-32-downloads.html
+
+2. Extraia o zip aqui. Pode ficar assim:
+      libs\oracle\win32\instantclient_19_xx\oci.dll
+   ou com os arquivos direto nesta pasta:
+      libs\oracle\win32\oci.dll
+   Copie a pasta inteira, não só o oci.dll: ele depende das outras DLLs
+   (por exemplo oraociei19.dll ou oraociicus19.dll).
+
+3. O Instant Client 19 precisa do Microsoft Visual C++ 2017 (ou mais novo),
+   versão x86, instalado no Windows.
+
+4. Na aba Oracle do Query Tools, em "Banco", informe o serviço no formato
+   servidor:1521/NOME_DO_SERVICO, ou um nome do tnsnames.ora.
+
+O instalador do MNote2 (instalador\MNote2.iss) copia esta pasta inteira.
+Um caminho diferente pode ser informado em Configurações de banco,
+campo "DLL/SO Oracle" (apontando para o oci.dll).

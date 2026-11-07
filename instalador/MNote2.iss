@@ -2,7 +2,7 @@
 ; 32-bit app for Windows x86/x64
 
 #define MyAppName "MNote2"
-#define MyAppVersion "2.72"
+#define MyAppVersion "2.73"
 #define MyAppPublisher "Maurinsoft"
 #define MyAppURL "http://maurinsoft.com.br"
 #define MyAppExeName "MNote2.exe"
@@ -22,7 +22,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={commonpf32}\{#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir={#ProjectRoot}\bin
-OutputBaseFilename=win_MNote2_72
+OutputBaseFilename=win_MNote2_73
 SetupIconFile={#ProjectRoot}\src\MNote2.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma
@@ -37,6 +37,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Dirs]
 Name: "{app}\db"
+Name: "{app}\libs"
 Name: "{app}\libs\sqlite\win32"
 Name: "{app}\libs\mysql\win32\lib"
 Name: "{app}\libs\postgres\win32"
@@ -51,6 +52,10 @@ Source: "{#ProjectRoot}\src\MNote2.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ProjectRoot}\src\*.dci"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ProjectRoot}\src\*.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ProjectRoot}\src\*.bat"; DestDir: "{app}"; Flags: ignoreversion
+
+; Connection files (.con JSON and .cfg)
+Source: "{#ProjectRoot}\src\*.con"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#ProjectRoot}\src\Setbanco*.cfg"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
 ; OpenSSL 32-bit runtime DLLs in application root
 Source: "{#ProjectRoot}\src\libssl-1_1.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -67,8 +72,11 @@ Source: "{#ProjectRoot}\libs\mysql\win32\lib\mysqlcppconn8-2-vs14.dll"; DestDir:
 ; PostgreSQL 32-bit runtime
 Source: "{#ProjectRoot}\libs\postgres\win32\*.dll"; DestDir: "{app}\libs\postgres\win32"; Flags: ignoreversion
 
-; Oracle 32-bit runtime
-Source: "{#ProjectRoot}\libs\oracle\win32\oci.dll"; DestDir: "{app}\libs\oracle\win32"; Flags: ignoreversion skipifsourcedoesntexist
+; Oracle 32-bit runtime (Oracle Instant Client completo, inclusive subpastas)
+Source: "{#ProjectRoot}\libs\oracle\win32\*"; DestDir: "{app}\libs\oracle\win32"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
+
+; SQL Server 32-bit runtime (FreeTDS sybdb.dll ou ntwdblib.dll, com dependencias)
+Source: "{#ProjectRoot}\libs\mssql\win32\*"; DestDir: "{app}\libs\mssql\win32"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 
 ; SQLite 32-bit runtime
 Source: "{#ProjectRoot}\libs\sqlite\win32\sqlite3.dll"; DestDir: "{app}\libs\sqlite\win32"; Flags: ignoreversion

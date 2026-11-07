@@ -1,0 +1,33 @@
+CLIENTE SQL SERVER PARA O MNOTE2 (32 BITS)
+==========================================
+
+O Query Tools do MNote2 procura a biblioteca de cliente nesta pasta
+(libs\mssql\win32), nesta ordem:
+
+   sybdb.dll        FreeTDS (recomendado, SQL Server 2005 ou mais novo)
+   libsybdb-5.dll   FreeTDS com o nome usado pelo MSYS2
+   ntwdblib.dll     DB-Library antiga da Microsoft (só servidores antigos,
+                    sem conexão criptografada)
+
+Com o FreeTDS o MNote2 usa o protocolo "FreeTDS_MsSQL>=2005" do ZEOS;
+com o ntwdblib.dll usa o protocolo "mssql".
+
+O MNote2 é um programa de 32 bits, então as DLLs também precisam ser de 32 bits.
+
+Como obter o FreeTDS 32 bits pelo MSYS2 (https://www.msys2.org):
+  1. Abra o terminal MSYS2 MINGW32 e rode:
+        pacman -S mingw-w64-i686-freetds
+  2. Copie de C:\msys64\mingw32\bin para esta pasta o libsybdb-5.dll
+     e as DLLs de que ele depende (por exemplo libiconv-2.dll,
+     libwinpthread-1.dll, libgcc_s_dw2-1.dll e as de criptografia).
+     Para listar as dependências:
+        ntldd -R /mingw32/bin/libsybdb-5.dll
+  Se o pacote de 32 bits não estiver mais disponível no MSYS2,
+  é preciso compilar o FreeTDS para 32 bits.
+
+Copie todas as DLLs dependentes para esta mesma pasta: o MNote2 coloca
+esta pasta no PATH antes de conectar, para o Windows achá-las.
+
+O instalador do MNote2 (instalador\MNote2.iss) copia esta pasta inteira.
+Um caminho diferente pode ser informado em Configurações de banco,
+campo "DLL/SO MSSQL" (apontando para a DLL).

@@ -102,3 +102,8 @@ smoke_report.txt
 
 src/lib/
 tests/bin-diagram/
+
+# Exceptions for redistributable database libraries and connection templates
+!libs/mssql/**
+!libs/oracle/**
+!src/*.con

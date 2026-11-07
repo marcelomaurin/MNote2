@@ -27,6 +27,34 @@ type
 
   { Tfrmmquery2 }
 
+  { Controles das abas criadas em codigo (SQL Server = 3, Oracle = 4) }
+  TMQueryDynUI = record
+    Tab, TSConn, TSSQL, TSGrid, TSLog, TSTools: TTabSheet;
+    PC: TPageControl;
+    Conn: TZConnection;
+    ExecQry, GridQry: TZQuery;
+    DS: TDataSource;
+    Tree: TTreeView;
+    SearchEdit, HostEdit, BancoEdit, UserEdit, PassEdit, SchemaEdit: TEdit;
+    ConnectBtn, OpenBtn: TButton;
+    SynEdit: TSynEdit;
+    ErrorMemo, LogMemo, IAMemo: TMemo;
+    IAPanel: TPanel;
+    FindList: TListBox;
+    LineLabel, ColLabel: TLabel;
+    Nav: TDBNavigator;
+    Grid: TDBGrid;
+    MakeCombo: TComboBox;
+  end;
+
+  { Um lado da comparacao de estrutura (botao Comparar) }
+  TCmpLado = record
+    Engine: Integer;          // 0 MySQL, 1 PostgreSQL, 2 SQLite, 3 SQL Server, 4 Oracle
+    Conn: TZConnection;
+    Banco, Schema: string;
+    Temp: Boolean;            // conexao temporaria criada so para comparar
+  end;
+
   Tfrmmquery2 = class(TForm)
     btAnalise1: TButton;
     btAnaliselite: TButton;
@@ -482,6 +510,8 @@ type
     tvitemOracle: TTreeNode;
     posicaofieldsOracle: TTreeNode;
 
+    FDyn: array[3..4] of TMQueryDynUI;
+
     pmDatabaseMSSQL: TPopupMenu;
     mnCriaDicionarioMSSQL: TMenuItem;
     pmDatabaseOracle: TPopupMenu;
@@ -495,13 +525,29 @@ type
     function SalvarConexaoArquivo(const AFileName: string; AEngineIndex: Integer = -1): Boolean;
     function CarregarConexaoArquivo(const AFileName: string): Boolean;
     function GetActiveSQLEditor: TSynEdit;
+    function EditorDoMenu(Sender: TObject): TSynEdit;
+    function LocalizaBibliotecaBanco(const APasta: string;
+      const AArquivos: array of string; const AConfigurado: string): string;
+    procedure PreparaPastaBiblioteca(const ABiblioteca: string);
+
+    // Comparar estrutura
+    function CmpNomeMotor(AEngine: Integer): string;
+    function CmpConexao(AEngine: Integer): TZConnection;
+    function CmpDescreve(const ALado: TCmpLado): string;
+    function CmpLadoPadrao(AEngine: Integer): TCmpLado;
+    function CmpConexaoTemporaria(ABase: TZConnection; const ABanco: string): TZConnection;
+    procedure CmpLerEstrutura(const ALado: TCmpLado; ATabelas: TStringList);
+    function CmpNovaListaColunas: TStringList;
+    function CmpNovaListaTabelas: TStringList;
+    function CmpGeraRelatorio(const AOrigem, ADestino: TCmpLado; ATabA, ATabB: TStringList): string;
+    function CmpEscolhe(const ATitulo: string; AOpcoes: TStrings): Integer;
+    procedure ExecutaComandoMy(const ASQL: string);
+    procedure ExecutaComandoPost(const ASQL: string);
 
     procedure btSalvarPostClick(Sender: TObject);
     procedure btSalvarMyClick(Sender: TObject);
     procedure btSalvarLiteClick(Sender: TObject);
     procedure btSalvarDynamicClick(Sender: TObject);
-    procedure btLimparSQLDynamicClick(Sender: TObject);
-    procedure btLimparLogDynamicClick(Sender: TObject);
     procedure SalvarAlteracoes(AGrid: TDBGrid; ADataSet: TDataSet);
 
     procedure miScriptSelectClick(Sender: TObject);
@@ -525,25 +571,38 @@ type
     procedure mnCriaDicionarioMSSQLClick(Sender: TObject);
     procedure mnCriaDicionarioOracleClick(Sender: TObject);
 
-    // Dynamic UI Creation Helper
-    procedure CreateDynamicDBTab(const ATitle: string; var ATab: TTabSheet;
-      var APC: TPageControl;
-      var ATSConn, ATSSQL, ATSGrid, ATSLog, ATSTools: TTabSheet;
-      var AConnection: TZConnection; var AQuery: TZQuery; var ADataSource: TDataSource;
-      var ATreeView: TTreeView; var AHostEdit, ABancoEdit, AUserEdit, APassEdit, ASchemaEdit: TEdit;
-      var AConnectBtn: TButton; var ASynEdit: TSynEdit; var AExecBtn: TButton;
-      var ADBGrid: TDBGrid; var AErrorMemo: TMemo; AConnectHandler, AExecHandler: TNotifyEvent;
-      ATreeChangeHandler: TTVChangedEvent; AToolsDicionarioHandler: TNotifyEvent;
-      ADiagramTag: Integer);
+    // Abas dinamicas de SQL Server (3) e Oracle (4), no mesmo padrao do PostgreSQL
+    procedure CreateDynamicDBTab(AEngine: Integer; const ATitle: string);
+    function DynEngineFromSender(Sender: TObject): Integer;
+    function DynNome(AEngine: Integer): string;
+    function DynQuoteIdent(AEngine: Integer; const AName: string): string;
+    function DynExigeConexao(AEngine: Integer): Boolean;
+    procedure DynLog(AEngine: Integer; const AMsg: string; AIsError: Boolean = False);
+    function DynExecSQL(AEngine: Integer; const ASQL: string): Boolean;
+    function CriaListaDependenciasDyn(AEngine: Integer): string;
+    function QuestionarSQLDyn(AEngine: Integer; const APergunta: string): string;
+    procedure DynOpenClick(Sender: TObject);
+    procedure DynExecuteClick(Sender: TObject);
+    procedure DynAnaliseClick(Sender: TObject);
+    procedure DynIAClick(Sender: TObject);
+    procedure DynChartClick(Sender: TObject);
+    procedure DynMakeClick(Sender: TObject);
+    procedure DynCriaBancoClick(Sender: TObject);
+    procedure DynCriaUsuarioClick(Sender: TObject);
+    procedure DynPermissaoClick(Sender: TObject);
+    procedure DynPesqKeyPress(Sender: TObject; var Key: char);
+    procedure DynSQLStatusChange(Sender: TObject; Changes: TSynStatusChanges);
+    procedure DynFontClick(Sender: TObject);
+    procedure DynNewEditClick(Sender: TObject);
+    procedure DynEmbelezarClick(Sender: TObject);
+    procedure DynToggleIAClick(Sender: TObject);
 
     procedure btConectarMSSQLClick(Sender: TObject);
-    procedure btExecutarMSSQLClick(Sender: TObject);
     procedure tvMSSQLChange(Sender: TObject; Node: TTreeNode);
     procedure ListarTabelasMSSQL();
     function ConectMSSQL: Boolean;
 
     procedure btConectarOracleClick(Sender: TObject);
-    procedure btExecutarOracleClick(Sender: TObject);
     procedure tvOracleChange(Sender: TObject; Node: TTreeNode);
     procedure ListarTabelasOracle();
     function ConectOracle: Boolean;
@@ -570,6 +629,7 @@ type
 
     function ConectSQLite: Boolean;
   public
+    function DynGridDataSet(AEngine: Integer): TDataSet;
     procedure InstallDiagramMenus;
     procedure DiagramMenuClick(Sender: TObject);
     function DiagramConnection(AIndex: Integer; out ASchema: string): TZConnection;
@@ -633,6 +693,11 @@ implementation
 {$R *.lfm}
 
 uses benchmark, main;
+
+{$IFDEF WINDOWS}
+function MQuerySetEnvironmentVariableW(lpName, lpValue: PWideChar): LongBool; stdcall;
+  external 'kernel32.dll' name 'SetEnvironmentVariableW';
+{$ENDIF}
 
 function SQLiteSelectedTableName: string;
 begin
@@ -829,18 +894,30 @@ procedure Tfrmmquery2.ToggleBox2Change(Sender: TObject);
 var
   usuario, senha: string;
 begin
-  if zconpost.Connected then
-  begin
-    usuario := InputBox('Criação de usuário', 'Usuário:', 'username');
-    senha   := InputBox('Criação de usuário', 'Senha:', 'secret');
+  // O botao e um TToggleBox: OnChange dispara ao marcar e ao desmarcar.
+  // Age so ao marcar e volta ao estado normal no final.
+  if (Sender is TToggleBox) and not TToggleBox(Sender).Checked then Exit;
+  try
+    usuario := Trim(InputBox('Criação de usuário', 'Usuário:', 'username'));
+    if usuario = '' then Exit;
+    senha := InputBox('Criação de usuário', 'Senha:', 'secret');
 
-    edSQL.Text := Format('CREATE USER %s WITH PASSWORD %s;',
-                         [JuntaNome(usuario), QuotedStr(senha)]);
-    zqrypost.SQL.Text := edSQL.Text;
-    zqrypost.ExecSQL;
-  end
-  else
-    ShowMessage('Postgres não conectado!');
+    // ToggleBox2 fica na aba MySQL; ToggleBox3 na aba PostgreSQL
+    if Sender = ToggleBox2 then
+    begin
+      edSQL.Text := Format('CREATE USER %s@''%%'' IDENTIFIED BY %s;',
+                           [QuotedStr(JuntaNome(usuario)), QuotedStr(senha)]);
+      ExecutaComandoMy(edSQL.Text);
+    end
+    else
+    begin
+      edSQLPost.Text := Format('CREATE USER %s WITH PASSWORD %s;',
+                               [JuntaNome(usuario), QuotedStr(senha)]);
+      ExecutaComandoPost(edSQLPost.Text);
+    end;
+  finally
+    if Sender is TToggleBox then TToggleBox(Sender).Checked := False;
+  end;
 end;
 
 function Tfrmmquery2.TrocarPalavra(Info: String; de: String; para: String): String;
@@ -1188,28 +1265,16 @@ begin
   tvitemLite := tvsqlite.Items.AddObject(tvitem,'SQLite', pointer(ETDBBanco));
   tvitemLite.ImageIndex := -1;
 
-  // Create SQL Server tab programmatically
-  CreateDynamicDBTab('SQL Server', tsMSSQL, pcMSSQL,
-    tsConnMSSQL, tsSQLMSSQL, tsGridMSSQL, tsLogMSSQL, tsToolsMSSQL,
-    zconMSSQL, zmssqlqry, dsmssql,
-    tvMSSQL, edHostMSSQL, edBancoMSSQL, edUserMSSQL, edPassMSSQL, edSchemaMSSQL,
-    btConectarMSSQL, edSQLMSSQL, btExecMSSQL, dbgridMSSQL, edErroMSSQL,
-    @btConectarMSSQLClick, @btExecutarMSSQLClick, @tvMSSQLChange,
-    @mnCriaDicionarioMSSQLClick, 3);
+  // Cria a aba SQL Server em codigo (mesmo padrao do PostgreSQL)
+  CreateDynamicDBTab(3, 'SQL Server');
 
   // Initialize SQL Server tree node database parent
   tvitem := TTreeNode.Create(tvMSSQL.Items);
   tvitemMSSQL := tvMSSQL.Items.AddObject(tvitem,'SQL Server', pointer(ETDBBanco));
   tvitemMSSQL.ImageIndex := -1;
 
-  // Create Oracle tab programmatically
-  CreateDynamicDBTab('Oracle', tsOracle, pcOracle,
-    tsConnOracle, tsSQLOracle, tsGridOracle, tsLogOracle, tsToolsOracle,
-    zconOracle, zoracleqry, dsoracle,
-    tvOracle, edHostOracle, edBancoOracle, edUserOracle, edPassOracle, edSchemaOracle,
-    btConectarOracle, edSQLOracle, btExecOracle, dbgridOracle, edErroOracle,
-    @btConectarOracleClick, @btExecutarOracleClick, @tvOracleChange,
-    @mnCriaDicionarioOracleClick, 4);
+  // Cria a aba Oracle em codigo (mesmo padrao do PostgreSQL)
+  CreateDynamicDBTab(4, 'Oracle');
 
   // Initialize Oracle tree node database parent
   tvitem := TTreeNode.Create(tvOracle.Items);
@@ -1229,8 +1294,10 @@ begin
   mnCriaDicionarioOracle.OnClick := @mnCriaDicionarioOracleClick;
   pmDatabaseOracle.Items.Add(mnCriaDicionarioOracle);
 
-  InstallDiagramMenus;
+  // InstallTableScriptMenus cria pmTabelaMSSQL/pmTabelaOracle e precisa vir
+  // antes de InstallDiagramMenus, que acrescenta itens nesses menus.
   InstallTableScriptMenus;
+  InstallDiagramMenus;
   InicializarGridEditing;
   InicializarAutocomplete;
   pgMain.OnChange := @pgMainChange;
@@ -1450,12 +1517,10 @@ procedure Tfrmmquery2.miCNewEditClick(Sender: TObject);
 var
   ts : TTabSheet;
   item : TItem;
-  syn1 : TSynEdit;
 begin
   ts := frmMNote.NovoItem();
   item := TItem(ts.Tag);
-  syn1 := item.syn;
-  syn1.Text := edsql.Lines.Text;
+  item.syn.Text := EditorDoMenu(Sender).Lines.Text;
 end;
 
 procedure Tfrmmquery2.miCreateClick(Sender: TObject);
@@ -1562,8 +1627,15 @@ begin
 end;
 
 procedure Tfrmmquery2.miEmbelezarClick(Sender: TObject);
+var
+  ed: TSynEdit;
 begin
-  QuestionSQLEmbeleza();
+  ed := EditorDoMenu(Sender);
+  frmMNote.NewContext();
+  frmMNote.edChat.Text := sqlEstetica + ed.Text;
+  frmMNote.FazPergunta();
+  if (frmMNote.meCodes.Text <> '') then
+    ed.Text := frmMNote.meCodes.Text;
 end;
 
 procedure Tfrmmquery2.miEsconderClick(Sender: TObject);
@@ -1571,11 +1643,30 @@ begin
   Hide;
 end;
 
-procedure Tfrmmquery2.miFontClick(Sender: TObject);
+function Tfrmmquery2.EditorDoMenu(Sender: TObject): TSynEdit;
+var
+  M: TMenu;
 begin
-  FontDialog1.Font := edSQL.Font;
+  // Editor sobre o qual o menu de contexto foi aberto
+  Result := nil;
+  if Sender is TMenuItem then
+  begin
+    M := TMenuItem(Sender).GetParentMenu;
+    if (M is TPopupMenu) and (TPopupMenu(M).PopupComponent is TSynEdit) then
+      Result := TSynEdit(TPopupMenu(M).PopupComponent);
+  end;
+  if Result = nil then
+    Result := GetActiveSQLEditor;
+end;
+
+procedure Tfrmmquery2.miFontClick(Sender: TObject);
+var
+  ed: TSynEdit;
+begin
+  ed := EditorDoMenu(Sender);
+  FontDialog1.Font := ed.Font;
   if FontDialog1.Execute then
-    edSQL.Font := FontDialog1.Font;
+    ed.Font := FontDialog1.Font;
 end;
 
 procedure Tfrmmquery2.miIAClick(Sender: TObject);
@@ -2405,32 +2496,50 @@ procedure Tfrmmquery2.btPermissaoChange(Sender: TObject);
 var
   nome, banco: string;
 begin
-  if zconpost.Connected then
-  begin
-    banco := InputBox('Permissão de banco', 'Database:', 'database');
-    nome  := InputBox('Permissão de banco', 'Usuário:', 'root');
-    edSQL.Text := Format('GRANT ALL PRIVILEGES ON DATABASE %s TO %s;',
-                         [JuntaNome(banco), JuntaNome(nome)]);
-    zqrypost.SQL.Text := edSQL.Text;
-    zqrypost.ExecSQL;
-  end
-  else
-    ShowMessage('Postgres não conectado!');
+  // O botao e um TToggleBox: OnChange dispara ao marcar e ao desmarcar.
+  if (Sender is TToggleBox) and not TToggleBox(Sender).Checked then Exit;
+  try
+    banco := Trim(InputBox('Permissão de banco', 'Database:', 'database'));
+    if banco = '' then Exit;
+    nome := Trim(InputBox('Permissão de banco', 'Usuário:', 'root'));
+    if nome = '' then Exit;
+
+    // btPermissao fica na aba MySQL; btPermissao1 na aba PostgreSQL
+    if Sender = btPermissao then
+    begin
+      edSQL.Text := Format('GRANT ALL PRIVILEGES ON `%s`.* TO %s@''%%'';',
+                           [JuntaNome(banco), QuotedStr(JuntaNome(nome))]);
+      ExecutaComandoMy(edSQL.Text);
+    end
+    else
+    begin
+      edSQLPost.Text := Format('GRANT ALL PRIVILEGES ON DATABASE %s TO %s;',
+                               [JuntaNome(banco), JuntaNome(nome)]);
+      ExecutaComandoPost(edSQLPost.Text);
+    end;
+  finally
+    if Sender is TToggleBox then TToggleBox(Sender).Checked := False;
+  end;
 end;
 
 procedure Tfrmmquery2.btBancoClick(Sender: TObject);
 var
   banco : string;
 begin
-  if zconpost.Connected then
+  banco := Trim(InputBox('Criação de database', 'Banco:', 'database'));
+  if banco = '' then Exit;
+
+  // btBanco fica na aba MySQL; btBanco1 na aba PostgreSQL
+  if Sender = btBanco then
   begin
-    banco := InputBox('Criação de database','Banco:','database');
-    edSQL.Text  := 'create database '+#39+banco+#39+';';
-    zqrypost.SQL.Text := edSQL.Text;
-    zqrypost.ExecSQL;
+    edSQL.Text := 'CREATE DATABASE `' + JuntaNome(banco) + '`;';
+    ExecutaComandoMy(edSQL.Text);
   end
   else
-    ShowMessage('Postgres não conectado!');
+  begin
+    edSQLPost.Text := 'CREATE DATABASE "' + JuntaNome(banco) + '";';
+    ExecutaComandoPost(edSQLPost.Text);
+  end;
 end;
 
 procedure Tfrmmquery2.btBancoliteClick(Sender: TObject);
@@ -2457,7 +2566,11 @@ end;
 
 procedure Tfrmmquery2.btAnaliseClick(Sender: TObject);
 begin
-  AnaliseMy(edSQL.Lines.Text);
+  // btAnalise1 fica na aba PostgreSQL; btAnalise na aba MySQL
+  if Sender = btAnalise1 then
+    Analisepost(edSQLPost.Lines.Text)
+  else
+    AnaliseMy(edSQL.Lines.Text);
 end;
 
 procedure Tfrmmquery2.btAnaliseliteClick(Sender: TObject);
@@ -2470,12 +2583,533 @@ begin
 end;
 
 procedure Tfrmmquery2.btbenchmarkClick(Sender: TObject); begin end;
-procedure Tfrmmquery2.btChartClick(Sender: TObject); begin ChartView(ccMySQL); end;
+procedure Tfrmmquery2.btChartClick(Sender: TObject);
+begin
+  // btChart1 fica na aba SQLite; btChart na aba MySQL
+  if Sender = btChart1 then
+    ChartView(ccSQLite)
+  else
+    ChartView(ccMySQL);
+end;
 procedure Tfrmmquery2.btChartPostClick(Sender: TObject); begin ChartView(ccPostgres); end;
 
-procedure Tfrmmquery2.btcompararClick(Sender: TObject);
+{ ============================================================================
+  Comparar estrutura
+  Compara tabelas e colunas da conexao da aba (origem) com outra conexao
+  aberta no Query Tools ou com outro banco/schema no mesmo servidor.
+  Motores: 0 MySQL, 1 PostgreSQL, 2 SQLite, 3 SQL Server, 4 Oracle.
+  ============================================================================ }
+
+function Tfrmmquery2.CmpNomeMotor(AEngine: Integer): string;
 begin
-  ShowMessage('Comparar: mantenho sua lógica original (não alterei aqui).');
+  case AEngine of
+    0: Result := 'MySQL';
+    1: Result := 'PostgreSQL';
+    2: Result := 'SQLite';
+    3: Result := 'SQL Server';
+    4: Result := 'Oracle';
+  else
+    Result := '?';
+  end;
+end;
+
+function Tfrmmquery2.CmpConexao(AEngine: Integer): TZConnection;
+begin
+  case AEngine of
+    0: Result := zconmysql;
+    1: Result := zconpost;
+    2: Result := zconsqlite;
+    3: Result := zconMSSQL;
+    4: Result := zconOracle;
+  else
+    Result := nil;
+  end;
+end;
+
+function Tfrmmquery2.CmpDescreve(const ALado: TCmpLado): string;
+begin
+  Result := CmpNomeMotor(ALado.Engine);
+  if ALado.Engine = 2 then
+    Result := Result + ' - arquivo ' + ALado.Banco
+  else
+  begin
+    if ALado.Banco <> '' then
+      Result := Result + ' - banco ' + ALado.Banco;
+    if ALado.Schema <> '' then
+      Result := Result + ' / schema ' + ALado.Schema;
+  end;
+end;
+
+function Tfrmmquery2.CmpLadoPadrao(AEngine: Integer): TCmpLado;
+begin
+  Result.Engine := AEngine;
+  Result.Conn := CmpConexao(AEngine);
+  Result.Temp := False;
+  Result.Banco := '';
+  Result.Schema := '';
+  if Result.Conn <> nil then
+    Result.Banco := Result.Conn.Database;
+  case AEngine of
+    1:
+      begin
+        Result.Schema := Trim(edSchemaPost.Text);
+        if Result.Schema = '' then Result.Schema := 'public';
+      end;
+    3:
+      begin
+        Result.Schema := Trim(edSchemaMSSQL.Text);
+        if Result.Schema = '' then Result.Schema := 'dbo';
+      end;
+    4:
+      begin
+        Result.Schema := UpperCase(Trim(edSchemaOracle.Text));
+        if Result.Schema = '' then Result.Schema := UpperCase(zconOracle.User);
+      end;
+  end;
+end;
+
+function Tfrmmquery2.CmpConexaoTemporaria(ABase: TZConnection; const ABanco: string): TZConnection;
+begin
+  Result := TZConnection.Create(nil);
+  try
+    Result.Protocol := ABase.Protocol;
+    Result.HostName := ABase.HostName;
+    Result.Port := ABase.Port;
+    Result.User := ABase.User;
+    Result.Password := ABase.Password;
+    Result.LibraryLocation := ABase.LibraryLocation;
+    Result.ClientCodepage := ABase.ClientCodepage;
+    Result.ControlsCodePage := ABase.ControlsCodePage;
+    Result.Properties.Assign(ABase.Properties);
+    Result.LoginPrompt := False;
+    Result.Database := ABanco;
+    Result.Connect;
+  except
+    Result.Free;
+    raise;
+  end;
+end;
+
+procedure Tfrmmquery2.CmpLerEstrutura(const ALado: TCmpLado; ATabelas: TStringList);
+var
+  Q, QCol: TZQuery;
+  Tabelas: TStringList;
+  I, Idx: Integer;
+  Prefixo: string;
+
+  procedure AddColuna(const ATabela, AColuna, ATipo: string);
+  var
+    P: Integer;
+  begin
+    P := ATabelas.IndexOf(ATabela);
+    if P < 0 then
+      P := ATabelas.AddObject(ATabela, CmpNovaListaColunas);
+    TStringList(ATabelas.Objects[P]).Add(AColuna + '=' + Trim(ATipo));
+  end;
+
+begin
+  Q := TZQuery.Create(nil);
+  QCol := TZQuery.Create(nil);
+  Tabelas := TStringList.Create;
+  try
+    Q.Connection := ALado.Conn;
+    QCol.Connection := ALado.Conn;
+
+    case ALado.Engine of
+      0:
+        begin
+          Q.SQL.Text :=
+            'SELECT c.TABLE_NAME AS TABELA, c.COLUMN_NAME AS COLUNA, c.COLUMN_TYPE AS TIPO ' +
+            'FROM information_schema.COLUMNS c ' +
+            'JOIN information_schema.TABLES t ON t.TABLE_SCHEMA = c.TABLE_SCHEMA ' +
+            '  AND t.TABLE_NAME = c.TABLE_NAME AND t.TABLE_TYPE = ''BASE TABLE'' ' +
+            'WHERE c.TABLE_SCHEMA = :banco ' +
+            'ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION';
+          Q.ParamByName('banco').AsString := ALado.Banco;
+        end;
+      1:
+        begin
+          Q.SQL.Text :=
+            'SELECT c.table_name AS tabela, c.column_name AS coluna, ' +
+            '  c.data_type || COALESCE(''('' || c.character_maximum_length || '')'', '''') AS tipo ' +
+            'FROM information_schema.columns c ' +
+            'JOIN information_schema.tables t ON t.table_schema = c.table_schema ' +
+            '  AND t.table_name = c.table_name AND t.table_type = ''BASE TABLE'' ' +
+            'WHERE c.table_schema = :esquema ' +
+            'ORDER BY c.table_name, c.ordinal_position';
+          Q.ParamByName('esquema').AsString := ALado.Schema;
+        end;
+      3:
+        begin
+          Prefixo := '';
+          if ALado.Banco <> '' then
+            Prefixo := '[' + StringReplace(ALado.Banco, ']', ']]', [rfReplaceAll]) + '].';
+          Q.SQL.Text :=
+            'SELECT c.TABLE_NAME AS TABELA, c.COLUMN_NAME AS COLUNA, ' +
+            '  c.DATA_TYPE + CASE WHEN c.CHARACTER_MAXIMUM_LENGTH = -1 THEN ''(max)'' ' +
+            '    WHEN c.CHARACTER_MAXIMUM_LENGTH IS NOT NULL ' +
+            '    THEN ''('' + CAST(c.CHARACTER_MAXIMUM_LENGTH AS varchar(10)) + '')'' ELSE '''' END AS TIPO ' +
+            'FROM ' + Prefixo + 'INFORMATION_SCHEMA.COLUMNS c ' +
+            'JOIN ' + Prefixo + 'INFORMATION_SCHEMA.TABLES t ON t.TABLE_SCHEMA = c.TABLE_SCHEMA ' +
+            '  AND t.TABLE_NAME = c.TABLE_NAME AND t.TABLE_TYPE = ''BASE TABLE'' ' +
+            'WHERE c.TABLE_SCHEMA = :esquema ' +
+            'ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION';
+          Q.ParamByName('esquema').AsString := ALado.Schema;
+        end;
+      4:
+        begin
+          Q.SQL.Text :=
+            'SELECT TABLE_NAME AS TABELA, COLUMN_NAME AS COLUNA, ' +
+            '  DATA_TYPE || CASE WHEN DATA_TYPE IN (''VARCHAR2'', ''CHAR'', ''NVARCHAR2'', ''NCHAR'') ' +
+            '    THEN ''('' || CHAR_LENGTH || '')'' END AS TIPO ' +
+            'FROM ALL_TAB_COLUMNS ' +
+            'WHERE OWNER = :dono1 ' +
+            '  AND TABLE_NAME IN (SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = :dono2) ' +
+            'ORDER BY TABLE_NAME, COLUMN_ID';
+          Q.ParamByName('dono1').AsString := ALado.Schema;
+          Q.ParamByName('dono2').AsString := ALado.Schema;
+        end;
+    end;
+
+    if ALado.Engine = 2 then
+    begin
+      // SQLite: lista as tabelas e le as colunas de cada uma
+      Q.SQL.Text :=
+        'SELECT name FROM sqlite_master WHERE type = ''table'' ' +
+        'AND name NOT LIKE ''sqlite_%'' ORDER BY name';
+      Q.Open;
+      while not Q.EOF do
+      begin
+        Tabelas.Add(Q.FieldByName('name').AsString);
+        Q.Next;
+      end;
+      Q.Close;
+      for I := 0 to Tabelas.Count - 1 do
+      begin
+        QCol.SQL.Text := 'PRAGMA table_info(''' +
+          StringReplace(Tabelas[I], '''', '''''', [rfReplaceAll]) + ''')';
+        QCol.Open;
+        Idx := ATabelas.IndexOf(Tabelas[I]);
+        if Idx < 0 then
+          ATabelas.AddObject(Tabelas[I], CmpNovaListaColunas);
+        while not QCol.EOF do
+        begin
+          AddColuna(Tabelas[I], QCol.FieldByName('name').AsString,
+            QCol.FieldByName('type').AsString);
+          QCol.Next;
+        end;
+        QCol.Close;
+      end;
+    end
+    else
+    begin
+      Q.Open;
+      while not Q.EOF do
+      begin
+        AddColuna(Q.FieldByName('TABELA').AsString,
+          Q.FieldByName('COLUNA').AsString,
+          Q.FieldByName('TIPO').AsString);
+        Q.Next;
+      end;
+      Q.Close;
+    end;
+  finally
+    Tabelas.Free;
+    QCol.Free;
+    Q.Free;
+  end;
+end;
+
+function Tfrmmquery2.CmpNovaListaColunas: TStringList;
+begin
+  Result := TStringList.Create;
+  Result.CaseSensitive := False;
+end;
+
+function Tfrmmquery2.CmpNovaListaTabelas: TStringList;
+begin
+  Result := TStringList.Create;
+  Result.CaseSensitive := False;
+  Result.Sorted := True;
+  Result.Duplicates := dupIgnore;
+  Result.OwnsObjects := True;
+end;
+
+function Tfrmmquery2.CmpGeraRelatorio(const AOrigem, ADestino: TCmpLado;
+  ATabA, ATabB: TStringList): string;
+var
+  R, SoA, SoB, Detalhe: TStringList;
+  I, J, K, QtdTabDif, QtdColDif: Integer;
+  ColsA, ColsB: TStringList;
+  MesmoMotor: Boolean;
+  Nome: string;
+begin
+  R := TStringList.Create;
+  SoA := TStringList.Create;
+  SoB := TStringList.Create;
+  Detalhe := TStringList.Create;
+  try
+    MesmoMotor := AOrigem.Engine = ADestino.Engine;
+    QtdTabDif := 0;
+    QtdColDif := 0;
+
+    for I := 0 to ATabA.Count - 1 do
+      if ATabB.IndexOf(ATabA[I]) < 0 then
+        SoA.Add(ATabA[I]);
+    for I := 0 to ATabB.Count - 1 do
+      if ATabA.IndexOf(ATabB[I]) < 0 then
+        SoB.Add(ATabB[I]);
+
+    // Tabelas presentes nos dois lados
+    for I := 0 to ATabA.Count - 1 do
+    begin
+      J := ATabB.IndexOf(ATabA[I]);
+      if J < 0 then Continue;
+      ColsA := TStringList(ATabA.Objects[I]);
+      ColsB := TStringList(ATabB.Objects[J]);
+      K := Detalhe.Count;
+
+      for J := 0 to ColsA.Count - 1 do
+      begin
+        Nome := ColsA.Names[J];
+        if ColsB.IndexOfName(Nome) < 0 then
+          Detalhe.Add('    coluna só na origem:  ' + Nome + ' ' + ColsA.ValueFromIndex[J])
+        else if MesmoMotor and
+          not SameText(ColsA.ValueFromIndex[J], ColsB.Values[Nome]) then
+          Detalhe.Add('    tipo diferente:       ' + Nome + '  origem ' +
+            ColsA.ValueFromIndex[J] + '  destino ' + ColsB.Values[Nome]);
+      end;
+      for J := 0 to ColsB.Count - 1 do
+        if ColsA.IndexOfName(ColsB.Names[J]) < 0 then
+          Detalhe.Add('    coluna só no destino: ' + ColsB.Names[J] + ' ' + ColsB.ValueFromIndex[J]);
+
+      if Detalhe.Count > K then
+      begin
+        Inc(QtdTabDif);
+        Inc(QtdColDif, Detalhe.Count - K);
+        Detalhe.Insert(K, '  ' + ATabA[I]);
+      end;
+    end;
+
+    R.Add('COMPARAÇÃO DE ESTRUTURA');
+    R.Add('Data:    ' + FormatDateTime('dd/mm/yyyy hh:nn:ss', Now));
+    R.Add('Origem:  ' + CmpDescreve(AOrigem) + Format(' (%d tabelas)', [ATabA.Count]));
+    R.Add('Destino: ' + CmpDescreve(ADestino) + Format(' (%d tabelas)', [ATabB.Count]));
+    if not MesmoMotor then
+      R.Add('Bancos de tipos diferentes: os tipos das colunas não são comparados, só os nomes.');
+    R.Add('');
+
+    R.Add(Format('== Tabelas só na origem (%d) ==', [SoA.Count]));
+    for I := 0 to SoA.Count - 1 do R.Add('  ' + SoA[I]);
+    R.Add('');
+    R.Add(Format('== Tabelas só no destino (%d) ==', [SoB.Count]));
+    for I := 0 to SoB.Count - 1 do R.Add('  ' + SoB[I]);
+    R.Add('');
+    R.Add(Format('== Diferenças em tabelas comuns (%d tabelas, %d colunas) ==',
+      [QtdTabDif, QtdColDif]));
+    R.AddStrings(Detalhe);
+    R.Add('');
+
+    if (SoA.Count = 0) and (SoB.Count = 0) and (QtdColDif = 0) then
+      R.Add('Resultado: estruturas iguais.')
+    else
+      R.Add(Format('Resultado: %d tabela(s) só na origem, %d só no destino, ' +
+        '%d diferença(s) de coluna em %d tabela(s) comum(ns).',
+        [SoA.Count, SoB.Count, QtdColDif, QtdTabDif]));
+
+    Result := R.Text;
+  finally
+    Detalhe.Free;
+    SoB.Free;
+    SoA.Free;
+    R.Free;
+  end;
+end;
+
+function Tfrmmquery2.CmpEscolhe(const ATitulo: string; AOpcoes: TStrings): Integer;
+var
+  F: TForm;
+  RG: TRadioGroup;
+  Barra: TPanel;
+  BtOk, BtCancela: TButton;
+begin
+  Result := -1;
+  F := TForm.CreateNew(nil);
+  try
+    F.Caption := ATitulo;
+    F.BorderStyle := bsDialog;
+    F.Position := poScreenCenter;
+    F.Width := 480;
+    F.Height := 110 + 26 * AOpcoes.Count;
+
+    Barra := TPanel.Create(F);
+    Barra.Parent := F;
+    Barra.Align := alBottom;
+    Barra.Height := 46;
+    Barra.BevelOuter := bvNone;
+
+    BtOk := TButton.Create(F);
+    BtOk.Parent := Barra;
+    BtOk.Caption := 'Comparar';
+    BtOk.ModalResult := mrOk;
+    BtOk.Default := True;
+    BtOk.SetBounds(F.Width - 210, 9, 95, 28);
+
+    BtCancela := TButton.Create(F);
+    BtCancela.Parent := Barra;
+    BtCancela.Caption := 'Cancelar';
+    BtCancela.ModalResult := mrCancel;
+    BtCancela.Cancel := True;
+    BtCancela.SetBounds(F.Width - 108, 9, 95, 28);
+
+    RG := TRadioGroup.Create(F);
+    RG.Parent := F;
+    RG.Align := alClient;
+    RG.BorderSpacing.Around := 8;
+    RG.Caption := 'Comparar com';
+    RG.Items.Assign(AOpcoes);
+    RG.ItemIndex := 0;
+
+    if F.ShowModal = mrOk then
+      Result := RG.ItemIndex;
+  finally
+    F.Free;
+  end;
+end;
+
+procedure Tfrmmquery2.btcompararClick(Sender: TObject);
+var
+  E, K, Escolha: Integer;
+  Origem, Destino: TCmpLado;
+  Opcoes: TStringList;
+  MotorOpcao: array of Integer;
+  TabA, TabB: TStringList;
+  Banco, Esquema, Relatorio: string;
+  ts: TTabSheet;
+  item: TItem;
+begin
+  // Botao Comparar das abas MySQL e PostgreSQL (LFM) e das abas SQL Server/Oracle (Tag)
+  if Sender = btcomparar then
+    E := 0
+  else if Sender = btcomparar1 then
+    E := 1
+  else
+    E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+
+  if (CmpConexao(E) = nil) or (not CmpConexao(E).Connected) then
+  begin
+    ShowMessage(CmpNomeMotor(E) + ' não conectado!');
+    Exit;
+  end;
+  Origem := CmpLadoPadrao(E);
+
+  // Opcoes: outras conexoes abertas + outro banco no mesmo servidor
+  Opcoes := TStringList.Create;
+  try
+    SetLength(MotorOpcao, 0);
+    for K := 0 to 4 do
+      if (K <> E) and (CmpConexao(K) <> nil) and CmpConexao(K).Connected then
+      begin
+        Opcoes.Add('Conexão aberta: ' + CmpDescreve(CmpLadoPadrao(K)));
+        SetLength(MotorOpcao, Length(MotorOpcao) + 1);
+        MotorOpcao[High(MotorOpcao)] := K;
+      end;
+    case E of
+      2: Opcoes.Add('Outro arquivo SQLite');
+      4: Opcoes.Add('Outro schema neste servidor Oracle');
+    else
+      Opcoes.Add('Outro banco neste servidor ' + CmpNomeMotor(E));
+    end;
+    SetLength(MotorOpcao, Length(MotorOpcao) + 1);
+    MotorOpcao[High(MotorOpcao)] := -1;
+
+    Escolha := CmpEscolhe('Comparar estrutura - origem: ' + CmpDescreve(Origem), Opcoes);
+  finally
+    Opcoes.Free;
+  end;
+  if Escolha < 0 then Exit;
+
+  if MotorOpcao[Escolha] >= 0 then
+    Destino := CmpLadoPadrao(MotorOpcao[Escolha])
+  else
+  begin
+    Destino := Origem;
+    case E of
+      0:
+        begin
+          // MySQL le o information_schema de outro banco pela mesma conexao
+          Banco := Trim(InputBox('Comparar', 'Outro banco no mesmo servidor MySQL:', ''));
+          if Banco = '' then Exit;
+          Destino.Banco := Banco;
+        end;
+      1:
+        begin
+          Banco := Trim(InputBox('Comparar', 'Banco no mesmo servidor PostgreSQL:', Origem.Banco));
+          if Banco = '' then Exit;
+          Esquema := Trim(InputBox('Comparar', 'Schema:', Origem.Schema));
+          if Esquema = '' then Esquema := 'public';
+          Destino.Banco := Banco;
+          Destino.Schema := Esquema;
+          if not SameText(Banco, Origem.Banco) then
+            Destino.Temp := True;
+        end;
+      2:
+        begin
+          OpenDialog1.Title := 'Arquivo SQLite para comparar';
+          OpenDialog1.Filter := 'Bancos SQLite (*.db;*.sqlite;*.sqlite3;*.db3)|*.db;*.sqlite;*.sqlite3;*.db3|Todos os arquivos (*.*)|*.*';
+          if not OpenDialog1.Execute then Exit;
+          Destino.Banco := OpenDialog1.FileName;
+          Destino.Temp := True;
+        end;
+      3:
+        begin
+          // SQL Server le outro banco pela mesma conexao (banco.INFORMATION_SCHEMA)
+          Banco := Trim(InputBox('Comparar', 'Banco no mesmo servidor SQL Server:', Origem.Banco));
+          if Banco = '' then Exit;
+          Esquema := Trim(InputBox('Comparar', 'Schema:', Origem.Schema));
+          if Esquema = '' then Esquema := 'dbo';
+          Destino.Banco := Banco;
+          Destino.Schema := Esquema;
+        end;
+      4:
+        begin
+          Esquema := UpperCase(Trim(InputBox('Comparar', 'Schema (dono) no mesmo servidor Oracle:', '')));
+          if Esquema = '' then Exit;
+          Destino.Schema := Esquema;
+        end;
+    end;
+  end;
+
+  TabA := CmpNovaListaTabelas;
+  TabB := CmpNovaListaTabelas;
+  Screen.Cursor := crHourGlass;
+  try
+    try
+      if Destino.Temp then
+        Destino.Conn := CmpConexaoTemporaria(Origem.Conn, Destino.Banco);
+      CmpLerEstrutura(Origem, TabA);
+      CmpLerEstrutura(Destino, TabB);
+      Relatorio := CmpGeraRelatorio(Origem, Destino, TabA, TabB);
+    except
+      on Ex: Exception do
+      begin
+        Screen.Cursor := crDefault;
+        ShowMessage('Falha ao comparar: ' + Ex.Message);
+        Exit;
+      end;
+    end;
+  finally
+    Screen.Cursor := crDefault;
+    if Destino.Temp and (Destino.Conn <> nil) and (Destino.Conn <> Origem.Conn) then
+      Destino.Conn.Free;
+    TabB.Free;
+    TabA.Free;
+  end;
+
+  ts := frmMNote.NovoItem();
+  item := TItem(ts.Tag);
+  item.syn.Text := Relatorio;
 end;
 
 procedure Tfrmmquery2.btExecutar1Click(Sender: TObject); begin OpenSelectPost; end;
@@ -2604,15 +3238,39 @@ procedure Tfrmmquery2.btJSONClick(Sender: TObject);
 var
   ts : TTabSheet;
   item : TItem;
-  syn1 : TSynEdit;
+  ds : TDataSet;
+  formato : Integer;
 begin
+  // btJSON1 = PostgreSQL (somente JSON), btJSON2 = SQLite, btJSON = MySQL
+  ds := nil;
+  if Sender = btJSON1 then
+  begin
+    if dbgridpost.DataSource <> nil then ds := dbgridpost.DataSource.DataSet;
+    formato := 0;
+  end
+  else if Sender = btJSON2 then
+  begin
+    if dbgridmy1.DataSource <> nil then ds := dbgridmy1.DataSource.DataSet;
+    formato := cbMake1.ItemIndex;
+  end
+  else
+  begin
+    if dbgridmy.DataSource <> nil then ds := dbgridmy.DataSource.DataSet;
+    formato := cbMake.ItemIndex;
+  end;
+
+  if (ds = nil) or (not ds.Active) then
+  begin
+    ShowMessage('Nenhum resultado ativo. Use Open primeiro.');
+    Exit;
+  end;
+
   ts := frmMNote.NovoItem();
   item := TItem(ts.Tag);
-  syn1 := item.syn;
-
-  case cbMake.ItemIndex of
-    0: syn1.Text := DatasetToJsonString(dbgridmy.DataSource.DataSet);
-    1: syn1.Text := DatasetTocsvString(dbgridmy.DataSource.DataSet);
+  case formato of
+    1: item.syn.Text := DatasetTocsvString(ds);
+  else
+    item.syn.Text := DatasetToJsonString(ds);
   end;
 end;
 
@@ -2626,24 +3284,59 @@ begin
   btJSONClick(Sender);
 end;
 
-procedure Tfrmmquery2.btExecuteClick(Sender: TObject);
+procedure Tfrmmquery2.ExecutaComandoMy(const ASQL: string);
 begin
+  if not zconmysql.Connected then
+  begin
+    ShowMessage('Mysql não conectado!');
+    Exit;
+  end;
   try
-    zpostqry.SQL.Text := edSQLPost.Lines.Text;
-
-    dsmy.DataSet := nil;
-    dbnavpost.DataSource := nil;
-    dbgridpost.DataSource := nil;
-
-    edLog.Append('SQL Execute:' + edSQLPost.Lines.Text);
-    zpostqry.ExecSQL;
+    ZQryTransf.Close;
+    ZQryTransf.SQL.Text := ASQL;
+    edLog.Append('SQL Execute:' + ASQL);
+    ZQryTransf.ExecSQL;
+    edLog.Append(Format('Comando executado. %d linhas afetadas.', [ZQryTransf.RowsAffected]));
   except
     on E: Exception do
     begin
-      ShowMessage('Error:' + e.message);
-      edLog.Append('Error:' + e.message);
+      edLog.Append('Error:' + E.Message);
+      edErro.Append(E.Message);
+      ShowMessage('Error:' + E.Message);
     end;
   end;
+end;
+
+procedure Tfrmmquery2.ExecutaComandoPost(const ASQL: string);
+begin
+  if not zconpost.Connected then
+  begin
+    ShowMessage('Postgres não conectado!');
+    Exit;
+  end;
+  try
+    Zqrypost.Close;
+    Zqrypost.SQL.Text := ASQL;
+    edLogPost.Append('SQL Execute:' + ASQL);
+    Zqrypost.ExecSQL;
+    edLogPost.Append(Format('Comando executado. %d linhas afetadas.', [Zqrypost.RowsAffected]));
+  except
+    on E: Exception do
+    begin
+      edLogPost.Append('Error:' + E.Message);
+      edErro1.Append(E.Message);
+      ShowMessage('Error:' + E.Message);
+    end;
+  end;
+end;
+
+procedure Tfrmmquery2.btExecuteClick(Sender: TObject);
+begin
+  // btExecute fica na aba MySQL; btExecute1 na aba PostgreSQL
+  if Sender = btExecute then
+    ExecutaComandoMy(edSQL.Lines.Text)
+  else
+    ExecutaComandoPost(edSQLPost.Lines.Text);
 end;
 
 procedure Tfrmmquery2.btExecute1Click(Sender: TObject);
@@ -2685,7 +3378,7 @@ begin
     zpostqry1.SQL.Text := edSQLPost.Lines.Text;
 
     dspos.DataSet := zpostqry1;
-    edlog.Append('SQL OPEN:' + edSQLPost.Lines.Text);
+    edLogPost.Append('SQL OPEN:' + edSQLPost.Lines.Text);
     dbnavpost.DataSource := dspos;
     dbgridpost.DataSource := dspos;
     dbgridpost.ReadOnly := False;
@@ -2696,7 +3389,8 @@ begin
   except
     on E: Exception do
     begin
-      edLog.Append('Error:' + e.message);
+      edLogPost.Append('Error:' + e.message);
+      edErro1.Append(e.message);
       ShowMessage('Error:' + e.message);
     end;
   end;
@@ -2757,7 +3451,12 @@ end;
 
 procedure Tfrmmquery2.edPesqMyKeyPress(Sender: TObject; var Key: char);
 begin
-  if key = #13 then ProcuraTVMysql(edPesqMy.Text);
+  if key <> #13 then Exit;
+  // edPesqsqlite (aba SQLite) tambem esta ligado a este evento
+  if Sender = edPesqsqlite then
+    ProcuraTVSQLite(edPesqsqlite.Text)
+  else
+    ProcuraTVMysql(edPesqMy.Text);
 end;
 
 procedure Tfrmmquery2.edPesqPostKeyPress(Sender: TObject; var Key: char);
@@ -2779,8 +3478,8 @@ procedure Tfrmmquery2.edSQLEnter(Sender: TObject); begin end;
 
 procedure Tfrmmquery2.edSQLGutterClick(Sender: TObject; X, Y, Line: integer; mark: TSynEditMark);
 begin
-  lbCol.Caption := IntToStr(x);
-  lblinha.Caption := IntToStr(y);
+  // Atualiza Linha/Coluna do editor clicado (antes gravava X/Y em pixels no MySQL)
+  edSQLStatusChange(Sender, []);
 end;
 
 procedure Tfrmmquery2.edSQLKeyPress(Sender: TObject; var Key: char); begin end;
@@ -2788,7 +3487,28 @@ procedure Tfrmmquery2.edSQLKeyUp(Sender: TObject; var Key: Word; Shift: TShiftSt
 procedure Tfrmmquery2.edSQLMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer); begin end;
 procedure Tfrmmquery2.edSQLPaint(Sender: TObject; ACanvas: TCanvas); begin end;
 procedure Tfrmmquery2.edSQLPlaceBookmark(Sender: TObject; var Mark: TSynEditMark); begin end;
-procedure Tfrmmquery2.edSQLStatusChange(Sender: TObject; Changes: TSynStatusChanges); begin end;
+procedure Tfrmmquery2.edSQLStatusChange(Sender: TObject; Changes: TSynStatusChanges);
+var
+  ed: TSynEdit;
+begin
+  if not (Sender is TSynEdit) then Exit;
+  ed := TSynEdit(Sender);
+  if ed = edSQLPost then
+  begin
+    lblinha1.Caption := IntToStr(ed.CaretY);
+    lbCol1.Caption := IntToStr(ed.CaretX);
+  end
+  else if ed = edSQL1 then
+  begin
+    lblinha2.Caption := IntToStr(ed.CaretY);
+    lbCol2.Caption := IntToStr(ed.CaretX);
+  end
+  else if ed = edSQL then
+  begin
+    lblinha.Caption := IntToStr(ed.CaretY);
+    lbCol.Caption := IntToStr(ed.CaretX);
+  end;
+end;
 procedure Tfrmmquery2.edSQLSynGutterChange(Sender: TObject); begin end;
 
 procedure Tfrmmquery2.FindDialog1Find(Sender: TObject);
@@ -3788,7 +4508,7 @@ begin
     if (ATargetFile <> '') then
     begin
       outSQL.SaveToFile(targetAbsPath);
-      edLog.Append('Dicionário gerado em: ' + targetAbsPath);
+      edLogPost.Append('Dicionário gerado em: ' + targetAbsPath);
     end;
 
     Result := outSQL.Text;
@@ -3918,7 +4638,7 @@ begin
     begin
       ForceDirectories(ExtractFileDir(outFile));
       outTxt.SaveToFile(outFile);
-      edLog.Append('Dependências (FK) salvas em: ' + outFile);
+      edLogPost.Append('Dependências (FK) salvas em: ' + outFile);
     end;
 
   finally
@@ -4324,6 +5044,7 @@ procedure Tfrmmquery2.InstallDiagramMenus;
   procedure Add(Menu: TPopupMenu; Index: Integer);
   var Item: TMenuItem;
   begin
+    if Menu = nil then Exit;
     Item := TMenuItem.Create(Self); Item.Caption := 'Abrir diagrama do banco';
     Item.Tag := Index; Item.OnClick := @DiagramMenuClick; Menu.Items.Add(Item);
   end;
@@ -4481,6 +5202,10 @@ procedure Tfrmmquery2.Pesquisar(sender: TObject);
     end;
   end;
 
+
+var
+  E: Integer;
+
 begin
   lstfind.Clear;
   lstfind1.Clear;
@@ -4495,6 +5220,12 @@ begin
   ScanSyn(edSQL, lstfind);
   ScanSyn(edSQL1, lstfind1);
   ScanSyn(edSQLPost, lstfind2);
+  for E := Low(FDyn) to High(FDyn) do
+    if FDyn[E].FindList <> nil then
+    begin
+      FDyn[E].FindList.Clear;
+      ScanSyn(FDyn[E].SynEdit, FDyn[E].FindList);
+    end;
 end;
 
 procedure Tfrmmquery2.ProcessaErro(message: string);
@@ -4502,6 +5233,8 @@ begin
   if Assigned(edErro) then edErro.Append(message);
   if Assigned(edErro1) then edErro1.Append(message);
   if Assigned(edErro2) then edErro2.Append(message);
+  if Assigned(edErroMSSQL) then edErroMSSQL.Append(message);
+  if Assigned(edErroOracle) then edErroOracle.Append(message);
 
   MessageHint(message);
 end;
@@ -4533,258 +5266,922 @@ begin
             (aInnerRect.Bottom >= aOuterRect.Top)    and (aInnerRect.Bottom <= aOuterRect.Bottom);
 end;
 
-procedure Tfrmmquery2.btLimparSQLDynamicClick(Sender: TObject);
+{ ============================================================================
+  Abas dinamicas de SQL Server (3) e Oracle (4)
+  Mesmo padrao e funcionalidades da aba PostgreSQL:
+    Connection | SQL (editor, IA, erros, pesquisa, Linha/Coluna,
+    Analysis/Open/Execute) | Grid (navegador, Salvar, Chart, Make) | Log | Tools
+  ============================================================================ }
+
+procedure Tfrmmquery2.CreateDynamicDBTab(AEngine: Integer; const ATitle: string);
 var
-  ed: TSynEdit;
-begin
-  ed := GetActiveSQLEditor;
-  if ed <> nil then ed.Clear;
-end;
+  U: TMQueryDynUI;
+  leftPanel, searchPanel, rightPanel, sqlBarPanel, sqlBtnPanel, findPanel,
+  erroPanel, iaBarPanel, iaBtnPanel, sqlPanel, gridBarPanel: TPanel;
+  splitter, sqlSplitter: TSplitter;
+  pm: TPopupMenu;
+  saveBtn: TButton;
+  ConnectHandler, DicHandler: TNotifyEvent;
+  TreeHandler: TTVChangedEvent;
 
-procedure Tfrmmquery2.btLimparLogDynamicClick(Sender: TObject);
-begin
-  if pgMain.ActivePage = tsMSSQL then
-    edErroMSSQL.Clear
-  else if pgMain.ActivePage = tsOracle then
-    edErroOracle.Clear;
-end;
-
-procedure Tfrmmquery2.CreateDynamicDBTab(const ATitle: string; var ATab: TTabSheet;
-  var APC: TPageControl;
-  var ATSConn, ATSSQL, ATSGrid, ATSLog, ATSTools: TTabSheet;
-  var AConnection: TZConnection; var AQuery: TZQuery; var ADataSource: TDataSource;
-  var ATreeView: TTreeView; var AHostEdit, ABancoEdit, AUserEdit, APassEdit, ASchemaEdit: TEdit;
-  var AConnectBtn: TButton; var ASynEdit: TSynEdit; var AExecBtn: TButton;
-  var ADBGrid: TDBGrid; var AErrorMemo: TMemo; AConnectHandler, AExecHandler: TNotifyEvent;
-  ATreeChangeHandler: TTVChangedEvent; AToolsDicionarioHandler: TNotifyEvent;
-  ADiagramTag: Integer);
-var
-  leftPanel, rightPanel, connPanel, toolsPanel, sqlBarPanel, gridBarPanel, logBarPanel: TPanel;
-  splitter: TSplitter;
-  resNav: TDBNavigator;
-  saveBtn, clearSqlBtn, clearLogBtn, dicBtn, diagBtn: TButton;
-
-  function CreateInputGroup(AParent: TWinControl; ALeft, ATop, AWidth: Integer; const ALabelText: string; var AEdit: TEdit): TLabel;
-  var
-    lbl: TLabel;
+  function NewTab(const ACaption: string): TTabSheet;
   begin
-    lbl := TLabel.Create(Self);
-    lbl.Parent := AParent;
-    lbl.Left := ALeft;
-    lbl.Top := ATop;
-    lbl.Caption := ALabelText;
+    Result := TTabSheet.Create(Self);
+    Result.PageControl := U.PC;
+    Result.Caption := ACaption;
+  end;
 
-    AEdit := TEdit.Create(Self);
-    AEdit.Parent := AParent;
-    AEdit.Left := ALeft;
-    AEdit.Top := ATop + 18;
-    AEdit.Width := AWidth;
+  function NewPanel(AParent: TWinControl; AAlign: TAlign; ASize, ATop: Integer): TPanel;
+  begin
+    Result := TPanel.Create(Self);
+    Result.Parent := AParent;
+    Result.Top := ATop;
+    if AAlign in [alLeft, alRight] then
+      Result.Width := ASize
+    else
+      Result.Height := ASize;
+    Result.Align := AAlign;
+    Result.Caption := '';
+  end;
 
-    Result := lbl;
+  function NewLabel(AParent: TWinControl; ALeft, ATop: Integer;
+    const ACaption: string): TLabel;
+  begin
+    Result := TLabel.Create(Self);
+    Result.Parent := AParent;
+    Result.Left := ALeft;
+    Result.Top := ATop;
+    Result.Caption := ACaption;
+  end;
+
+  function NewEdit(AParent: TWinControl; ALeft, ATop, AWidth: Integer;
+    const AText: string): TEdit;
+  begin
+    Result := TEdit.Create(Self);
+    Result.Parent := AParent;
+    Result.Left := ALeft;
+    Result.Top := ATop;
+    Result.Width := AWidth;
+    Result.Text := AText;
+  end;
+
+  function NewButton(AParent: TWinControl; ALeft, ATop, AWidth, AHeight: Integer;
+    const ACaption: string; AHandler: TNotifyEvent): TButton;
+  begin
+    Result := TButton.Create(Self);
+    Result.Parent := AParent;
+    Result.Left := ALeft;
+    Result.Top := ATop;
+    Result.Width := AWidth;
+    Result.Height := AHeight;
+    Result.Caption := ACaption;
+    Result.Tag := AEngine;
+    Result.OnClick := AHandler;
+  end;
+
+  function NewMemo(AParent: TWinControl): TMemo;
+  begin
+    Result := TMemo.Create(Self);
+    Result.Parent := AParent;
+    Result.Align := alClient;
+    Result.ScrollBars := ssAutoBoth;
+  end;
+
+  procedure NewMenuItem(const ACaption: string; AHandler: TNotifyEvent);
+  var
+    mi: TMenuItem;
+  begin
+    mi := TMenuItem.Create(pm);
+    mi.Caption := ACaption;
+    mi.Tag := AEngine;
+    mi.OnClick := AHandler;
+    pm.Items.Add(mi);
   end;
 
 begin
-  // Create Main TabSheet on pgMain
-  ATab := TTabSheet.Create(Self);
-  ATab.PageControl := pgMain;
-  ATab.Caption := ATitle;
+  FillChar(U, SizeOf(U), 0);
 
-  // Create Connection, Query, and DataSource
-  AConnection := TZConnection.Create(Self);
-  AQuery := TZQuery.Create(Self);
-  AQuery.Connection := AConnection;
-  ADataSource := TDataSource.Create(Self);
-  ADataSource.DataSet := AQuery;
+  if AEngine = 3 then
+  begin
+    ConnectHandler := @btConectarMSSQLClick;
+    TreeHandler := @tvMSSQLChange;
+    DicHandler := @mnCriaDicionarioMSSQLClick;
+  end
+  else
+  begin
+    ConnectHandler := @btConectarOracleClick;
+    TreeHandler := @tvOracleChange;
+    DicHandler := @mnCriaDicionarioOracleClick;
+  end;
 
-  // Left Panel for Explorer Tree
-  leftPanel := TPanel.Create(Self);
-  leftPanel.Parent := ATab;
-  leftPanel.Align := alLeft;
-  leftPanel.Width := 220;
-  leftPanel.BevelOuter := bvNone;
+  // Conexao: uma consulta para comandos/metadados e outra para a grade
+  U.Conn := TZConnection.Create(Self);
+  U.ExecQry := TZQuery.Create(Self);
+  U.ExecQry.Connection := U.Conn;
+  U.GridQry := TZQuery.Create(Self);
+  U.GridQry.Connection := U.Conn;
+  U.DS := TDataSource.Create(Self);
+  U.DS.DataSet := U.GridQry;
 
-  // TreeView
-  ATreeView := TTreeView.Create(Self);
-  ATreeView.Parent := leftPanel;
-  ATreeView.Align := alClient;
-  ATreeView.Images := ImageList1;
-  ATreeView.OnChange := ATreeChangeHandler;
-  ATreeView.ReadOnly := True;
+  // Aba principal
+  U.Tab := TTabSheet.Create(Self);
+  U.Tab.PageControl := pgMain;
+  U.Tab.Caption := ATitle;
 
-  // Vertical Splitter
+  // Arvore a esquerda com campo de pesquisa (como no PostgreSQL)
+  leftPanel := NewPanel(U.Tab, alLeft, 201, 0);
+  searchPanel := NewPanel(leftPanel, alTop, 25, 0);
+  U.SearchEdit := TEdit.Create(Self);
+  U.SearchEdit.Parent := searchPanel;
+  U.SearchEdit.Align := alTop;
+  U.SearchEdit.Tag := AEngine;
+  U.SearchEdit.TextHint := 'Pesquisar tabela (Enter)';
+  U.SearchEdit.OnKeyPress := @DynPesqKeyPress;
+
+  U.Tree := TTreeView.Create(Self);
+  U.Tree.Parent := leftPanel;
+  U.Tree.Align := alClient;
+  U.Tree.Images := ImageList1;
+  U.Tree.ReadOnly := True;
+  U.Tree.RightClickSelect := True;
+  U.Tree.OnChange := TreeHandler;
+
   splitter := TSplitter.Create(Self);
-  splitter.Parent := ATab;
+  splitter.Parent := U.Tab;
+  splitter.Left := leftPanel.Left + leftPanel.Width + 1;
   splitter.Align := alLeft;
   splitter.Width := 5;
 
-  // Right Panel
-  rightPanel := TPanel.Create(Self);
-  rightPanel.Parent := ATab;
-  rightPanel.Align := alClient;
-  rightPanel.BevelOuter := bvNone;
+  rightPanel := NewPanel(U.Tab, alClient, 0, 0);
 
-  // Sub PageControl matching PostgreSQL layout (Connection, SQL, Grid, Log, Tools)
-  APC := TPageControl.Create(Self);
-  APC.Parent := rightPanel;
-  APC.Align := alClient;
+  U.PC := TPageControl.Create(Self);
+  U.PC.Parent := rightPanel;
+  U.PC.Align := alClient;
 
-  // 1. Connection Sub-Tab
-  ATSConn := TTabSheet.Create(Self);
-  ATSConn.PageControl := APC;
-  ATSConn.Caption := 'Connection';
+  // 1. Connection
+  U.TSConn := NewTab(ATitle + ' Connection');
+  NewLabel(U.TSConn, 24, 16, 'Hostname:');
+  U.HostEdit := NewEdit(U.TSConn, 24, 32, 216, '127.0.0.1');
+  NewLabel(U.TSConn, 25, 71, 'Schema:');
+  U.SchemaEdit := NewEdit(U.TSConn, 25, 87, 216, '');
+  NewLabel(U.TSConn, 24, 120, 'Banco:');
+  U.BancoEdit := NewEdit(U.TSConn, 25, 136, 215, '');
+  NewLabel(U.TSConn, 24, 176, 'Usuario:');
+  U.UserEdit := NewEdit(U.TSConn, 25, 192, 168, '');
+  NewLabel(U.TSConn, 24, 232, 'Senha:');
+  U.PassEdit := NewEdit(U.TSConn, 25, 248, 168, '');
+  U.PassEdit.PasswordChar := '*';
+  U.PassEdit.EchoMode := emPassword;
+  U.ConnectBtn := NewButton(U.TSConn, 296, 304, 75, 25, 'Conectar', ConnectHandler);
 
-  connPanel := TPanel.Create(Self);
-  connPanel.Parent := ATSConn;
-  connPanel.Align := alClient;
-  connPanel.BevelOuter := bvNone;
+  // 2. SQL  (paineis inferiores na mesma ordem do PostgreSQL, de baixo para cima)
+  U.TSSQL := NewTab('SQL');
 
-  CreateInputGroup(connPanel, 24, 20, 320, 'Servidor/Host:', AHostEdit);
-  CreateInputGroup(connPanel, 24, 75, 320, 'Banco de Dados:', ABancoEdit);
-  CreateInputGroup(connPanel, 24, 130, 320, 'Schema/Porta:', ASchemaEdit);
-  CreateInputGroup(connPanel, 24, 185, 320, 'Usuário:', AUserEdit);
-  CreateInputGroup(connPanel, 24, 240, 320, 'Senha:', APassEdit);
-  APassEdit.PasswordChar := '*';
-  APassEdit.EchoMode := emPassword;
+  sqlBarPanel := NewPanel(U.TSSQL, alBottom, 41, 10000);
+  NewLabel(sqlBarPanel, 8, 8, 'Linha:');
+  U.LineLabel := NewLabel(sqlBarPanel, 48, 8, '0');
+  NewLabel(sqlBarPanel, 96, 8, 'Coluna:');
+  U.ColLabel := NewLabel(sqlBarPanel, 144, 8, '0');
+  sqlBtnPanel := NewPanel(sqlBarPanel, alRight, 300, 0);
+  sqlBtnPanel.BevelOuter := bvNone;
+  NewButton(sqlBtnPanel, 6, 8, 88, 25, 'Analysis', @DynAnaliseClick);
+  U.OpenBtn := NewButton(sqlBtnPanel, 100, 8, 88, 25, 'Open', @DynOpenClick);
+  NewButton(sqlBtnPanel, 199, 8, 88, 25, 'Execute', @DynExecuteClick);
 
-  AConnectBtn := TButton.Create(Self);
-  AConnectBtn.Parent := connPanel;
-  AConnectBtn.Left := 24;
-  AConnectBtn.Top := 300;
-  AConnectBtn.Width := 110;
-  AConnectBtn.Height := 30;
-  AConnectBtn.Caption := 'Conectar';
-  AConnectBtn.OnClick := AConnectHandler;
+  findPanel := NewPanel(U.TSSQL, alBottom, 50, 9000);
+  U.FindList := TListBox.Create(Self);
+  U.FindList.Parent := findPanel;
+  U.FindList.Align := alClient;
+  U.FindList.OnClick := @lstfindClick;
 
-  // 2. SQL Sub-Tab
-  ATSSQL := TTabSheet.Create(Self);
-  ATSSQL.PageControl := APC;
-  ATSSQL.Caption := 'SQL';
+  sqlSplitter := TSplitter.Create(Self);
+  sqlSplitter.Parent := U.TSSQL;
+  sqlSplitter.Top := 8000;
+  sqlSplitter.Align := alBottom;
+  sqlSplitter.Height := 5;
 
-  ASynEdit := TSynEdit.Create(Self);
-  ASynEdit.Parent := ATSSQL;
-  ASynEdit.Align := alClient;
-  ASynEdit.Highlighter := SynSQLSyn2;
+  erroPanel := NewPanel(U.TSSQL, alBottom, 74, 7000);
+  U.ErrorMemo := NewMemo(erroPanel);
+  U.ErrorMemo.ReadOnly := True;
 
-  sqlBarPanel := TPanel.Create(Self);
-  sqlBarPanel.Parent := ATSSQL;
-  sqlBarPanel.Align := alBottom;
-  sqlBarPanel.Height := 42;
-  sqlBarPanel.BevelOuter := bvNone;
+  U.IAPanel := NewPanel(U.TSSQL, alBottom, 162, 6000);
+  iaBarPanel := NewPanel(U.IAPanel, alBottom, 50, 0);
+  iaBtnPanel := NewPanel(iaBarPanel, alRight, 100, 0);
+  iaBtnPanel.BevelOuter := bvNone;
+  NewButton(iaBtnPanel, 8, 8, 84, 28, 'ASK', @DynIAClick);
+  U.IAMemo := NewMemo(U.IAPanel);
 
-  AExecBtn := TButton.Create(Self);
-  AExecBtn.Parent := sqlBarPanel;
-  AExecBtn.Left := 10;
-  AExecBtn.Top := 7;
-  AExecBtn.Width := 110;
-  AExecBtn.Height := 28;
-  AExecBtn.Caption := 'Executar SQL';
-  AExecBtn.OnClick := AExecHandler;
+  pm := TPopupMenu.Create(Self);
+  NewMenuItem('Fonte', @DynFontClick);
+  NewMenuItem('Copy to New Edit', @DynNewEditClick);
+  NewMenuItem('Beautify Code', @DynEmbelezarClick);
+  NewMenuItem('-', nil);
+  NewMenuItem('IA', @DynToggleIAClick);
 
-  clearSqlBtn := TButton.Create(Self);
-  clearSqlBtn.Parent := sqlBarPanel;
-  clearSqlBtn.Left := 130;
-  clearSqlBtn.Top := 7;
-  clearSqlBtn.Width := 80;
-  clearSqlBtn.Height := 28;
-  clearSqlBtn.Caption := 'Limpar';
-  clearSqlBtn.OnClick := @btLimparSQLDynamicClick;
+  sqlPanel := NewPanel(U.TSSQL, alClient, 0, 0);
+  U.SynEdit := TSynEdit.Create(Self);
+  U.SynEdit.Parent := sqlPanel;
+  U.SynEdit.Align := alClient;
+  U.SynEdit.Highlighter := SynSQLSyn2;
+  U.SynEdit.Font.Name := 'Courier New';
+  U.SynEdit.Font.Height := -19;
+  U.SynEdit.Font.Pitch := fpFixed;
+  U.SynEdit.Font.Quality := fqDraft;
+  U.SynEdit.Tag := AEngine;
+  U.SynEdit.PopupMenu := pm;
+  U.SynEdit.OnStatusChange := @DynSQLStatusChange;
 
-  // 3. Grid Sub-Tab
-  ATSGrid := TTabSheet.Create(Self);
-  ATSGrid.PageControl := APC;
-  ATSGrid.Caption := 'Grid';
-
-  gridBarPanel := TPanel.Create(Self);
-  gridBarPanel.Parent := ATSGrid;
-  gridBarPanel.Align := alTop;
-  gridBarPanel.Height := 42;
-  gridBarPanel.BevelOuter := bvNone;
-
-  resNav := TDBNavigator.Create(Self);
-  resNav.Parent := gridBarPanel;
-  resNav.DataSource := ADataSource;
-  resNav.Left := 10;
-  resNav.Top := 8;
-  resNav.Width := 240;
-  resNav.Height := 26;
-
-  saveBtn := TButton.Create(Self);
-  saveBtn.Parent := gridBarPanel;
-  saveBtn.Caption := 'Salvar';
+  // 3. Grid
+  U.TSGrid := NewTab('Grid');
+  gridBarPanel := NewPanel(U.TSGrid, alTop, 50, 0);
+  U.Nav := TDBNavigator.Create(Self);
+  U.Nav.Parent := gridBarPanel;
+  U.Nav.Left := 36;
+  U.Nav.Top := 17;
+  U.Nav.Width := 241;
+  U.Nav.Height := 25;
+  U.Nav.DataSource := U.DS;
+  saveBtn := NewButton(gridBarPanel, 285, 17, 75, 25, 'Salvar', @btSalvarDynamicClick);
   saveBtn.Hint := 'Salva as alterações feitas no grid diretamente no banco de dados';
   saveBtn.ShowHint := True;
-  saveBtn.Left := resNav.Left + resNav.Width + 10;
-  saveBtn.Top := 8;
-  saveBtn.Width := 80;
-  saveBtn.Height := 26;
-  saveBtn.OnClick := @btSalvarDynamicClick;
+  NewButton(gridBarPanel, 368, 17, 75, 25, 'Chart', @DynChartClick);
+  U.MakeCombo := TComboBox.Create(Self);
+  U.MakeCombo.Parent := gridBarPanel;
+  U.MakeCombo.Left := 452;
+  U.MakeCombo.Top := 17;
+  U.MakeCombo.Width := 151;
+  U.MakeCombo.Style := csDropDownList;
+  U.MakeCombo.Items.Add('JSON');
+  U.MakeCombo.Items.Add('CSV');
+  U.MakeCombo.ItemIndex := 0;
+  NewButton(gridBarPanel, 612, 17, 75, 25, 'Make', @DynMakeClick);
 
-  ADBGrid := TDBGrid.Create(Self);
-  ADBGrid.Parent := ATSGrid;
-  ADBGrid.Align := alClient;
-  ADBGrid.DataSource := ADataSource;
-  ADBGrid.ReadOnly := False;
+  U.Grid := TDBGrid.Create(Self);
+  U.Grid.Parent := U.TSGrid;
+  U.Grid.Align := alClient;
+  U.Grid.DataSource := U.DS;
+  U.Grid.ReadOnly := False;
 
-  // 4. Log Sub-Tab
-  ATSLog := TTabSheet.Create(Self);
-  ATSLog.PageControl := APC;
-  ATSLog.Caption := 'Log';
+  // 4. Log
+  U.TSLog := NewTab('Log');
+  U.LogMemo := NewMemo(U.TSLog);
+  U.LogMemo.ReadOnly := True;
 
-  logBarPanel := TPanel.Create(Self);
-  logBarPanel.Parent := ATSLog;
-  logBarPanel.Align := alTop;
-  logBarPanel.Height := 36;
-  logBarPanel.BevelOuter := bvNone;
+  // 5. Tools
+  U.TSTools := NewTab('Tools');
+  if AEngine = 4 then
+    NewButton(U.TSTools, 15, 40, 186, 25, 'Cria schema', @DynCriaBancoClick)
+  else
+    NewButton(U.TSTools, 15, 40, 186, 25, 'Cria database', @DynCriaBancoClick);
+  NewButton(U.TSTools, 15, 90, 186, 25, 'Criar usuario', @DynCriaUsuarioClick);
+  NewButton(U.TSTools, 15, 139, 186, 25, 'Permissão', @DynPermissaoClick);
+  NewButton(U.TSTools, 15, 211, 186, 25, 'Comparar', @btcompararClick);
+  NewButton(U.TSTools, 15, 262, 186, 25, 'Dicionário de Dados', DicHandler);
+  NewButton(U.TSTools, 15, 311, 186, 25, 'Diagrama ER do Banco', @DiagramMenuClick);
 
-  clearLogBtn := TButton.Create(Self);
-  clearLogBtn.Parent := logBarPanel;
-  clearLogBtn.Left := 10;
-  clearLogBtn.Top := 5;
-  clearLogBtn.Width := 90;
-  clearLogBtn.Height := 26;
-  clearLogBtn.Caption := 'Limpar Log';
-  clearLogBtn.OnClick := @btLimparLogDynamicClick;
+  U.PC.ActivePage := U.TSConn;
+  FDyn[AEngine] := U;
 
-  AErrorMemo := TMemo.Create(Self);
-  AErrorMemo.Parent := ATSLog;
-  AErrorMemo.Align := alClient;
-  AErrorMemo.ReadOnly := True;
-  AErrorMemo.ScrollBars := ssAutoBoth;
+  // Campos usados pelo restante da unidade (conexao, scripts, dicionario, diagrama)
+  if AEngine = 3 then
+  begin
+    tsMSSQL := U.Tab;           pcMSSQL := U.PC;
+    tsConnMSSQL := U.TSConn;    tsSQLMSSQL := U.TSSQL;
+    tsGridMSSQL := U.TSGrid;    tsLogMSSQL := U.TSLog;
+    tsToolsMSSQL := U.TSTools;
+    zconMSSQL := U.Conn;        zmssqlqry := U.ExecQry;
+    dsmssql := U.DS;            tvMSSQL := U.Tree;
+    edHostMSSQL := U.HostEdit;  edBancoMSSQL := U.BancoEdit;
+    edUserMSSQL := U.UserEdit;  edPassMSSQL := U.PassEdit;
+    edSchemaMSSQL := U.SchemaEdit;
+    btConectarMSSQL := U.ConnectBtn;
+    edSQLMSSQL := U.SynEdit;    btExecMSSQL := U.OpenBtn;
+    dbgridMSSQL := U.Grid;      edErroMSSQL := U.ErrorMemo;
+  end
+  else
+  begin
+    tsOracle := U.Tab;          pcOracle := U.PC;
+    tsConnOracle := U.TSConn;   tsSQLOracle := U.TSSQL;
+    tsGridOracle := U.TSGrid;   tsLogOracle := U.TSLog;
+    tsToolsOracle := U.TSTools;
+    zconOracle := U.Conn;       zoracleqry := U.ExecQry;
+    dsoracle := U.DS;           tvOracle := U.Tree;
+    edHostOracle := U.HostEdit; edBancoOracle := U.BancoEdit;
+    edUserOracle := U.UserEdit; edPassOracle := U.PassEdit;
+    edSchemaOracle := U.SchemaEdit;
+    btConectarOracle := U.ConnectBtn;
+    edSQLOracle := U.SynEdit;   btExecOracle := U.OpenBtn;
+    dbgridOracle := U.Grid;     edErroOracle := U.ErrorMemo;
+  end;
+end;
 
-  // 5. Tools Sub-Tab
-  ATSTools := TTabSheet.Create(Self);
-  ATSTools.PageControl := APC;
-  ATSTools.Caption := 'Tools';
+function Tfrmmquery2.DynGridDataSet(AEngine: Integer): TDataSet;
+begin
+  Result := nil;
+  if (AEngine >= Low(FDyn)) and (AEngine <= High(FDyn)) then
+    Result := FDyn[AEngine].GridQry;
+end;
 
-  toolsPanel := TPanel.Create(Self);
-  toolsPanel.Parent := ATSTools;
-  toolsPanel.Align := alClient;
-  toolsPanel.BevelOuter := bvNone;
+function Tfrmmquery2.DynEngineFromSender(Sender: TObject): Integer;
+begin
+  Result := -1;
+  if Sender is TComponent then
+    Result := TComponent(Sender).Tag;
+  if (Result < Low(FDyn)) or (Result > High(FDyn)) then
+    Result := GetActiveEngineIndex;
+  if (Result < Low(FDyn)) or (Result > High(FDyn)) then
+    Result := -1;
+end;
 
-  dicBtn := TButton.Create(Self);
-  dicBtn.Parent := toolsPanel;
-  dicBtn.Left := 24;
-  dicBtn.Top := 24;
-  dicBtn.Width := 220;
-  dicBtn.Height := 32;
-  dicBtn.Caption := 'Dicionário de Dados';
-  dicBtn.OnClick := AToolsDicionarioHandler;
+function Tfrmmquery2.DynNome(AEngine: Integer): string;
+begin
+  if AEngine = 4 then
+    Result := 'Oracle'
+  else
+    Result := 'SQL Server';
+end;
 
-  diagBtn := TButton.Create(Self);
-  diagBtn.Parent := toolsPanel;
-  diagBtn.Left := 24;
-  diagBtn.Top := 68;
-  diagBtn.Width := 220;
-  diagBtn.Height := 32;
-  diagBtn.Caption := 'Diagrama ER do Banco';
-  diagBtn.Tag := ADiagramTag;
-  diagBtn.OnClick := @DiagramMenuClick;
+function Tfrmmquery2.DynQuoteIdent(AEngine: Integer; const AName: string): string;
+begin
+  if AEngine = 4 then
+    Result := '"' + StringReplace(Trim(AName), '"', '""', [rfReplaceAll]) + '"'
+  else
+    Result := '[' + StringReplace(Trim(AName), ']', ']]', [rfReplaceAll]) + ']';
+end;
 
-  // Start with Connection tab active
-  APC.ActivePage := ATSConn;
+function Tfrmmquery2.DynExigeConexao(AEngine: Integer): Boolean;
+begin
+  Result := (FDyn[AEngine].Conn <> nil) and FDyn[AEngine].Conn.Connected;
+  if not Result then
+    ShowMessage(DynNome(AEngine) + ' não conectado!');
+end;
+
+procedure Tfrmmquery2.DynLog(AEngine: Integer; const AMsg: string; AIsError: Boolean);
+begin
+  if (AEngine < Low(FDyn)) or (AEngine > High(FDyn)) then Exit;
+  if FDyn[AEngine].LogMemo <> nil then
+    FDyn[AEngine].LogMemo.Lines.Add(FormatDateTime('hh:nn:ss', Now) + ' ' + AMsg);
+  if AIsError and (FDyn[AEngine].ErrorMemo <> nil) then
+    FDyn[AEngine].ErrorMemo.Lines.Add(AMsg);
+end;
+
+function Tfrmmquery2.DynExecSQL(AEngine: Integer; const ASQL: string): Boolean;
+begin
+  Result := False;
+  try
+    FDyn[AEngine].ExecQry.Close;
+    FDyn[AEngine].ExecQry.SQL.Text := ASQL;
+    DynLog(AEngine, 'SQL Execute:' + ASQL);
+    FDyn[AEngine].ExecQry.ExecSQL;
+    DynLog(AEngine, Format('Comando executado. %d linhas afetadas.',
+      [FDyn[AEngine].ExecQry.RowsAffected]));
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      DynLog(AEngine, 'Error:' + E.Message, True);
+      ShowMessage('Error:' + E.Message);
+    end;
+  end;
+end;
+
+procedure Tfrmmquery2.DynOpenClick(Sender: TObject);
+var
+  E: Integer;
+  SQL: string;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  if not DynExigeConexao(E) then Exit;
+
+  SQL := Trim(FDyn[E].SynEdit.Lines.Text);
+  if SQL = '' then
+  begin
+    ShowMessage('Digite um comando SQL.');
+    Exit;
+  end;
+
+  FDyn[E].ErrorMemo.Clear;
+  try
+    FDyn[E].GridQry.Close;
+    FDyn[E].GridQry.SQL.Text := FDyn[E].SynEdit.Lines.Text;
+    DynLog(E, 'SQL OPEN:' + SQL);
+    FDyn[E].Grid.ReadOnly := False;
+    FDyn[E].GridQry.Open;
+    DynLog(E, Format('%d registros retornados.', [FDyn[E].GridQry.RecordCount]));
+    FDyn[E].PC.ActivePage := FDyn[E].TSGrid;
+  except
+    on Ex: Exception do
+    begin
+      DynLog(E, 'Error:' + Ex.Message, True);
+      ShowMessage('Error:' + Ex.Message);
+    end;
+  end;
+end;
+
+procedure Tfrmmquery2.DynExecuteClick(Sender: TObject);
+var
+  E: Integer;
+  SQL: string;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  if not DynExigeConexao(E) then Exit;
+
+  SQL := Trim(FDyn[E].SynEdit.Lines.Text);
+  if SQL = '' then
+  begin
+    ShowMessage('Digite um comando SQL.');
+    Exit;
+  end;
+
+  FDyn[E].ErrorMemo.Clear;
+  DynExecSQL(E, FDyn[E].SynEdit.Lines.Text);
+end;
+
+procedure Tfrmmquery2.DynAnaliseClick(Sender: TObject);
+var
+  E: Integer;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+
+  frmMNote.NewContext();
+  frmMNote.edChat.Text := sqltabela + FDyn[E].SynEdit.Text + ' faça em uma caixa de texto';
+  frmMNote.FazPergunta();
+end;
+
+function Tfrmmquery2.CriaListaDependenciasDyn(AEngine: Integer): string;
+var
+  Q: TZQuery;
+  L: TStringList;
+  Dono: string;
+begin
+  Result := '';
+  if (FDyn[AEngine].Conn = nil) or (not FDyn[AEngine].Conn.Connected) then Exit;
+
+  Q := TZQuery.Create(nil);
+  L := TStringList.Create;
+  try
+    Q.Connection := FDyn[AEngine].Conn;
+    if AEngine = 4 then
+    begin
+      Dono := UpperCase(Trim(FDyn[AEngine].SchemaEdit.Text));
+      if Dono = '' then Dono := UpperCase(Trim(FDyn[AEngine].UserEdit.Text));
+      Q.SQL.Text :=
+        'SELECT a.constraint_name AS FK_NAME, a.owner AS PARENT_SCHEMA, ' +
+        '       a.table_name AS PARENT_TABLE, a.column_name AS PARENT_COLUMN, ' +
+        '       b.owner AS REF_SCHEMA, b.table_name AS REF_TABLE, b.column_name AS REF_COLUMN ' +
+        'FROM all_cons_columns a ' +
+        'JOIN all_constraints c ON c.owner = a.owner AND c.constraint_name = a.constraint_name ' +
+        'JOIN all_cons_columns b ON b.owner = c.r_owner AND b.constraint_name = c.r_constraint_name ' +
+        '                       AND b.position = a.position ' +
+        'WHERE c.constraint_type = ''R'' AND a.owner = :owner ' +
+        'ORDER BY a.table_name, a.constraint_name, a.position';
+      Q.ParamByName('owner').AsString := Dono;
+    end
+    else
+      Q.SQL.Text :=
+        'SELECT fk.name AS FK_NAME, SCHEMA_NAME(tp.schema_id) AS PARENT_SCHEMA, ' +
+        '       tp.name AS PARENT_TABLE, cp.name AS PARENT_COLUMN, ' +
+        '       SCHEMA_NAME(tr.schema_id) AS REF_SCHEMA, tr.name AS REF_TABLE, cr.name AS REF_COLUMN ' +
+        'FROM sys.foreign_keys fk ' +
+        'JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id = fk.object_id ' +
+        'JOIN sys.tables tp ON tp.object_id = fkc.parent_object_id ' +
+        'JOIN sys.columns cp ON cp.object_id = fkc.parent_object_id AND cp.column_id = fkc.parent_column_id ' +
+        'JOIN sys.tables tr ON tr.object_id = fkc.referenced_object_id ' +
+        'JOIN sys.columns cr ON cr.object_id = fkc.referenced_object_id AND cr.column_id = fkc.referenced_column_id ' +
+        'ORDER BY tp.name, fk.name';
+    try
+      Q.Open;
+      while not Q.EOF do
+      begin
+        L.Add(Format('%s.%s.%s -> %s.%s.%s (%s)', [
+          Q.FieldByName('PARENT_SCHEMA').AsString,
+          Q.FieldByName('PARENT_TABLE').AsString,
+          Q.FieldByName('PARENT_COLUMN').AsString,
+          Q.FieldByName('REF_SCHEMA').AsString,
+          Q.FieldByName('REF_TABLE').AsString,
+          Q.FieldByName('REF_COLUMN').AsString,
+          Q.FieldByName('FK_NAME').AsString]));
+        Q.Next;
+      end;
+    except
+      on E: Exception do
+        DynLog(AEngine, 'Falha ao listar dependências: ' + E.Message);
+    end;
+    Result := L.Text;
+  finally
+    L.Free;
+    Q.Free;
+  end;
+end;
+
+function Tfrmmquery2.QuestionarSQLDyn(AEngine: Integer; const APergunta: string): string;
+
+  function StripCodeFences(const S: string): string;
+  var
+    R: string;
+    p1, p2: SizeInt;
+  begin
+    R := S;
+    p1 := Pos('```', R);
+    if p1 > 0 then
+    begin
+      Delete(R, 1, p1 + 2);
+      if (Length(R) >= 3) and (LowerCase(Copy(R, 1, 3)) = 'sql') then
+        Delete(R, 1, 3);
+      p2 := RPos('```', R);
+      if p2 > 0 then
+        R := Copy(R, 1, p2 - 1);
+    end;
+    Result := Trim(R);
+  end;
+
+var
+  ctxDeps, ctxDDL, ask, outSQL, DevMsg, Dialeto: string;
+begin
+  Result := '';
+
+  if (FSetMain.Provider <> 3) and (Trim(FSetMain.CHATGPT) = '') then
+  begin
+    if FSetMain.Provider = 4 then
+      ShowMessage('Configure a chave de API/Token em SetMain.CHATGPT.')
+    else
+      ShowMessage('Configure o token do ChatGPT em SetMain.CHATGPT.');
+    Exit;
+  end;
+
+  ctxDeps := CriaListaDependenciasDyn(AEngine);
+  if AEngine = 4 then
+  begin
+    ctxDDL := CriaDicionarioOracle('');
+    Dialeto := 'Oracle (SQL e PL/SQL). Não termine comandos com ponto e vírgula';
+  end
+  else
+  begin
+    ctxDDL := CriaDicionarioMSSQL('');
+    Dialeto := 'Microsoft SQL Server (T-SQL)';
+  end;
+
+  ask :=
+    'Pergunta do usuário:' + LineEnding +
+    APergunta + LineEnding + LineEnding +
+    '--- CONTEXTO: DEPENDÊNCIAS (FK) ---' + LineEnding +
+    ctxDeps + LineEnding + LineEnding +
+    '--- CONTEXTO: DDL COMPLETO DAS TABELAS ---' + LineEnding +
+    ctxDDL + LineEnding + LineEnding +
+    'Gere APENAS o SQL final (um único bloco).';
+
+  DevMsg :=
+    'Você é um assistente SQL para ' + Dialeto + '.' + LineEnding +
+    'REGRAS:' + LineEnding +
+    '1) Responda SOMENTE com SQL válido, sem explicações ou comentários.' + LineEnding +
+    '2) Use exatamente os nomes de schema/tabela/coluna informados.' + LineEnding +
+    '3) Considere as dependências (FKs) e os DDLs fornecidos.' + LineEnding +
+    '4) Se algo não for possível por falta de dados, use comentários SQL iniciando com -- TODO.' + LineEnding +
+    '5) Não gerar dados fictícios; somente DDL/DML/queries necessárias.';
+
+  if not MNoteAI.SendQuestion(ask, DevMsg, outSQL) then
+  begin
+    ShowMessage('Erro ao consultar IA: ' + MNoteAI.LastError);
+    Exit;
+  end;
+  Result := StripCodeFences(outSQL);
+end;
+
+procedure Tfrmmquery2.DynIAClick(Sender: TObject);
+var
+  E: Integer;
+  sqlIA: string;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  if not DynExigeConexao(E) then Exit;
+
+  if Trim(FDyn[E].IAMemo.Text) = '' then
+  begin
+    ShowMessage('Escreva a pergunta para a IA.');
+    Exit;
+  end;
+
+  sqlIA := QuestionarSQLDyn(E, FDyn[E].IAMemo.Text);
+  if sqlIA = '' then Exit;
+
+  FDyn[E].SynEdit.Text := sqlIA;
+  DynLog(E, 'Question:' + FDyn[E].IAMemo.Text);
+  DynLog(E, 'Return:' + sqlIA);
+  FDyn[E].PC.ActivePage := FDyn[E].TSSQL;
+end;
+
+procedure Tfrmmquery2.DynChartClick(Sender: TObject);
+var
+  E: Integer;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  if not FDyn[E].GridQry.Active then
+  begin
+    ShowMessage('Nenhum resultado ativo para plotar. Use Open primeiro.');
+    Exit;
+  end;
+  if E = 4 then
+    ChartView(ccOracle)
+  else
+    ChartView(ccMSSQL);
+end;
+
+procedure Tfrmmquery2.DynMakeClick(Sender: TObject);
+var
+  E: Integer;
+  ts: TTabSheet;
+  item: TItem;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  if not FDyn[E].GridQry.Active then
+  begin
+    ShowMessage('Nenhum resultado ativo. Use Open primeiro.');
+    Exit;
+  end;
+
+  ts := frmMNote.NovoItem();
+  item := TItem(ts.Tag);
+  case FDyn[E].MakeCombo.ItemIndex of
+    1: item.syn.Text := DatasetTocsvString(FDyn[E].GridQry);
+  else
+    item.syn.Text := DatasetToJsonString(FDyn[E].GridQry);
+  end;
+end;
+
+procedure Tfrmmquery2.DynCriaBancoClick(Sender: TObject);
+var
+  E: Integer;
+  nome, senha: string;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  if not DynExigeConexao(E) then Exit;
+
+  if E = 4 then
+  begin
+    // No Oracle um schema e criado junto com o usuario dono dele
+    nome := Trim(InputBox('Criação de schema', 'Schema (usuário dono):', 'novo_schema'));
+    if nome = '' then Exit;
+    senha := InputBox('Criação de schema', 'Senha:', 'secret');
+    FDyn[E].SynEdit.Text := 'CREATE USER ' + DynQuoteIdent(E, UpperCase(nome)) +
+      ' IDENTIFIED BY ' + DynQuoteIdent(E, senha);
+    if DynExecSQL(E, FDyn[E].SynEdit.Text) then
+      DynExecSQL(E, 'GRANT CONNECT, RESOURCE TO ' + DynQuoteIdent(E, UpperCase(nome)));
+  end
+  else
+  begin
+    nome := Trim(InputBox('Criação de database', 'Banco:', 'database'));
+    if nome = '' then Exit;
+    FDyn[E].SynEdit.Text := 'CREATE DATABASE ' + DynQuoteIdent(E, nome) + ';';
+    DynExecSQL(E, FDyn[E].SynEdit.Text);
+  end;
+end;
+
+procedure Tfrmmquery2.DynCriaUsuarioClick(Sender: TObject);
+var
+  E: Integer;
+  usuario, senha: string;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  if not DynExigeConexao(E) then Exit;
+
+  usuario := Trim(InputBox('Criação de usuário', 'Usuário:', 'username'));
+  if usuario = '' then Exit;
+  senha := InputBox('Criação de usuário', 'Senha:', 'secret');
+
+  if E = 4 then
+  begin
+    FDyn[E].SynEdit.Text := 'CREATE USER ' + DynQuoteIdent(E, UpperCase(usuario)) +
+      ' IDENTIFIED BY ' + DynQuoteIdent(E, senha);
+    if DynExecSQL(E, FDyn[E].SynEdit.Text) then
+      DynExecSQL(E, 'GRANT CREATE SESSION TO ' + DynQuoteIdent(E, UpperCase(usuario)));
+  end
+  else
+  begin
+    FDyn[E].SynEdit.Text :=
+      'CREATE LOGIN ' + DynQuoteIdent(E, usuario) + ' WITH PASSWORD = ' + QuotedStr(senha) + ';' + LineEnding +
+      'CREATE USER ' + DynQuoteIdent(E, usuario) + ' FOR LOGIN ' + DynQuoteIdent(E, usuario) + ';';
+    DynExecSQL(E, FDyn[E].SynEdit.Text);
+  end;
+end;
+
+procedure Tfrmmquery2.DynPermissaoClick(Sender: TObject);
+var
+  E: Integer;
+  usuario: string;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  if not DynExigeConexao(E) then Exit;
+
+  if E = 4 then
+  begin
+    usuario := Trim(InputBox('Permissão', 'Usuário:', 'username'));
+    if usuario = '' then Exit;
+    FDyn[E].SynEdit.Text := 'GRANT CONNECT, RESOURCE TO ' + DynQuoteIdent(E, UpperCase(usuario));
+  end
+  else
+  begin
+    usuario := Trim(InputBox('Permissão no banco conectado', 'Usuário:', 'username'));
+    if usuario = '' then Exit;
+    FDyn[E].SynEdit.Text := 'ALTER ROLE db_owner ADD MEMBER ' + DynQuoteIdent(E, usuario) + ';';
+  end;
+  DynExecSQL(E, FDyn[E].SynEdit.Text);
+end;
+
+procedure Tfrmmquery2.DynPesqKeyPress(Sender: TObject; var Key: char);
+var
+  E, I: Integer;
+  Raiz, N: TTreeNode;
+  Alvo: string;
+begin
+  if Key <> #13 then Exit;
+  Key := #0;
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+
+  if E = 4 then Raiz := posicaofieldsOracle else Raiz := posicaofieldsMSSQL;
+  Alvo := LowerCase(Trim(FDyn[E].SearchEdit.Text));
+  if (Raiz = nil) or (Alvo = '') then Exit;
+
+  // Primeiro nome exato, depois nome que contem o texto
+  for I := 0 to Raiz.Count - 1 do
+    if LowerCase(Raiz.Items[I].Text) = Alvo then
+    begin
+      FDyn[E].Tree.Select(Raiz.Items[I]);
+      Raiz.Items[I].MakeVisible;
+      Exit;
+    end;
+  for I := 0 to Raiz.Count - 1 do
+  begin
+    N := Raiz.Items[I];
+    if Pos(Alvo, LowerCase(N.Text)) > 0 then
+    begin
+      FDyn[E].Tree.Select(N);
+      N.MakeVisible;
+      Exit;
+    end;
+  end;
+end;
+
+procedure Tfrmmquery2.DynSQLStatusChange(Sender: TObject; Changes: TSynStatusChanges);
+var
+  E: Integer;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  if FDyn[E].LineLabel <> nil then
+    FDyn[E].LineLabel.Caption := IntToStr(FDyn[E].SynEdit.CaretY);
+  if FDyn[E].ColLabel <> nil then
+    FDyn[E].ColLabel.Caption := IntToStr(FDyn[E].SynEdit.CaretX);
+end;
+
+procedure Tfrmmquery2.DynFontClick(Sender: TObject);
+var
+  E: Integer;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  FontDialog1.Font := FDyn[E].SynEdit.Font;
+  if FontDialog1.Execute then
+    FDyn[E].SynEdit.Font := FontDialog1.Font;
+end;
+
+procedure Tfrmmquery2.DynNewEditClick(Sender: TObject);
+var
+  E: Integer;
+  ts: TTabSheet;
+  item: TItem;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  ts := frmMNote.NovoItem();
+  item := TItem(ts.Tag);
+  item.syn.Text := FDyn[E].SynEdit.Lines.Text;
+end;
+
+procedure Tfrmmquery2.DynEmbelezarClick(Sender: TObject);
+var
+  E: Integer;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  frmMNote.NewContext();
+  frmMNote.edChat.Text := sqlEstetica + FDyn[E].SynEdit.Text;
+  frmMNote.FazPergunta();
+  if frmMNote.meCodes.Text <> '' then
+    FDyn[E].SynEdit.Text := frmMNote.meCodes.Text;
+end;
+
+procedure Tfrmmquery2.DynToggleIAClick(Sender: TObject);
+var
+  E: Integer;
+begin
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  FDyn[E].IAPanel.Visible := not FDyn[E].IAPanel.Visible;
+end;
+
+{ ============================================================================
+  Bibliotecas de cliente (Oracle e SQL Server) em libs\<banco>\<plataforma>
+    Oracle:     libs\oracle\win32\oci.dll        (Oracle Instant Client 32 bits)
+    SQL Server: libs\mssql\win32\sybdb.dll       (FreeTDS 32 bits)
+                ou libs\mssql\win32\ntwdblib.dll (DB-Library da Microsoft)
+  Tambem aceita uma subpasta (ex.: libs\oracle\win32\instantclient_19_28),
+  o caminho configurado em Configurações de banco e a pasta do executavel.
+  ============================================================================ }
+
+function Tfrmmquery2.LocalizaBibliotecaBanco(const APasta: string;
+  const AArquivos: array of string; const AConfigurado: string): string;
+var
+  Pastas: TStringList;
+  ExeDir, Plat: string;
+  I, J: Integer;
+
+  function ProcuraEm(const ADir, AArquivo: string): string;
+  var
+    SR: TSearchRec;
+    Base: string;
+  begin
+    Result := '';
+    if (ADir = '') or not DirectoryExists(ADir) then Exit;
+    Base := IncludeTrailingPathDelimiter(ExpandFileName(ADir));
+    if FileExists(Base + AArquivo) then
+      Exit(Base + AArquivo);
+    // Um nivel de subpastas (o zip do Instant Client cria instantclient_xx_yy)
+    if FindFirst(Base + '*', faDirectory, SR) = 0 then
+    try
+      repeat
+        if ((SR.Attr and faDirectory) <> 0) and (SR.Name <> '.') and (SR.Name <> '..') and
+          FileExists(Base + SR.Name + PathDelim + AArquivo) then
+          Exit(Base + SR.Name + PathDelim + AArquivo);
+      until FindNext(SR) <> 0;
+    finally
+      FindClose(SR);
+    end;
+  end;
+
+begin
+  Result := '';
+  // Arquivo indicado explicitamente nas configuracoes tem prioridade
+  if (Trim(AConfigurado) <> '') and FileExists(Trim(AConfigurado)) then
+    Exit(ExpandFileName(Trim(AConfigurado)));
+
+  {$IFDEF WINDOWS}
+    {$IFDEF CPU64} Plat := 'win64'; {$ELSE} Plat := 'win32'; {$ENDIF}
+  {$ELSE}
+    Plat := 'Linux';
+  {$ENDIF}
+  ExeDir := ExtractFilePath(Application.ExeName);
+
+  Pastas := TStringList.Create;
+  try
+    // Instalado: <app>\libs\...   Desenvolvimento (exe em src): <projeto>\libs\...
+    Pastas.Add(ExeDir + 'libs' + PathDelim + APasta + PathDelim + Plat);
+    Pastas.Add(ExeDir + '..' + PathDelim + 'libs' + PathDelim + APasta + PathDelim + Plat);
+    if (Trim(AConfigurado) <> '') and DirectoryExists(Trim(AConfigurado)) then
+      Pastas.Add(Trim(AConfigurado));
+    Pastas.Add(ExeDir);
+
+    for I := 0 to Pastas.Count - 1 do
+      for J := Low(AArquivos) to High(AArquivos) do
+      begin
+        Result := ProcuraEm(Pastas[I], AArquivos[J]);
+        if Result <> '' then Exit;
+      end;
+  finally
+    Pastas.Free;
+  end;
+end;
+
+procedure Tfrmmquery2.PreparaPastaBiblioteca(const ABiblioteca: string);
+{$IFDEF WINDOWS}
+var
+  Dir, Atual: string;
+{$ENDIF}
+begin
+  {$IFDEF WINDOWS}
+  // As DLLs que o cliente carrega (ex.: oraociei19.dll do Instant Client)
+  // ficam na mesma pasta; o Windows so as encontra se a pasta estiver no PATH.
+  Dir := ExcludeTrailingPathDelimiter(ExtractFilePath(ABiblioteca));
+  if Dir = '' then Exit;
+  Atual := GetEnvironmentVariable('PATH');
+  if Pos(LowerCase(Dir) + ';', LowerCase(Atual) + ';') = 0 then
+    MQuerySetEnvironmentVariableW(PWideChar(UnicodeString('PATH')),
+      PWideChar(UnicodeString(Dir + ';' + Atual)));
+  {$ENDIF}
 end;
 
 function Tfrmmquery2.ConectMSSQL: Boolean;
+var
+  Biblioteca: string;
 begin
   Result := False;
 
@@ -4808,10 +6205,28 @@ begin
     FSetMain.SalvaContexto(False);
   end;
 
+  // Cliente SQL Server: libs\mssql\win32\sybdb.dll (FreeTDS) ou ntwdblib.dll
+  Biblioteca := '';
+  if FSetMain <> nil then Biblioteca := FSetMain.DLLMSSQLPath;
   {$IFDEF WINDOWS}
-  if (FSetMain <> nil) and (FSetMain.DLLMSSQLPath <> '') then
-    zconMSSQL.LibraryLocation := FSetMain.DLLMSSQLPath;
+  Biblioteca := LocalizaBibliotecaBanco('mssql', ['sybdb.dll', 'libsybdb-5.dll', 'ntwdblib.dll'], Biblioteca);
+  {$ELSE}
+  Biblioteca := LocalizaBibliotecaBanco('mssql', ['libsybdb.so.5', 'libsybdb.so'], Biblioteca);
   {$ENDIF}
+  if Biblioteca = '' then
+  begin
+    DynLog(3, 'Cliente SQL Server não encontrado (sybdb.dll ou ntwdblib.dll). Copie as DLLs ' +
+      '32 bits do FreeTDS para libs\mssql\win32 (veja o LEIA-ME.txt dessa pasta).', True);
+    Exit;
+  end;
+  PreparaPastaBiblioteca(Biblioteca);
+  zconMSSQL.LibraryLocation := Biblioteca;
+  // sybdb (FreeTDS) usa o protocolo FreeTDS; ntwdblib usa o protocolo mssql
+  if Pos('sybdb', LowerCase(ExtractFileName(Biblioteca))) > 0 then
+    zconMSSQL.Protocol := 'FreeTDS_MsSQL>=2005'
+  else
+    zconMSSQL.Protocol := 'mssql';
+  DynLog(3, 'Cliente SQL Server: ' + Biblioteca + ' (protocolo ' + zconMSSQL.Protocol + ')');
 
   try
     zconMSSQL.Connect;
@@ -4819,13 +6234,15 @@ begin
   except
     on E: Exception do
     begin
-      edErroMSSQL.Lines.Add('Erro de Conexão: ' + E.Message);
+      DynLog(3, 'Erro de Conexão: ' + E.Message, True);
       Result := False;
     end;
   end;
 end;
 
 function Tfrmmquery2.ConectOracle: Boolean;
+var
+  Biblioteca: string;
 begin
   Result := False;
 
@@ -4849,10 +6266,23 @@ begin
     FSetMain.SalvaContexto(False);
   end;
 
+  // Cliente Oracle: libs\oracle\win32\oci.dll (Oracle Instant Client 32 bits)
+  Biblioteca := '';
+  if FSetMain <> nil then Biblioteca := FSetMain.DLLOraclePath;
   {$IFDEF WINDOWS}
-  if (FSetMain <> nil) and (FSetMain.DLLOraclePath <> '') then
-    zconOracle.LibraryLocation := FSetMain.DLLOraclePath;
+  Biblioteca := LocalizaBibliotecaBanco('oracle', ['oci.dll'], Biblioteca);
+  {$ELSE}
+  Biblioteca := LocalizaBibliotecaBanco('oracle', ['libclntsh.so'], Biblioteca);
   {$ENDIF}
+  if Biblioteca = '' then
+  begin
+    DynLog(4, 'Cliente Oracle não encontrado (oci.dll). Extraia o Oracle Instant Client ' +
+      '32 bits em libs\oracle\win32 (veja o LEIA-ME.txt dessa pasta).', True);
+    Exit;
+  end;
+  PreparaPastaBiblioteca(Biblioteca);
+  zconOracle.LibraryLocation := Biblioteca;
+  DynLog(4, 'Cliente Oracle: ' + Biblioteca);
 
   try
     zconOracle.Connect;
@@ -4860,7 +6290,7 @@ begin
   except
     on E: Exception do
     begin
-      edErroOracle.Lines.Add('Erro de Conexão: ' + E.Message);
+      DynLog(4, 'Erro de Conexão: ' + E.Message, True);
       Result := False;
     end;
   end;
@@ -4877,7 +6307,7 @@ begin
 
   if not ConectMSSQL then
   begin
-    edErroMSSQL.Lines.Add('Falha ao conectar no SQL Server.');
+    DynLog(3, 'Falha ao conectar no SQL Server.', True);
     if pcMSSQL <> nil then pcMSSQL.ActivePage := tsLogMSSQL;
     Exit;
   end;
@@ -4890,12 +6320,12 @@ begin
     posicaofieldsMSSQL.ImageIndex := 15;
 
     ListarTabelasMSSQL();
-    edErroMSSQL.Lines.Add('Conectado com sucesso ao SQL Server!');
+    DynLog(3, 'Conectado com sucesso ao SQL Server!');
     if pcMSSQL <> nil then pcMSSQL.ActivePage := tsSQLMSSQL;
   except
     on E: Exception do
     begin
-      edErroMSSQL.Lines.Add('Erro ao listar tabelas: ' + E.Message);
+      DynLog(3, 'Erro ao listar tabelas: ' + E.Message, True);
       if pcMSSQL <> nil then pcMSSQL.ActivePage := tsLogMSSQL;
     end;
   end;
@@ -4915,7 +6345,7 @@ begin
 
   if not ConectOracle then
   begin
-    edErroOracle.Lines.Add('Falha ao conectar no Oracle.');
+    DynLog(4, 'Falha ao conectar no Oracle.', True);
     if pcOracle <> nil then pcOracle.ActivePage := tsLogOracle;
     Exit;
   end;
@@ -4928,12 +6358,12 @@ begin
     posicaofieldsOracle.ImageIndex := 15;
 
     ListarTabelasOracle();
-    edErroOracle.Lines.Add('Conectado com sucesso ao Oracle!');
+    DynLog(4, 'Conectado com sucesso ao Oracle!');
     if pcOracle <> nil then pcOracle.ActivePage := tsSQLOracle;
   except
     on E: Exception do
     begin
-      edErroOracle.Lines.Add('Erro ao listar tabelas: ' + E.Message);
+      DynLog(4, 'Erro ao listar tabelas: ' + E.Message, True);
       if pcOracle <> nil then pcOracle.ActivePage := tsLogOracle;
     end;
   end;
@@ -5034,7 +6464,7 @@ begin
       posicaofieldsMSSQL.Parent.Expanded := True;
     tvMSSQL.FullExpand;
     AtualizarAutocomplete(3);
-    edErroMSSQL.Lines.Add(Format('SQL Server: %d tabelas carregadas.', [QtdTabelas]));
+    DynLog(3, Format('SQL Server: %d tabelas carregadas.', [QtdTabelas]));
   end;
 end;
 
@@ -5120,97 +6550,7 @@ begin
       posicaofieldsOracle.Parent.Expanded := True;
     tvOracle.FullExpand;
     AtualizarAutocomplete(4);
-    edErroOracle.Lines.Add(Format('Oracle: %d tabelas carregadas.', [QtdTabelas]));
-  end;
-end;
-
-procedure Tfrmmquery2.btExecutarMSSQLClick(Sender: TObject);
-var
-  SQL: string;
-begin
-  edErroMSSQL.Clear;
-  SQL := Trim(edSQLMSSQL.Text);
-  if SQL = '' then
-  begin
-    edErroMSSQL.Lines.Add('Digite um comando SQL para executar.');
-    Exit;
-  end;
-
-  if not zconMSSQL.Connected then
-  begin
-    edErroMSSQL.Lines.Add('Banco de dados não conectado. Conecte primeiro.');
-    Exit;
-  end;
-
-  try
-    zmssqlqry.Close;
-    zmssqlqry.SQL.Text := SQL;
-
-    // Check if query is a SELECT statement to open or just execute
-    if UpperCase(Copy(SQL, 1, 6)) = 'SELECT' then
-    begin
-      dbgridMSSQL.ReadOnly := False;
-      zmssqlqry.Open;
-      edErroMSSQL.Lines.Add(Format('Consulta executada com sucesso! %d registros retornados.', [zmssqlqry.RecordCount]));
-      if pcMSSQL <> nil then pcMSSQL.ActivePage := tsGridMSSQL;
-    end
-    else
-    begin
-      zmssqlqry.ExecSQL;
-      edErroMSSQL.Lines.Add(Format('Comando executado com sucesso! %d linhas afetadas.', [zmssqlqry.RowsAffected]));
-      if pcMSSQL <> nil then pcMSSQL.ActivePage := tsLogMSSQL;
-    end;
-  except
-    on E: Exception do
-    begin
-      edErroMSSQL.Lines.Add('Erro ao executar SQL: ' + E.Message);
-      if pcMSSQL <> nil then pcMSSQL.ActivePage := tsLogMSSQL;
-    end;
-  end;
-end;
-
-procedure Tfrmmquery2.btExecutarOracleClick(Sender: TObject);
-var
-  SQL: string;
-begin
-  edErroOracle.Clear;
-  SQL := Trim(edSQLOracle.Text);
-  if SQL = '' then
-  begin
-    edErroOracle.Lines.Add('Digite um comando SQL para executar.');
-    Exit;
-  end;
-
-  if not zconOracle.Connected then
-  begin
-    edErroOracle.Lines.Add('Banco de dados não conectado. Conecte primeiro.');
-    Exit;
-  end;
-
-  try
-    zoracleqry.Close;
-    zoracleqry.SQL.Text := SQL;
-
-    // Check if query is a SELECT statement to open or just execute
-    if UpperCase(Copy(SQL, 1, 6)) = 'SELECT' then
-    begin
-      dbgridOracle.ReadOnly := False;
-      zoracleqry.Open;
-      edErroOracle.Lines.Add(Format('Consulta executada com sucesso! %d registros retornados.', [zoracleqry.RecordCount]));
-      if pcOracle <> nil then pcOracle.ActivePage := tsGridOracle;
-    end
-    else
-    begin
-      zoracleqry.ExecSQL;
-      edErroOracle.Lines.Add(Format('Comando executado com sucesso! %d linhas afetadas.', [zoracleqry.RowsAffected]));
-      if pcOracle <> nil then pcOracle.ActivePage := tsLogOracle;
-    end;
-  except
-    on E: Exception do
-    begin
-      edErroOracle.Lines.Add('Erro ao executar SQL: ' + E.Message);
-      if pcOracle <> nil then pcOracle.ActivePage := tsLogOracle;
-    end;
+    DynLog(4, Format('Oracle: %d tabelas carregadas.', [QtdTabelas]));
   end;
 end;
 
@@ -5568,7 +6908,7 @@ begin
     if (ATargetFile <> '') then
     begin
       outSQL.SaveToFile(targetAbsPath);
-      edLog.Append('Dicionário gerado em: ' + targetAbsPath);
+      DynLog(3, 'Dicionário gerado em: ' + targetAbsPath);
     end;
 
     Result := outSQL.Text;
@@ -5864,7 +7204,7 @@ begin
     if (ATargetFile <> '') then
     begin
       outSQL.SaveToFile(targetAbsPath);
-      edLog.Append('Dicionário gerado em: ' + targetAbsPath);
+      DynLog(4, 'Dicionário gerado em: ' + targetAbsPath);
     end;
 
     Result := outSQL.Text;
@@ -6063,11 +7403,12 @@ begin
 end;
 
 procedure Tfrmmquery2.btSalvarDynamicClick(Sender: TObject);
+var
+  E: Integer;
 begin
-  if pgMain.ActivePage = tsMSSQL then
-    SalvarAlteracoes(dbgridMSSQL, zmssqlqry)
-  else if pgMain.ActivePage = tsOracle then
-    SalvarAlteracoes(dbgridOracle, zoracleqry);
+  E := DynEngineFromSender(Sender);
+  if E < 0 then Exit;
+  SalvarAlteracoes(FDyn[E].Grid, FDyn[E].GridQry);
 end;
 
 procedure Tfrmmquery2.SalvarAlteracoes(AGrid: TDBGrid; ADataSet: TDataSet);
@@ -6855,4 +8196,4 @@ begin
   end;
 end;
 
-end.
+end.

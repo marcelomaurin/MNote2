@@ -1,0 +1,9 @@
+{
+  "type" : "sqlserver",
+  "host" : "127.0.0.1",
+  "port" : 1433,
+  "database" : "master",
+  "username" : "sa",
+  "password" : "",
+  "schema" : "dbo"
+}

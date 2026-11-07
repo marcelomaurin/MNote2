@@ -1,4 +1,4 @@
-﻿unit main;
+unit main;
 
 {$mode objfpc}{$H+}
 {$codepage utf8}
@@ -18,7 +18,7 @@ uses
   mnote_editor_theme, mnote_theme_applier, SynGutter, mnote_language_toolbar,
   mnote_language_registry, mnote_language_profile, mnote_editor_options,
   mnote_tool_windows, mnote_project_symbol_index, mnote_token_estimator,
-  mnote_tasks_panel, mnote_changes_panel, mnote_ai_change_contract,
+  aiproject_core, mnote_tasks_panel, mnote_changes_panel, mnote_ai_change_contract,
   mnote_source_change_types, mnote_db_dictionary_panel, mnote_task_list_panel,
   mnote_output_panel, mnote_output_model, mnote_problems_panel,
   mnote_build_service, mnote_terminal_panel, mnote_ai_types,
@@ -311,6 +311,10 @@ type
     FPendingPlanGeneration: Boolean;
     FPendingPlanRevision: Boolean;
     FPendingPlanInput: string;
+    FPendingTaskExecution: Boolean;
+    FPendingTaskID: string;
+    FPendingOrchestratorAction: Boolean;
+    FPendingOrchestratorKind: string;
     FPendingChangeValidation: Boolean;
     FAIProposalRetryCount: Integer;
     FAIProposalRetryQuestion: string;
@@ -368,6 +372,8 @@ type
     procedure GenerateDatabaseSQL(Sender: TObject);
     procedure ProjectTaskCreated(Sender: TObject);
     procedure ProjectPlanRequested(Sender: TObject; ARevision: Boolean);
+    procedure ProjectTaskExecuteAI(Sender: TObject; const ATaskID, APrompt: string);
+    procedure ProjectOrchestratorAction(Sender: TObject; const AAction, AContext: string);
     procedure OpenTaskFile(Sender: TObject; const AFileName: string);
     procedure OpenTaskCommit(Sender: TObject; const ACommit: string);
     procedure ChangesApplied(Sender: TObject);
@@ -1881,6 +1887,54 @@ begin
   end;
 end;
 
+procedure TfrmMNote.ProjectTaskExecuteAI(Sender: TObject; const ATaskID, APrompt: string);
+var
+  ProjectRoot: string;
+begin
+  if MNoteAI.IsBusy then
+  begin
+    MessageHint('Aguarde a operação de IA atual terminar.');
+    Exit;
+  end;
+  if GetProjectSearchFolder(ProjectRoot) then
+    MNoteAI.SetProjectRoot(ProjectRoot);
+  FPendingTaskExecution := True;
+  FPendingTaskID := ATaskID;
+  if not MNoteAI.SendRoutedAsync(aikPlanning, APrompt,
+    'Você é o arquiteto e desenvolvedor sênior responsável pela implementação desta tarefa do projeto. ' +
+    'Gere o código limpo, completo e funcional atendendo rigorosamente aos critérios de aceite e requisitos.') then
+  begin
+    FPendingTaskExecution := False;
+    MessageHint(MNoteAI.LastError);
+  end
+  else
+    MessageHint('Executando tarefa ' + ATaskID + ' com IA...');
+end;
+
+procedure TfrmMNote.ProjectOrchestratorAction(Sender: TObject; const AAction, AContext: string);
+var
+  ProjectRoot: string;
+begin
+  if MNoteAI.IsBusy then
+  begin
+    MessageHint('Aguarde a operação de IA atual terminar.');
+    Exit;
+  end;
+  if GetProjectSearchFolder(ProjectRoot) then
+    MNoteAI.SetProjectRoot(ProjectRoot);
+  FPendingOrchestratorAction := True;
+  FPendingOrchestratorKind := AAction;
+  if not MNoteAI.SendRoutedAsync(aikPlanning, AContext,
+    'Você é o orquestrador e arquiteto de software da equipe. ' +
+    'Analise as informações do projeto e retorne recomendações estruturadas para objetivos e requisitos.') then
+  begin
+    FPendingOrchestratorAction := False;
+    MessageHint(MNoteAI.LastError);
+  end
+  else
+    MessageHint('Solicitação enviada ao orquestrador de IA...');
+end;
+
 procedure TfrmMNote.OpenTaskFile(Sender: TObject; const AFileName: string);
 var
   Root, FullName, RootPrefix: string;
@@ -2371,6 +2425,46 @@ begin
         Pos('cancelado pelo usuário', LowerCase(PlanError)) > 0);
     Exit;
   end;
+  if FPendingTaskExecution then
+  begin
+    FPendingTaskExecution := False;
+    if not ASuccess then
+    begin
+      PresentAIResponse(ResponseText, False);
+      Exit;
+    end;
+    PresentAIResponse('=== IMPLEMENTAÇÃO DA TAREFA ' + FPendingTaskID + ' ===' + LineEnding + LineEnding + AResponse, True);
+    SQLPage := NovoItem();
+    if (SQLPage <> nil) and (SQLPage.Tag <> 0) then
+    begin
+      GeneratedItem := TItem(SQLPage.Tag);
+      GeneratedItem.Nome := 'task_' + FPendingTaskID + '.pas';
+      SQLPage.Caption := GeneratedItem.Nome;
+      if GeneratedItem.syn <> nil then
+        GeneratedItem.syn.Lines.Text := AResponse;
+    end;
+    if FTasksPanel <> nil then
+    begin
+      FTasksPanel.Service.ApplyTaskAction(FPendingTaskID, 'AI Agent', taRequestRevision,
+        'Código implementado por IA', '');
+      FTasksPanel.Service.Save;
+      FTasksPanel.Refresh;
+    end;
+    MessageHint('Tarefa ' + FPendingTaskID + ' implementada pela IA. Código aberto no editor.');
+    Exit;
+  end;
+  if FPendingOrchestratorAction then
+  begin
+    FPendingOrchestratorAction := False;
+    if not ASuccess then
+    begin
+      PresentAIResponse(ResponseText, False);
+      Exit;
+    end;
+    PresentAIResponse('=== RESPOSTA DO ORQUESTRADOR IA (' + FPendingOrchestratorKind + ') ===' + LineEnding + LineEnding + AResponse, True);
+    MessageHint('Sugestão da IA recebida. Verifique o painel de resultados.');
+    Exit;
+  end;
   if FPendingSQLGeneration then
   begin
     FPendingSQLGeneration := False;
@@ -2664,37 +2758,38 @@ end;
 
 procedure TfrmMNote.CommandProjectNew(Sender: TObject);
 var
-  Dialog: TSelectDirectoryDialog;
   Location, ProjectName, Description: string;
 begin
-  Dialog := TSelectDirectoryDialog.Create(Self);
-  try
-    Dialog.Title := 'Localização do novo projeto';
-    if DirectoryExists(FSetMain.Defaultfolder) then
-      Dialog.InitialDir := FSetMain.Defaultfolder;
-    if not Dialog.Execute then Exit;
-    Location := Dialog.FileName;
-  finally
-    Dialog.Free;
-  end;
-  ProjectName := '';
-  if not InputQuery('Novo projeto', 'Nome do projeto:', ProjectName) then Exit;
-  Description := '';
-  if not InputQuery('Novo projeto', 'Descrição (opcional):', Description) then
-    Exit;
-  if FProjectContext = nil then
-    FProjectContext := TMNoteProjectContext.Create;
-  if not FProjectContext.CreateNew(Location, ProjectName, Description, True) then
+  if frmNewProject = nil then
+    Application.CreateForm(TfrmNewProject, frmNewProject);
+  if DirectoryExists(FSetMain.Defaultfolder) then
+    frmNewProject.deTarget.Text := FSetMain.Defaultfolder;
+  if frmNewProject.ShowModal = mrOk then
   begin
-    MessageHint(FProjectContext.LastError);
-    Exit;
+    Location := frmNewProject.deTarget.Text;
+    ProjectName := frmNewProject.edproject.Text;
+    Description := frmNewProject.edPropose.Text;
+    if FProjectContext = nil then
+      FProjectContext := TMNoteProjectContext.Create;
+    if not FProjectContext.CreateNew(Location, ProjectName, Description, False) then
+    begin
+      MessageHint(FProjectContext.LastError);
+      Exit;
+    end;
+    FSetMain.Project := FProjectContext.PreferredPath;
+    FSetMain.Defaultfolder := FProjectContext.RootPath;
+    FSetMain.SalvaContexto(False);
+    RefreshProjectIntegration;
+    if FTasksPanel <> nil then
+    begin
+      FTasksPanel.Service.Project.Goal := Description;
+      FTasksPanel.Service.Project.Scope := frmNewProject.mespec.Text;
+      FTasksPanel.Service.Save;
+      FTasksPanel.Refresh;
+      FTasksPanel.ShowObjectivesTab;
+    end;
   end;
-  FSetMain.Project := FProjectContext.PreferredPath;
-  FSetMain.Defaultfolder := FProjectContext.RootPath;
-  FSetMain.SalvaContexto(False);
-  RefreshProjectIntegration;
 end;
-
 procedure TfrmMNote.CommandProjectOpen(Sender: TObject);
 var
   Dialog: TOpenDialog;
@@ -2783,12 +2878,12 @@ begin
     MessageHint('Nenhum projeto aberto.');
     Exit;
   end;
-  MessageDlg('Propriedades do projeto',
-    'Nome: ' + FProjectContext.DisplayName + LineEnding +
-    'Tipo: ' + MNoteProjectKindName(FProjectContext.Kind) + LineEnding +
-    'Pasta: ' + FProjectContext.RootPath + LineEnding +
-    'Arquivo: ' + FProjectContext.ProjectFile,
-    mtInformation, [mbOK], 0);
+  if FIDEShell <> nil then
+  begin
+    FIDEShell.ShowToolWindow(twkTasks);
+    if FTasksPanel <> nil then
+      FTasksPanel.ShowObjectivesTab;
+  end;
 end;
 
 function TfrmMNote.ProjectSQLiteLibraryPath: string;
@@ -3045,6 +3140,8 @@ begin
   FTasksPanel.OnPlanRequested := @ProjectPlanRequested;
   FTasksPanel.OnOpenFile := @OpenTaskFile;
   FTasksPanel.OnOpenCommit := @OpenTaskCommit;
+  FTasksPanel.OnExecuteTaskAI := @ProjectTaskExecuteAI;
+  FTasksPanel.OnOrchestratorAction := @ProjectOrchestratorAction;
   FTaskListPanel := TMNoteTaskListPanel.Create(Self);
   FTaskListPanel.OnNavigate := @NavigateSearchResult;
   FTaskListPanel.OnTaskCreated := @ProjectTaskCreated;
