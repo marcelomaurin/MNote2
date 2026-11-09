@@ -53,6 +53,21 @@ procedure BuildCompletionItems(ACatalog: TMQueryCatalog; const ASQL,
 procedure SplitSQLStatements(const ASQL: string; AList: TStrings);
 function StatementReturnsRows(const ASQL: string): Boolean;
 
+{ Oracle: o ZEOS usa apenas o campo Database como identificador de conexao
+  (HostName e ignorado). Sem servidor informado, ADatabase e usado como
+  esta (apelido do tnsnames.ora ou descritor completo). Com servidor, monta
+  uma conexao direta: //host:porta/servico (AUseSID = False) ou um descritor
+  com SID (AUseSID = True). AHost aceita "host" ou "host:porta". }
+function IsOracleFullConnectString(const S: string): Boolean;
+function BuildOracleConnectString(const AHost, ADatabase: string;
+  ADefaultPort: Integer; AUseSID: Boolean): string;
+
+{ Tipo Oracle no formato DDL a partir de ALL_TAB_COLUMNS. APrecision e
+  AScale recebem -1 quando a coluna do catalogo e nula. }
+function OracleColumnTypeSQL(const ADataType: string; ADataLength,
+  ACharLength: Integer; const ACharUsed: string; APrecision,
+  AScale: Integer): string;
+
 implementation
 
 const
@@ -558,6 +573,89 @@ begin
       'EXPLAIN', 'PRAGMA', 'VALUES', 'TABLE']);
   finally
     T.Free;
+  end;
+end;
+
+function IsOracleFullConnectString(const S: string): Boolean;
+var
+  T: string;
+begin
+  T := Trim(S);
+  Result := (Pos('(', T) > 0) or (Pos('/', T) > 0) or (Pos(':', T) > 0) or
+            (Pos('@', T) > 0);
+end;
+
+function BuildOracleConnectString(const AHost, ADatabase: string;
+  ADefaultPort: Integer; AUseSID: Boolean): string;
+var
+  Host, Banco, Porta: string;
+  P: Integer;
+begin
+  Banco := Trim(ADatabase);
+  Host := Trim(AHost);
+  Result := Banco;
+  if (Host = '') or (Banco = '') or IsOracleFullConnectString(Banco) then
+    Exit;
+
+  if ADefaultPort > 0 then
+    Porta := IntToStr(ADefaultPort)
+  else
+    Porta := '1521';
+  P := Pos(':', Host);
+  if P > 0 then
+  begin
+    if Trim(Copy(Host, P + 1, MaxInt)) <> '' then
+      Porta := Trim(Copy(Host, P + 1, MaxInt));
+    Host := Trim(Copy(Host, 1, P - 1));
+  end;
+
+  if AUseSID then
+    Result := '(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=' + Host + ')(PORT=' +
+      Porta + '))(CONNECT_DATA=(SID=' + Banco + ')))'
+  else
+    Result := '//' + Host + ':' + Porta + '/' + Banco;
+end;
+
+function OracleColumnTypeSQL(const ADataType: string; ADataLength,
+  ACharLength: Integer; const ACharUsed: string; APrecision,
+  AScale: Integer): string;
+var
+  T: string;
+begin
+  T := UpperCase(Trim(ADataType));
+  Result := T;
+  if (T = 'VARCHAR2') or (T = 'VARCHAR') or (T = 'CHAR') then
+  begin
+    if SameText(Trim(ACharUsed), 'C') and (ACharLength > 0) then
+      Result := T + '(' + IntToStr(ACharLength) + ' CHAR)'
+    else
+      Result := T + '(' + IntToStr(ADataLength) + ')';
+  end
+  else if (T = 'NVARCHAR2') or (T = 'NCHAR') then
+  begin
+    if ACharLength > 0 then
+      Result := T + '(' + IntToStr(ACharLength) + ')'
+    else
+      Result := T + '(' + IntToStr(ADataLength div 2) + ')';
+  end
+  else if (T = 'RAW') or (T = 'UROWID') then
+    Result := T + '(' + IntToStr(ADataLength) + ')'
+  else if T = 'NUMBER' then
+  begin
+    if APrecision >= 0 then
+    begin
+      if AScale > 0 then
+        Result := 'NUMBER(' + IntToStr(APrecision) + ',' + IntToStr(AScale) + ')'
+      else
+        Result := 'NUMBER(' + IntToStr(APrecision) + ')';
+    end
+    else if AScale = 0 then
+      Result := 'NUMBER(*,0)';
+  end
+  else if T = 'FLOAT' then
+  begin
+    if APrecision >= 0 then
+      Result := 'FLOAT(' + IntToStr(APrecision) + ')';
   end;
 end;
 

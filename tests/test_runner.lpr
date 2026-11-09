@@ -2141,6 +2141,27 @@ begin
     Check(L.Count = 3, 'MQuery divisao de comandos');
     Check(StatementReturnsRows('/* c */ with a as (select 1) select * from a'), 'MQuery WITH retorna dados');
     Check(not StatementReturnsRows('update t set a = 1'), 'MQuery UPDATE nao retorna dados');
+
+    // Oracle: conexao direta sem tnsnames.ora
+    Check(BuildOracleConnectString('', 'HYGIA', 0, False) = 'HYGIA', 'Oracle sem servidor usa apelido TNS');
+    Check(BuildOracleConnectString('srv', 'HYGIA', 0, False) = '//srv:1521/HYGIA', 'Oracle servico porta padrao');
+    Check(BuildOracleConnectString('srv:1522', 'HYGIA', 0, False) = '//srv:1522/HYGIA', 'Oracle porta no servidor');
+    Check(BuildOracleConnectString('srv', 'HYGIA', 1530, False) = '//srv:1530/HYGIA', 'Oracle porta configurada');
+    Check(BuildOracleConnectString('srv', 'HYGIA', 0, True) =
+      '(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=srv)(PORT=1521))(CONNECT_DATA=(SID=HYGIA)))', 'Oracle SID');
+    Check(BuildOracleConnectString('srv', 'outro:1521/XE', 0, False) = 'outro:1521/XE', 'Oracle conexao completa preservada');
+
+    // Oracle: tipos no DDL do dicionario
+    Check(OracleColumnTypeSQL('VARCHAR2', 400, 100, 'C', -1, -1) = 'VARCHAR2(100 CHAR)', 'Oracle VARCHAR2 CHAR');
+    Check(OracleColumnTypeSQL('VARCHAR2', 50, 50, 'B', -1, -1) = 'VARCHAR2(50)', 'Oracle VARCHAR2 BYTE');
+    Check(OracleColumnTypeSQL('NVARCHAR2', 100, 50, '', -1, -1) = 'NVARCHAR2(50)', 'Oracle NVARCHAR2');
+    Check(OracleColumnTypeSQL('NUMBER', 22, 0, '', 10, 2) = 'NUMBER(10,2)', 'Oracle NUMBER(p,s)');
+    Check(OracleColumnTypeSQL('NUMBER', 22, 0, '', 9, 0) = 'NUMBER(9)', 'Oracle NUMBER(p)');
+    Check(OracleColumnTypeSQL('NUMBER', 22, 0, '', -1, 0) = 'NUMBER(*,0)', 'Oracle NUMBER inteiro');
+    Check(OracleColumnTypeSQL('NUMBER', 22, 0, '', -1, -1) = 'NUMBER', 'Oracle NUMBER livre');
+    Check(OracleColumnTypeSQL('FLOAT', 22, 0, '', 126, -1) = 'FLOAT(126)', 'Oracle FLOAT');
+    Check(OracleColumnTypeSQL('TIMESTAMP(6)', 11, 0, '', -1, 6) = 'TIMESTAMP(6)', 'Oracle TIMESTAMP');
+    Check(OracleColumnTypeSQL('DATE', 7, 0, '', -1, -1) = 'DATE', 'Oracle DATE');
   finally
     L.Free;
     Cat.Free;

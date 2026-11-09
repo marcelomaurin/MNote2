@@ -258,6 +258,28 @@ não são transportados. SQLite em memória é recusado neste modo; use um arqui
 persistido. Não há edição da estrutura nem aplicação de DDL.
 Veja o [plano e acompanhamento](plano_diagrama_mquery.md) para as pendências.
 
+### 9.3. Conexão e dicionário Oracle
+
+- **Servidor**: informe `host` ou `host:porta` (padrão 1521). Com o servidor
+  preenchido, o MQuery conecta direto em `//host:porta/banco`, sem precisar de
+  `tnsnames.ora`. Se o servidor não reconhecer o nome como serviço (ORA-12514),
+  tenta de novo como SID. Com o servidor vazio, o campo **Banco** é procurado
+  no `tnsnames.ora` (em `libs\oracle\win32\network\admin`).
+- **Schema**: dono das tabelas. Vazio usa o próprio usuário. Um número nesse
+  campo é tratado como porta digitada no lugar errado e é ignorado, com aviso
+  no log. A árvore, o dicionário, a comparação, o diagrama e as dependências
+  usam sempre o mesmo dono: o que a árvore carregou.
+- **Árvore**: cada tabela mostra `fields`, `Primary Key`, `Chave Estrangeira`,
+  `Índices` e `Triggers`. Tabelas internas de índices de domínio (`DR$…`, Oracle
+  Text) e da lixeira (`BIN$…`) não são listadas.
+- **Dicionário de dados**: gera `CREATE TABLE` com tipos completos
+  (`VARCHAR2(n CHAR)`, `NVARCHAR2`, `NUMBER(p,s)`), chave primária, chaves
+  estrangeiras (inclusive para outro schema), índices (`CREATE [UNIQUE|BITMAP]
+  INDEX`) e descrições. A descrição de cada campo aparece ao lado da coluna e
+  também como `COMMENT ON TABLE/COLUMN`. Índices de domínio e baseados em
+  função saem como comentário. Uma falha em uma parte do catálogo é registrada
+  no log e o restante do dicionário é gerado.
+
 ## 10. Build, Problems, Output e Terminal
 
 Build e Rebuild escolhem o perfil do projeto e executam processo real fora da

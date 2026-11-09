@@ -529,6 +529,10 @@ type
     FCatalogs: array[0..4] of TMQueryCatalog;
     FCompletionCtl: array[0..4] of TMQueryCompletionController;
     FQueryBooks: array[0..4] of TMQueryQueryBook;
+    { Dono (schema) das tabelas Oracle carregadas na arvore; usado tambem
+      pelo dicionario, comparacao, diagrama e dependencias. }
+    FOracleOwner: string;
+    function OracleOwner: string;
     function SalvarConexaoArquivo(const AFileName: string; AEngineIndex: Integer = -1): Boolean;
     function CarregarConexaoArquivo(const AFileName: string): Boolean;
     function GetActiveSQLEditor: TSynEdit;
@@ -2675,7 +2679,7 @@ begin
       end;
     4:
       begin
-        Result.Schema := UpperCase(Trim(edSchemaOracle.Text));
+        Result.Schema := OracleOwner;
         if Result.Schema = '' then Result.Schema := UpperCase(zconOracle.User);
       end;
   end;
@@ -5081,7 +5085,7 @@ begin
     2: Result := zconsqlite;
     3: begin Result := zconMSSQL; ASchema := Trim(edSchemaMSSQL.Text);
          if ASchema = '' then ASchema := 'dbo'; end;
-    4: begin Result := zconOracle; ASchema := UpperCase(Trim(edSchemaOracle.Text));
+    4: begin Result := zconOracle; ASchema := OracleOwner;
          if ASchema = '' then ASchema := UpperCase(zconOracle.User); end;
   end;
 end;
@@ -5433,9 +5437,15 @@ begin
 
   // 1. Connection
   U.TSConn := NewTab(ATitle + ' Connection');
-  NewLabel(U.TSConn, 24, 16, 'Hostname:');
+  if AEngine = 4 then
+    NewLabel(U.TSConn, 24, 16, 'Servidor (host ou host:porta):')
+  else
+    NewLabel(U.TSConn, 24, 16, 'Hostname:');
   U.HostEdit := NewEdit(U.TSConn, 24, 32, 216, '127.0.0.1');
-  NewLabel(U.TSConn, 25, 71, 'Schema:');
+  if AEngine = 4 then
+    NewLabel(U.TSConn, 25, 71, 'Schema (dono das tabelas; vazio = usuário):')
+  else
+    NewLabel(U.TSConn, 25, 71, 'Schema:');
   U.SchemaEdit := NewEdit(U.TSConn, 25, 87, 216, '');
   NewLabel(U.TSConn, 24, 120, 'Banco:');
   U.BancoEdit := NewEdit(U.TSConn, 25, 136, 215, '');
@@ -5739,8 +5749,7 @@ begin
     Q.Connection := FDyn[AEngine].Conn;
     if AEngine = 4 then
     begin
-      Dono := UpperCase(Trim(FDyn[AEngine].SchemaEdit.Text));
-      if Dono = '' then Dono := UpperCase(Trim(FDyn[AEngine].UserEdit.Text));
+      Dono := OracleOwner;
       Q.SQL.Text :=
         'SELECT a.constraint_name AS FK_NAME, a.owner AS PARENT_SCHEMA, ' +
         '       a.table_name AS PARENT_TABLE, a.column_name AS PARENT_COLUMN, ' +
@@ -6253,18 +6262,40 @@ begin
   end;
 end;
 
+function Tfrmmquery2.OracleOwner: string;
+begin
+  // Dono das tabelas da arvore carregada (pode ter caido para o usuario)
+  if FOracleOwner <> '' then
+    Exit(FOracleOwner);
+  Result := UpperCase(Trim(edSchemaOracle.Text));
+  // Numero no campo Schema e quase sempre a porta digitada no lugar errado
+  if (Result <> '') and (StrToIntDef(Result, -1) >= 0) then
+  begin
+    DynLog(4, 'O campo Schema contém "' + Result + '", que parece uma porta. ' +
+      'Usando o usuário como schema. Para outra porta, use host:porta no servidor.', True);
+    Result := '';
+  end;
+  if Result = '' then
+    Result := UpperCase(Trim(edUserOracle.Text));
+end;
+
 function Tfrmmquery2.ConectOracle: Boolean;
 var
-  Biblioteca: string;
+  Biblioteca, ConnStr, SIDStr, Erro1: string;
 begin
   Result := False;
 
   if zconOracle.Connected then
     zconOracle.Disconnect;
 
+  FOracleOwner := '';
   zconOracle.Protocol := 'oracle';
-  zconOracle.HostName := edHostOracle.Text;
-  zconOracle.Database := edBancoOracle.Text;
+  zconOracle.HostName := Trim(edHostOracle.Text);
+  // O ZEOS usa so o campo Database no Oracle: com servidor informado,
+  // monta a conexao direta //host:porta/servico (dispensa tnsnames.ora).
+  ConnStr := BuildOracleConnectString(edHostOracle.Text, edBancoOracle.Text,
+    zconOracle.Port, False);
+  zconOracle.Database := ConnStr;
   zconOracle.User     := edUserOracle.Text;
   zconOracle.Password := edPassOracle.Text;
 
@@ -6296,16 +6327,49 @@ begin
   PreparaPastaBiblioteca(Biblioteca);
   zconOracle.LibraryLocation := Biblioteca;
   DynLog(4, 'Cliente Oracle: ' + Biblioteca);
+  DynLog(4, 'Conectando em: ' + ConnStr);
 
+  Erro1 := '';
   try
     zconOracle.Connect;
     Result := zconOracle.Connected;
   except
     on E: Exception do
     begin
-      DynLog(4, 'Erro de Conexão: ' + E.Message, True);
+      Erro1 := E.Message;
       Result := False;
     end;
+  end;
+
+  // Nome de servico desconhecido no servidor: tenta o mesmo nome como SID
+  if (not Result) and (Pos('ORA-12514', Erro1) > 0) then
+  begin
+    SIDStr := BuildOracleConnectString(edHostOracle.Text, edBancoOracle.Text,
+      zconOracle.Port, True);
+    if SIDStr <> ConnStr then
+    begin
+      DynLog(4, 'Serviço "' + Trim(edBancoOracle.Text) +
+        '" não reconhecido; tentando como SID: ' + SIDStr);
+      if zconOracle.Connected then zconOracle.Disconnect;
+      zconOracle.Database := SIDStr;
+      try
+        zconOracle.Connect;
+        Result := zconOracle.Connected;
+        Erro1 := '';
+      except
+        on E: Exception do
+          Erro1 := Erro1 + LineEnding + 'Como SID: ' + E.Message;
+      end;
+    end;
+  end;
+
+  if not Result then
+  begin
+    DynLog(4, 'Erro de Conexão: ' + Erro1, True);
+    if (Pos('ORA-12154', Erro1) > 0) and (Trim(edHostOracle.Text) = '') then
+      DynLog(4, 'Dica: informe o servidor (host ou host:porta) para conexão ' +
+        'direta, ou coloque um tnsnames.ora em ' +
+        ExtractFilePath(Biblioteca) + 'network\admin.', True);
   end;
 end;
 
@@ -6484,86 +6548,246 @@ end;
 procedure Tfrmmquery2.ListarTabelasOracle();
 var
   tvItem, tvColunas: TTreeNode;
-  SchemaNome, TabelaNome, ColLine: string;
+  Dono, TabelaNome, ColLine: string;
   colQry: TZQuery;
-  QtdTabelas: Integer;
+  QtdTabelas, Idx: Integer;
+  Campos: TStringList;   // tabela -> no "fields" (o pai e o no da tabela)
+
+  // Le um grupo (PK, FK, indices ou triggers) do schema inteiro em uma
+  // consulta e pendura um no por tabela. A consulta deve trazer TABLE_NAME,
+  // OBJ_NAME e, conforme o modo, COL_NAME, R_OWNER/R_TABLE/R_COLUMN,
+  // UNIQUENESS ou EXTRA. Ordem: TABLE_NAME, OBJ_NAME, posicao.
+  // AModo: 0 PK, 1 FK, 2 indice, 3 trigger.
+  procedure CarregaGrupo(const ASQL, ATitulo: string; ADado: Pointer;
+    AImgGrupo, AImgItem, AModo: Integer);
+  var
+    Q: TZQuery;
+    Tab, Nome, TabAtual, NomeAtual, Cols, RCols, Extra: string;
+    Grupo: TTreeNode;
+
+    procedure Emite;
+    var
+      K: Integer;
+      Linha: string;
+      N: TTreeNode;
+    begin
+      if NomeAtual = '' then Exit;
+      if not Campos.Find(TabAtual, K) then Exit;
+      if Grupo = nil then
+      begin
+        Grupo := tvOracle.Items.AddChildObject(TTreeNode(Campos.Objects[K]).Parent,
+          ATitulo, ADado);
+        Grupo.ImageIndex := AImgGrupo;
+      end;
+      case AModo of
+        1: Linha := NomeAtual + ' (' + Cols + ') → ' + Extra + '(' + RCols + ')';
+        2: Linha := NomeAtual + ' (' + Cols + ')' + Extra;
+        3: Linha := NomeAtual + ' - ' + Extra;
+      else
+        Linha := NomeAtual + ' (' + Cols + ')';
+      end;
+      N := tvOracle.Items.AddChildObject(Grupo, Linha, Pointer(0));
+      N.ImageIndex := AImgItem;
+    end;
+
+  begin
+    Q := TZQuery.Create(nil);
+    try
+      try
+        Q.Connection := zconOracle;
+        Q.SQL.Text := ASQL;
+        Q.ParamByName('p_owner').AsString := Dono;
+        Q.Open;
+        TabAtual := '';
+        NomeAtual := '';
+        Cols := '';
+        RCols := '';
+        Extra := '';
+        Grupo := nil;
+        while not Q.EOF do
+        begin
+          Tab := Q.FieldByName('TABLE_NAME').AsString;
+          Nome := Q.FieldByName('OBJ_NAME').AsString;
+          if (Tab <> TabAtual) or (Nome <> NomeAtual) then
+          begin
+            Emite;
+            if Tab <> TabAtual then
+              Grupo := nil;
+            TabAtual := Tab;
+            NomeAtual := Nome;
+            Cols := '';
+            RCols := '';
+            Extra := '';
+          end;
+          case AModo of
+            1:
+              begin
+                Extra := Q.FieldByName('R_OWNER').AsString + '.' +
+                         Q.FieldByName('R_TABLE').AsString;
+                if RCols <> '' then RCols := RCols + ', ';
+                RCols := RCols + Q.FieldByName('R_COLUMN').AsString;
+              end;
+            2:
+              if Q.FieldByName('UNIQUENESS').AsString = 'UNIQUE' then
+                Extra := ' UNIQUE'
+              else
+                Extra := '';
+            3:
+              Extra := Q.FieldByName('EXTRA').AsString;
+          end;
+          if AModo <> 3 then
+          begin
+            if Cols <> '' then Cols := Cols + ', ';
+            Cols := Cols + Q.FieldByName('COL_NAME').AsString;
+          end;
+          Q.Next;
+        end;
+        Emite;
+      except
+        on E: Exception do
+          DynLog(4, 'Oracle (' + ATitulo + '): ' + E.Message, True);
+      end;
+    finally
+      Q.Free;
+    end;
+  end;
+
 begin
-  SchemaNome := UpperCase(Trim(edSchemaOracle.Text));
+  // Dono das tabelas: schema informado ou, na falta dele, o proprio usuario.
+  // Parametros nao podem ter nome reservado do Oracle (TABLE, USER...):
+  // isso gera ORA-01745. Por isso :p_owner.
+  FOracleOwner := '';
+  Dono := OracleOwner;
 
   posicaofieldsOracle.DeleteChildren;
   QtdTabelas := 0;
-
-  zoracleqry.Close;
-  zoracleqry.SQL.Text :=
-    'SELECT OWNER, TABLE_NAME '+
-    'FROM ALL_TABLES '+
-    'WHERE (OWNER = :schema OR :schema = '''') '+
-    'ORDER BY TABLE_NAME';
-  zoracleqry.ParamByName('schema').AsString := SchemaNome;
-  try
-    zoracleqry.Open;
-    if zoracleqry.IsEmpty then
-    begin
-      zoracleqry.Close;
-      zoracleqry.SQL.Text := 'SELECT USER AS OWNER, TABLE_NAME FROM USER_TABLES ORDER BY TABLE_NAME';
-      zoracleqry.Open;
-    end;
-  except
-    zoracleqry.Close;
-    zoracleqry.SQL.Text := 'SELECT USER AS OWNER, TABLE_NAME FROM USER_TABLES ORDER BY TABLE_NAME';
-    zoracleqry.Open;
-  end;
-
+  Campos := TStringList.Create;
+  Campos.CaseSensitive := True;
+  Campos.Sorted := True;
+  Campos.Duplicates := dupIgnore;
   colQry := TZQuery.Create(Self);
   colQry.Connection := zconOracle;
+  tvOracle.Items.BeginUpdate;
   try
-    while not zoracleqry.EOF do
-    begin
-      TabelaNome := zoracleqry.FieldByName('TABLE_NAME').AsString;
-      if Trim(TabelaNome) <> '' then
+    try
+      zoracleqry.Close;
+      zoracleqry.SQL.Text :=
+        'SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = :p_owner ' +
+        // SECONDARY = 'Y': tabelas internas de indices de dominio (DR$..., Oracle Text);
+        // DROPPED = 'YES': lixeira (BIN$...)
+        '  AND SECONDARY = ''N'' AND DROPPED = ''NO'' ORDER BY TABLE_NAME';
+      zoracleqry.ParamByName('p_owner').AsString := Dono;
+      zoracleqry.Open;
+      if zoracleqry.IsEmpty then
       begin
-        Inc(QtdTabelas);
-        tvItem := tvOracle.Items.AddChildObject(posicaofieldsOracle, TabelaNome, Pointer(nil));
-        tvItem.ImageIndex := 14;
+        DynLog(4, 'Nenhuma tabela visível no schema "' + Dono +
+          '". Usando as tabelas do próprio usuário. Se as tabelas pertencem ' +
+          'a outro schema, informe-o no campo Schema.');
+        zoracleqry.Close;
+        zoracleqry.SQL.Text :=
+          'SELECT USER AS DONO, TABLE_NAME FROM USER_TABLES ' +
+          'WHERE SECONDARY = ''N'' AND DROPPED = ''NO'' ORDER BY TABLE_NAME';
+        zoracleqry.Open;
+        if not zoracleqry.IsEmpty then
+          Dono := zoracleqry.FieldByName('DONO').AsString;
+      end;
 
-        try
-          colQry.Close;
-          colQry.SQL.Text :=
-            'SELECT COLUMN_NAME, DATA_TYPE, NULLABLE, DATA_DEFAULT '+
-            'FROM ALL_TAB_COLUMNS '+
-            'WHERE TABLE_NAME = :table '+
-            'ORDER BY COLUMN_ID';
-          colQry.ParamByName('table').AsString := TabelaNome;
-          colQry.Open;
-
+      while not zoracleqry.EOF do
+      begin
+        TabelaNome := zoracleqry.FieldByName('TABLE_NAME').AsString;
+        if Trim(TabelaNome) <> '' then
+        begin
+          Inc(QtdTabelas);
+          tvItem := tvOracle.Items.AddChildObject(posicaofieldsOracle, TabelaNome, Pointer(nil));
+          tvItem.ImageIndex := 14;
           tvColunas := tvOracle.Items.AddChildObject(tvItem, 'fields', Pointer(ETDBCampos));
           tvColunas.ImageIndex := 16;
-
-          while not colQry.EOF do
-          begin
-            ColLine := colQry.FieldByName('COLUMN_NAME').AsString + ' : ' +
-                       colQry.FieldByName('DATA_TYPE').AsString;
-            if colQry.FieldByName('NULLABLE').AsString = 'N' then
-              ColLine := ColLine + ' NOT NULL';
-            if not colQry.FieldByName('DATA_DEFAULT').IsNull then
-              ColLine := ColLine + ' DEFAULT ' + colQry.FieldByName('DATA_DEFAULT').AsString;
-
-            tvOracle.Items.AddChildObject(tvColunas, ColLine, Pointer(0));
-            colQry.Next;
-          end;
-        except
+          Campos.AddObject(TabelaNome, tvColunas);
         end;
+        zoracleqry.Next;
       end;
-      zoracleqry.Next;
+      zoracleqry.Close;
+
+      // Colunas de todas as tabelas em uma unica consulta (antes: uma por tabela)
+      colQry.SQL.Text :=
+        'SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, NULLABLE ' +
+        'FROM ALL_TAB_COLUMNS WHERE OWNER = :p_owner ' +
+        'ORDER BY TABLE_NAME, COLUMN_ID';
+      colQry.ParamByName('p_owner').AsString := Dono;
+      colQry.Open;
+      while not colQry.EOF do
+      begin
+        if Campos.Find(colQry.FieldByName('TABLE_NAME').AsString, Idx) then
+        begin
+          ColLine := colQry.FieldByName('COLUMN_NAME').AsString + ' : ' +
+                     colQry.FieldByName('DATA_TYPE').AsString;
+          if colQry.FieldByName('NULLABLE').AsString = 'N' then
+            ColLine := ColLine + ' NOT NULL';
+          tvOracle.Items.AddChildObject(TTreeNode(Campos.Objects[Idx]), ColLine, Pointer(0));
+        end;
+        colQry.Next;
+      end;
+      colQry.Close;
+    except
+      on E: Exception do
+        DynLog(4, 'Erro ao listar tabelas do Oracle: ' + E.Message, True);
+    end;
+
+    if Campos.Count > 0 then
+    begin
+      // Chave primaria: mesmo formato das outras arvores ("NOME (COL1, COL2)"),
+      // usado tambem pelos scripts UPDATE/DELETE para montar o WHERE.
+      CarregaGrupo(
+        'SELECT c.TABLE_NAME, c.CONSTRAINT_NAME AS OBJ_NAME, cc.COLUMN_NAME AS COL_NAME ' +
+        'FROM ALL_CONSTRAINTS c ' +
+        'JOIN ALL_CONS_COLUMNS cc ON cc.OWNER = c.OWNER ' +
+        '  AND cc.CONSTRAINT_NAME = c.CONSTRAINT_NAME AND cc.TABLE_NAME = c.TABLE_NAME ' +
+        'WHERE c.OWNER = :p_owner AND c.CONSTRAINT_TYPE = ''P'' ' +
+        'ORDER BY c.TABLE_NAME, c.CONSTRAINT_NAME, cc.POSITION',
+        'Primary Key', Pointer(ETDBPK), 17, 18, 0);
+
+      CarregaGrupo(
+        'SELECT c.TABLE_NAME, c.CONSTRAINT_NAME AS OBJ_NAME, cc.COLUMN_NAME AS COL_NAME, ' +
+        '       rc.OWNER AS R_OWNER, rc.TABLE_NAME AS R_TABLE, rcc.COLUMN_NAME AS R_COLUMN ' +
+        'FROM ALL_CONSTRAINTS c ' +
+        'JOIN ALL_CONS_COLUMNS cc ON cc.OWNER = c.OWNER ' +
+        '  AND cc.CONSTRAINT_NAME = c.CONSTRAINT_NAME AND cc.TABLE_NAME = c.TABLE_NAME ' +
+        'JOIN ALL_CONSTRAINTS rc ON rc.OWNER = c.R_OWNER ' +
+        '  AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME ' +
+        'JOIN ALL_CONS_COLUMNS rcc ON rcc.OWNER = rc.OWNER ' +
+        '  AND rcc.CONSTRAINT_NAME = rc.CONSTRAINT_NAME AND rcc.POSITION = cc.POSITION ' +
+        'WHERE c.OWNER = :p_owner AND c.CONSTRAINT_TYPE = ''R'' ' +
+        'ORDER BY c.TABLE_NAME, c.CONSTRAINT_NAME, cc.POSITION',
+        'Chave Estrangeira', Pointer(ETDBFK), 17, 18, 1);
+
+      CarregaGrupo(
+        'SELECT i.TABLE_NAME, i.INDEX_NAME AS OBJ_NAME, ic.COLUMN_NAME AS COL_NAME, ' +
+        '       i.UNIQUENESS ' +
+        'FROM ALL_INDEXES i ' +
+        'JOIN ALL_IND_COLUMNS ic ON ic.INDEX_OWNER = i.OWNER ' +
+        '  AND ic.INDEX_NAME = i.INDEX_NAME ' +
+        'WHERE i.TABLE_OWNER = :p_owner ' +
+        'ORDER BY i.TABLE_NAME, i.INDEX_NAME, ic.COLUMN_POSITION',
+        'Índices', Pointer(nil), 17, 18, 2);
+
+      CarregaGrupo(
+        'SELECT TABLE_NAME, TRIGGER_NAME AS OBJ_NAME, ' +
+        '       TRIGGERING_EVENT || '' ('' || STATUS || '')'' AS EXTRA ' +
+        'FROM ALL_TRIGGERS ' +
+        'WHERE TABLE_OWNER = :p_owner AND BASE_OBJECT_TYPE = ''TABLE'' ' +
+        'ORDER BY TABLE_NAME, TRIGGER_NAME',
+        'Triggers', Pointer(ETDTriggers), 17, 18, 3);
     end;
   finally
+    tvOracle.Items.EndUpdate;
     colQry.Free;
+    Campos.Free;
     posicaofieldsOracle.Expanded := True;
     if posicaofieldsOracle.Parent <> nil then
       posicaofieldsOracle.Parent.Expanded := True;
-    tvOracle.FullExpand;
+    FOracleOwner := Dono;
     AtualizarAutocomplete(4);
-    DynLog(4, Format('Oracle: %d tabelas carregadas.', [QtdTabelas]));
+    DynLog(4, Format('Oracle: %d tabelas carregadas do schema %s.', [QtdTabelas, Dono]));
   end;
 end;
 
@@ -6933,227 +7157,387 @@ end;
 function Tfrmmquery2.CriaDicionarioOracle(const ATargetFile: string): string;
 var
   outSQL        : TStringList;
+  Cols, PKs, FKs, Idxs, TabCom, ColCom: TStringList;  // tabela -> TStringList (linhas)
+  qry           : TZQuery;
   schema        : string;
   tblNode       : TTreeNode;
   tblName       : string;
   targetAbsPath : string;
   targetDir     : string;
   sqlCreate     : string;
+  Erros         : Integer;
 
   function QIdent(const S: string): string;
   begin
     Result := '"' + StringReplace(S, '"', '""', [rfReplaceAll]) + '"';
   end;
 
-  function BuildColumnsSQL(const ASchema, ATable: string): TStringList;
-  var
-    qry: TZQuery;
-    line, colname, dtype, defval: string;
-    datalen, dataprec, datascale: Integer;
-    isnull: Boolean;
+  function NovoMapa: TStringList;
   begin
     Result := TStringList.Create;
-    qry := TZQuery.Create(nil);
-    try
-      qry.Connection := zconOracle;
-      qry.SQL.Text :=
-        'SELECT COLUMN_NAME, DATA_TYPE, DATA_LENGTH, DATA_PRECISION, DATA_SCALE, NULLABLE, DATA_DEFAULT ' +
-        'FROM ALL_TAB_COLUMNS ' +
-        'WHERE OWNER = :schema ' +
-        '  AND TABLE_NAME = :table ' +
-        'ORDER BY COLUMN_ID';
-      qry.ParamByName('schema').AsString := ASchema;
-      qry.ParamByName('table').AsString  := ATable;
-      qry.Open;
+    Result.CaseSensitive := True;
+    Result.Sorted := True;
+    Result.OwnsObjects := True;
+  end;
 
-      while not qry.EOF do
+  function Lista(AMap: TStringList; const ATabela: string): TStringList;
+  var
+    Idx: Integer;
+  begin
+    if not AMap.Find(ATabela, Idx) then
+      Idx := AMap.AddObject(ATabela, TStringList.Create);
+    Result := TStringList(AMap.Objects[Idx]);
+  end;
+
+  function Busca(AMap: TStringList; const ATabela: string): TStringList;
+  var
+    Idx: Integer;
+  begin
+    if AMap.Find(ATabela, Idx) then
+      Result := TStringList(AMap.Objects[Idx])
+    else
+      Result := nil;
+  end;
+
+  function IntOuNulo(const ACampo: string): Integer;
+  begin
+    if qry.FieldByName(ACampo).IsNull then
+      Result := -1
+    else
+      Result := qry.FieldByName(ACampo).AsInteger;
+  end;
+
+  // Uma consulta por tipo de informacao para o schema inteiro (antes eram
+  // tres consultas por tabela). Parametro :p_owner: TABLE e palavra
+  // reservada do Oracle e causava ORA-01745.
+  procedure LerColunas;
+  var
+    line, defval: string;
+  begin
+    qry.Close;
+    qry.SQL.Text :=
+      'SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, DATA_LENGTH, CHAR_LENGTH, ' +
+      '       CHAR_USED, DATA_PRECISION, DATA_SCALE, NULLABLE, DATA_DEFAULT ' +
+      'FROM ALL_TAB_COLUMNS ' +
+      'WHERE OWNER = :p_owner ' +
+      'ORDER BY TABLE_NAME, COLUMN_ID';
+    qry.ParamByName('p_owner').AsString := schema;
+    qry.Open;
+    while not qry.EOF do
+    begin
+      line := '  ' + QIdent(qry.FieldByName('COLUMN_NAME').AsString) + ' ' +
+        OracleColumnTypeSQL(qry.FieldByName('DATA_TYPE').AsString,
+          Max(0, IntOuNulo('DATA_LENGTH')), Max(0, IntOuNulo('CHAR_LENGTH')),
+          qry.FieldByName('CHAR_USED').AsString,
+          IntOuNulo('DATA_PRECISION'), IntOuNulo('DATA_SCALE'));
+      if not qry.FieldByName('DATA_DEFAULT').IsNull then
       begin
-        colname := qry.FieldByName('COLUMN_NAME').AsString;
-        dtype   := qry.FieldByName('DATA_TYPE').AsString;
-        isnull  := qry.FieldByName('NULLABLE').AsString = 'Y';
-
-        line := '  ' + QIdent(colname) + ' ' + dtype;
-
-        if (dtype = 'VARCHAR2') or (dtype = 'VARCHAR') or (dtype = 'CHAR') or (dtype = 'RAW') then
-        begin
-          datalen := qry.FieldByName('DATA_LENGTH').AsInteger;
-          line := line + '(' + IntToStr(datalen) + ')';
-        end
-        else if dtype = 'NUMBER' then
-        begin
-          if not qry.FieldByName('DATA_PRECISION').IsNull then
-          begin
-            dataprec := qry.FieldByName('DATA_PRECISION').AsInteger;
-            if not qry.FieldByName('DATA_SCALE').IsNull then
-            begin
-              datascale := qry.FieldByName('DATA_SCALE').AsInteger;
-              line := line + '(' + IntToStr(dataprec) + ',' + IntToStr(datascale) + ')';
-            end
-            else
-              line := line + '(' + IntToStr(dataprec) + ')';
-          end;
-        end;
-
-        if not qry.FieldByName('DATA_DEFAULT').IsNull then
-        begin
-          defval := Trim(qry.FieldByName('DATA_DEFAULT').AsString);
-          if defval <> '' then
-            line := line + ' DEFAULT ' + defval;
-        end;
-
-        if not isnull then
-          line := line + ' NOT NULL';
-
-        Result.Add(line);
-        qry.Next;
+        defval := Trim(qry.FieldByName('DATA_DEFAULT').AsString);
+        if defval <> '' then
+          line := line + ' DEFAULT ' + defval;
       end;
-    finally
-      qry.Free;
+      if qry.FieldByName('NULLABLE').AsString = 'N' then
+        line := line + ' NOT NULL';
+      Lista(Cols, qry.FieldByName('TABLE_NAME').AsString).Add(
+        qry.FieldByName('COLUMN_NAME').AsString + #9 + line);
+      qry.Next;
+    end;
+    qry.Close;
+  end;
+
+  procedure LerPKs;
+  begin
+    qry.Close;
+    qry.SQL.Text :=
+      'SELECT c.TABLE_NAME, c.CONSTRAINT_NAME, cc.COLUMN_NAME ' +
+      'FROM ALL_CONSTRAINTS c ' +
+      'JOIN ALL_CONS_COLUMNS cc ON cc.OWNER = c.OWNER ' +
+      '  AND cc.CONSTRAINT_NAME = c.CONSTRAINT_NAME AND cc.TABLE_NAME = c.TABLE_NAME ' +
+      'WHERE c.OWNER = :p_owner AND c.CONSTRAINT_TYPE = ''P'' ' +
+      'ORDER BY c.TABLE_NAME, cc.POSITION';
+    qry.ParamByName('p_owner').AsString := schema;
+    qry.Open;
+    while not qry.EOF do
+    begin
+      Lista(PKs, qry.FieldByName('TABLE_NAME').AsString).Add(
+        qry.FieldByName('CONSTRAINT_NAME').AsString + #9 +
+        qry.FieldByName('COLUMN_NAME').AsString);
+      qry.Next;
+    end;
+    qry.Close;
+  end;
+
+  procedure LerFKs;
+  begin
+    qry.Close;
+    qry.SQL.Text :=
+      'SELECT c.TABLE_NAME, c.CONSTRAINT_NAME, cc.COLUMN_NAME, ' +
+      '       rc.OWNER AS R_OWNER, rc.TABLE_NAME AS R_TABLE, rcc.COLUMN_NAME AS R_COLUMN ' +
+      'FROM ALL_CONSTRAINTS c ' +
+      'JOIN ALL_CONS_COLUMNS cc ON cc.OWNER = c.OWNER ' +
+      '  AND cc.CONSTRAINT_NAME = c.CONSTRAINT_NAME AND cc.TABLE_NAME = c.TABLE_NAME ' +
+      'JOIN ALL_CONSTRAINTS rc ON rc.OWNER = c.R_OWNER ' +
+      '  AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME ' +
+      'JOIN ALL_CONS_COLUMNS rcc ON rcc.OWNER = rc.OWNER ' +
+      '  AND rcc.CONSTRAINT_NAME = rc.CONSTRAINT_NAME AND rcc.POSITION = cc.POSITION ' +
+      'WHERE c.OWNER = :p_owner AND c.CONSTRAINT_TYPE = ''R'' ' +
+      'ORDER BY c.TABLE_NAME, c.CONSTRAINT_NAME, cc.POSITION';
+    qry.ParamByName('p_owner').AsString := schema;
+    qry.Open;
+    while not qry.EOF do
+    begin
+      Lista(FKs, qry.FieldByName('TABLE_NAME').AsString).Add(
+        qry.FieldByName('CONSTRAINT_NAME').AsString + #9 +
+        qry.FieldByName('COLUMN_NAME').AsString + #9 +
+        qry.FieldByName('R_OWNER').AsString + #9 +
+        qry.FieldByName('R_TABLE').AsString + #9 +
+        qry.FieldByName('R_COLUMN').AsString);
+      qry.Next;
+    end;
+    qry.Close;
+  end;
+
+  // Descricoes (COMMENT ON) da tabela e das colunas
+  procedure LerComentarios;
+  begin
+    qry.Close;
+    qry.SQL.Text :=
+      'SELECT TABLE_NAME, COMMENTS FROM ALL_TAB_COMMENTS ' +
+      'WHERE OWNER = :p_owner AND COMMENTS IS NOT NULL';
+    qry.ParamByName('p_owner').AsString := schema;
+    qry.Open;
+    while not qry.EOF do
+    begin
+      Lista(TabCom, qry.FieldByName('TABLE_NAME').AsString).Add(
+        qry.FieldByName('COMMENTS').AsString);
+      qry.Next;
+    end;
+    qry.Close;
+
+    qry.SQL.Text :=
+      'SELECT TABLE_NAME, COLUMN_NAME, COMMENTS FROM ALL_COL_COMMENTS ' +
+      'WHERE OWNER = :p_owner AND COMMENTS IS NOT NULL';
+    qry.ParamByName('p_owner').AsString := schema;
+    qry.Open;
+    while not qry.EOF do
+    begin
+      Lista(ColCom, qry.FieldByName('TABLE_NAME').AsString).Add(
+        qry.FieldByName('COLUMN_NAME').AsString + #9 +
+        qry.FieldByName('COMMENTS').AsString);
+      qry.Next;
+    end;
+    qry.Close;
+  end;
+
+  // Descricao de uma coluna (texto completo) ou '' se nao houver
+  function DescricaoColuna(const ATabela, AColuna: string): string;
+  var
+    L: TStringList;
+    i, P: Integer;
+  begin
+    Result := '';
+    L := Busca(ColCom, ATabela);
+    if L = nil then Exit;
+    for i := 0 to L.Count - 1 do
+    begin
+      P := Pos(#9, L[i]);
+      if (P > 0) and (Copy(L[i], 1, P - 1) = AColuna) then
+        Exit(Copy(L[i], P + 1, MaxInt));
     end;
   end;
 
-  function BuildPKSQL(const ASchema, ATable: string): TStringList;
-  var
-    qry: TZQuery;
-    constraintName, cols, col: string;
+  function UmaLinha(const S: string): string;
   begin
-    Result := TStringList.Create;
-    qry := TZQuery.Create(nil);
-    try
-      qry.Connection := zconOracle;
-      qry.SQL.Text :=
-        'SELECT c.constraint_name, cc.column_name ' +
-        'FROM all_constraints c ' +
-        'JOIN all_cons_columns cc ON c.constraint_name = cc.constraint_name AND c.owner = cc.owner ' +
-        'WHERE c.constraint_type = ''P'' ' +
-        '  AND c.owner = :schema ' +
-        '  AND c.table_name = :table ' +
-        'ORDER BY cc.position';
-      qry.ParamByName('schema').AsString := ASchema;
-      qry.ParamByName('table').AsString  := ATable;
-      qry.Open;
-
-      constraintName := '';
-      cols := '';
-      while not qry.EOF do
-      begin
-        constraintName := qry.FieldByName('constraint_name').AsString;
-        col := qry.FieldByName('column_name').AsString;
-        if cols <> '' then cols := cols + ', ';
-        cols := cols + QIdent(col);
-        qry.Next;
-      end;
-
-      if constraintName <> '' then
-      begin
-        Result.Add(
-          'ALTER TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) +
-          ' ADD CONSTRAINT ' + QIdent(constraintName) +
-          ' PRIMARY KEY (' + cols + ');'
-        );
-      end;
-    finally
-      qry.Free;
-    end;
+    Result := Trim(StringReplace(StringReplace(S, #13, ' ', [rfReplaceAll]),
+      #10, ' ', [rfReplaceAll]));
   end;
 
-  function BuildFKSQL(const ASchema, ATable: string): TStringList;
-  var
-    qry: TZQuery;
-    constraintName, lastConstraint, parentCols, refCols, refTable: string;
-    col, refCol: string;
+  // Indices que nao sustentam PK/UK (esses ja saem como constraint)
+  procedure LerIndices;
   begin
-    Result := TStringList.Create;
-    qry := TZQuery.Create(nil);
-    try
-      qry.Connection := zconOracle;
-      qry.SQL.Text :=
-        'SELECT c.constraint_name, cc.column_name, rc.table_name AS r_table, rcc.column_name AS r_column ' +
-        'FROM all_constraints c ' +
-        'JOIN all_cons_columns cc ON c.constraint_name = cc.constraint_name AND c.owner = cc.owner ' +
-        'JOIN all_constraints rc ON c.r_constraint_name = rc.constraint_name AND c.r_owner = rc.owner ' +
-        'JOIN all_cons_columns rcc ON rc.constraint_name = rcc.constraint_name AND rc.owner = rcc.owner AND cc.position = rcc.position ' +
-        'WHERE c.constraint_type = ''R'' ' +
-        '  AND c.owner = :schema ' +
-        '  AND c.table_name = :table ' +
-        'ORDER BY c.constraint_name, cc.position';
-      qry.ParamByName('schema').AsString := ASchema;
-      qry.ParamByName('table').AsString  := ATable;
-      qry.Open;
-
-      lastConstraint := '';
-      parentCols := '';
-      refCols := '';
-      refTable := '';
-
-      while not qry.EOF do
-      begin
-        constraintName := qry.FieldByName('constraint_name').AsString;
-        col := qry.FieldByName('column_name').AsString;
-        refTable := qry.FieldByName('r_table').AsString;
-        refCol := qry.FieldByName('r_column').AsString;
-
-        if (lastConstraint <> '') and (lastConstraint <> constraintName) then
-        begin
-          Result.Add(
-            'ALTER TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) +
-            ' ADD CONSTRAINT ' + QIdent(lastConstraint) +
-            ' FOREIGN KEY (' + parentCols + ') REFERENCES ' + QIdent(ASchema) + '.' + QIdent(refTable) + ' (' + refCols + ');'
-          );
-          parentCols := '';
-          refCols := '';
-        end;
-
-        lastConstraint := constraintName;
-        if parentCols <> '' then parentCols := parentCols + ', ';
-        parentCols := parentCols + QIdent(col);
-        if refCols <> '' then refCols := refCols + ', ';
-        refCols := refCols + QIdent(refCol);
-
-        qry.Next;
-      end;
-
-      if lastConstraint <> '' then
-      begin
-        Result.Add(
-          'ALTER TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) +
-          ' ADD CONSTRAINT ' + QIdent(lastConstraint) +
-          ' FOREIGN KEY (' + parentCols + ') REFERENCES ' + QIdent(ASchema) + '.' + QIdent(refTable) + ' (' + refCols + ');'
-        );
-      end;
-    finally
-      qry.Free;
+    qry.Close;
+    qry.SQL.Text :=
+      'SELECT i.TABLE_NAME, i.INDEX_NAME, i.INDEX_TYPE, i.UNIQUENESS, ' +
+      '       ic.COLUMN_NAME, ic.DESCEND ' +
+      'FROM ALL_INDEXES i ' +
+      'JOIN ALL_IND_COLUMNS ic ON ic.INDEX_OWNER = i.OWNER AND ic.INDEX_NAME = i.INDEX_NAME ' +
+      'WHERE i.TABLE_OWNER = :p_owner ' +
+      '  AND NOT EXISTS (SELECT 1 FROM ALL_CONSTRAINTS k ' +
+      '                  WHERE k.OWNER = i.TABLE_OWNER AND k.INDEX_NAME = i.INDEX_NAME ' +
+      '                    AND k.CONSTRAINT_TYPE IN (''P'', ''U'')) ' +
+      'ORDER BY i.TABLE_NAME, i.INDEX_NAME, ic.COLUMN_POSITION';
+    qry.ParamByName('p_owner').AsString := schema;
+    qry.Open;
+    while not qry.EOF do
+    begin
+      Lista(Idxs, qry.FieldByName('TABLE_NAME').AsString).Add(
+        qry.FieldByName('INDEX_NAME').AsString + #9 +
+        qry.FieldByName('INDEX_TYPE').AsString + #9 +
+        qry.FieldByName('UNIQUENESS').AsString + #9 +
+        qry.FieldByName('COLUMN_NAME').AsString + #9 +
+        qry.FieldByName('DESCEND').AsString);
+      qry.Next;
     end;
+    qry.Close;
   end;
 
-  function BuildCreateTableSQL(const ASchema, ATable: string): string;
+  function MontaIndices(const ATabela: string): string;
   var
-    cols, pks, fks: TStringList;
+    L: TStringList;
     i: Integer;
-  begin
-    cols := nil; pks := nil; fks := nil;
-    try
-      cols := BuildColumnsSQL(ASchema, ATable);
-      pks  := BuildPKSQL(ASchema, ATable);
-      fks  := BuildFKSQL(ASchema, ATable);
+    S, nome, atual, tipo, unico, cols, col: string;
 
-      Result := 'CREATE TABLE ' + QIdent(ASchema) + '.' + QIdent(ATable) + ' (' + sLineBreak;
-      for i := 0 to cols.Count - 1 do
+    procedure Fecha;
+    begin
+      if atual = '' then Exit;
+      if Pos('DOMAIN', tipo) > 0 then
+        S := S + '-- Índice de domínio ' + atual + ' (' + cols + '): tipo ' + tipo +
+          ', recriar manualmente (ex.: Oracle Text).' + sLineBreak
+      else if Pos('FUNCTION', tipo) > 0 then
+        S := S + '-- Índice baseado em função ' + atual + ' (' + cols + '): ' +
+          'a expressão não é exportada.' + sLineBreak
+      else
       begin
-        if i < cols.Count - 1 then
-          Result := Result + cols[i] + ',' + sLineBreak
-        else
-          Result := Result + cols[i] + sLineBreak;
+        S := S + 'CREATE ';
+        if unico = 'UNIQUE' then
+          S := S + 'UNIQUE '
+        else if Pos('BITMAP', tipo) > 0 then
+          S := S + 'BITMAP ';
+        S := S + 'INDEX ' + QIdent(schema) + '.' + QIdent(atual) + ' ON ' +
+          QIdent(schema) + '.' + QIdent(ATabela) + ' (' + cols + ');' + sLineBreak;
       end;
-      Result := Result + ');' + sLineBreak;
-
-      for i := 0 to pks.Count - 1 do Result := Result + pks[i] + sLineBreak;
-      for i := 0 to fks.Count - 1 do Result := Result + fks[i] + sLineBreak;
-    finally
-      cols.Free;
-      pks.Free;
-      fks.Free;
     end;
+
+  begin
+    Result := '';
+    L := Busca(Idxs, ATabela);
+    if (L = nil) or (L.Count = 0) then Exit;
+    S := '';
+    atual := '';
+    cols := '';
+    for i := 0 to L.Count - 1 do
+    begin
+      nome := ExtractDelimited(1, L[i], [#9]);
+      if nome <> atual then
+      begin
+        Fecha;
+        atual := nome;
+        tipo := UpperCase(ExtractDelimited(2, L[i], [#9]));
+        unico := UpperCase(ExtractDelimited(3, L[i], [#9]));
+        cols := '';
+      end;
+      col := QIdent(ExtractDelimited(4, L[i], [#9]));
+      if SameText(ExtractDelimited(5, L[i], [#9]), 'DESC') then
+        col := col + ' DESC';
+      if cols <> '' then cols := cols + ', ';
+      cols := cols + col;
+    end;
+    Fecha;
+    Result := S;
+  end;
+
+  function MontaPK(const ATabela: string): string;
+  var
+    L: TStringList;
+    i: Integer;
+    cols: string;
+  begin
+    Result := '';
+    L := Busca(PKs, ATabela);
+    if (L = nil) or (L.Count = 0) then Exit;
+    cols := '';
+    for i := 0 to L.Count - 1 do
+    begin
+      if cols <> '' then cols := cols + ', ';
+      cols := cols + QIdent(ExtractDelimited(2, L[i], [#9]));
+    end;
+    Result := 'ALTER TABLE ' + QIdent(schema) + '.' + QIdent(ATabela) +
+      ' ADD CONSTRAINT ' + QIdent(ExtractDelimited(1, L[0], [#9])) +
+      ' PRIMARY KEY (' + cols + ');' + sLineBreak;
+  end;
+
+  function MontaFKs(const ATabela: string): string;
+  var
+    L: TStringList;
+    i: Integer;
+    S, nome, atual, cols, rcols, rdono, rtab: string;
+  begin
+    Result := '';
+    L := Busca(FKs, ATabela);
+    if (L = nil) or (L.Count = 0) then Exit;
+    S := '';
+    atual := '';
+    cols := '';
+    rcols := '';
+    rdono := '';
+    rtab := '';
+    for i := 0 to L.Count do
+    begin
+      if i < L.Count then
+        nome := ExtractDelimited(1, L[i], [#9])
+      else
+        nome := '';
+      // fecha a FK anterior quando muda o nome (ou no fim da lista)
+      if (atual <> '') and (nome <> atual) then
+      begin
+        S := S + 'ALTER TABLE ' + QIdent(schema) + '.' + QIdent(ATabela) +
+          ' ADD CONSTRAINT ' + QIdent(atual) +
+          ' FOREIGN KEY (' + cols + ') REFERENCES ' +
+          QIdent(rdono) + '.' + QIdent(rtab) + ' (' + rcols + ');' + sLineBreak;
+        cols := '';
+        rcols := '';
+      end;
+      if i = L.Count then Break;
+      atual := nome;
+      rdono := ExtractDelimited(3, L[i], [#9]);
+      rtab := ExtractDelimited(4, L[i], [#9]);
+      if cols <> '' then cols := cols + ', ';
+      cols := cols + QIdent(ExtractDelimited(2, L[i], [#9]));
+      if rcols <> '' then rcols := rcols + ', ';
+      rcols := rcols + QIdent(ExtractDelimited(5, L[i], [#9]));
+    end;
+    Result := S;
+  end;
+
+  function MontaCreate(const ATabela: string): string;
+  var
+    L, TC: TStringList;
+    i, P: Integer;
+    S, Coluna, Linha, Desc, Comentarios: string;
+  begin
+    S := '';
+    TC := Busca(TabCom, ATabela);
+    if (TC <> nil) and (TC.Count > 0) then
+      S := S + '-- ' + UmaLinha(TC[0]) + sLineBreak;
+    S := S + 'CREATE TABLE ' + QIdent(schema) + '.' + QIdent(ATabela) + ' (' + sLineBreak;
+    Comentarios := '';
+    if (TC <> nil) and (TC.Count > 0) then
+      Comentarios := 'COMMENT ON TABLE ' + QIdent(schema) + '.' + QIdent(ATabela) +
+        ' IS ' + QuotedStr(TC[0]) + ';' + sLineBreak;
+    L := Busca(Cols, ATabela);
+    if (L <> nil) and (L.Count > 0) then
+    begin
+      for i := 0 to L.Count - 1 do
+      begin
+        P := Pos(#9, L[i]);
+        Coluna := Copy(L[i], 1, P - 1);
+        Linha := Copy(L[i], P + 1, MaxInt);
+        if i < L.Count - 1 then
+          Linha := Linha + ',';
+        Desc := DescricaoColuna(ATabela, Coluna);
+        if Desc <> '' then
+        begin
+          Linha := Linha + '  -- ' + UmaLinha(Desc);
+          Comentarios := Comentarios + 'COMMENT ON COLUMN ' + QIdent(schema) + '.' +
+            QIdent(ATabela) + '.' + QIdent(Coluna) + ' IS ' + QuotedStr(Desc) + ';' + sLineBreak;
+        end;
+        S := S + Linha + sLineBreak;
+      end;
+    end
+    else
+      S := S + '  -- colunas não disponíveis para este usuário' + sLineBreak;
+    S := S + ');' + sLineBreak;
+    Result := S + MontaPK(ATabela) + MontaFKs(ATabela) + MontaIndices(ATabela) + Comentarios;
   end;
 
 begin
@@ -7175,12 +7559,69 @@ begin
     Exit;
   end;
 
-  schema := Trim(edSchemaOracle.Text);
-  if schema = '' then schema := Trim(edUserOracle.Text);
-  schema := UpperCase(schema);
+  schema := OracleOwner;
 
+  Cols := NovoMapa;
+  PKs := NovoMapa;
+  FKs := NovoMapa;
+  Idxs := NovoMapa;
+  TabCom := NovoMapa;
+  ColCom := NovoMapa;
+  qry := TZQuery.Create(nil);
+  qry.Connection := zconOracle;
+  qry.ParamCheck := True;
   outSQL := TStringList.Create;
+  Erros := 0;
+  Screen.Cursor := crSQLWait;
   try
+    DynLog(4, 'Dicionário Oracle: lendo o schema ' + schema + '...');
+
+    try
+      LerColunas;
+    except
+      on E: Exception do
+      begin
+        Inc(Erros);
+        DynLog(4, 'Dicionário Oracle (colunas): ' + E.Message, True);
+      end;
+    end;
+    try
+      LerPKs;
+    except
+      on E: Exception do
+      begin
+        Inc(Erros);
+        DynLog(4, 'Dicionário Oracle (chaves primárias): ' + E.Message, True);
+      end;
+    end;
+    try
+      LerFKs;
+    except
+      on E: Exception do
+      begin
+        Inc(Erros);
+        DynLog(4, 'Dicionário Oracle (chaves estrangeiras): ' + E.Message, True);
+      end;
+    end;
+    try
+      LerIndices;
+    except
+      on E: Exception do
+      begin
+        Inc(Erros);
+        DynLog(4, 'Dicionário Oracle (índices): ' + E.Message, True);
+      end;
+    end;
+    try
+      LerComentarios;
+    except
+      on E: Exception do
+      begin
+        Inc(Erros);
+        DynLog(4, 'Dicionário Oracle (descrições): ' + E.Message, True);
+      end;
+    end;
+
     outSQL.Add('-- =========================================');
     outSQL.Add('-- Dicionário de dados gerado pelo MQuery2');
     outSQL.Add('-- ' + FormatDateTime('yyyy-mm-dd hh:nn:ss', Now));
@@ -7194,7 +7635,7 @@ begin
       tblName := tblNode.Text;
 
       outSQL.Add('-- ' + tblName);
-      sqlCreate := BuildCreateTableSQL(schema, tblName);
+      sqlCreate := MontaCreate(tblName);
       outSQL.Add(sqlCreate);
       outSQL.Add('');
 
@@ -7206,12 +7647,11 @@ begin
       end;
 
       tblNode := tblNode.GetNextSibling;
-      Application.ProcessMessages;
     end;
 
     targetAbsPath := ExpandFileName(ATargetFile);
     targetDir     := ExtractFilePath(targetAbsPath);
-    if targetDir <> '' then
+    if (ATargetFile <> '') and (targetDir <> '') then
       ForceDirectories(targetDir);
 
     if (ATargetFile <> '') then
@@ -7221,10 +7661,25 @@ begin
     end;
 
     Result := outSQL.Text;
+    DynLog(4, Format('Dicionário Oracle: %d tabela(s), %d erro(s).',
+      [posicaofieldsOracle.Count, Erros]));
   finally
+    Screen.Cursor := crDefault;
     outSQL.Free;
+    qry.Free;
+    Cols.Free;
+    PKs.Free;
+    FKs.Free;
+    Idxs.Free;
+    TabCom.Free;
+    ColCom.Free;
   end;
+
+  if Erros > 0 then
+    ShowMessage('O dicionário foi gerado, mas houve ' + IntToStr(Erros) +
+      ' erro(s) ao ler o catálogo do Oracle. Veja a aba Log.');
 end;
+
 
 function ExtractFieldName(const S: string): string;
 var
