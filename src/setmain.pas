@@ -333,7 +333,7 @@ begin
   FModelClaude := 'claude-3-5-sonnet-20241022';
 
   // ===== IA Local =====
-  fIPLocalIA := 'http://172.17.241.200:8095';
+  fIPLocalIA := 'http://127.0.0.1:8095';
 
   fIPFALAR := '127.0.0.1';
   fIPOUVIR := '127.0.0.1';
@@ -762,7 +762,7 @@ begin
     FProtocolSQLite := 'sqlite-3';
 
   if Trim(fIPLocalIA) = '' then
-    fIPLocalIA := 'http://172.17.241.200:8095';
+    fIPLocalIA := 'http://127.0.0.1:8095';
 
   if FProvider < 0 then
     FProvider := 0;

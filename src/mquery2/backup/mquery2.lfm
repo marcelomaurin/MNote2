@@ -3085,10 +3085,8 @@ object frmmquery2: Tfrmmquery2
     DesignConnection = True
     AfterConnect = zconpostAfterConnect
     DisableSavepoints = False
-    HostName = '192.168.7.200'
+    HostName = '127.0.0.1'
     Port = 5432
-    User = 'postgres'
-    Password = 'Secretaria@Saude'
     Protocol = 'postgresql'
     Left = 426
     Top = 187

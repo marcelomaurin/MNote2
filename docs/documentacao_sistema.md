@@ -46,6 +46,8 @@ src/
 │   └── demais classes auxiliares
 ├── mquery2/
 │   ├── mquery2.pas
+│   ├── mquery_querytabs.pas
+│   ├── mquery_sqlassist.pas
 │   ├── tabela.pas
 │   ├── typedb.pas
 │   ├── triggers.pas
@@ -406,7 +408,50 @@ Responsabilidades:
 
 - MySQL;
 - PostgreSQL;
-- SQLite.
+- SQLite;
+- SQL Server (aba criada em código por `CreateDynamicDBTab`);
+- Oracle (aba criada em código por `CreateDynamicDBTab`).
+
+### `src/mquery2/mquery_querytabs.pas`
+
+Abas de consulta e controle do autocomplete, criadas em código:
+
+- `TMQueryQueryBook`: aba **Consultas** de um banco. Recebe o `TPageControl`
+  do banco, a `TZConnection`, o catálogo e o editor antigo usado como modelo
+  de fonte e realce. Mantém várias consultas e os comandos Nova, Abrir, Salvar,
+  Salvar como, Fechar e Executar;
+- `TMQueryQueryTab`: uma consulta (`TTabSheet`) com `TSynEdit` em cima,
+  `TSplitter`, resultado embaixo (`TDBNavigator` + `TDBGrid` na aba Dados e
+  `TMemo` na aba Mensagens) e `TStatusBar`. Usa dois `TZQuery` próprios, com
+  `ParamCheck` desligado: um para comandos que retornam dados e outro para
+  `ExecSQL`;
+- `TMQueryCompletionController`: liga um `TSynCompletion` a um `TSynEdit` e a um
+  catálogo. Preenche a lista em `OnExecute`/`OnSearchPosition` e abre a lista
+  ao digitar `.` (via `OnCommandProcessed`, encadeando o evento anterior).
+
+### `src/mquery2/mquery_sqlassist.pas`
+
+Lógica sem componentes visuais, testada em `TestMQuerySQLAssist`:
+
+- `TMQueryCatalog`: tabelas e colunas de um banco, com busca por
+  `schema.tabela` ou só `tabela`;
+- `ParseTableAliases`: apelidos de `FROM`, `JOIN`, `UPDATE` e `INTO`;
+- `DetectCompletionContext` e `BuildCompletionItems`: contexto do cursor
+  (tabela, coluna ou geral) e lista filtrada;
+- `SplitSQLStatements` e `StatementReturnsRows`: divisão do script em comandos
+  e escolha entre `Open` e `ExecSQL`.
+
+### Integração em `mquery2.pas`
+
+- `FCatalogs[0..4]` (0 MySQL, 1 PostgreSQL, 2 SQLite, 3 SQL Server, 4 Oracle)
+  são preenchidos por `AtualizarAutocomplete` a partir da árvore de cada banco
+  e compartilhados pelo editor antigo e pelas abas de consulta;
+- `InicializarAutocomplete` cria um `TMQueryCompletionController` para cada
+  editor antigo;
+- `InstalarAbasConsultas` cria `FQueryBooks[0..4]` na posição 1 de cada
+  `TPageControl` de banco;
+- métodos públicos `QueryBook(AEngine)` e `NovaConsulta(AEngine, ATexto)`
+  permitem abrir uma consulta a partir de outros módulos.
 
 ### Pontos de atenção
 
@@ -576,15 +621,19 @@ resposta final é montada
 ```text
 Usuário configura conexão
         ↓
-Zeos conecta ao banco
+Zeos conecta ao banco e a árvore carrega tabelas e colunas
         ↓
-usuário escreve SQL em SynEdit
+AtualizarAutocomplete preenche o catálogo do banco
         ↓
-query é executada
+usuário abre uma ou mais consultas na aba Consultas
         ↓
-resultado aparece no grid
+escreve SQL com autocomplete (apelido., FROM/JOIN, filtro)
         ↓
-erros aparecem no painel de mensagens
+F5 executa a seleção ou o texto todo, comando a comando
+        ↓
+resultado aparece na grade abaixo do editor
+        ↓
+mensagens, total de registros e tempo aparecem embaixo
 ```
 
 ## 15. Dependências externas

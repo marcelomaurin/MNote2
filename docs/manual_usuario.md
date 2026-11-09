@@ -184,7 +184,53 @@ placeholders, mas nunca executa o SQL gerado. A transferência ao editor princip
 exige confirmação. Em produção, revise especialmente `UPDATE`, `DELETE`,
 `DROP`, `ALTER` e `CREATE`.
 
-### 9.1. Diagrama do banco
+### 9.1. Consultas e autocomplete SQL
+
+Cada banco do MQuery2 (MySQL, PostgreSQL, SQLite, SQL Server e Oracle) tem a
+aba **Consultas**, logo depois da aba de conexão. Nela é possível manter várias
+consultas abertas ao mesmo tempo, cada uma com o editor em cima e o resultado
+embaixo, separados por um divisor arrastável.
+
+![Aba Consultas do MQuery2 com autocomplete de colunas pelo apelido](../imgs/mquery_consultas.png)
+
+- **Nova consulta** (Ctrl+N) abre outra aba SQL1, SQL2…; **Abrir** (Ctrl+O)
+  carrega um ou mais arquivos `.sql`; **Salvar** (Ctrl+S) e **Salvar como**
+  (Ctrl+Shift+S) gravam o texto; **Fechar** (Ctrl+W ou clique do meio na aba)
+  pergunta antes de descartar alterações. O asterisco no título indica texto
+  não salvo. O menu de contexto das abas também oferece **Fechar as outras**.
+- **Executar** (F5 ou Ctrl+Enter) executa o trecho selecionado ou, sem seleção,
+  o texto todo. Comandos separados por `;` são executados em sequência e a
+  execução para no primeiro erro. Blocos de procedimento (`CREATE FUNCTION`,
+  `CREATE PROCEDURE`, `CREATE TRIGGER`, `BEGIN … END`, `DECLARE`) são enviados
+  inteiros.
+- O resultado tem duas abas: **Dados**, com a grade e a barra de navegação, e
+  **Mensagens**, com o registro de cada comando (registros retornados, linhas
+  afetadas ou erro). A barra inferior mostra a situação, o total de registros
+  e o tempo de execução.
+- A grade abre somente para leitura; marque **Permitir edição na grade** para
+  alterar registros.
+- Todas as consultas de um banco usam a conexão da aba de conexão daquele
+  banco. Sem conexão, a execução é recusada com aviso.
+
+O autocomplete vale para as abas de consulta e para os editores SQL antigos de
+cada banco:
+
+- abre com Ctrl+Espaço e sozinho ao digitar `.`;
+- depois de `apelido.` lista as colunas da tabela daquele apelido
+  (`FROM Person.Person p` → `p.` mostra as colunas de `Person`);
+- depois de `FROM`, `JOIN`, `INTO` e `UPDATE` lista apenas tabelas;
+- nos demais pontos mostra primeiro as colunas das tabelas usadas na consulta,
+  depois apelidos, palavras-chave e tabelas;
+- a lista é filtrada conforme a digitação.
+
+As tabelas e colunas vêm da árvore do banco; conecte e carregue a estrutura
+antes de usar. No PostgreSQL a árvore guarda o nome da tabela sem o schema:
+`schema.tabela` é reconhecido, mas o schema em si não é sugerido.
+
+As abas antigas **SQL** e **Grid** continuam disponíveis, porque a IA de banco
+e o envio de SQL a partir do editor principal ainda usam esses editores.
+
+### 9.2. Diagrama do banco
 
 Na pasta do banco no MQuery, use **Abrir diagrama do banco**. O Solution Explorer
 oferece o mesmo comando em cada banco conectado e em suas tabelas. O comando

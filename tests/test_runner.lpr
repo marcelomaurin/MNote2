@@ -26,7 +26,7 @@ uses
   mnote_project_context,
   mnote_document_export_service, mnote_capability_catalog,
   mnote_dependency_graph_service, mnote_sql_validation_service,
-  mnote_neural_api_bootstrap, mquery2;
+  mnote_neural_api_bootstrap, mquery2, mquery_sqlassist;
 
 type
   TTestService = class(TMNoteServiceBase)
@@ -2098,6 +2098,55 @@ begin
   end;
 end;
 
+procedure TestMQuerySQLAssist;
+const
+  SQL1 = 'SELECT p.BusinessEntityID, p.FirstName FROM Person.Person p WHERE p.FirstName LIKE ''And%'';';
+var
+  Cat: TMQueryCatalog;
+  L: TStringList;
+  Q, P: string;
+begin
+  Cat := TMQueryCatalog.Create(nil);
+  L := TStringList.Create;
+  try
+    Cat.AddColumn('Person', 'BusinessEntityID');
+    Cat.AddColumn('Person', 'FirstName');
+    Cat.AddColumn('Person', 'LastName');
+    Cat.AddColumn('clientes', 'id');
+    Cat.AddColumn('clientes', 'nome');
+    Cat.AddColumn('pedidos', 'cliente_id');
+
+    ParseTableAliases(SQL1, L);
+    Check(L.Values['p'] = 'Person.Person', 'MQuery apelido p nao resolvido');
+    ParseTableAliases('select * from clientes c inner join pedidos as pe on pe.cliente_id = c.id', L);
+    Check(L.Values['pe'] = 'pedidos', 'MQuery apelido com AS nao resolvido');
+    ParseTableAliases('select * from a x, b y', L);
+    Check((L.Values['x'] = 'a') and (L.Values['y'] = 'b'), 'MQuery lista de tabelas com virgula');
+
+    Check(DetectCompletionContext('SELECT p.Fi', Q, P) = mccColumn, 'MQuery contexto de coluna');
+    Check((Q = 'p') and (P = 'Fi'), 'MQuery qualificador/prefixo');
+    Check(DetectCompletionContext('SELECT * FROM ', Q, P) = mccTable, 'MQuery contexto apos FROM');
+    Check(DetectCompletionContext('SELECT a, cl', Q, P) = mccGeneral, 'MQuery virgula no SELECT');
+
+    BuildCompletionItems(Cat, SQL1, 'SELECT p.', 'p.', L);
+    Check((L.Count = 3) and (L.IndexOf('p.FirstName') >= 0), 'MQuery colunas via apelido');
+    BuildCompletionItems(Cat, SQL1, 'SELECT p.Fi', 'Fi', L);
+    Check((L.Count = 1) and (L[0] = 'FirstName'), 'MQuery filtro por prefixo');
+    BuildCompletionItems(Cat, 'select * from ', 'select * from ', '', L);
+    Check(L.Count = 3, 'MQuery lista de tabelas apos FROM');
+    BuildCompletionItems(Cat, 'select no from clientes', 'select no', 'no', L);
+    Check(L.IndexOf('nome') = 0, 'MQuery colunas da consulta primeiro');
+
+    SplitSQLStatements('select 1; insert into t values (''a;b''); update t set x = 1', L);
+    Check(L.Count = 3, 'MQuery divisao de comandos');
+    Check(StatementReturnsRows('/* c */ with a as (select 1) select * from a'), 'MQuery WITH retorna dados');
+    Check(not StatementReturnsRows('update t set a = 1'), 'MQuery UPDATE nao retorna dados');
+  finally
+    L.Free;
+    Cat.Free;
+  end;
+end;
+
 procedure TestNeuralApiBootstrap;
 const
   ContentsJSON =
@@ -2184,6 +2233,8 @@ begin
     Writeln('OK: MQuery scripts SQL (SELECT, INSERT, UPDATE, DELETE), autocomplete e edicao DBGrid');
     TestMQueryConnectionFile;
     Writeln('OK: MQuery arquivos de conexao .con JSON (MySQL, Postgres, SQLite, SQL Server, Oracle)');
+    TestMQuerySQLAssist;
+    Writeln('OK: MQuery autocompletar (apelidos, contexto, filtro) e divisao de comandos');
     Writeln('OK: descoberta, pasta e integridade do instalador neural-api');
     TestProjectCore;
     TestProjectContext;

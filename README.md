@@ -4,7 +4,7 @@ MNote2 é uma IDE desktop leve, escrita em Lazarus/Free Pascal, com editor em
 abas, busca de projeto, autocomplete local, gestão de tarefas, banco de dados,
 build e assistência multi-IA por texto ou voz.
 
-Versão desta entrega: **2.72**.
+Versão desta entrega: **2.75**.
 
 ![MNote2 IDE com IA](screenshots/MNote2_IDE_IA_2_63.png)
 
@@ -22,6 +22,9 @@ Versão desta entrega: **2.72**.
 - propostas de fonte em JSON, diff por hunk, confirmação, Apply atômico, testes
   e rollback;
 - Data Dictionary PostgreSQL/SQLite, autocomplete SQL e geração sem execução;
+- MQuery2 com várias consultas por banco, resultado na grade abaixo do editor
+  e autocomplete de tabelas e colunas que reconhece apelidos
+  ([manual](docs/manual_usuario.md#91-consultas-e-autocomplete-sql));
 - Problems, Output por canal, Build/Rebuild e Terminal;
 - núcleo portátil validado em CI Windows e Linux x64.
 - na inicialização, verifica a pasta `neural-api` e, quando ausente, procura o

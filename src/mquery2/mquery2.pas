@@ -16,7 +16,8 @@ uses
   ZVariant, ZPlainDriver, TypeDB, triggers, item, funcoes, chart,
   codigo, setmain, ZDbcIntfs, math, hint, Variants, LConvEncoding, base,
   mnote_ai_service, mnote_db_diagram_model, mnote_db_diagram_reader,
-  mnote_db_diagram_form, fpjson, jsonparser;
+  mnote_db_diagram_form, fpjson, jsonparser,
+  mquery_sqlassist, mquery_querytabs;
 
 const
   sqltabela   = 'Você poderia me fornecer a consulta SQL que deseja analisar? Assim que eu receber o SQL, irei extrair os nomes das tabelas envolvidas e gerar um código em JSON com esses nomes. A resposta será apresentada dentro de uma caixa de texto apropriada para cópia, Desta forma refaça a pergunta mesmo nao havendo certeza da resposta,claramente formatada como um código JSON:';
@@ -522,6 +523,12 @@ type
     btSalvarMy: TButton;
     btSalvarLite: TButton;
     FCompletions: array[0..4] of TSynCompletion;
+    { Catalogo (tabelas/colunas) de cada banco: 0 MySQL, 1 PostgreSQL,
+      2 SQLite, 3 SQL Server, 4 Oracle. Compartilhado pelo editor antigo
+      e pelas abas de consulta. }
+    FCatalogs: array[0..4] of TMQueryCatalog;
+    FCompletionCtl: array[0..4] of TMQueryCompletionController;
+    FQueryBooks: array[0..4] of TMQueryQueryBook;
     function SalvarConexaoArquivo(const AFileName: string; AEngineIndex: Integer = -1): Boolean;
     function CarregarConexaoArquivo(const AFileName: string): Boolean;
     function GetActiveSQLEditor: TSynEdit;
@@ -563,6 +570,8 @@ type
     procedure InicializarGridEditing;
 
     procedure InicializarAutocomplete;
+    procedure CriarCatalogos;
+    procedure InstalarAbasConsultas;
     procedure ConfigurarCompletion(AComp: TSynCompletion; AEditor: TSynEdit);
     procedure AtualizarAutocomplete(AEngineIndex: Integer);
     function GetActiveEngineIndex: Integer;
@@ -630,6 +639,8 @@ type
     function ConectSQLite: Boolean;
   public
     function DynGridDataSet(AEngine: Integer): TDataSet;
+    function QueryBook(AEngine: Integer): TMQueryQueryBook;
+    function NovaConsulta(AEngine: Integer; const ATexto: string = ''): TMQueryQueryTab;
     procedure InstallDiagramMenus;
     procedure DiagramMenuClick(Sender: TObject);
     function DiagramConnection(AIndex: Integer; out ASchema: string): TZConnection;
@@ -1299,8 +1310,10 @@ begin
   InstallTableScriptMenus;
   InstallDiagramMenus;
   InicializarGridEditing;
+  CriarCatalogos;
   InicializarAutocomplete;
   pgMain.OnChange := @pgMainChange;
+  InstalarAbasConsultas;
 
   {$IFDEF WINDOWS}
   zconpost.LibraryLocation := FSetMain.DLLPostPath;
@@ -7735,8 +7748,60 @@ begin
     FCompletions[4] := TSynCompletion.Create(Self);
   ConfigurarCompletion(FCompletions[4], edSQLOracle);
 
+  // O controlador troca a lista fixa por sugestoes conforme o contexto
+  // (tabelas apos FROM/JOIN, colunas apos "apelido.") e abre sozinho no ".".
+  for I := 0 to 4 do
+    if (FCompletions[I] <> nil) and (FCompletions[I].Editor <> nil) and
+       (FCompletionCtl[I] = nil) then
+      FCompletionCtl[I] := TMQueryCompletionController.CreateFor(Self,
+        FCompletions[I], TSynEdit(FCompletions[I].Editor), FCatalogs[I]);
+
   for I := 0 to 4 do
     AtualizarAutocomplete(I);
+end;
+
+procedure Tfrmmquery2.CriarCatalogos;
+var
+  I: Integer;
+begin
+  for I := 0 to 4 do
+    if FCatalogs[I] = nil then
+      FCatalogs[I] := TMQueryCatalog.Create(Self);
+end;
+
+procedure Tfrmmquery2.InstalarAbasConsultas;
+begin
+  // Aba "Consultas" logo apos a aba de conexao de cada banco
+  FQueryBooks[0] := TMQueryQueryBook.CreateBook(Self, pgMysql, zconmysql,
+    FCatalogs[0], edSQL, 'MySQL', 1);
+  FQueryBooks[1] := TMQueryQueryBook.CreateBook(Self, pcPostgree, zconpost,
+    FCatalogs[1], edSQLPost, 'PostgreSQL', 1);
+  FQueryBooks[2] := TMQueryQueryBook.CreateBook(Self, pgSQLite, zconsqlite,
+    FCatalogs[2], edSQL1, 'SQLite', 1);
+  if pcMSSQL <> nil then
+    FQueryBooks[3] := TMQueryQueryBook.CreateBook(Self, pcMSSQL, zconMSSQL,
+      FCatalogs[3], edSQLMSSQL, 'SQL Server', 1);
+  if pcOracle <> nil then
+    FQueryBooks[4] := TMQueryQueryBook.CreateBook(Self, pcOracle, zconOracle,
+      FCatalogs[4], edSQLOracle, 'Oracle', 1);
+end;
+
+function Tfrmmquery2.QueryBook(AEngine: Integer): TMQueryQueryBook;
+begin
+  Result := nil;
+  if (AEngine >= Low(FQueryBooks)) and (AEngine <= High(FQueryBooks)) then
+    Result := FQueryBooks[AEngine];
+end;
+
+function Tfrmmquery2.NovaConsulta(AEngine: Integer; const ATexto: string): TMQueryQueryTab;
+var
+  B: TMQueryQueryBook;
+begin
+  Result := nil;
+  B := QueryBook(AEngine);
+  if B = nil then Exit;
+  Result := B.NewQuery(ATexto);
+  B.Show;
 end;
 
 function Tfrmmquery2.GetActiveEngineIndex: Integer;
@@ -7761,11 +7826,12 @@ end;
 procedure Tfrmmquery2.AtualizarAutocomplete(AEngineIndex: Integer);
 var
   ParentRoot, TblNode, ChildNode, ColNode: TTreeNode;
-  TblName, RawText, ColName: string;
-  Items: TStringList;
+  TblName, ColName: string;
+  Cat: TMQueryCatalog;
 begin
   if (AEngineIndex < 0) or (AEngineIndex > 4) then Exit;
-  if FCompletions[AEngineIndex] = nil then Exit;
+  Cat := FCatalogs[AEngineIndex];
+  if Cat = nil then Exit;
 
   ParentRoot := nil;
   case AEngineIndex of
@@ -7776,97 +7842,37 @@ begin
     4: ParentRoot := posicaofieldsOracle;
   end;
 
-  Items := TStringList.Create;
-  try
-    Items.Sorted := True;
-    Items.Duplicates := dupIgnore;
+  // O catalogo e montado a partir da arvore ja carregada (tabela -> "fields")
+  Cat.Clear;
+  if ParentRoot = nil then Exit;
 
-    Items.Add('SELECT');
-    Items.Add('FROM');
-    Items.Add('WHERE');
-    Items.Add('INSERT INTO');
-    Items.Add('VALUES');
-    Items.Add('UPDATE');
-    Items.Add('SET');
-    Items.Add('DELETE FROM');
-    Items.Add('JOIN');
-    Items.Add('INNER JOIN');
-    Items.Add('LEFT JOIN');
-    Items.Add('RIGHT JOIN');
-    Items.Add('FULL JOIN');
-    Items.Add('CROSS JOIN');
-    Items.Add('ON');
-    Items.Add('GROUP BY');
-    Items.Add('ORDER BY');
-    Items.Add('HAVING');
-    Items.Add('LIMIT');
-    Items.Add('OFFSET');
-    Items.Add('DISTINCT');
-    Items.Add('AS');
-    Items.Add('AND');
-    Items.Add('OR');
-    Items.Add('NOT');
-    Items.Add('IN');
-    Items.Add('EXISTS');
-    Items.Add('BETWEEN');
-    Items.Add('LIKE');
-    Items.Add('IS NULL');
-    Items.Add('IS NOT NULL');
-    Items.Add('UNION');
-    Items.Add('UNION ALL');
-    Items.Add('CASE');
-    Items.Add('WHEN');
-    Items.Add('THEN');
-    Items.Add('ELSE');
-    Items.Add('END');
-    Items.Add('COUNT');
-    Items.Add('SUM');
-    Items.Add('AVG');
-    Items.Add('MIN');
-    Items.Add('MAX');
-    Items.Add('COALESCE');
-
-    if ParentRoot <> nil then
+  TblNode := ParentRoot.GetFirstChild;
+  while TblNode <> nil do
+  begin
+    TblName := Trim(TblNode.Text);
+    if TblName <> '' then
     begin
-      TblNode := ParentRoot.GetFirstChild;
-      while TblNode <> nil do
+      Cat.AddTable(TblName);
+      ChildNode := TblNode.GetFirstChild;
+      while ChildNode <> nil do
       begin
-        TblName := Trim(TblNode.Text);
-        if TblName <> '' then
+        if SameText(ChildNode.Text, 'fields') or (ChildNode.Data = Pointer(ETDBCampos)) then
         begin
-          Items.Add(TblName);
-
-          ChildNode := TblNode.GetFirstChild;
-          while ChildNode <> nil do
+          ColNode := ChildNode.GetFirstChild;
+          while ColNode <> nil do
           begin
-            if SameText(ChildNode.Text, 'fields') or (ChildNode.Data = Pointer(ETDBCampos)) then
-            begin
-              ColNode := ChildNode.GetFirstChild;
-              while ColNode <> nil do
-              begin
-                RawText := ColNode.Text;
-                ColName := ExtractFieldName(RawText);
-                if ColName <> '' then
-                begin
-                  Items.Add(ColName);
-                  Items.Add(TblName + '.' + ColName);
-                end;
-                ColNode := ColNode.GetNextSibling;
-              end;
-            end;
-            ChildNode := ChildNode.GetNextSibling;
+            ColName := ExtractFieldName(ColNode.Text);
+            if ColName <> '' then
+              Cat.AddColumn(TblName, ColName);
+            ColNode := ColNode.GetNextSibling;
           end;
         end;
-        TblNode := TblNode.GetNextSibling;
+        ChildNode := ChildNode.GetNextSibling;
       end;
     end;
-
-    FCompletions[AEngineIndex].ItemList.Assign(Items);
-  finally
-    Items.Free;
+    TblNode := TblNode.GetNextSibling;
   end;
 end;
-
 
 function NormalizarTipoBanco(const ATipo: string): string;
 var
