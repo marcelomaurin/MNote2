@@ -26,7 +26,7 @@ uses
   mnote_project_context,
   mnote_document_export_service, mnote_capability_catalog,
   mnote_dependency_graph_service, mnote_sql_validation_service,
-  mnote_neural_api_bootstrap, mquery2, mquery_sqlassist;
+  mnote_neural_api_bootstrap, mnote_secret_store, mquery2, mquery_sqlassist;
 
 type
   TTestService = class(TMNoteServiceBase)
@@ -2168,6 +2168,50 @@ begin
   end;
 end;
 
+procedure TestSecretStore;
+const
+  Names: array[0..3] of string = ('CHATGPT', 'PASSWORDMY', 'PASSWORDPOST',
+    'PASSWORDORACLE');
+var
+  Values: array[0..3] of string;
+  Stored: string;
+  I: Integer;
+begin
+  Values[0] := 'sk-teste-123';
+  Values[1] := 'S3nh@-de-teste çãé';
+  Values[2] := StringOfChar('x', 4096);
+  Values[3] := '';
+  for I := Low(Names) to High(Names) do
+  begin
+    Stored := ProtectSecret(Names[I], Values[I]);
+    Check(UnprotectSecret(Names[I], Stored) = Values[I],
+      'Segredo não sobreviveu à ida e volta: ' + Names[I]);
+    if Values[I] = '' then
+      Check(Stored = '', 'Segredo vazio deve continuar vazio')
+    else
+    begin
+      {$IFDEF WINDOWS}
+      Check(IsProtectedSecret(Stored),
+        'Segredo não foi protegido: ' + Names[I] + ' ' + SecretStoreLastError);
+      {$ENDIF}
+      if IsProtectedSecret(Stored) then
+        Check(Pos(Values[I], Stored) = 0,
+          'Valor protegido contém o segredo em texto: ' + Names[I]);
+    end;
+  end;
+  Check(UnprotectSecret('PASSWORDMY', 'senha:antiga') = 'senha:antiga',
+    'Valor antigo em texto puro deve ser devolvido intacto');
+  Check(not IsProtectedSecret('senha:antiga'),
+    'Texto puro foi classificado como protegido');
+  Check(UnprotectSecret('CHATGPT', 'dpapi:@@invalido@@') = '',
+    'Valor protegido inválido deve devolver vazio');
+  {$IFDEF WINDOWS}
+  Stored := ProtectSecret('PASSWORDMY', 'troca-de-campo');
+  Check(UnprotectSecret('CHATGPT', Stored) = '',
+    'Segredo de um campo não pode abrir em outro');
+  {$ENDIF}
+end;
+
 procedure TestNeuralApiBootstrap;
 const
   ContentsJSON =
@@ -2570,6 +2614,8 @@ begin
     Writeln('OK: chat usa o perfil selecionado e suas instruções');
     TestAIUtilities;
     Writeln('OK: prompt, estimativa de contexto e palavra de ativação');
+    TestSecretStore;
+    Writeln('OK: proteção de segredos do mnote.cfg');
     with TTestService.Create do
     try
       with TErrorObserver.Create do

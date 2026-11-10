@@ -70,7 +70,7 @@ begin
   ClearError;
   GitProcess := TProcess.Create(nil);
   try
-    GitProcess.Executable := 'git.exe';
+    GitProcess.Executable := {$IFDEF WINDOWS}'git.exe'{$ELSE}'git'{$ENDIF};
     GitProcess.Parameters.Add('-C');
     GitProcess.Parameters.Add(ExpandFileName(AWorkingPath));
     for I := Low(AArguments) to High(AArguments) do

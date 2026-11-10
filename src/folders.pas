@@ -666,6 +666,8 @@ begin
     try
       arquivo := ShellListView1.Selected.GetNamePath;
     except
+      on E: Exception do
+        RegistraEventosLog('miAnalisaArquivoClick: falha ao obter o caminho do item: ' + E.Message);
     end;
   end;
 
@@ -1060,6 +1062,8 @@ procedure TfrmFolders.AnalisaProjeto();
             '--- FILE: ' + Rel + ' ---' + LineEnding +
             UTF8ToString(Buf) + LineEnding + LineEnding;
         except
+          on E: Exception do
+            meLog.Lines.Append('AnalisaProjeto: falha ao ler ' + Rel + ': ' + E.Message);
         end;
       end;
     finally
@@ -2006,6 +2010,7 @@ begin
       Parser.Free;
     end;
   except
+    // Entrada que não é JSON válido: mantém o Result já atribuído.
   end;
 end;
 
@@ -2287,6 +2292,7 @@ begin
       P.Free;
     end;
   except
+    // Entrada que não é JSON válido: mantém o Result já atribuído.
   end;
 end;
 
@@ -2724,6 +2730,8 @@ begin
           end;
         end;
       except
+        on E: Exception do
+          RegistraEventosLog('ExecutarBuscaGlobal: falha ao ler ' + listaArquivos[i] + ': ' + E.Message);
       end;
     end;
     lstSearchResults.Items.EndUpdate;

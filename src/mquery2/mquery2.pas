@@ -3625,6 +3625,8 @@ begin
               tvMysql.Items.AddChildObject(tvTrigger, tabela.triggers.Triggername[a], Pointer(a));
           end;
         except
+          on E: Exception do
+            RegistraEventosLog('ListarTabelasMy: falha ao montar a árvore da tabela: ' + E.Message);
         end;
       end;
 
@@ -3710,6 +3712,8 @@ begin
             zliteqry1.Next;
           end;
         except
+          on E: Exception do
+            RegistraEventosLog('ListarTabelasSQLite: falha ao ler colunas: ' + E.Message);
         end;
 
         try
@@ -3753,6 +3757,8 @@ begin
             end;
           end;
         except
+          on E: Exception do
+            RegistraEventosLog('ListarTabelasSQLite: falha ao ler chaves estrangeiras: ' + E.Message);
         end;
       end;
 
@@ -6530,6 +6536,8 @@ begin
             colQry.Next;
           end;
         except
+          on E: Exception do
+            RegistraEventosLog('ListarTabelasMSSQL: falha ao ler colunas: ' + E.Message);
         end;
       end;
       zmssqlqry.Next;

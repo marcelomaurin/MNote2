@@ -347,6 +347,8 @@ begin
     EnsureRIAPath;
     meHistorico.Lines.SaveToFile(arquivo);
   except
+    on E: Exception do
+      AddLog('Falha ao salvar HISTORICO.RIA: ' + E.Message);
   end;
 end;
 
@@ -358,6 +360,8 @@ begin
   try
     meMapaMemoria.Lines.SaveToFile(arquivo);
   except
+    on E: Exception do
+      AddLog('Falha ao salvar mapamemoria.RIA: ' + E.Message);
   end;
 end;
 
@@ -369,6 +373,8 @@ begin
   try
     mePensamento.Lines.SaveToFile(arquivo);
   except
+    on E: Exception do
+      AddLog('Falha ao salvar pensamento.RIA: ' + E.Message);
   end;
 end;
 

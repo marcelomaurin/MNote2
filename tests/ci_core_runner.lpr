@@ -7,11 +7,55 @@ uses
   SysUtils, mnote_search_types, mnote_text_search_service,
   mnote_token_estimator, mnote_token_usage, mnote_voice_command,
   mnote_unified_diff, mnote_completion_types, mnote_pascal_semantic_resolver,
-  mnote_editor_theme;
+  mnote_editor_theme, mnote_secret_store;
 
 procedure Check(ACondition: Boolean; const AMessage: string);
 begin
   if not ACondition then raise Exception.Create(AMessage);
+end;
+
+procedure CheckSecretStore;
+const
+  Names: array[0..3] of string = ('CHATGPT', 'PASSWORDMY', 'PASSWORDPOST',
+    'PASSWORDORACLE');
+var
+  Values: array[0..3] of string;
+  Stored: string;
+  I: Integer;
+begin
+  Values[0] := 'sk-teste-123';
+  Values[1] := 'S3nh@-de-teste çãé';
+  Values[2] := StringOfChar('x', 4096);
+  Values[3] := '';
+  for I := Low(Names) to High(Names) do
+  begin
+    Stored := ProtectSecret(Names[I], Values[I]);
+    Check(UnprotectSecret(Names[I], Stored) = Values[I],
+      'Segredo não sobreviveu à ida e volta: ' + Names[I]);
+    if Values[I] = '' then
+      Check(Stored = '', 'Segredo vazio deve continuar vazio')
+    else
+    begin
+      {$IFDEF WINDOWS}
+      Check(IsProtectedSecret(Stored),
+        'Segredo não foi protegido: ' + Names[I] + ' ' + SecretStoreLastError);
+      {$ENDIF}
+      if IsProtectedSecret(Stored) then
+        Check(Pos(Values[I], Stored) = 0,
+          'Valor protegido contém o segredo em texto: ' + Names[I]);
+    end;
+  end;
+  Check(UnprotectSecret('PASSWORDMY', 'senha:antiga') = 'senha:antiga',
+    'Valor antigo em texto puro deve ser devolvido intacto');
+  Check(not IsProtectedSecret('senha:antiga'),
+    'Texto puro foi classificado como protegido');
+  Check(UnprotectSecret('CHATGPT', 'dpapi:@@invalido@@') = '',
+    'Valor protegido inválido deve devolver vazio');
+  {$IFDEF WINDOWS}
+  Stored := ProtectSecret('PASSWORDMY', 'troca-de-campo');
+  Check(UnprotectSecret('CHATGPT', Stored) = '',
+    'Segredo de um campo não pode abrir em outro');
+  {$ENDIF}
 end;
 
 procedure CheckSemanticCompletion;
@@ -126,6 +170,7 @@ begin
     finally
       ThemeService.Free;
     end;
+    CheckSecretStore;
     WriteLn('OK: núcleo portátil compilado e validado em ',
       {$I %FPCTARGETCPU%}, '-', {$I %FPCTARGETOS%});
     Halt(0);

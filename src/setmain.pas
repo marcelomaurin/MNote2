@@ -9,7 +9,7 @@ unit setmain;
 interface
 
 uses
-  Classes, SysUtils, funcoes, graphics;
+  Classes, SysUtils, funcoes, graphics, mnote_secret_store;
 
 const
   filename = 'mnote.cfg';
@@ -533,7 +533,7 @@ begin
     StringToFont(RetiraInfo(arquivo.Strings[posicao]),FFONT);
 
   if BuscaChave(arquivo,'CHATGPT:',posicao) then
-    FCHATGPT := RetiraInfo(arquivo.Strings[posicao]);
+    FCHATGPT := UnprotectSecret('CHATGPT', RetiraInfo(arquivo.Strings[posicao]));
 
   if BuscaChave(arquivo,'DLLPATH:',posicao) then
     FDLLPATH := RetiraInfo(arquivo.Strings[posicao]);
@@ -582,7 +582,7 @@ begin
     FUsernameMy := RetiraInfo(arquivo.Strings[posicao]);
 
   if BuscaChave(arquivo,'PASSWORDMY:',posicao) then
-    FPasswordMy := RetiraInfo(arquivo.Strings[posicao]);
+    FPasswordMy := UnprotectSecret('PASSWORDMY', RetiraInfo(arquivo.Strings[posicao]));
 
   // ===== Postgres =====
   if BuscaChave(arquivo,'HOSTNAMEPOST:',posicao) then
@@ -595,7 +595,7 @@ begin
     FUsernamePost := RetiraInfo(arquivo.Strings[posicao]);
 
   if BuscaChave(arquivo,'PASSWORDPOST:',posicao) then
-    FPasswordPost := RetiraInfo(arquivo.Strings[posicao]);
+    FPasswordPost := UnprotectSecret('PASSWORDPOST', RetiraInfo(arquivo.Strings[posicao]));
 
   if BuscaChave(arquivo,'SCHEMAPOST:',posicao) then
     FSchemaPost := RetiraInfo(arquivo.Strings[posicao]);
@@ -621,7 +621,7 @@ begin
     FUsernameMSSQL := RetiraInfo(arquivo.Strings[posicao]);
 
   if BuscaChave(arquivo,'PASSWORDMSSQL:',posicao) then
-    FPasswordMSSQL := RetiraInfo(arquivo.Strings[posicao]);
+    FPasswordMSSQL := UnprotectSecret('PASSWORDMSSQL', RetiraInfo(arquivo.Strings[posicao]));
 
   if BuscaChave(arquivo,'SCHEMAMSSQL:',posicao) then
     FSchemaMSSQL := RetiraInfo(arquivo.Strings[posicao]);
@@ -637,7 +637,7 @@ begin
     FUsernameOracle := RetiraInfo(arquivo.Strings[posicao]);
 
   if BuscaChave(arquivo,'PASSWORDORACLE:',posicao) then
-    FPasswordOracle := RetiraInfo(arquivo.Strings[posicao]);
+    FPasswordOracle := UnprotectSecret('PASSWORDORACLE', RetiraInfo(arquivo.Strings[posicao]));
 
   if BuscaChave(arquivo,'SCHEMAORACLE:',posicao) then
     FSchemaOracle := RetiraInfo(arquivo.Strings[posicao]);
@@ -823,7 +823,7 @@ begin
   arquivo.Append('INSTALLSCRIPT:'+FInstall);
   arquivo.Append('COMPILESCRIPT:'+FCompile);
   arquivo.Append('FONT:'+FontToString(FFONT));
-  arquivo.Append('CHATGPT:'+FCHATGPT);
+  arquivo.Append('CHATGPT:'+ProtectSecret('CHATGPT', FCHATGPT));
   arquivo.Append('DLLPATH:'+FDLLPATH);
   arquivo.Append('DLLMYPATH:'+FDLLMYPATH);
   arquivo.Append('DLLPOSTPATH:'+FDLLPOSTPATH);
@@ -848,13 +848,13 @@ begin
   arquivo.Append('HOSTNAMEMY:'+FHostnameMy);
   arquivo.Append('BANCOMY:'+FBancoMy);
   arquivo.Append('USERNAMEMY:'+FUsernameMy);
-  arquivo.Append('PASSWORDMY:'+FPasswordMy);
+  arquivo.Append('PASSWORDMY:'+ProtectSecret('PASSWORDMY', FPasswordMy));
 
   // ===== Postgres =====
   arquivo.Append('HOSTNAMEPOST:'+FHostnamePOST);
   arquivo.Append('BANCOPOST:'+FBancoPOST);
   arquivo.Append('USERNAMEPOST:'+FUsernamePOST);
-  arquivo.Append('PASSWORDPOST:'+FPasswordPOST);
+  arquivo.Append('PASSWORDPOST:'+ProtectSecret('PASSWORDPOST', FPasswordPOST));
   arquivo.Append('SCHEMAPOST:'+FSchemaPost);
 
   // ===== SQLite (NOVO) =====
@@ -866,14 +866,14 @@ begin
   arquivo.Append('HOSTNAMEMSSQL:'+FHostnameMSSQL);
   arquivo.Append('BANCOMSSQL:'+FBancoMSSQL);
   arquivo.Append('USERNAMEMSSQL:'+FUsernameMSSQL);
-  arquivo.Append('PASSWORDMSSQL:'+FPasswordMSSQL);
+  arquivo.Append('PASSWORDMSSQL:'+ProtectSecret('PASSWORDMSSQL', FPasswordMSSQL));
   arquivo.Append('SCHEMAMSSQL:'+FSchemaMSSQL);
 
   // ===== Oracle =====
   arquivo.Append('HOSTNAMEORACLE:'+FHostnameOracle);
   arquivo.Append('BANCOORACLE:'+FBancoOracle);
   arquivo.Append('USERNAMEORACLE:'+FUsernameOracle);
-  arquivo.Append('PASSWORDORACLE:'+FPasswordOracle);
+  arquivo.Append('PASSWORDORACLE:'+ProtectSecret('PASSWORDORACLE', FPasswordOracle));
   arquivo.Append('SCHEMAORACLE:'+FSchemaOracle);
 
   // ===== tools =====

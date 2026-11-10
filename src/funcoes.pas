@@ -395,6 +395,7 @@ begin
         Rewrite(F);
         CloseFile(F);
       except
+        // tenta o proximo caminho se houver erro de permissao ou caminho invalido
       end;
     end;
   end;
