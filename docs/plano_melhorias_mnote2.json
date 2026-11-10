@@ -1,0 +1,961 @@
+{
+  "tasks": [
+    {
+      "id": "T002",
+      "epic_id": "E001",
+      "title": "Criar unidade de proteção de segredos",
+      "description": "Nova unidade mnote_secret_store com ProtectSecret e UnprotectSecret para cifrar valores gravados no mnote.cfg.",
+      "acceptance_criteria": "ProtectSecret('abc') devolve texto com prefixo 'dpapi:' no Windows e nunca contém 'abc'; UnprotectSecret(ProtectSecret(x)) = x para texto vazio, ASCII, acentuado e com 4 KB; UnprotectSecret de valor sem prefixo devolve o próprio valor (compatibilidade); a unidade compila em Windows e Linux.",
+      "priority": "high",
+      "status": "draft",
+      "dependency_type": "parallel",
+      "dependencies": [],
+      "can_run_in_parallel": true,
+      "estimated_hours": {
+        "intern": 16,
+        "junior": 8,
+        "mid_level": 6,
+        "senior": 4
+      },
+      "suggested_skill_level": "senior",
+      "assigned_skill_level": "senior",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": "src/services/mnote_secret_store.pas",
+      "notes": "No Linux não há equivalente nativo simples: usar o comando secret-tool (libsecret) quando existir; se não existir, manter o valor em texto e garantir permissão 0600 no arquivo, registrando aviso no diagnóstico. Não inventar cifra própria com chave embutida no executável. Implementado no ramo melhorias/seguranca (gravação f90b6f8); falta validar no Windows com tests/run_tests.ps1.",
+      "progress_percent": 100,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Windows: usar CryptProtectData/CryptUnprotectData (crypt32.dll), escopo do usuário atual, resultado em Base64 com prefixo 'dpapi:'.\nLinux: prefixo 'keyring:' + identificador; valor guardado com secret-tool store/lookup, atributos app=mnote2 e campo=<nome>.\nAssinaturas:\n  function ProtectSecret(const AName, APlain: string): string;\n  function UnprotectSecret(const AName, AStored: string): string;\n  function IsProtected(const AStored: string): Boolean;\nSem dependência de formulários nem de setmain.",
+      "files_affected": [
+        "src/services/mnote_secret_store.pas"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito",
+        "Não gravar segredo em log, diagnóstico ou mensagem de erro"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "src/services/mnote_secret_store.pas"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T003",
+      "epic_id": "E001",
+      "title": "Cifrar chave de IA e senhas de banco no mnote.cfg",
+      "description": "TSetMain passa a gravar CHATGPT, PASSWORDMY, PASSWORDPOST, PASSWORDMSSQL e PASSWORDORACLE protegidos e a ler os dois formatos.",
+      "acceptance_criteria": "Após SalvaContexto, nenhuma das cinco chaves aparece em texto puro no mnote.cfg; um mnote.cfg antigo em texto puro é lido corretamente e regravado protegido no primeiro SalvaContexto; as propriedades públicas de TSetMain continuam devolvendo o valor em claro; as demais chaves do arquivo ficam idênticas.",
+      "priority": "high",
+      "status": "draft",
+      "dependency_type": "serial",
+      "dependencies": [
+        "T002"
+      ],
+      "can_run_in_parallel": false,
+      "estimated_hours": {
+        "intern": 12,
+        "junior": 6,
+        "mid_level": 5,
+        "senior": 3
+      },
+      "suggested_skill_level": "mid_level",
+      "assigned_skill_level": "mid_level",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": "setmain.pas com leitura e gravação protegidas",
+      "notes": "Conferir se há outras chaves de provedores (Gemini, OpenRouter, Cerebras) gravadas por ia_config.pas ou mnote_chatgpt_config.pas; se houver, listar em notes do resultado, sem alterá-las nesta tarefa. Implementado no ramo melhorias/seguranca (gravação f90b6f8); falta validar no Windows com tests/run_tests.ps1.",
+      "progress_percent": 100,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Em TSetMain.CarregaContexto, envolver a leitura das cinco chaves: FCHATGPT := UnprotectSecret('CHATGPT', RetiraInfo(...)); idem para as quatro senhas.\nEm TSetMain.SalvaContexto: arquivo.Append('CHATGPT:'+ProtectSecret('CHATGPT', FCHATGPT)); idem para as quatro senhas.\nAdicionar mnote_secret_store ao uses da implementation. Valor vazio continua vazio.",
+      "files_affected": [
+        "src/setmain.pas"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito",
+        "Não renomear chaves do mnote.cfg",
+        "Não alterar mnote.example.cfg"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "src/setmain.pas"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T004",
+      "epic_id": "E001",
+      "title": "Teste de regressão da proteção de credenciais",
+      "description": "Casos no test_runner que provam ida e volta do segredo e ausência de texto puro no arquivo gravado.",
+      "acceptance_criteria": "Os novos casos passam em tests/run_tests.ps1; um deles falha se ProtectSecret for trocado por identidade.",
+      "priority": "high",
+      "status": "draft",
+      "dependency_type": "serial",
+      "dependencies": [
+        "T003"
+      ],
+      "can_run_in_parallel": false,
+      "estimated_hours": {
+        "intern": 8,
+        "junior": 4,
+        "mid_level": 3,
+        "senior": 2
+      },
+      "suggested_skill_level": "mid_level",
+      "assigned_skill_level": "mid_level",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": "Casos de teste de segredos em tests/test_runner.lpr",
+      "notes": "Testes de unidade incluídos nos dois executores; falta o caso que grava TSetMain em pasta temporária.",
+      "progress_percent": 70,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Casos: (1) ida e volta com quatro entradas; (2) valor sem prefixo é devolvido intacto; (3) gravar TSetMain em pasta temporária com senha 'S3nh@-de-teste' e conferir que o texto não ocorre no arquivo; (4) reler e conferir a propriedade.",
+      "files_affected": [
+        "tests/test_runner.lpr",
+        "tests/ci_core_runner.lpr"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "tests/test_runner.lpr",
+        "tests/ci_core_runner.lpr"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T005",
+      "epic_id": "E001",
+      "title": "Validar autenticidade do instalador do neural-api",
+      "description": "Além do SHA-1 informado pela própria listagem do GitHub, conferir o instalador contra uma lista de resumos SHA-256 confiáveis embutida no MNote2.",
+      "acceptance_criteria": "Instalador cujo SHA-256 consta na lista segue o fluxo atual; instalador fora da lista gera estado novo nasUntrusted, não é oferecido para execução automática e a mensagem informa nome e resumo calculado; teste cobre os dois casos com arquivos de fixture.",
+      "priority": "high",
+      "status": "draft",
+      "dependency_type": "parallel",
+      "dependencies": [],
+      "can_run_in_parallel": true,
+      "estimated_hours": {
+        "intern": 20,
+        "junior": 10,
+        "mid_level": 8,
+        "senior": 5
+      },
+      "suggested_skill_level": "senior",
+      "assigned_skill_level": "senior",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 2,
+      "deliverable": "CheckAndDownload com verificação de confiança e teste",
+      "notes": "Hoje o resumo esperado e o arquivo vêm da mesma origem, o que prova integridade e não autenticidade. Incerteza: confirmar se o FPC 3.2.2 instalado traz unidade de SHA-256 (fpsha256); se não, usar as funções EVP do OpenSSL já carregado por mnote_ssl_loader. Publicar instalador novo do neural-api passa a exigir atualizar a lista.",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Em src/services/mnote_neural_api_bootstrap.pas: adicionar constante CNeuralApiTrustedSHA256: array of string; função de classe VerifyTrusted(const AFileName: string; out ASHA256: string): Boolean; novo valor nasUntrusted em TMNoteNeuralApiStatus; em CheckAndDownload, chamar VerifyTrusted depois de VerifyGitBlob nos dois pontos (arquivo já existente e arquivo recém-baixado). Ajustar o consumidor do evento OnCompleted para tratar nasUntrusted apenas exibindo o aviso.",
+      "files_affected": [
+        "src/services/mnote_neural_api_bootstrap.pas",
+        "src/main.pas"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito",
+        "Não executar o instalador em teste",
+        "Não remover a validação VerifyGitBlob existente"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "src/services/mnote_neural_api_bootstrap.pas"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T006",
+      "epic_id": "E001",
+      "title": "Tornar portável a chamada ao git",
+      "description": "mnote_git_read_service usa 'git.exe' fixo, o que falha fora do Windows.",
+      "acceptance_criteria": "No Windows o executável continua 'git.exe'; nas demais plataformas é 'git'; a unidade compila no Linux.",
+      "priority": "medium",
+      "status": "draft",
+      "dependency_type": "parallel",
+      "dependencies": [],
+      "can_run_in_parallel": true,
+      "estimated_hours": {
+        "intern": 4,
+        "junior": 2,
+        "mid_level": 2,
+        "senior": 1
+      },
+      "suggested_skill_level": "junior",
+      "assigned_skill_level": "junior",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": "mnote_git_read_service.pas portável",
+      "notes": "Implementado no ramo melhorias/seguranca (gravação f90b6f8); falta validar no Windows com tests/run_tests.ps1.",
+      "progress_percent": 100,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "ANTES:\n    GitProcess.Executable := 'git.exe';\nDEPOIS:\n    GitProcess.Executable := {$IFDEF WINDOWS}'git.exe'{$ELSE}'git'{$ENDIF};",
+      "files_affected": [
+        "src/services/mnote_git_read_service.pas"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "src/services/mnote_git_read_service.pas"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T007",
+      "epic_id": "E001",
+      "title": "Eliminar blocos except vazios em folders, ia e funcoes",
+      "description": "Nove blocos except ... end sem tratamento engolem erros silenciosamente.",
+      "acceptance_criteria": "Nenhum except vazio resta nos três arquivos; cada um registra a mensagem da exceção (meLog quando existir no formulário, ou o serviço de diagnóstico) com o nome da rotina; nenhum fluxo que hoje continua após o erro passa a abortar.",
+      "priority": "medium",
+      "status": "draft",
+      "dependency_type": "parallel",
+      "dependencies": [],
+      "can_run_in_parallel": true,
+      "estimated_hours": {
+        "intern": 12,
+        "junior": 6,
+        "mid_level": 5,
+        "senior": 3
+      },
+      "suggested_skill_level": "mid_level",
+      "assigned_skill_level": "mid_level",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": "Tratamento explícito nos nove pontos",
+      "notes": "Linhas no envio f6db469: folders.pas 668, 1062, 2008, 2289, 2726; ia.pas 349, 360, 371; funcoes.pas 397. Localizar pelo padrão, pois as linhas podem ter mudado. Implementado no ramo melhorias/seguranca (gravação f90b6f8); falta validar no Windows com tests/run_tests.ps1. Em AF_BeautifyJson, ExtractPathFromItemJSON e LimpaEventosLog o bloco ficou só com comentário, pois a falha ali é o caminho esperado.",
+      "progress_percent": 100,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Trocar cada\n  except\n  end;\npor\n  except\n    on E: Exception do\n      <registro>('NomeDaRotina: ' + E.Message);\n  end;\nManter a continuação do fluxo exatamente como está.",
+      "files_affected": [
+        "src/folders.pas",
+        "src/ia.pas",
+        "src/funcoes.pas"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito",
+        "Não relançar a exceção",
+        "Não exibir caixa de diálogo"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "src/folders.pas",
+        "src/ia.pas",
+        "src/funcoes.pas"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T008",
+      "epic_id": "E001",
+      "title": "Eliminar blocos except vazios em mquery2",
+      "description": "Quatro blocos except vazios em mquery2.pas.",
+      "acceptance_criteria": "Nenhum except vazio resta em src/mquery2/mquery2.pas; cada ponto registra a mensagem no painel de saída do MQuery2.",
+      "priority": "medium",
+      "status": "draft",
+      "dependency_type": "parallel",
+      "dependencies": [],
+      "can_run_in_parallel": true,
+      "estimated_hours": {
+        "intern": 8,
+        "junior": 4,
+        "mid_level": 3,
+        "senior": 2
+      },
+      "suggested_skill_level": "mid_level",
+      "assigned_skill_level": "mid_level",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": "Tratamento explícito nos quatro pontos",
+      "notes": "Linhas no envio f6db469: 3627, 3712, 3755, 6532. Implementado no ramo melhorias/seguranca (gravação f90b6f8); falta validar no Windows com tests/run_tests.ps1.",
+      "progress_percent": 100,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Mesmo padrão da T007, usando o registro já existente no formulário do MQuery2.",
+      "files_affected": [
+        "src/mquery2/mquery2.pas"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito",
+        "Não relançar a exceção"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "src/mquery2/mquery2.pas"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T009",
+      "epic_id": "E002",
+      "title": "Tirar do índice arquivos gerados e pastas backup",
+      "description": "Remover do controle de versão, sem apagar do disco, os arquivos compilados e as cópias em backup/.",
+      "acceptance_criteria": "git ls-files não lista nenhum .pyc, .o, .ppu, .pdb, .compiled nem caminho contendo /backup/; o .gitignore contém as regras novas; os arquivos continuam no disco; python3 scripts/check_lazarus_project.py continua passando.",
+      "priority": "high",
+      "status": "draft",
+      "dependency_type": "parallel",
+      "dependencies": [],
+      "can_run_in_parallel": true,
+      "estimated_hours": {
+        "intern": 8,
+        "junior": 4,
+        "mid_level": 3,
+        "senior": 2
+      },
+      "suggested_skill_level": "mid_level",
+      "assigned_skill_level": "mid_level",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": ".gitignore atualizado e índice limpo",
+      "notes": "São 490 compilados e 78 arquivos em backup/. O histórico não diminui com isso; reescrever o histórico é decisão separada do mantenedor. Implementado na gravação 43f5f65: 554 arquivos fora do índice (__pycache__, src/imgjson/lib e pastas backup/); os .pdb de libs/ ficaram para a T011.",
+      "progress_percent": 100,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Acrescentar ao .gitignore: **/backup/, __pycache__/, *.pyc, *.pdb, *.compiled. Executar git rm -r --cached nos caminhos correspondentes. Manter as exceções existentes de libs/mssql, libs/oracle e bin/*.exe.",
+      "files_affected": [
+        ".gitignore"
+      ],
+      "must_not_do": [
+        "Não apagar arquivos do disco",
+        "Não reescrever o histórico (sem filter-repo, sem push forçado)",
+        "Não remover DLLs redistribuíveis usadas por instalador/MNote2.iss"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        ".gitignore"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T010",
+      "epic_id": "E002",
+      "title": "Levar pacotes .deb para o Git LFS e barrar binários novos",
+      "description": "Os 29 .deb de bin/ e os 3 da raiz estão no Git comum; só *.exe de bin/ usa LFS.",
+      "acceptance_criteria": "bin/.gitattributes cobre *.deb, *.gz, *.zip e *.pkg; os três .deb da raiz foram movidos para bin/; novo script falha quando há arquivo versionado acima de 5 MB fora do LFS e fora de uma lista de exceções explícita; o script roda no job project-integrity.",
+      "priority": "medium",
+      "status": "draft",
+      "dependency_type": "serial",
+      "dependencies": [
+        "T009"
+      ],
+      "can_run_in_parallel": false,
+      "estimated_hours": {
+        "intern": 12,
+        "junior": 6,
+        "mid_level": 5,
+        "senior": 3
+      },
+      "suggested_skill_level": "mid_level",
+      "assigned_skill_level": "mid_level",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": "bin/.gitattributes, scripts/check_repo_hygiene.py e etapa na integração contínua",
+      "notes": "A lista de exceções inicial deve conter os binários atuais de libs/ e runtime/ para a verificação nascer verde.",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Criar scripts/check_repo_hygiene.py (usa git ls-files -s e git check-attr filter). Acrescentar etapa 'Validate repository hygiene' em .github/workflows/ci.yml depois de 'Validate version sync'.",
+      "files_affected": [
+        "bin/.gitattributes",
+        "scripts/check_repo_hygiene.py",
+        ".github/workflows/ci.yml",
+        "buildlinux.sh"
+      ],
+      "must_not_do": [
+        "Não reescrever o histórico",
+        "Não apagar versões antigas de bin/"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "bin/.gitattributes",
+        "scripts/check_repo_hygiene.py",
+        ".github/workflows/ci.yml"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T011",
+      "epic_id": "E002",
+      "title": "Inventariar binários de src/imgjson e src/libs",
+      "description": "src/imgjson (674 MB) e src/libs (166 MB) concentram o peso do repositório; é preciso saber o que o projeto e o instalador realmente usam.",
+      "acceptance_criteria": "docs/inventario_binarios.md lista cada subpasta com tamanho, quem a referencia (MNote2.lpi, instalador/MNote2.iss, scripts) e recomendação: manter, mover para LFS, mover para publicação ou remover.",
+      "priority": "medium",
+      "status": "draft",
+      "dependency_type": "parallel",
+      "dependencies": [],
+      "can_run_in_parallel": true,
+      "estimated_hours": {
+        "intern": 12,
+        "junior": 6,
+        "mid_level": 5,
+        "senior": 3
+      },
+      "suggested_skill_level": "mid_level",
+      "assigned_skill_level": "mid_level",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": "docs/inventario_binarios.md",
+      "notes": "Tarefa só de levantamento; a remoção depende de decisão do mantenedor. Atenção: main.pas usa a unidade jsonmain de src/imgjson, portanto os fontes .pas/.lfm de imgjson ficam.",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Maiores itens no envio f6db469: src/imgjson/libs 411 MB, imgjson.exe 83 MB, imgjson (binário Linux) 65 MB, tools 58 MB, lib 38 MB; src/libs/mysql 83 MB (duplicado com libs/mysql da raiz, 330 MB).",
+      "files_affected": [
+        "docs/inventario_binarios.md"
+      ],
+      "must_not_do": [
+        "Não remover nem mover nenhum arquivo nesta tarefa"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "docs/inventario_binarios.md"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T012",
+      "epic_id": "E002",
+      "title": "Remover unidade cfgdb sem uso",
+      "description": "cfgdb.pas está em MNote2.lpi, mas nenhuma cláusula uses a importa (já apontado em docs/dead_units.md).",
+      "acceptance_criteria": "cfgdb.pas e cfgdb.lfm removidos; entrada correspondente removida de src/MNote2.lpi; python3 scripts/check_lazarus_project.py passa; docs/dead_units.md atualizado com 'removida'.",
+      "priority": "low",
+      "status": "draft",
+      "dependency_type": "parallel",
+      "dependencies": [],
+      "can_run_in_parallel": true,
+      "estimated_hours": {
+        "intern": 4,
+        "junior": 2,
+        "mid_level": 2,
+        "senior": 1
+      },
+      "suggested_skill_level": "junior",
+      "assigned_skill_level": "junior",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": "Projeto sem cfgdb",
+      "notes": "Confirmar antes com busca por 'cfgdb' e 'frmcfgdb' em src/ (fora de backup/).",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Remover o bloco <UnitNN> de cfgdb.pas em src/MNote2.lpi (linhas 175-177 no envio f6db469) e renumerar se o Lazarus exigir.",
+      "files_affected": [
+        "src/cfgdb.pas",
+        "src/cfgdb.lfm",
+        "src/MNote2.lpi",
+        "docs/dead_units.md"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "src/cfgdb.pas",
+        "src/cfgdb.lfm",
+        "src/MNote2.lpi",
+        "docs/dead_units.md"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T013",
+      "epic_id": "E003",
+      "title": "Corrigir buildlinux.sh",
+      "description": "O roteiro está fixo na versão 2.31, usa chmod 777, termina com exit 1 em caso de sucesso e copia o atalho de ARM no pacote amd64.",
+      "acceptance_criteria": "A versão é lida de src/mnote_version.pas; permissões 755; saída 0 em sucesso e diferente de zero em falha (set -e); amd64 usa mnote2.desktop_amd64; aarch64 gera pacote arm64; bash -n buildlinux.sh passa.",
+      "priority": "medium",
+      "status": "draft",
+      "dependency_type": "serial",
+      "dependencies": [
+        "T010"
+      ],
+      "can_run_in_parallel": false,
+      "estimated_hours": {
+        "intern": 8,
+        "junior": 4,
+        "mid_level": 3,
+        "senior": 2
+      },
+      "suggested_skill_level": "junior",
+      "assigned_skill_level": "junior",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": "buildlinux.sh corrigido",
+      "notes": "Depende de T010 porque os .deb passam a ser gravados só em bin/.",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "VERSAO=$(grep -oP \"MNOTE_APP_VERSION = '\\K[^']+\" src/mnote_version.pas). Unificar os blocos repetidos por arquitetura em uma função empacota <arquitetura> <arquivo_desktop>.",
+      "files_affected": [
+        "buildlinux.sh"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "buildlinux.sh"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T014",
+      "epic_id": "E003",
+      "title": "Roteiro de instalação dos pacotes para compilar o projeto principal",
+      "description": "src/MNote2.lpi exige 31 pacotes; sem instalá-los a compilação na integração contínua só pode ser informativa.",
+      "acceptance_criteria": "scripts/ci_install_packages.sh clona em versão fixada e registra com lazbuild --add-package-link cada pacote externo; docs/ci.md lista pacote, origem e versão; executado em máquina limpa com Lazarus 4.4, lazbuild -B src/MNote2.lpi conclui.",
+      "priority": "high",
+      "status": "draft",
+      "dependency_type": "parallel",
+      "dependencies": [],
+      "can_run_in_parallel": true,
+      "estimated_hours": {
+        "intern": 32,
+        "junior": 16,
+        "mid_level": 12,
+        "senior": 8
+      },
+      "suggested_skill_level": "senior",
+      "assigned_skill_level": "senior",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 3,
+      "deliverable": "scripts/ci_install_packages.sh e docs/ci.md",
+      "notes": "Incerteza: a origem exata de alguns pacotes (pkSalesSwitch, myexamplepackage, poweredby, industrial, multiloglaz, synfacilsyn, atsynedit_ex_package) precisa ser confirmada pelo mantenedor. Os pacotes openai_* vêm do repositório marcelomaurin/CHATGPT.",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Pacotes requeridos: openai_graph, openai_agent, openai_core, openai_python, openai_aidbase, openai_project_core, openai_files, openai_output, openai_voice, atsynedit_ex_package, pkSalesSwitch, indylaz, IPEdit_pkg, zcomponent, zcomponentdesign, lnetbase, lnetvisual, synuni, synfacilsyn, SynEditDsgn, SynEdit, myexamplepackage, poweredby, industrial, pkg_gifanim, multiloglaz, rxnew, python4lazarus_package, LazUtils, FCL, LCL.",
+      "files_affected": [
+        "scripts/ci_install_packages.sh",
+        "docs/ci.md"
+      ],
+      "must_not_do": [
+        "Não versionar cópias dos pacotes dentro do repositório",
+        "Não alterar src/MNote2.lpi"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "scripts/ci_install_packages.sh",
+        "docs/ci.md"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T015",
+      "epic_id": "E003",
+      "title": "Tornar obrigatória a compilação do projeto principal",
+      "description": "O job main-project-build usa continue-on-error e roda só no Linux.",
+      "acceptance_criteria": "O job chama scripts/ci_install_packages.sh, compila src/MNote2.lpi em windows-latest e ubuntu-latest e não tem continue-on-error; no Windows executa tests/run_tests.ps1 em seguida.",
+      "priority": "high",
+      "status": "draft",
+      "dependency_type": "serial",
+      "dependencies": [
+        "T010",
+        "T014"
+      ],
+      "can_run_in_parallel": false,
+      "estimated_hours": {
+        "intern": 12,
+        "junior": 6,
+        "mid_level": 5,
+        "senior": 3
+      },
+      "suggested_skill_level": "mid_level",
+      "assigned_skill_level": "mid_level",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 2,
+      "deliverable": ".github/workflows/ci.yml com compilação bloqueante",
+      "notes": "Se o alvo Linux ainda não compilar, manter apenas Windows como bloqueante e registrar a pendência em docs/ci.md.",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Remover 'continue-on-error: true' e o sufixo '(informativo)'; adicionar matriz de sistemas e a etapa de instalação de pacotes.",
+      "files_affected": [
+        ".github/workflows/ci.yml"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        ".github/workflows/ci.yml"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T016",
+      "epic_id": "E003",
+      "title": "Trocar verificações por busca de texto por testes de comportamento",
+      "description": "A etapa 'Verify CHATGPT package boundary' tem cerca de 40 grep -q sobre o código-fonte.",
+      "acceptance_criteria": "As verificações de existência de pacote passam para scripts/check_lazarus_project.py lendo RequiredPackages do .lpi; as de comportamento (limite de 3 tentativas, ações de recuperação, registro das quatro ações do agente) viram casos em tests/test_runner.lpr; a etapa de grep é removida.",
+      "priority": "medium",
+      "status": "draft",
+      "dependency_type": "serial",
+      "dependencies": [
+        "T004",
+        "T015"
+      ],
+      "can_run_in_parallel": false,
+      "estimated_hours": {
+        "intern": 24,
+        "junior": 12,
+        "mid_level": 9,
+        "senior": 6
+      },
+      "suggested_skill_level": "senior",
+      "assigned_skill_level": "senior",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 2,
+      "deliverable": "Etapa de grep removida e testes equivalentes",
+      "notes": "Uma das verificações atuais exige a linha 'ForcarSimulacaoGlobal := True'; não portar essa regra até o mantenedor decidir a política de simulação.",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Mapear cada grep para: (a) dependência de pacote, (b) comportamento testável, (c) descartável. Entregar a tabela em docs/ci.md.",
+      "files_affected": [
+        ".github/workflows/ci.yml",
+        "scripts/check_lazarus_project.py",
+        "tests/test_runner.lpr",
+        "docs/ci.md"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        ".github/workflows/ci.yml",
+        "scripts/check_lazarus_project.py",
+        "tests/test_runner.lpr",
+        "docs/ci.md"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T017",
+      "epic_id": "E003",
+      "title": "Teste automatizado do cenário P0 MNOTE-005",
+      "description": "Provar que texto livre da IA nunca vira ação nem comando sem passar pelo contrato e pela confirmação.",
+      "acceptance_criteria": "Casos no test_runner cobrem: resposta em texto livre contendo comandos de terminal não é reconhecida como pedido de ação; JSON de ação com nome inexistente ou parâmetro extra é rejeitado por ValidateRequestContract; ação de escrita em modo somente leitura é rejeitada; docs/bugs.md marca MNOTE-005 como 'Verificado' com referência aos casos.",
+      "priority": "high",
+      "status": "draft",
+      "dependency_type": "serial",
+      "dependencies": [
+        "T016"
+      ],
+      "can_run_in_parallel": false,
+      "estimated_hours": {
+        "intern": 16,
+        "junior": 8,
+        "mid_level": 6,
+        "senior": 4
+      },
+      "suggested_skill_level": "senior",
+      "assigned_skill_level": "senior",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": "Casos de teste e docs/bugs.md atualizado",
+      "notes": "Se algum caso falhar, não ajustar o teste: registrar o item como 'Confirmado' em docs/bugs.md e parar.",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Exercitar IsActionRequest e FActionExecutor.ValidateRequestContract (src/ai/mnote_ai_actions.pas, src/services/mnote_ai_service.pas) com entradas hostis: blocos de código com 'rm -rf', JSON embutido em markdown, dois objetos JSON na mesma resposta.",
+      "files_affected": [
+        "tests/test_runner.lpr",
+        "docs/bugs.md"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito",
+        "Não enfraquecer validações existentes para fazer o teste passar"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "tests/test_runner.lpr",
+        "docs/bugs.md"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T018",
+      "epic_id": "E004",
+      "title": "Extrair o dicionário Oracle do formulário do MQuery2",
+      "description": "Tfrmmquery2.CriaDicionarioOracle tem 527 linhas dentro do formulário.",
+      "acceptance_criteria": "Nova unidade de serviço sem dependência de Forms nem de Tfrmmquery2 recebe a conexão e o arquivo de destino e devolve o mesmo texto; o método do formulário vira uma chamada de até 15 linhas; a saída para um banco de teste é idêntica byte a byte à anterior.",
+      "priority": "medium",
+      "status": "draft",
+      "dependency_type": "serial",
+      "dependencies": [
+        "T008"
+      ],
+      "can_run_in_parallel": false,
+      "estimated_hours": {
+        "intern": 24,
+        "junior": 12,
+        "mid_level": 9,
+        "senior": 6
+      },
+      "suggested_skill_level": "senior",
+      "assigned_skill_level": "senior",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 2,
+      "deliverable": "src/services/mnote_db_dictionary_oracle.pas",
+      "notes": "Piloto do padrão; seguir o desenho de mnote_db_diagram_reader.pas. O progresso na tela (Application.ProcessMessages) vira um evento OnProgress opcional.",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Assinatura sugerida: function BuildOracleDictionary(AConnection: TZConnection; const ASchema, ATargetFile: string; AOnProgress: TNotifyEvent): string;",
+      "files_affected": [
+        "src/mquery2/mquery2.pas",
+        "src/services/mnote_db_dictionary_oracle.pas"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito",
+        "Não alterar o SQL de catálogo",
+        "Não alterar o formato do arquivo gerado"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "src/mquery2/mquery2.pas",
+        "src/services/mnote_db_dictionary_oracle.pas"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T019",
+      "epic_id": "E004",
+      "title": "Extrair os dicionários PostgreSQL, SQL Server e SQLite",
+      "description": "Repetir o padrão da T018 para CriaDicionarioPost (308 linhas), CriaDicionarioMSSQL (291) e CriaDicionarioSQLite.",
+      "acceptance_criteria": "Três unidades de serviço novas; os três métodos do formulário viram chamadas curtas; saída idêntica à anterior para cada banco; mquery2.pas fica pelo menos 1.000 linhas menor que no envio f6db469.",
+      "priority": "medium",
+      "status": "draft",
+      "dependency_type": "serial",
+      "dependencies": [
+        "T018"
+      ],
+      "can_run_in_parallel": false,
+      "estimated_hours": {
+        "intern": 40,
+        "junior": 20,
+        "mid_level": 15,
+        "senior": 10
+      },
+      "suggested_skill_level": "senior",
+      "assigned_skill_level": "senior",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 3,
+      "deliverable": "Três unidades mnote_db_dictionary_*",
+      "notes": "",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Arquivos: src/services/mnote_db_dictionary_postgres.pas, mnote_db_dictionary_mssql.pas, mnote_db_dictionary_sqlite.pas.",
+      "files_affected": [
+        "src/mquery2/mquery2.pas",
+        "src/services/mnote_db_dictionary_postgres.pas",
+        "src/services/mnote_db_dictionary_mssql.pas",
+        "src/services/mnote_db_dictionary_sqlite.pas"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito",
+        "Não alterar o SQL de catálogo"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "src/mquery2/mquery2.pas",
+        "src/services/mnote_db_dictionary_postgres.pas",
+        "src/services/mnote_db_dictionary_mssql.pas",
+        "src/services/mnote_db_dictionary_sqlite.pas"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T020",
+      "epic_id": "E004",
+      "title": "Dividir TfrmMNote.FormCreate em rotinas nomeadas",
+      "description": "FormCreate de main.pas tem 231 linhas misturando configuração, painéis, IA e voz.",
+      "acceptance_criteria": "FormCreate tem no máximo 40 linhas e apenas chama rotinas privadas em ordem (por exemplo InicializaConfiguracao, InicializaPaineis, InicializaIA, InicializaVoz); a ordem de execução das instruções é preservada; tests/run_smoke.ps1 passa.",
+      "priority": "low",
+      "status": "draft",
+      "dependency_type": "serial",
+      "dependencies": [
+        "T005"
+      ],
+      "can_run_in_parallel": false,
+      "estimated_hours": {
+        "intern": 12,
+        "junior": 6,
+        "mid_level": 5,
+        "senior": 3
+      },
+      "suggested_skill_level": "mid_level",
+      "assigned_skill_level": "mid_level",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 1,
+      "deliverable": "main.pas com FormCreate fatiado",
+      "notes": "Depende de T005 apenas por compartilhar src/main.pas.",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Mover blocos contíguos sem reordenar; variáveis locais compartilhadas viram campos privados somente se indispensável.",
+      "files_affected": [
+        "src/main.pas"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito",
+        "Não alterar main.lfm"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "src/main.pas"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    },
+    {
+      "id": "T021",
+      "epic_id": "E004",
+      "title": "Levar a análise de projeto de folders.pas para segundo plano",
+      "description": "AtualizaProjeto, AnalisaFolderIA e VarreArquivosEAchaSQL mantêm a tela viva com Application.ProcessMessages (7 chamadas), o que permite reentrada.",
+      "acceptance_criteria": "A varredura roda em uma TThread com cancelamento; atualizações de tela chegam por TThread.Queue; não resta Application.ProcessMessages em folders.pas; durante a varredura os botões que a iniciam ficam desabilitados; fechar o formulário cancela e aguarda a thread.",
+      "priority": "medium",
+      "status": "draft",
+      "dependency_type": "serial",
+      "dependencies": [
+        "T007"
+      ],
+      "can_run_in_parallel": false,
+      "estimated_hours": {
+        "intern": 32,
+        "junior": 16,
+        "mid_level": 12,
+        "senior": 8
+      },
+      "suggested_skill_level": "senior",
+      "assigned_skill_level": "senior",
+      "assigned_to": "",
+      "responsible_profile": "DEV",
+      "estimated_duration_days": 3,
+      "deliverable": "folders.pas sem ProcessMessages",
+      "notes": "Usar como modelo TMNoteAIWorker em src/services/mnote_ai_service.pas.",
+      "progress_percent": 0,
+      "revision_created": 1,
+      "revision_updated": 1,
+      "long_description": "Separar a lógica de varredura (sem acesso a componentes) da apresentação; a thread recebe caminho e opções por valor e devolve resultados por fila.",
+      "files_affected": [
+        "src/folders.pas"
+      ],
+      "must_not_do": [
+        "Não alterar arquivos fora de files_affected",
+        "Não tocar em pastas backup/",
+        "Não mudar o comportamento visível além do descrito",
+        "Não acessar componentes visuais de dentro da thread"
+      ],
+      "commits": [],
+      "exclusive_files": [
+        "src/folders.pas"
+      ],
+      "origin": {
+        "kind": "ai_plan"
+      }
+    }
+  ],
+  "dependencies": [],
+  "execution_plan": [],
+  "parallel_groups": [],
+  "milestones": [],
+  "gantt": [],
+  "timeline": [],
+  "risk_map": []
+}
