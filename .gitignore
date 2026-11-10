@@ -107,3 +107,8 @@ tests/bin-diagram/
 !libs/mssql/**
 !libs/oracle/**
 !src/*.con
+
+# Caches do Python e saida de compilacao do imgjson
+__pycache__/
+*.pyc
+src/imgjson/lib/
