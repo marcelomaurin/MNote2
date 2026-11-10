@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Menus, StdCtrls,
-  About, setimg, config, EditBtn, ExtCtrls, ComCtrls, Grids,
+  About, setimg, config2, EditBtn, ExtCtrls, ComCtrls, Grids,
   setproject, Novo, funcoes, sqleditor, sqlEditItem, NNTrainning,
   frmnntrainning, PythonEngine, mnote_version;
 
@@ -469,11 +469,11 @@ end;
 
 procedure TfrmmainJSON.mnConfigClick(Sender: TObject);
 begin
-  frmConfig := TfrmConfig.Create(Self);
+  frmConfig2 := TfrmConfig2.Create(Self);
   try
-    frmConfig.ShowModal();
+    frmConfig2.ShowModal();
   finally
-    FreeAndNil(frmConfig);
+    FreeAndNil(frmConfig2);
   end;
 end;
 

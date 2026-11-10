@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ShellCtrls,
-  ExtCtrls, Menus, StdCtrls, GifAnim, untsalesSwitch, funcoes, hint, setmain,
+  ExtCtrls, Menus, StdCtrls, GifAnim, funcoes, hint, setmain,
   Types, StrUtils, LConvEncoding, base, DateUtils, LazFileUtils,
   fpjson, jsonparser, jsonscanner, Math, uDocText , uPdfText, item,
   mnote_ai_service;

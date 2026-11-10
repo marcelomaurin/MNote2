@@ -10,7 +10,7 @@ uses
   Menus, ExtCtrls, ComCtrls, StdCtrls, Grids, PopupNotifier, item, types,
   setmain, TypeDB, folders, funcoes, LCLType, ValEdit, PairSplitter, chgtext,
   hint, registro, splash, setFolders, scripts_config, database_config, SynEditKeyCmds, PythonEngine,
-  rxctrls, LogTreeView, uPoweredby, mquery2, porradawebapi,
+  mquery2, porradawebapi,
   SynEditHighlighter, SynEditTypes, codigo, jsonmain, ToolsFalar, ToolsOuvir,
   newproject, uProjetoDB, IA, uPdfText, uDocText, mnote_python_service,
   mnote_version, mnote_ai_service, mnote_ide_shell, mnote_commands,
