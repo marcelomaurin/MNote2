@@ -70,6 +70,7 @@ type
 
     // ===== Postgres =====
     FHostnamePost : String;
+    FPortaPost : Integer;
     FBancoPOST : String;
     FUsernamePost: String;
     FPasswordPost : String;
@@ -207,6 +208,7 @@ type
 
     // ===== Postgres =====
     property HostnamePost : String read FHostnamePost write FHostnamePost;
+    property PortaPost : Integer read FPortaPost write FPortaPost;
     property BancoPOST : String read FBancoPOST write FBancoPOST;
     property UsernamePost: String read FUsernamePost write FUsernamePost;
     property PasswordPost : String read FPasswordPost write FPasswordPost;
@@ -371,6 +373,7 @@ begin
   FPasswordMy := '';
 
   FHostnamePost := '';
+  FPortaPost := 5432;
   FBancoPOST := '';
   FUsernamePost := '';
   FPasswordPost := '';
@@ -599,6 +602,10 @@ begin
 
   if BuscaChave(arquivo,'SCHEMAPOST:',posicao) then
     FSchemaPost := RetiraInfo(arquivo.Strings[posicao]);
+
+  if BuscaChave(arquivo,'PORTAPOST:',posicao) then
+    FPortaPost := StrToIntDef(Trim(RetiraInfo(arquivo.Strings[posicao])), 5432);
+  if FPortaPost <= 0 then FPortaPost := 5432;
 
   // ===== SQLite (NOVO) =====
   if BuscaChave(arquivo,'BANCOSQLITE:',posicao) then
@@ -856,6 +863,7 @@ begin
   arquivo.Append('USERNAMEPOST:'+FUsernamePOST);
   arquivo.Append('PASSWORDPOST:'+ProtectSecret('PASSWORDPOST', FPasswordPOST));
   arquivo.Append('SCHEMAPOST:'+FSchemaPost);
+  arquivo.Append('PORTAPOST:'+IntToStr(FPortaPost));
 
   // ===== SQLite (NOVO) =====
   arquivo.Append('BANCOSQLITE:'+FBancoSQLite);

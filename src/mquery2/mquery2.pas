@@ -106,6 +106,8 @@ type
     edErro2: TMemo;
     edHostName: TEdit;
     edHostNamePost: TEdit;
+    edPortaPost: TEdit;
+    lblPortaPost: TLabel;
     edDatabase: TFileNameEdit;
     edLog1: TMemo;
     edLogPost: TMemo;
@@ -628,6 +630,8 @@ type
 
     procedure ProcuraTVMysql(Nome: String);
     procedure ProcuraTVPost(Nome: String);
+  private
+    FLastPostError: string;
     procedure ProcuraTVSQLite(Nome: String);
 
     procedure BuscaSequence(qry:TZReadOnlyQuery;  TypeDB: TypeDatabase);
@@ -712,6 +716,15 @@ uses benchmark, main;
 {$IFDEF WINDOWS}
 function MQuerySetEnvironmentVariableW(lpName, lpValue: PWideChar): LongBool; stdcall;
   external 'kernel32.dll' name 'SetEnvironmentVariableW';
+function MQuerySetDllDirectoryA(lpPathName: PAnsiChar): LongBool; stdcall;
+  external 'kernel32.dll' name 'SetDllDirectoryA';
+function MQueryLoadLibraryA(lpLibFileName: PAnsiChar): THandle; stdcall;
+  external 'kernel32.dll' name 'LoadLibraryA';
+function MQueryFreeLibrary(hLibModule: THandle): LongBool; stdcall;
+  external 'kernel32.dll' name 'FreeLibrary';
+function MQueryGetLastError: Cardinal; stdcall;
+  external 'kernel32.dll' name 'GetLastError';
+function ResolvePostgresLibPath(const ConfiguredPath: string): string; forward;
 {$ENDIF}
 
 function SQLiteSelectedTableName: string;
@@ -1320,7 +1333,7 @@ begin
   InstalarAbasConsultas;
 
   {$IFDEF WINDOWS}
-  zconpost.LibraryLocation := FSetMain.DLLPostPath;
+  zconpost.LibraryLocation := ResolvePostgresLibPath(FSetMain.DLLPostPath);
   zconmysql.LibraryLocation := FSetMain.DLLMyPath;
   zconMSSQL.LibraryLocation := FSetMain.DLLMSSQLPath;
   zconOracle.LibraryLocation := FSetMain.DLLOraclePath;
@@ -1347,6 +1360,13 @@ begin
   end;
 
   edHostNamePost.Text := FSetmain.HostnamePost;
+  if Assigned(edPortaPost) then
+  begin
+    if FSetMain.PortaPost > 0 then
+      edPortaPost.Text := IntToStr(FSetMain.PortaPost)
+    else
+      edPortaPost.Text := '5432';
+  end;
   edBancoPost.Text := FSetmain.BancoPOST;
   edusuarioPost.Text := FSetmain.UsernamePost;
   edPasswrdPost.Text := FSetmain.PasswordPost;
@@ -1704,7 +1724,7 @@ end;
 
 procedure Tfrmmquery2.MenuItem9Click(Sender: TObject);
 begin
-  exit;
+  Close;
 end;
 
 procedure Tfrmmquery2.miNovaPesquisaClick(Sender: TObject);
@@ -1954,18 +1974,85 @@ begin
   end;
 end;
 
+{$IFDEF WINDOWS}
+function ResolvePostgresLibPath(const ConfiguredPath: string): string;
+var
+  ExeDir, Cfg, Cand: string;
+  Candidates: array[0..4] of string;
+  I: Integer;
+begin
+  Result := '';
+  Cfg := Trim(ConfiguredPath);
+  if Cfg <> '' then
+  begin
+    if FileExists(Cfg) then
+      Result := Cfg
+    else if DirectoryExists(Cfg) and FileExists(IncludeTrailingPathDelimiter(Cfg) + 'libpq.dll') then
+      Result := IncludeTrailingPathDelimiter(Cfg) + 'libpq.dll';
+  end;
+
+  if Result = '' then
+  begin
+    ExeDir := ExtractFilePath(Application.ExeName);
+    Candidates[0] := ExeDir + 'libpq.dll';
+    Candidates[1] := ExeDir + 'libs\postgres\win32\libpq.dll';
+    Candidates[2] := ExeDir + 'libs\win32\postgres\libpq.dll';
+    Candidates[3] := ExpandFileName(ExeDir + '..\libs\postgres\win32\libpq.dll');
+    Candidates[4] := ExeDir + 'libpq74.dll';
+    for I := 0 to High(Candidates) do
+    begin
+      Cand := Candidates[I];
+      if FileExists(Cand) then
+      begin
+        Result := Cand;
+        Break;
+      end;
+    end;
+  end;
+
+  if Result <> '' then
+    MQuerySetDllDirectoryA(PAnsiChar(AnsiString(ExcludeTrailingPathDelimiter(ExtractFilePath(Result)))))
+  else
+    Result := ExtractFilePath(Application.ExeName) + 'libpq.dll';
+end;
+{$ENDIF}
+
 function Tfrmmquery2.ConectPost: Boolean;
+var
+  HostTxt: string;
+  PortNum, ColonPos: Integer;
+  {$IFDEF WINDOWS}
+  hLib: THandle;
+  WinErr: Cardinal;
+  {$ENDIF}
 begin
   Result := False;
+  FLastPostError := '';
 
   if zconpost.Connected then
     zconpost.Disconnect;
 
   {$IFDEF WINDOWS}
-  if (FSetMain <> nil) and (FSetMain.DLLPostPath <> '') then
-    zconpost.LibraryLocation := FSetMain.DLLPostPath
+  if FSetMain <> nil then
+    zconpost.LibraryLocation := ResolvePostgresLibPath(FSetMain.DLLPostPath)
   else
-    zconpost.LibraryLocation := ExtractFilePath(Application.ExeName) + 'libpq74.dll';
+    zconpost.LibraryLocation := ResolvePostgresLibPath('');
+  if not FileExists(zconpost.LibraryLocation) then
+  begin
+    FLastPostError := 'Biblioteca libpq.dll não encontrada em: ' + zconpost.LibraryLocation;
+    if Assigned(edLogPost) then edLogPost.Lines.Add('[' + FormatDateTime('hh:nn:ss', Now) + '] ' + FLastPostError);
+    Exit;
+  end;
+  hLib := MQueryLoadLibraryA(PAnsiChar(AnsiString(zconpost.LibraryLocation)));
+  if hLib = 0 then
+  begin
+    WinErr := MQueryGetLastError;
+    FLastPostError := Format('Falha ao carregar libpq.dll (%s): Erro Windows %d - %s',
+      [zconpost.LibraryLocation, WinErr, SysErrorMessage(WinErr)]);
+    if Assigned(edLogPost) then edLogPost.Lines.Add('[' + FormatDateTime('hh:nn:ss', Now) + '] ' + FLastPostError);
+    Exit;
+  end;
+  MQueryFreeLibrary(hLib);
   {$ENDIF}
 
   {$IFDEF LINUX}
@@ -1973,24 +2060,58 @@ begin
   zconmysql.LibraryLocation := ExtractFilePath(Application.ExeName) + '/libs/linux64/libmysqlclient.so.21';
   {$ENDIF}
 
-  zconpost.HostName := edHostNamePost.Text;
+  HostTxt := Trim(edHostNamePost.Text);
+  if Assigned(edPortaPost) then
+    PortNum := StrToIntDef(Trim(edPortaPost.Text), 5432)
+  else
+    PortNum := 5432;
+  if PortNum <= 0 then PortNum := 5432;
+
+  ColonPos := LastDelimiter(':', HostTxt);
+  if (ColonPos > 1) and (Pos(':', Copy(HostTxt, 1, ColonPos - 1)) = 0) then
+  begin
+    PortNum := StrToIntDef(Copy(HostTxt, ColonPos + 1, Length(HostTxt)), PortNum);
+    HostTxt := Copy(HostTxt, 1, ColonPos - 1);
+  end;
+
+  edusuarioPost.Text := Trim(edusuarioPost.Text);
+  edSchemaPost.Text  := Trim(edSchemaPost.Text);
+  if Assigned(edBancoPost) then
+    edBancoPost.Text := Trim(edBancoPost.Text);
+
+  zconpost.HostName := HostTxt;
+  zconpost.Port     := PortNum;
   zconpost.User     := edusuarioPost.Text;
   zconpost.Password := edPasswrdPost.Text;
   if Assigned(edBancoPost) then
     zconpost.Database := edBancoPost.Text;
 
-  FSetmain.HostnamePost  := edHostNamePost.Text;
+  FSetmain.HostnamePost  := HostTxt;
+  FSetmain.PortaPost     := PortNum;
   FSETMAIN.SchemaPost    := edSchemaPost.Text;
   FSetmain.BancoPOST     := edBancoPost.Text;
   FSetmain.UsernamePost  := edusuarioPost.Text;
   FSetmain.PasswordPost  := edPasswrdPost.Text;
   FSetMain.SalvaContexto(false);
 
+  if Assigned(edLogPost) then
+    edLogPost.Lines.Add(Format('[%s] Conectando PostgreSQL (%s:%d/%s | lib: %s)...',
+      [FormatDateTime('hh:nn:ss', Now), zconpost.HostName, zconpost.Port, zconpost.Database, zconpost.LibraryLocation]));
+
   try
     zconpost.Connect;
     Result := zconpost.Connected;
+    if Result and Assigned(edLogPost) then
+      edLogPost.Lines.Add('[' + FormatDateTime('hh:nn:ss', Now) + '] PostgreSQL conectado com sucesso.');
   except
-    Result := False;
+    on E: Exception do
+    begin
+      Result := False;
+      FLastPostError := Format('Erro ao conectar no PostgreSQL (%s:%d/%s | lib: %s): %s',
+        [zconpost.HostName, zconpost.Port, zconpost.Database, zconpost.LibraryLocation, E.Message]);
+      if Assigned(edLogPost) then
+        edLogPost.Lines.Add('[' + FormatDateTime('hh:nn:ss', Now) + '] ' + FLastPostError);
+    end;
   end;
 end;
 
@@ -2439,7 +2560,10 @@ begin
 
   if not ConectPost then
   begin
-    MessageHint('Erro ao conectar no PostgreSQL. Verifique host/usuário/senha/banco e a libpq.');
+    if FLastPostError <> '' then
+      MessageHint(FLastPostError)
+    else
+      MessageHint('Erro ao conectar no PostgreSQL.');
     Exit;
   end;
 
