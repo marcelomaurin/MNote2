@@ -22,7 +22,7 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="2"/>
-      <MinorVersionNr Value="77"/>
+      <MinorVersionNr Value="78"/>
       <Language Value="0416"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -37,7 +37,7 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="31">
+    <RequiredPackages Count="32">
       <Item1>
         <PackageName Value="openai_graph"/>
       </Item1>
@@ -131,6 +131,9 @@
       <Item31>
         <PackageName Value="openai_voice"/>
       </Item31>
+      <Item32>
+        <PackageName Value="Printer4Lazarus"/>
+      </Item32>
     </RequiredPackages>
     <Units Count="60">
       <Unit0>

@@ -17,7 +17,7 @@ uses
   codigo, setmain, ZDbcIntfs, math, hint, Variants, LConvEncoding, base,
   mnote_ai_service, mnote_db_diagram_model, mnote_db_diagram_reader,
   mnote_db_diagram_form, fpjson, jsonparser,
-  mquery_sqlassist, mquery_querytabs;
+  mquery_sqlassist, mquery_querytabs, uqueryder;
 
 const
   sqltabela   = 'Você poderia me fornecer a consulta SQL que deseja analisar? Assim que eu receber o SQL, irei extrair os nomes das tabelas envolvidas e gerar um código em JSON com esses nomes. A resposta será apresentada dentro de uma caixa de texto apropriada para cópia, Desta forma refaça a pergunta mesmo nao havendo certeza da resposta,claramente formatada como um código JSON:';
@@ -531,9 +531,16 @@ type
     FCatalogs: array[0..4] of TMQueryCatalog;
     FCompletionCtl: array[0..4] of TMQueryCompletionController;
     FQueryBooks: array[0..4] of TMQueryQueryBook;
+    FDERTabs: array[0..4] of TTabSheet;
+    FDERPanels: array[0..4] of TMQueryDERPanel;
     { Dono (schema) das tabelas Oracle carregadas na arvore; usado tambem
       pelo dicionario, comparacao, diagrama e dependencias. }
     FOracleOwner: string;
+    procedure InstalarAbasDER;
+    procedure DERSendSQL(Sender: TObject; const ASQL: string; ARunNow: Boolean);
+    procedure miAdicionarDERClick(Sender: TObject);
+    procedure TreeMouseDownDER(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     function OracleOwner: string;
     function SalvarConexaoArquivo(const AFileName: string; AEngineIndex: Integer = -1): Boolean;
     function CarregarConexaoArquivo(const AFileName: string): Boolean;
@@ -633,6 +640,9 @@ type
   private
     FLastPostError: string;
     procedure ProcuraTVSQLite(Nome: String);
+    procedure ProcuraNaTreeView(ATree: TTreeView; ARoot: TTreeNode;
+      const ATermo: string; AAvancar: Boolean = False);
+    procedure edPesqChange(Sender: TObject);
 
     procedure BuscaSequence(qry:TZReadOnlyQuery;  TypeDB: TypeDatabase);
     procedure ListarViewsMy();
@@ -750,11 +760,25 @@ procedure Tfrmmquery2.ChartView;
 var
   t: TChartCommType;
 begin
-  if Assigned(zpostqry1) and zpostqry1.Active then
+  t := ccNone;
+  if (pgMain.ActivePage = tspostgree) and Assigned(zpostqry1) and zpostqry1.Active then
+    t := ccPostgres
+  else if (pgMain.ActivePage = tsMysql) and Assigned(zmyqry2) and zmyqry2.Active then
+    t := ccMySQL
+  else if (pgMain.ActivePage = tsSQLite) and Assigned(zliteqry2) and zliteqry2.Active then
+    t := ccSQLite
+  else if Assigned(DynGridDataSet(3)) and DynGridDataSet(3).Active then
+    t := ccMSSQL
+  else if Assigned(DynGridDataSet(4)) and DynGridDataSet(4).Active then
+    t := ccOracle
+  else if Assigned(zpostqry1) and zpostqry1.Active then
     t := ccPostgres
   else if Assigned(zmyqry2) and zmyqry2.Active then
     t := ccMySQL
-  else
+  else if Assigned(zliteqry2) and zliteqry2.Active then
+    t := ccSQLite;
+
+  if t = ccNone then
   begin
     ShowMessage('Nenhum resultado ativo para plotar.');
     Exit;
@@ -1157,29 +1181,124 @@ begin
   Result := output;
 end;
 
-procedure Tfrmmquery2.ProcuraTVMysql(Nome: String);
+procedure Tfrmmquery2.ProcuraNaTreeView(ATree: TTreeView; ARoot: TTreeNode;
+  const ATermo: string; AAvancar: Boolean);
 var
-  tv : TTreenode;
+  Termo, NomeLow: string;
+  Hits: TList;
+  CurIdx, StartIdx, I: Integer;
+  TblNode, ChildNode, FieldNode, MatchNode: TTreeNode;
 begin
-  tv := posicaofieldsmy.FindNode(nome);
-  if (tv <> nil) then tvMysql.Select(tv);
+  if (ATree = nil) or (ARoot = nil) then Exit;
+  Termo := LowerCase(Trim(ATermo));
+  if Termo = '' then Exit;
+
+  Hits := TList.Create;
+  try
+    // 1) Tabelas (exato / prefixo / substring)
+    TblNode := ARoot.GetFirstChild;
+    while TblNode <> nil do
+    begin
+      NomeLow := LowerCase(TblNode.Text);
+      if Pos(Termo, NomeLow) > 0 then
+        Hits.Add(TblNode);
+      TblNode := TblNode.GetNextSibling;
+    end;
+
+    // 2) Campos dentro das tabelas
+    TblNode := ARoot.GetFirstChild;
+    while TblNode <> nil do
+    begin
+      ChildNode := TblNode.GetFirstChild;
+      while ChildNode <> nil do
+      begin
+        if SameText(ChildNode.Text, 'fields') then
+        begin
+          FieldNode := ChildNode.GetFirstChild;
+          while FieldNode <> nil do
+          begin
+            if Pos(Termo, LowerCase(FieldNode.Text)) > 0 then
+              Hits.Add(FieldNode);
+            FieldNode := FieldNode.GetNextSibling;
+          end;
+        end;
+        ChildNode := ChildNode.GetNextSibling;
+      end;
+      TblNode := TblNode.GetNextSibling;
+    end;
+
+    if Hits.Count = 0 then Exit;
+
+    MatchNode := nil;
+    if AAvancar and (ATree.Selected <> nil) then
+    begin
+      CurIdx := Hits.IndexOf(ATree.Selected);
+      if CurIdx >= 0 then
+        StartIdx := (CurIdx + 1) mod Hits.Count
+      else
+        StartIdx := 0;
+      MatchNode := TTreeNode(Hits[StartIdx]);
+    end
+    else
+    begin
+      // Prioriza tabela exata ou que começa com o termo
+      for I := 0 to Hits.Count - 1 do
+        if SameText(TTreeNode(Hits[I]).Text, Termo) then
+        begin
+          MatchNode := TTreeNode(Hits[I]);
+          Break;
+        end;
+      if MatchNode = nil then
+        for I := 0 to Hits.Count - 1 do
+          if Pos(Termo, LowerCase(TTreeNode(Hits[I]).Text)) = 1 then
+          begin
+            MatchNode := TTreeNode(Hits[I]);
+            Break;
+          end;
+      if MatchNode = nil then
+        MatchNode := TTreeNode(Hits[0]);
+    end;
+
+    if MatchNode <> nil then
+    begin
+      if MatchNode.Parent <> nil then MatchNode.Parent.Expand(False);
+      if (MatchNode.Parent <> nil) and (MatchNode.Parent.Parent <> nil) then
+        MatchNode.Parent.Parent.Expand(False);
+      ATree.Select(MatchNode);
+      MatchNode.MakeVisible;
+    end;
+  finally
+    Hits.Free;
+  end;
+end;
+
+procedure Tfrmmquery2.edPesqChange(Sender: TObject);
+begin
+  if Sender = edPesqMy then
+    ProcuraNaTreeView(tvMysql, posicaofieldsmy, edPesqMy.Text, False)
+  else if Sender = edPesqPost then
+    ProcuraNaTreeView(tvPost, posicaofieldspost, edPesqPost.Text, False)
+  else if Sender = edPesqsqlite then
+    ProcuraNaTreeView(tvsqlite, posicaofieldslite, edPesqsqlite.Text, False)
+  else if (FDyn[3].SearchEdit <> nil) and (Sender = FDyn[3].SearchEdit) then
+    ProcuraNaTreeView(tvMSSQL, posicaofieldsMSSQL, FDyn[3].SearchEdit.Text, False)
+  else if (FDyn[4].SearchEdit <> nil) and (Sender = FDyn[4].SearchEdit) then
+    ProcuraNaTreeView(tvOracle, posicaofieldsOracle, FDyn[4].SearchEdit.Text, False);
+end;
+
+procedure Tfrmmquery2.ProcuraTVMysql(Nome: String);
+begin
+  ProcuraNaTreeView(tvMysql, posicaofieldsmy, Nome, False);
 end;
 
 procedure Tfrmmquery2.ProcuraTVPost(Nome: String);
-var
-  tv : TTreenode;
 begin
-  tv := posicaofieldspost.FindNode(nome);
-  if (tv <> nil) then tvPost.Select(tv);
+  ProcuraNaTreeView(tvPost, posicaofieldspost, Nome, False);
 end;
 
 procedure Tfrmmquery2.ProcuraTVSQLite(Nome: String);
-var
-  tv : TTreenode;
 begin
-  if posicaofieldslite = nil then Exit;
-  tv := posicaofieldslite.FindNode(Nome);
-  if (tv <> nil) then tvsqlite.Select(tv);
+  ProcuraNaTreeView(tvsqlite, posicaofieldslite, Nome, False);
 end;
 
 procedure Tfrmmquery2.tvPostChange(Sender: TObject; Node: TTreeNode);
@@ -1331,6 +1450,23 @@ begin
   InicializarAutocomplete;
   pgMain.OnChange := @pgMainChange;
   InstalarAbasConsultas;
+  InstalarAbasDER;
+
+  if edPesqMy <> nil then
+  begin
+    edPesqMy.TextHint := 'Buscar tabela ou campo...';
+    edPesqMy.OnChange := @edPesqChange;
+  end;
+  if edPesqPost <> nil then
+  begin
+    edPesqPost.TextHint := 'Buscar tabela ou campo...';
+    edPesqPost.OnChange := @edPesqChange;
+  end;
+  if edPesqsqlite <> nil then
+  begin
+    edPesqsqlite.TextHint := 'Buscar tabela ou campo...';
+    edPesqsqlite.OnChange := @edPesqChange;
+  end;
 
   {$IFDEF WINDOWS}
   zconpost.LibraryLocation := ResolvePostgresLibPath(FSetMain.DLLPostPath);
@@ -3593,21 +3729,30 @@ end;
 procedure Tfrmmquery2.edPesqMyKeyPress(Sender: TObject; var Key: char);
 begin
   if key <> #13 then Exit;
+  Key := #0;
   // edPesqsqlite (aba SQLite) tambem esta ligado a este evento
   if Sender = edPesqsqlite then
-    ProcuraTVSQLite(edPesqsqlite.Text)
+    ProcuraNaTreeView(tvsqlite, posicaofieldslite, edPesqsqlite.Text, True)
   else
-    ProcuraTVMysql(edPesqMy.Text);
+    ProcuraNaTreeView(tvMysql, posicaofieldsmy, edPesqMy.Text, True);
 end;
 
 procedure Tfrmmquery2.edPesqPostKeyPress(Sender: TObject; var Key: char);
 begin
-  if key = #13 then ProcuraTVPost(edPesqPost.Text);
+  if key = #13 then
+  begin
+    Key := #0;
+    ProcuraNaTreeView(tvPost, posicaofieldspost, edPesqPost.Text, True);
+  end;
 end;
 
 procedure Tfrmmquery2.edPesqsqliteKeyPress(Sender: TObject; var Key: char);
 begin
-  if key = #13 then ProcuraTVSQLite(edPesqsqlite.Text);
+  if key = #13 then
+  begin
+    Key := #0;
+    ProcuraNaTreeView(tvsqlite, posicaofieldslite, edPesqsqlite.Text, True);
+  end;
 end;
 
 procedure Tfrmmquery2.edSchemaPostChange(Sender: TObject); begin end;
@@ -5195,15 +5340,27 @@ procedure Tfrmmquery2.InstallDiagramMenus;
     Item := TMenuItem.Create(Self); Item.Caption := 'Abrir diagrama do banco';
     Item.Tag := Index; Item.OnClick := @DiagramMenuClick; Menu.Items.Add(Item);
   end;
+  procedure AddDER(Menu: TPopupMenu; Index: Integer);
+  var Item: TMenuItem;
+  begin
+    if Menu = nil then Exit;
+    Item := TMenuItem.Create(Self); Item.Caption := 'Adicionar ao DER (SELECT)';
+    Item.Tag := Index; Item.OnClick := @miAdicionarDERClick; Menu.Items.Add(Item);
+  end;
 begin
-  Add(pmDatabaseMy, 0); Add(pmTabelasMy, 0); Add(pmTabelaMy, 0);
-  Add(pmDatabasePost, 1); Add(pmTabelasPost, 1); Add(pmTabelaPost, 1);
-  Add(pmDatabaseLite, 2); Add(pmTabelasLite, 2); Add(pmTabelaLite, 2);
-  Add(pmDatabaseMSSQL, 3); Add(pmTabelaMSSQL, 3);
-  Add(pmDatabaseOracle, 4); Add(pmTabelaOracle, 4);
+  Add(pmDatabaseMy, 0); Add(pmTabelasMy, 0); Add(pmTabelaMy, 0); AddDER(pmTabelaMy, 0);
+  Add(pmDatabasePost, 1); Add(pmTabelasPost, 1); Add(pmTabelaPost, 1); AddDER(pmTabelaPost, 1);
+  Add(pmDatabaseLite, 2); Add(pmTabelasLite, 2); Add(pmTabelaLite, 2); AddDER(pmTabelaLite, 2);
+  Add(pmDatabaseMSSQL, 3); Add(pmTabelaMSSQL, 3); AddDER(pmTabelaMSSQL, 3);
+  Add(pmDatabaseOracle, 4); Add(pmTabelaOracle, 4); AddDER(pmTabelaOracle, 4);
   tvMysql.RightClickSelect := True; tvPost.RightClickSelect := True;
   tvsqlite.RightClickSelect := True; tvMSSQL.RightClickSelect := True;
   tvOracle.RightClickSelect := True;
+  tvMysql.OnMouseDown := @TreeMouseDownDER;
+  tvPost.OnMouseDown := @TreeMouseDownDER;
+  tvsqlite.OnMouseDown := @TreeMouseDownDER;
+  tvMSSQL.OnMouseDown := @TreeMouseDownDER;
+  tvOracle.OnMouseDown := @TreeMouseDownDER;
 end;
 
 function Tfrmmquery2.DiagramConnection(AIndex: Integer; out ASchema: string): TZConnection;
@@ -8786,6 +8943,152 @@ begin
   begin
     if SalvarConexaoArquivo(SaveDialog1.FileName, idx) then
       ShowMessage('Conexão salva com sucesso em ' + ExtractFileName(SaveDialog1.FileName));
+  end;
+end;
+
+procedure Tfrmmquery2.InstalarAbasDER;
+  procedure CriarAba(AEngine: Integer; APC: TPageControl; AConn: TZConnection; const ASchema: string);
+  var
+    TS: TTabSheet;
+    P: TMQueryDERPanel;
+  begin
+    if APC = nil then Exit;
+    TS := TTabSheet.Create(Self);
+    TS.PageControl := APC;
+    TS.Caption := 'DER (SELECT)';
+    P := TMQueryDERPanel.CreateForEngine(Self, AEngine, AConn, ASchema);
+    P.Parent := TS;
+    P.Tag := AEngine;
+    P.OnSendSQL := @DERSendSQL;
+    FDERTabs[AEngine] := TS;
+    FDERPanels[AEngine] := P;
+  end;
+begin
+  CriarAba(0, pgMysql, zconmysql, '');
+  CriarAba(1, pcPostgree, zconpost, Trim(edSchemaPost.Text));
+  CriarAba(2, pgSQLite, zconsqlite, 'main');
+  if pcMSSQL <> nil then
+    CriarAba(3, pcMSSQL, zconMSSQL, Trim(edSchemaMSSQL.Text));
+  if pcOracle <> nil then
+    CriarAba(4, pcOracle, zconOracle, OracleOwner);
+end;
+
+procedure Tfrmmquery2.TreeMouseDownDER(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  TV: TTreeView;
+  Node: TTreeNode;
+  EngineIdx: Integer;
+  C: TZConnection;
+  Schema: string;
+begin
+  if (Button = mbLeft) and (Sender is TTreeView) then
+  begin
+    TV := TTreeView(Sender);
+    EngineIdx := -1;
+    if TV = tvMysql then EngineIdx := 0
+    else if TV = tvPost then EngineIdx := 1
+    else if TV = tvsqlite then EngineIdx := 2
+    else if TV = tvMSSQL then EngineIdx := 3
+    else if TV = tvOracle then EngineIdx := 4;
+    if (EngineIdx >= 0) and (FDERPanels[EngineIdx] <> nil) then
+    begin
+      C := DiagramConnection(EngineIdx, Schema);
+      FDERPanels[EngineIdx].SetConnectionInfo(C, Schema);
+    end;
+    Node := TV.GetNodeAt(X, Y);
+    if Node <> nil then
+    begin
+      TV.Selected := Node;
+      TV.BeginDrag(False, 10);
+    end;
+  end;
+end;
+
+procedure Tfrmmquery2.miAdicionarDERClick(Sender: TObject);
+var
+  EngineIdx: Integer;
+  Tree: TTreeView;
+  ParentRoot, TableNode: TTreeNode;
+  C: TZConnection;
+  Schema: string;
+  PC: TPageControl;
+begin
+  EngineIdx := TMenuItem(Sender).Tag;
+  Tree := nil;
+  ParentRoot := nil;
+  PC := nil;
+  case EngineIdx of
+    0: begin Tree := tvMysql; ParentRoot := posicaofieldsmy; PC := pgMysql; end;
+    1: begin Tree := tvPost; ParentRoot := posicaofieldspost; PC := pcPostgree; end;
+    2: begin Tree := tvsqlite; ParentRoot := posicaofieldslite; PC := pgSQLite; end;
+    3: begin Tree := tvMSSQL; ParentRoot := posicaofieldsMSSQL; PC := pcMSSQL; end;
+    4: begin Tree := tvOracle; ParentRoot := posicaofieldsOracle; PC := pcOracle; end;
+  end;
+
+  if (Tree = nil) or (Tree.Selected = nil) or (ParentRoot = nil) then
+  begin
+    ShowMessage('Selecione uma tabela na árvore.');
+    Exit;
+  end;
+
+  TableNode := GetSelectedTableNode(Tree, ParentRoot);
+  if TableNode = nil then
+  begin
+    ShowMessage('Selecione uma tabela válida.');
+    Exit;
+  end;
+
+  if FDERPanels[EngineIdx] = nil then Exit;
+  C := DiagramConnection(EngineIdx, Schema);
+  FDERPanels[EngineIdx].SetConnectionInfo(C, Schema);
+  FDERPanels[EngineIdx].AddTable(TableNode.Text, TableNode);
+
+  if (PC <> nil) and (FDERTabs[EngineIdx] <> nil) then
+    PC.ActivePage := FDERTabs[EngineIdx];
+end;
+
+procedure Tfrmmquery2.DERSendSQL(Sender: TObject; const ASQL: string; ARunNow: Boolean);
+var
+  EngineIdx: Integer;
+  QTab: TMQueryQueryTab;
+begin
+  if Trim(ASQL) = '' then Exit;
+  EngineIdx := TMQueryDERPanel(Sender).Tag;
+
+  case EngineIdx of
+    0: begin
+         pgMain.ActivePage := tsMysql;
+         edSQL.Lines.Text := ASQL;
+         if not ARunNow then begin pgMysql.ActivePage := tbSQL; edSQL.SetFocus; Exit; end;
+       end;
+    1: begin
+         pgMain.ActivePage := tsPostgree;
+         edSQLPost.Lines.Text := ASQL;
+         if not ARunNow then begin pcPostgree.ActivePage := tsSQLPostgreSQL; edSQLPost.SetFocus; Exit; end;
+       end;
+    2: begin
+         pgMain.ActivePage := tsSqlite;
+         edSQL1.Lines.Text := ASQL;
+         if not ARunNow then begin pgSQLite.ActivePage := tbSQL1; edSQL1.SetFocus; Exit; end;
+       end;
+    3: begin
+         pgMain.ActivePage := tsMSSQL;
+         edSQLMSSQL.Lines.Text := ASQL;
+         if not ARunNow then begin if pcMSSQL <> nil then pcMSSQL.ActivePage := tsSQLMSSQL; edSQLMSSQL.SetFocus; Exit; end;
+       end;
+    4: begin
+         pgMain.ActivePage := tsOracle;
+         edSQLOracle.Lines.Text := ASQL;
+         if not ARunNow then begin if pcOracle <> nil then pcOracle.ActivePage := tsSQLOracle; edSQLOracle.SetFocus; Exit; end;
+       end;
+  end;
+
+  if ARunNow then
+  begin
+    QTab := NovaConsulta(EngineIdx, ASQL);
+    if QTab <> nil then
+      QTab.Execute;
   end;
 end;
 

@@ -1,12 +1,12 @@
 unit chart;
 
-{ ObjFPC}{+}
+{$mode objfpc}{$H+}
 
 interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, StdCtrls,
-  ExtCtrls, Math, DB, ZConnection, ZDataset, SynEdit, funcoes;
+  ExtCtrls, Math, DB, ZConnection, ZDataset, SynEdit, funcoes, uquerychart;
 
 type
   TChartCommType = (ccNone, ccMySQL, ccPostgres, ccMSSQL, ccOracle, ccSQLite);
@@ -43,6 +43,8 @@ type
     FDataSet: TDataSet;
     FDataPoints: array of TChartDataPoint;
     FChartType: Integer;
+    FChartPanel: TQueryChartPanel;
+    procedure EnsureChartPanel;
     function ResolveDataSet: TDataSet;
     procedure ApplyCommType;
     procedure ClearData;
@@ -64,7 +66,7 @@ var
 
 implementation
 
-{ *.lfm}
+{$R *.lfm}
 
 uses mquery2;
 
@@ -92,13 +94,29 @@ end;
 
 procedure TfrmChart.ApplyCommType;
 begin
+  FDataSet := nil;
   FDataSet := ResolveDataSet;
+end;
+
+procedure TfrmChart.EnsureChartPanel;
+begin
+  if FChartPanel <> nil then Exit;
+  Width := 1120;
+  Height := 660;
+  Position := poScreenCenter;
+  Caption := 'Gráficos e Mapa - MQuery2';
+  if Assigned(pcChart) then
+    pcChart.Visible := False;
+  FChartPanel := TQueryChartPanel.Create(Self);
+  FChartPanel.Parent := Self;
+  FChartPanel.Align := alClient;
+  FChartPanel.SetDashboardButtonsVisible(False);
 end;
 
 procedure TfrmChart.SetCommType(AType: TChartCommType);
 begin
-  if FCommType = AType then Exit;
   FCommType := AType;
+  EnsureChartPanel;
   ApplyCommType;
   Refresh;
 end;
@@ -531,26 +549,23 @@ end;
 procedure TfrmChart.Refresh;
 var
   DS: TDataSet;
-  fieldsText: string;
+  TitleTxt: string;
 begin
+  EnsureChartPanel;
   DS := ResolveDataSet;
   if (DS = nil) or (not DS.Active) then Exit;
 
-  fieldsText := PegaFields(DS).Text;
+  case FCommType of
+    ccPostgres: TitleTxt := 'PostgreSQL';
+    ccMySQL:    TitleTxt := 'MySQL';
+    ccSQLite:   TitleTxt := 'SQLite';
+    ccMSSQL:    TitleTxt := 'SQL Server';
+    ccOracle:   TitleTxt := 'Oracle';
+  else
+    TitleTxt := 'MQuery2';
+  end;
 
-  cbGroupItem.Items.Text  := fieldsText;
-  cbGroupItem.ItemIndex   := -1;
-  cbGroupItem.Text        := '';
-
-  cbItemValue.Items.Text  := fieldsText;
-  cbItemValue.ItemIndex   := -1;
-  cbItemValue.Text        := '';
-
-  cbItemValueY.Items.Text := fieldsText;
-  cbItemValueY.ItemIndex  := -1;
-  cbItemValueY.Text       := '';
-
-  cbItemValueY.Enabled := (cbTypeChart.ItemIndex = 5);
+  FChartPanel.LoadFromDataSet(DS, TitleTxt, '');
 end;
 
 end.

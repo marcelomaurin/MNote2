@@ -5,9 +5,9 @@ unit mnote_version;
 interface
 
 const
-  MNOTE_APP_VERSION = '2.77';
+  MNOTE_APP_VERSION = '2.78';
   MNOTE_APP_VERSION_MAJOR = 2;
-  MNOTE_APP_VERSION_MINOR = 77;
+  MNOTE_APP_VERSION_MINOR = 78;
 
 implementation
 
