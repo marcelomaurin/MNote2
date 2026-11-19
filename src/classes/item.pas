@@ -1123,7 +1123,14 @@ begin
           FPythonCtrl.PythonEngine.AutoLoad := True;
           FFileError := '';
 
-          FPythonCtrl.PythonEngine.DllPath := FSetMain.DLLPath;
+          if FileExists(FSetMain.DLLPath) then
+          begin
+            FPythonCtrl.PythonEngine.DllPath := ExtractFileDir(FSetMain.DLLPath);
+            if SameText(ExtractFileExt(FSetMain.DLLPath), '.dll') then
+              FPythonCtrl.PythonEngine.DllName := ExtractFileName(FSetMain.DLLPath);
+          end
+          else
+            FPythonCtrl.PythonEngine.DllPath := FSetMain.DLLPath;
           FPythonCtrl.PythonEngine.AutoFinalize := True;
           FPythonCtrl.PythonEngine.InitThreads := True;
           FPythonCtrl.PythonEngine.PyFlags := [pfInteractive];

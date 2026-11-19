@@ -25,6 +25,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure btTestarPythonClick(Sender: TObject);
   private
+    procedure PythonExecutionModeChange(Sender: TObject);
     function ValidateControls(out AError: string): Boolean;
   public
 
@@ -51,8 +52,13 @@ begin
 
   if chkUsePythonConnector.Checked and (Trim(edDLLPATH.Text) = '') then
   begin
-    AError := 'Informe a DLL do Python ou o executável python/python3.';
-    Exit(False);
+    if ResolveBundledPythonPath(cbPythonExecutionMode.ItemIndex) <> '' then
+      edDLLPATH.Text := ResolveBundledPythonPath(cbPythonExecutionMode.ItemIndex)
+    else
+    begin
+      AError := 'Informe a DLL do Python ou o executável python/python3.';
+      Exit(False);
+    end;
   end;
 
   Result := True;
@@ -76,15 +82,30 @@ begin
   Close;
 end;
 
+procedure TfrmconfPython.PythonExecutionModeChange(Sender: TObject);
+var
+  BundledPath: string;
+begin
+  if (Trim(edDLLPATH.Text) = '') or IsBundledPythonPath(edDLLPATH.Text) then
+  begin
+    BundledPath := ResolveBundledPythonPath(cbPythonExecutionMode.ItemIndex);
+    if BundledPath <> '' then
+      edDLLPATH.Text := BundledPath;
+  end;
+end;
+
 procedure TfrmconfPython.FormCreate(Sender: TObject);
 begin
-  edDLLPATH.Text := FSetMain.DLLPath;
-  chkUsePythonConnector.Checked := FSetMain.UsePythonConnector;
   if (FSetMain.PythonExecutionMode >= 0) and
      (FSetMain.PythonExecutionMode <= 1) then
     cbPythonExecutionMode.ItemIndex := FSetMain.PythonExecutionMode
   else
-    cbPythonExecutionMode.ItemIndex := 0;
+    cbPythonExecutionMode.ItemIndex := 1;
+  edDLLPATH.Text := FSetMain.DLLPath;
+  if Trim(edDLLPATH.Text) = '' then
+    edDLLPATH.Text := ResolveBundledPythonPath(cbPythonExecutionMode.ItemIndex);
+  chkUsePythonConnector.Checked := FSetMain.UsePythonConnector;
+  cbPythonExecutionMode.OnChange := @PythonExecutionModeChange;
 end;
 
 procedure TfrmconfPython.btCancelClick(Sender: TObject);
@@ -108,14 +129,9 @@ begin
   Py := TMNotePythonService.Create(Self);
   Report := TStringList.Create;
   try
-    if cbPythonExecutionMode.ItemIndex = 0 then
-      Py.Python.ExecutionMode := pemDLL
-    else
-      Py.Python.ExecutionMode := pemProcess;
-
     { O teste deve usar imediatamente o valor digitado na tela, mesmo antes
       de o usuário pressionar Salvar. }
-    Py.Python.DLLPath := Trim(edDLLPATH.Text);
+    Py.ApplySettings(cbPythonExecutionMode.ItemIndex, Trim(edDLLPATH.Text));
 
     Code := 'import sys' + LineEnding +
       'print("Versao Python:", sys.version)' + LineEnding +

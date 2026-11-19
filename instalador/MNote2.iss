@@ -43,6 +43,7 @@ Name: "{app}\libs\mysql\win32\lib"
 Name: "{app}\libs\postgres\win32"
 Name: "{app}\libs\oracle\win32"
 Name: "{app}\libs\mssql\win32"
+Name: "{app}\runtime\python\libs\windows\x86"
 
 [Files]
 ; Main executable
@@ -80,6 +81,9 @@ Source: "{#ProjectRoot}\libs\mssql\win32\*"; DestDir: "{app}\libs\mssql\win32"; 
 
 ; SQLite 32-bit runtime
 Source: "{#ProjectRoot}\libs\sqlite\win32\sqlite3.dll"; DestDir: "{app}\libs\sqlite\win32"; Flags: ignoreversion
+
+; Python 3.12 32-bit runtime (CHATGPT PythonConnector)
+Source: "{#ProjectRoot}\runtime\python\libs\windows\x86\*"; DestDir: "{app}\runtime\python\libs\windows\x86"; Excludes: ".gitkeep,__pycache__,*.pyc"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; Tools
 

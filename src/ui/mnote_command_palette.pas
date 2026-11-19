@@ -87,6 +87,7 @@ begin
 
   FEdit := TEdit.Create(Self);
   FEdit.Name := 'edIDECommandSearch';
+  FEdit.Text := '';
   FEdit.Parent := FTopPanel;
   FEdit.Width := 360;
   FEdit.Height := 27;

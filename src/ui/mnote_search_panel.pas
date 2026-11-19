@@ -156,6 +156,7 @@ begin
 
   FBar := TPanel.Create(Self);
   FBar.Name := 'pnIDESearch';
+  FBar.Caption := '';
   FBar.Parent := AParent;
   FBar.Align := alTop;
   FBar.Height := 40;

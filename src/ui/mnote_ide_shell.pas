@@ -471,6 +471,7 @@ begin
 
   FLeftPanel := TPanel.Create(Self);
   FLeftPanel.Name := 'pnIDELeft';
+  FLeftPanel.Caption := '';
   FLeftPanel.Parent := FHost;
   FLeftPanel.Align := alLeft;
   FLeftPanel.Width := 240;
@@ -498,6 +499,7 @@ begin
 
   FRightPanel := TPanel.Create(Self);
   FRightPanel.Name := 'pnIDERight';
+  FRightPanel.Caption := '';
   FRightPanel.Parent := FHost;
   FRightPanel.Align := alRight;
   FRightPanel.Width := 340;
@@ -543,6 +545,7 @@ begin
 
   FBottomPanel := TPanel.Create(Self);
   FBottomPanel.Name := 'pnIDEBottom';
+  FBottomPanel.Caption := '';
   FBottomPanel.Parent := FHost;
   FBottomPanel.Align := alBottom;
   FBottomPanel.Height := 180;

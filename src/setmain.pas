@@ -291,7 +291,174 @@ type
 var
   FSetMain : TSetMain;
 
+function ResolvePythonFileInDir(const ADir: string;
+  AExecutionMode: Integer): string;
+function ResolveBundledPythonPath(AExecutionMode: Integer): string;
+function IsBundledPythonPath(const APath: string): Boolean;
+
 implementation
+
+function ResolvePythonFileInDir(const ADir: string;
+  AExecutionMode: Integer): string;
+const
+  {$IFDEF WINDOWS}
+  DLLNames: array[0..7] of string = (
+    'python312.dll', 'python311.dll', 'python313.dll', 'python310.dll',
+    'python39.dll', 'python38.dll', 'python314.dll', 'python3.dll'
+  );
+  {$ELSE}
+  {$IFDEF DARWIN}
+  DLLNames: array[0..3] of string = (
+    'libpython3.12.dylib', 'libpython3.11.dylib', 'libpython3.13.dylib',
+    'libpython3.dylib'
+  );
+  {$ELSE}
+  DLLNames: array[0..3] of string = (
+    'libpython3.12.so', 'libpython3.11.so', 'libpython3.13.so',
+    'libpython3.so'
+  );
+  {$ENDIF}
+  {$ENDIF}
+var
+  BaseDir, Candidate: string;
+  I: Integer;
+begin
+  Result := '';
+  if Trim(ADir) = '' then
+    Exit;
+  BaseDir := IncludeTrailingPathDelimiter(ADir);
+  if AExecutionMode = 0 then
+  begin
+    for I := Low(DLLNames) to High(DLLNames) do
+    begin
+      Candidate := BaseDir + DLLNames[I];
+      if FileExists(Candidate) then
+        Exit(Candidate);
+    end;
+  end
+  else
+  begin
+    {$IFDEF WINDOWS}
+    Candidate := BaseDir + 'python.exe';
+    if FileExists(Candidate) then
+      Exit(Candidate);
+    {$ELSE}
+    Candidate := BaseDir + 'bin' + PathDelim + 'python3';
+    if FileExists(Candidate) then
+      Exit(Candidate);
+    Candidate := BaseDir + 'python3';
+    if FileExists(Candidate) then
+      Exit(Candidate);
+    {$ENDIF}
+  end;
+end;
+
+function ResolveBundledPythonPath(AExecutionMode: Integer): string;
+var
+  AppDir, PlatformFolder, ArchFolder, Found: string;
+  Candidates: array[0..5] of string;
+  Count, I: Integer;
+
+  procedure AddArchCandidates(const AArch: string);
+  var
+    RelSubPath, AltSubPath: string;
+  begin
+    RelSubPath := 'runtime' + PathDelim + 'python' + PathDelim + 'libs' +
+      PathDelim + PlatformFolder + PathDelim + AArch;
+    AltSubPath := 'libs' + PathDelim + PlatformFolder + PathDelim + AArch;
+    if Count <= High(Candidates) then
+    begin
+      Candidates[Count] := AppDir + RelSubPath;
+      Inc(Count);
+    end;
+    if Count <= High(Candidates) then
+    begin
+      Candidates[Count] := ExpandFileName(AppDir + '..' + PathDelim + RelSubPath);
+      Inc(Count);
+    end;
+    if Count <= High(Candidates) then
+    begin
+      Candidates[Count] := AppDir + AltSubPath;
+      Inc(Count);
+    end;
+  end;
+
+begin
+  Result := '';
+  AppDir := ExtractFilePath(ParamStr(0));
+  if AppDir = '' then
+    Exit;
+  AppDir := IncludeTrailingPathDelimiter(AppDir);
+
+  {$IFDEF WINDOWS}
+  PlatformFolder := 'windows';
+  {$IFDEF CPU64}
+  ArchFolder := 'x86_64';
+  {$ELSE}
+  ArchFolder := 'x86';
+  {$ENDIF}
+  {$ELSE}
+  {$IFDEF DARWIN}
+  PlatformFolder := 'mac';
+  {$IFDEF CPUAARCH64}
+  ArchFolder := 'arm';
+  {$ELSE}
+  ArchFolder := 'x86_64';
+  {$ENDIF}
+  {$ELSE}
+  PlatformFolder := 'linux';
+  {$IFDEF CPUAARCH64}
+  ArchFolder := 'arm64';
+  {$ELSE}
+  {$IFDEF CPUARM}
+  ArchFolder := 'arm';
+  {$ELSE}
+  {$IFDEF CPU64}
+  ArchFolder := 'x86_64';
+  {$ELSE}
+  ArchFolder := 'x86';
+  {$ENDIF}
+  {$ENDIF}
+  {$ENDIF}
+  {$ENDIF}
+  {$ENDIF}
+
+  Count := 0;
+  AddArchCandidates(ArchFolder);
+  {$IFDEF WINDOWS}
+  {$IFDEF CPU64}
+  // Em modo processo, o runtime x86 tambem executa em Windows 64 bits.
+  if AExecutionMode <> 0 then
+    AddArchCandidates('x86');
+  {$ENDIF}
+  {$ENDIF}
+
+  for I := 0 to Count - 1 do
+  begin
+    if DirectoryExists(Candidates[I]) then
+    begin
+      Found := ResolvePythonFileInDir(Candidates[I], AExecutionMode);
+      if Found <> '' then
+        Exit(Found);
+    end;
+  end;
+end;
+
+function IsBundledPythonPath(const APath: string): Boolean;
+var
+  NormInput, NormProc, NormDLL: string;
+begin
+  Result := False;
+  if Trim(APath) = '' then
+    Exit;
+  NormInput := ExpandFileName(Trim(APath));
+  NormProc := ResolveBundledPythonPath(1);
+  if (NormProc <> '') and SameFileName(NormInput, ExpandFileName(NormProc)) then
+    Exit(True);
+  NormDLL := ResolveBundledPythonPath(0);
+  if (NormDLL <> '') and SameFileName(NormInput, ExpandFileName(NormDLL)) then
+    Exit(True);
+end;
 
 procedure TSetMain.SetDevice(const Value: Boolean);
 begin
@@ -309,7 +476,7 @@ begin
   FFixar := false;
   FStay := false;
 
-  FDllPath := ExtractFilePath(ApplicationName);
+  FDllPath := '';
   FDllMyPath := ExtractFilePath(ApplicationName);
   FDllPostPath := ExtractFilePath(ApplicationName);
   FDllMSSQLPath := ExtractFilePath(ApplicationName);
@@ -401,8 +568,9 @@ begin
   FDefaultfolder := '';
   FProject := '';
 
-  FUsePythonConnector := False;
   FPythonExecutionMode := 1;
+  FDllPath := ResolveBundledPythonPath(FPythonExecutionMode);
+  FUsePythonConnector := (FDllPath <> '');
 
   FIDELeftWidth := 240;
   FIDERightWidth := 340;
@@ -720,6 +888,17 @@ begin
     FPythonExecutionMode := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 1)
   else
     FPythonExecutionMode := 1;
+
+  if (Trim(FDLLPATH) = '') or
+     (DirectoryExists(FDLLPATH) and
+       (ResolvePythonFileInDir(FDLLPATH, FPythonExecutionMode) = '')) or
+     ((Pos(PathDelim, FDLLPATH) > 0) and (not FileExists(FDLLPATH)) and
+       (not DirectoryExists(FDLLPATH))) then
+  begin
+    FDLLPATH := ResolveBundledPythonPath(FPythonExecutionMode);
+    if FDLLPATH <> '' then
+      FUsePythonConnector := True;
+  end;
 
   if BuscaChave(arquivo,'IDELEFTWIDTH:',posicao) then
     FIDELeftWidth := StrToIntDef(RetiraInfo(arquivo.Strings[posicao]), 240);

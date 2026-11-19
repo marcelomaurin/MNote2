@@ -22,12 +22,15 @@ type
     FLastError: string;
     FLastOutput: string;
     FLastDiagnostic: TStringList;
+    FCustomConfigApplied: Boolean;
 
     procedure ConfigurarConnector;
+    procedure EnsureRuntimeDirInPath(const APythonPath: string);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
+    procedure ApplySettings(AExecutionMode: Integer; const ADLLPath: string);
     function Start: Boolean;
     procedure Stop;
 
@@ -45,6 +48,11 @@ type
   end;
 
 implementation
+
+{$IFDEF WINDOWS}
+uses
+  Windows;
+{$ENDIF}
 
 { TMNotePythonService }
 
@@ -69,26 +77,68 @@ begin
   inherited Destroy;
 end;
 
-procedure TMNotePythonService.ConfigurarConnector;
+procedure TMNotePythonService.EnsureRuntimeDirInPath(const APythonPath: string);
+var
+  RuntimeDir, OldPath: string;
+begin
+  RuntimeDir := Trim(APythonPath);
+  if RuntimeDir = '' then
+    Exit;
+  if FileExists(RuntimeDir) then
+    RuntimeDir := ExtractFileDir(RuntimeDir)
+  else if not DirectoryExists(RuntimeDir) then
+    Exit;
+  if RuntimeDir = '' then
+    Exit;
+
+  OldPath := SysUtils.GetEnvironmentVariable('PATH');
+  if Pos(LowerCase(RuntimeDir), LowerCase(OldPath)) > 0 then
+    Exit;
+
+  {$IFDEF WINDOWS}
+  Windows.SetEnvironmentVariable('PATH', PChar(RuntimeDir + PathSeparator + OldPath));
+  {$ENDIF}
+end;
+
+procedure TMNotePythonService.ApplySettings(AExecutionMode: Integer;
+  const ADLLPath: string);
+var
+  ResolvedPath, InDirPath: string;
 begin
   if FPython = nil then
     Exit;
 
-  if FSetMain.PythonExecutionMode = 0 then
+  if AExecutionMode = 0 then
     FPython.ExecutionMode := pemDLL
   else
     FPython.ExecutionMode := pemProcess;
   FPython.LoadMode := plmAuto;
 
-  // Se o usuário configurou DLLPath no MNote2, reaproveita.
-  // Em modo processo, esse campo pode apontar para python.exe/python3.
-  if Trim(FSetMain.DLLPath) <> '' then
-    FPython.DLLPath := FSetMain.DLLPath;
+  ResolvedPath := Trim(ADLLPath);
+  if ResolvedPath = '' then
+    ResolvedPath := ResolveBundledPythonPath(AExecutionMode);
+
+  if (ResolvedPath <> '') and DirectoryExists(ResolvedPath) then
+  begin
+    InDirPath := ResolvePythonFileInDir(ResolvedPath, AExecutionMode);
+    if InDirPath <> '' then
+      ResolvedPath := InDirPath;
+  end;
+
+  if ResolvedPath <> '' then
+    FPython.DLLPath := ResolvedPath;
 
   FPython.MinPythonMajor := 3;
   FPython.MinPythonMinor := 8;
   FPython.MaxPythonMajor := 3;
   FPython.MaxPythonMinor := 14;
+  FCustomConfigApplied := True;
+end;
+
+procedure TMNotePythonService.ConfigurarConnector;
+begin
+  ApplySettings(FSetMain.PythonExecutionMode, FSetMain.DLLPath);
+  FCustomConfigApplied := False;
 end;
 
 function TMNotePythonService.Start: Boolean;
@@ -96,13 +146,17 @@ begin
   FLastError := '';
   FLastOutput := '';
 
-  ConfigurarConnector;
+  if not FCustomConfigApplied then
+    ConfigurarConnector;
 
   if Assigned(FRuntime) then
   begin
     FRuntime.DetectRuntime;
     FRuntime.ConfigureEnvironment;
   end;
+
+  if FPython <> nil then
+    EnsureRuntimeDirInPath(FPython.DLLPath);
 
   Result := FPython.StartPython;
 

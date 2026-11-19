@@ -48,6 +48,7 @@ begin
   FRegistry := ARegistry;
   FPanel := TPanel.Create(Self);
   FPanel.Name := 'pnIDELanguageCommands';
+  FPanel.Caption := '';
   FPanel.Parent := AParent;
   FPanel.Align := alLeft;
   FPanel.Width := 620;
